@@ -5,6 +5,7 @@
 #include "draw3dParametersControlWidget.h"
 
 #include <QWidget>
+#include <QHash>
 
 namespace Ui {
 class ShadedSceneControlWidget;
@@ -24,6 +25,15 @@ public:
     QString vertex;
     QString fragment;
 
+
+    ShaderPreset() {}
+    ShaderPreset(QString name, QString vertex, QString fragment) :
+        name(name),
+        type(SAVEABLE),
+        vertex(vertex),
+        fragment(fragment)
+    {}
+
 };
 
 class ShadedSceneControlParameters : public Draw3dParameters
@@ -33,8 +43,8 @@ public:
     ShadedSceneControlParameters()
     {
         point.type = ShaderPreset::PRESET;
-        edge.type = ShaderPreset::PRESET;
-        face.type = ShaderPreset::PRESET;
+        edge.type  = ShaderPreset::PRESET;
+        face.type  = ShaderPreset::PRESET;
     }
 
     ShaderPreset point;
@@ -60,6 +70,15 @@ public:
     {
         return createParameters();
     }
+
+    QHash<QString, ShaderPreset> shaderCache;
+
+
+    void getShaderPreset(ShaderPreset &preset, const QComboBox *combo) const;
+public slots:
+    void applyPressed();
+    void reloadShaders(QString path);
+    void presetChanged();
 
 private:
     Ui::ShadedSceneControlWidget *ui;

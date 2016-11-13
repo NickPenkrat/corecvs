@@ -154,4 +154,8 @@
         <file>layer_resize_actual.png</file>
         <file>layer_resize.png</file>
     </qresource>
+    <qresource prefix="/new/shaders">
+        <file>shaders/_trivial.fsh</file>
+        <file>shaders/_trivial.vsh</file>
+    </qresource>
 </RCC>

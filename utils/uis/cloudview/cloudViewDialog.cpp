@@ -100,7 +100,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
     addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()));
     addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()));
 
-#if 1
+#if 0
     {
         SceneShaded *shaded = new SceneShaded();
         Mesh3DDecorated *mesh = new Mesh3DDecorated;
@@ -478,7 +478,6 @@ void CloudViewDialog::childMoveEvent(QMouseEvent *event)
                break;
         }
 #endif
-
     }
 
     if (buttons & Qt::MidButton)

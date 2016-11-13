@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>637</width>
-    <height>781</height>
+    <width>936</width>
+    <height>830</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,6 +21,13 @@
        <string>Default</string>
       </property>
      </item>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Vertex Shader</string>
+     </property>
     </widget>
    </item>
    <item row="0" column="1">
@@ -46,26 +53,6 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Vertex Shader</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="2">
-    <widget class="QPlainTextEdit" name="vetrexShaderTextEdit"/>
-   </item>
-   <item row="6" column="0">
-    <widget class="QPushButton" name="pushButton">
-     <property name="text">
-      <string>Apply</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QPlainTextEdit" name="fragmentShaderTextEdit"/>
-   </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label_2">
      <property name="text">
@@ -73,10 +60,32 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0">
+   <item row="4" column="0" colspan="2">
+    <widget class="QTextEdit" name="fragmentShaderTextEdit"/>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QTextEdit" name="vetrexShaderTextEdit"/>
+   </item>
+   <item row="0" column="2" rowspan="7">
+    <widget class="Draw3dParametersControlWidget" name="genericParams" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0" colspan="2">
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="0" column="0">
       <widget class="QLabel" name="label_3">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Point Shader</string>
        </property>
@@ -149,8 +158,12 @@
      </item>
     </layout>
    </item>
-   <item row="0" column="2" rowspan="6">
-    <widget class="Draw3dParametersControlWidget" name="widget" native="true"/>
+   <item row="5" column="0">
+    <widget class="QPushButton" name="applyButton">
+     <property name="text">
+      <string>Apply</string>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

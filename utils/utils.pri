@@ -99,6 +99,13 @@ with_x11extras {
     CONFIG += with_opengl                       # always include here OpenGL dependent modules as utils's and related projects need it
 }
 
+with_qscript {
+    QT += script
+
+    DEFINES += WITH_QSCRIPT
+    INCLUDEPATH += $$UTILSDIR/scripting
+}
+
 with_opengl {
     QT += opengl                                # this must be defined for utils's and all related sources
 

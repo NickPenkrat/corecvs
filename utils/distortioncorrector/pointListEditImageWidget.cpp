@@ -433,15 +433,14 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
         /* We should probably use our own mechnism */
         QTransform old = painter.transform();
-        qDebug() << "Old transform" << old << endl;
-        Matrix33 matrix = currentTransformMatrix().inv();
+        Matrix33 matrix = currentTransformMatrix();
         QTransform transform = Core2Qt::QTransformFromMatrix(matrix);
-        painter.setTransform(transform, false);
+        painter.setTransform(transform, true);
 
         DrawDelegate *delegate = mObservationListModel->getDrawDelegate(i);
         if (delegate != NULL)
         {
-            delegate->drawAt(painter, imageCoords, isSelected);
+            delegate->drawAt(painter, point, isSelected);
         }
 
         painter.setTransform(old);
@@ -631,8 +630,8 @@ void DrawKeypointAreaDelegate::drawAt(QPainter &painter, Vector2dd position, int
     painter.drawLine(
         position.x(),
         position.y(),
-        cos(degToRad(area.angle)) * observation->keyPointArea.size + position.x(),
-        sin(degToRad(area.angle)) * observation->keyPointArea.size + position.y()
+        cos(degToRad(area.angle)) * observation->keyPointArea.size / 2.0 + position.x(),
+        sin(degToRad(area.angle)) * observation->keyPointArea.size / 2.0 + position.y()
 
                      );
 

@@ -109,35 +109,66 @@ void SceneShaded::addTexture(GLuint texId, RGB24Buffer *input)
 
     glBindTexture(GL_TEXTURE_2D, 0);
     qDebug() << "Unbinding texture:" << texId;
+}
 
+void SceneShaded::setParameters(void *params)
+{
+    mParameters = *static_cast<ShadedSceneControlParameters *>(params);
+
+    ShaderPreset *sources[ShaderTarget::LAST] = {
+        &mParameters.face,
+        &mParameters.point,
+        &mParameters.edge
+    };
+
+    for (int target = 0; target < ShaderTarget::LAST; target++)
+    {
+        QString vShader = vertexShaderSource;
+        QString fShader = fragmentShaderSource;
+
+        if (sources[target]->type == ShaderPreset::NONE) {
+            delete_safe(mProgram[target]);
+            continue;
+        }
+
+        if(sources[target]->type != ShaderPreset::PRESET) {
+            vShader = sources[target]->vertex;
+            fShader = sources[target]->fragment;
+        }
+
+
+        mProgram[target] = new QOpenGLShaderProgram();
+        mProgram[target]->addShaderFromSourceCode(QOpenGLShader::Vertex,   vShader);
+        mProgram[target]->addShaderFromSourceCode(QOpenGLShader::Fragment, fShader);
+        mProgram[target]->link();
+
+        if (!mProgram[target]->isLinked())
+        {
+            qDebug() << mProgram[target]->log();
+        }
+
+        mPosAttr     = mProgram[target]->attributeLocation("posAttr");
+        mColAttr     = mProgram[target]->attributeLocation("colAttr");
+        mFaceColAttr = mProgram[target]->attributeLocation("faceColAttr");
+        mTexAttr     = mProgram[target]->attributeLocation("texAttr");
+        mNormalAttr  = mProgram[target]->attributeLocation("normalAttr");
+
+        mModelViewMatrix  = mProgram[target]->uniformLocation("modelview");
+        mProjectionMatrix = mProgram[target]->uniformLocation("projection");
+
+        mTextureSampler = mProgram[target]->uniformLocation("textureSampler");
+        mBumpSampler    = mProgram[target]->uniformLocation("bumpSampler");
+
+    }
 
 }
+
 
 void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
 {
     initializeGLFunctions();
 
-    mProgram = new QOpenGLShaderProgram();
-    mProgram->addShaderFromSourceCode(QOpenGLShader::Vertex, vertexShaderSource);
-    mProgram->addShaderFromSourceCode(QOpenGLShader::Fragment, fragmentShaderSource);
-    mProgram->link();
-
-    if (!mProgram->isLinked())
-    {
-     qDebug() << mProgram->log();
-    }
-
-    mPosAttr     = mProgram->attributeLocation("posAttr");
-    mColAttr     = mProgram->attributeLocation("colAttr");
-    mFaceColAttr = mProgram->attributeLocation("faceColAttr");
-    mTexAttr     = mProgram->attributeLocation("texAttr");
-    mNormalAttr  = mProgram->attributeLocation("normalAttr");
-
-    mModelViewMatrix  = mProgram->uniformLocation("modelview");
-    mProjectionMatrix = mProgram->uniformLocation("projection");
-
-    mTextureSampler = mProgram->uniformLocation("textureSampler");
-    mBumpSampler    = mProgram->uniformLocation("bumpSampler");
+    setParameters(&mParameters);
 
     /*Prepare Texture*/
     RGB24Buffer *texBuf = mMesh->material.tex[OBJMaterial::TEX_DIFFUSE];
@@ -149,6 +180,7 @@ void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
         qDebug() << "Created a handle for the texture:" << mTexture;
         dumpGLErrors();
         addTexture(mTexture, texBuf);
+        glDisable(GL_TEXTURE_2D);
     }
 
     /*Prepare Bumpmap*/
@@ -158,21 +190,22 @@ void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
         qDebug() << "Dumping prior error";
         dumpGLErrors();
         glGenTextures(1, &mBumpmap);
-        qDebug() << "Created a handle for the texture:" << mTexture;
+        qDebug() << "Created a handle for the bumpmap:" << mBumpmap;
         dumpGLErrors();
         addTexture(mBumpmap, bumpBuf);
+        glDisable(GL_TEXTURE_2D);
     }
 
 }
 
 void SceneShaded::drawMyself(CloudViewDialog * dialog)
 {
-    if (mProgram == NULL)
+/*    if (mProgram[] == NULL)
     {
         qDebug("SceneShaded::drawMyself(): mProgram is NULL");
         return;
     }
-    mProgram->bind();
+    mProgram->bind();*/
 
     float arr[16];
     glGetFloatv(GL_MODELVIEW_MATRIX, arr);
@@ -195,10 +228,21 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
     matrix.translate(0, 0, -2);*/
    // matrix.rotate(100.0f * m_frame / screen()->refreshRate(), 0, 1, 0);
 
-    mProgram->setUniformValue(mModelViewMatrix, modelview);
-    mProgram->setUniformValue(mProjectionMatrix, projection);
+    for (int target = 0; target < ShaderTarget::LAST; target++)
+    {
+        if (mProgram[target] == NULL)
+            continue;
 
+        mProgram[target]->bind();
+        mProgram[target]->setUniformValue(mModelViewMatrix, modelview);
+        mProgram[target]->setUniformValue(mProjectionMatrix, projection);
+        mProgram[target]->release();
+    }
 
+    bool depthTest =  glIsEnabled(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
+
+#if 0
 
     GLfloat vertices[] = {
        0.0f, 0.707f,
@@ -212,10 +256,6 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
        0.0f, 0.0f, 1.0f
     };
 
-    bool depthTest =  glIsEnabled(GL_DEPTH_TEST);
-    glEnable(GL_DEPTH_TEST);
-
-#if 0
     glVertexAttribPointer(mPosAttr, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glVertexAttribPointer(mColAttr, 3, GL_FLOAT, GL_FALSE, 0, colors);
 
@@ -234,30 +274,49 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
     if (mMesh != NULL)
     {
         /* Draw points */
-        if (mParameters.point.type != ShaderPreset::NONE)
+        if (mParameters.point.type != ShaderPreset::NONE && mProgram[POINT] != NULL)
         {
+            mProgram[POINT]->bind();
+            int oldPointSize = 1;
+            glGetIntegerv(GL_POINT_SIZE, &oldPointSize);
+            glPointSize(mParameters.pointSize());
+
             // cout << "Executing point draw" << endl;
             glVertexAttribPointer(mPosAttr, 3, GL_DOUBLE, GL_FALSE, 0, mMesh->vertexes.data());
             glEnableVertexAttribArray(mPosAttr);
 
-            if (mMesh->hasColor)
+            if (mMesh->hasColor && !mParameters.pointColorOverride())
             {
                 glVertexAttribPointer(mColAttr, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(RGBColor), mMesh->vertexesColor.data());
                 glEnableVertexAttribArray(mColAttr);
+            } else {
+                Vector3df pointColor = RGBColor(mParameters.pointColor()).toFloat();
+                glVertexAttrib3f(mColAttr, pointColor.x(), pointColor.y(), pointColor.z());
             }
 
             glDrawArrays(GL_POINTS, 0, mMesh->vertexes.size());
 
             glDisableVertexAttribArray(mPosAttr);
             glDisableVertexAttribArray(mColAttr);
+
+            glPointSize(oldPointSize);
+            mProgram[POINT]->release();
         }
 
-        if (mParameters.edge.type != ShaderPreset::NONE)
+        if (mParameters.edge.type != ShaderPreset::NONE && mProgram[EDGE] != NULL)
         {
             vector<Vector3dd> positions;
             vector<RGBColor>  vertexColors;
             vector<RGBColor>  edgeColors;
             vector<uint32_t>  edgeIds;
+
+            mProgram[EDGE]->bind();
+
+            RGBColor edgeColor = RGBColor(mParameters.edgeColor());
+
+            int oldLineWidth = 1;
+            glGetIntegerv(GL_LINE_WIDTH, &oldLineWidth);
+            glLineWidth(mParameters.edgeWidth());
 
             for (size_t edgeNum = 0; edgeNum < mMesh->edges.size(); edgeNum++)
             {
@@ -265,18 +324,17 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 positions.push_back(mMesh->vertexes[pointId.x()]);
                 positions.push_back(mMesh->vertexes[pointId.y()]);
 
-                if (mMesh->hasColor) {
+                if (mMesh->hasColor && !mParameters.edgeColorOverride()) {
                     vertexColors.push_back(mMesh->vertexesColor[pointId.x()]);
                     vertexColors.push_back(mMesh->vertexesColor[pointId.y()]);
 
                     edgeColors.push_back(mMesh->edgesColor[edgeNum]);
                     edgeColors.push_back(mMesh->edgesColor[edgeNum]);
                 } else {
-                    vertexColors.push_back(RGBColor::Gray());
-                    vertexColors.push_back(RGBColor::Gray());
-
-                    edgeColors.push_back(RGBColor::Yellow());
-                    edgeColors.push_back(RGBColor::Yellow());
+                    vertexColors.push_back(edgeColor);
+                    vertexColors.push_back(edgeColor);
+                    edgeColors.push_back(edgeColor);
+                    edgeColors.push_back(edgeColor);
                 }
 
                 edgeIds.push_back(2 * edgeNum);
@@ -292,14 +350,14 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 positions.push_back(mMesh->vertexes[pointId.y()]);
                 positions.push_back(mMesh->vertexes[pointId.z()]);
 
-                if (mMesh->hasColor) {
+                if (mMesh->hasColor && !mParameters.edgeColorOverride()) {
                     edgeColors.push_back(mMesh->facesColor[faceNum]);
                     edgeColors.push_back(mMesh->facesColor[faceNum]);
                     edgeColors.push_back(mMesh->facesColor[faceNum]);
                 } else {
-                    edgeColors.push_back(RGBColor::Yellow());
-                    edgeColors.push_back(RGBColor::Yellow());
-                    edgeColors.push_back(RGBColor::Yellow());
+                    edgeColors.push_back(edgeColor);
+                    edgeColors.push_back(edgeColor);
+                    edgeColors.push_back(edgeColor);
                 }
 
                 edgeIds.push_back(start);
@@ -315,7 +373,7 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
             glVertexAttribPointer(mPosAttr, 3, GL_DOUBLE, GL_FALSE, 0, positions.data());
             glEnableVertexAttribArray(mPosAttr);
 
-            if (mMesh->hasColor)
+            if (!edgeColors.empty())
             {
                 glVertexAttribPointer(mColAttr, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(RGBColor), edgeColors.data());
                 glEnableVertexAttribArray(mColAttr);
@@ -325,10 +383,13 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
 
             glDisableVertexAttribArray(mPosAttr);
             glDisableVertexAttribArray(mColAttr);
+
+            glLineWidth(oldLineWidth);
+            mProgram[EDGE]->release();
         }
 
         /* Draw faces */
-        if (mParameters.face.type != ShaderPreset::NONE)
+        if (mParameters.face.type != ShaderPreset::NONE && mProgram[FACE] != NULL)
         {
             // cout << "Executing face draw" << endl;
             /* Unfotunately we need to unpack all the face related parameters to arrays */
@@ -341,6 +402,10 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
             vector<Vector2dd> texCoords;
             vector<uint32_t>  faceIds;
 
+            mProgram[FACE]->bind();
+
+            RGBColor faceColor = RGBColor(mParameters.faceColor());
+
             for (size_t faceNum = 0; faceNum < mMesh->faces.size(); faceNum++)
             {
                 Vector3d32 pointId = mMesh->faces[faceNum];
@@ -349,7 +414,7 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 positions.push_back(mMesh->vertexes[pointId.y()]);
                 positions.push_back(mMesh->vertexes[pointId.z()]);
 
-                if (mMesh->hasColor) {
+                if (mMesh->hasColor && !mParameters.faceColorOverride()) {
                     vertexColors.push_back(mMesh->vertexesColor[pointId.x()]);
                     vertexColors.push_back(mMesh->vertexesColor[pointId.y()]);
                     vertexColors.push_back(mMesh->vertexesColor[pointId.z()]);
@@ -358,13 +423,13 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                     faceColors.push_back(mMesh->facesColor[faceNum]);
                     faceColors.push_back(mMesh->facesColor[faceNum]);
                 } else {
-                    vertexColors.push_back(RGBColor::Gray());
-                    vertexColors.push_back(RGBColor::Gray());
-                    vertexColors.push_back(RGBColor::Gray());
+                    vertexColors.push_back(faceColor);
+                    vertexColors.push_back(faceColor);
+                    vertexColors.push_back(faceColor);
 
-                    faceColors.push_back(RGBColor::Yellow());
-                    faceColors.push_back(RGBColor::Yellow());
-                    faceColors.push_back(RGBColor::Yellow());
+                    faceColors.push_back(faceColor);
+                    faceColors.push_back(faceColor);
+                    faceColors.push_back(faceColor);
                 }
 
                 if (mMesh->hasTexCoords)
@@ -395,7 +460,7 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
             glVertexAttribPointer(mPosAttr, 3, GL_DOUBLE, GL_FALSE, 0, positions.data());
             glEnableVertexAttribArray(mPosAttr);
 
-            if (mMesh->hasColor)
+            if (!faceColors.empty() && !vertexColors.empty())
             {
                 glVertexAttribPointer(mColAttr, GL_BGRA, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(RGBColor), faceColors.data());
                 glEnableVertexAttribArray(mColAttr);
@@ -416,22 +481,19 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 glEnableVertexAttribArray(mNormalAttr);
             }
 
+            GLboolean oldTexEnable = glIsEnabled(GL_TEXTURE_2D);
+
+#if 1
             if (mMesh->material.tex[OBJMaterial::TEX_DIFFUSE])
             {
-                qDebug() << "Before Texture";   dumpGLErrors();
-
+                //qDebug() << "Before Texture";   dumpGLErrors();
                 glEnable(GL_TEXTURE_2D);
                 glActiveTexture(GL_TEXTURE0);
-
-                qDebug() << "Before Bind";   dumpGLErrors();
+                //qDebug() << "Before Bind";   dumpGLErrors();
                 glBindTexture(GL_TEXTURE_2D, mTexture /*dialog->mFancyTexture*/);
-
-                qDebug() << "Before Sampler";   dumpGLErrors();
-
-                mProgram->setUniformValue(mTextureSampler, 0);
-
-                qDebug() << "Before Call";
-                dumpGLErrors();
+                //qDebug() << "Before Sampler";   dumpGLErrors();
+                mProgram[FACE]->setUniformValue(mTextureSampler, 0);
+                //qDebug() << "Before Call"; dumpGLErrors();
             }
 
             if (mMesh->material.tex[OBJMaterial::TEX_BUMP])
@@ -439,32 +501,39 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 glEnable(GL_TEXTURE_2D);
                 glActiveTexture(GL_TEXTURE1);
                 glBindTexture(GL_TEXTURE_2D, mBumpmap);
-                mProgram->setUniformValue(mTextureSampler, 1);
+                mProgram[FACE]->setUniformValue(mTextureSampler, 1);
             }
 
+
             glDrawElements(GL_TRIANGLES, GLsizei(mMesh->faces.size() * 3), GL_UNSIGNED_INT, faceIds.data());
+#endif
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+            if (!oldTexEnable) {
+                glActiveTexture(GL_TEXTURE0);
+                glDisable(GL_TEXTURE_2D);
+
+                glActiveTexture(GL_TEXTURE1);
+                glDisable(GL_TEXTURE_2D);
+            }
 
             glDisableVertexAttribArray(mPosAttr);
             glDisableVertexAttribArray(mColAttr);
             glDisableVertexAttribArray(mFaceColAttr);
             glDisableVertexAttribArray(mTexAttr);
             glDisableVertexAttribArray(mNormalAttr);
+
+            mProgram[FACE]->release();
         }
 
     }
-
-
 
     if (!depthTest) {
         glDisable(GL_DEPTH_TEST);
     }
 
-    mProgram->release();
+    //mProgram->release();
 
 
 }
 
-void SceneShaded::setParameters(void *params)
-{
-    mParameters = *static_cast<ShadedSceneControlParameters *>(params);
-}

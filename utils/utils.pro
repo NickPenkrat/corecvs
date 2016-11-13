@@ -581,4 +581,12 @@ with_synccam {
     DEFINES += WITH_SYNCCAM
 }
 
+
+with_qscript {
+    SOURCES += scripting/scriptWindow.cpp
+    HEADERS += scripting/scriptWindow.h
+    FORMS   += scripting/scriptWindow.ui
+}
+
+
 OTHER_FILES += ../tools/generator/xml/draw3d.xml

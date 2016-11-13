@@ -19,7 +19,18 @@ public:
     ShadedSceneControlParameters mParameters;
 
 
-    QOpenGLShaderProgram *mProgram = NULL;
+    QString pointShaderCache;
+    QString edgeShaderCache;
+    QString faceShaderCache;
+
+    enum ShaderTarget{
+        FACE,
+        POINT,
+        EDGE,
+        LAST
+    };
+    QOpenGLShaderProgram *mProgram[ShaderTarget::LAST] = {NULL};
+
     GLuint mPosAttr;
     GLuint mColAttr;
 

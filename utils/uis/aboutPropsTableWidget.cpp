@@ -133,6 +133,13 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
      addParameter("Compiler", "ICC");
 #endif
 
+#if WITH_QSCRIPT
+   addParameter("QScript Support", "On");
+#else
+   addParameter("QScript Support", "Off");
+#endif
+
+
 #undef GCC_STR
 #undef GCC_XSTR
 

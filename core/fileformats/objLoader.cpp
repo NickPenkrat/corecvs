@@ -168,12 +168,15 @@ int OBJLoader::loadMaterial(istream &input, OBJMaterial &material, const std::st
         {
             work >> tex_name;
             std::string fullpath = path + PATH_SEPARATOR + tex_name;
-            cout << "Will load tex <" << tex_name << ">";
+            cout << "Will load texture <" << tex_name << ">";
             cout << "full path <" << fullpath << ">" << endl;
 
             RGB24Buffer *texture = BufferFactory::getInstance()->loadRGB24Bitmap(fullpath);
-            if (texture != NULL)
+            if (texture != NULL) {
                 cout << "Texture <" << texture->getSize() << ">" << endl;
+            } else {
+                cout << "Failed to load texture" << endl;
+            }
 
             material.tex[tex_id] = texture;
         }
