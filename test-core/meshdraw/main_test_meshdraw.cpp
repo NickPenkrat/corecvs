@@ -14,6 +14,7 @@
 #include "global.h"
 #include "mesh3d.h"
 #include "meshLoader.h"
+#include "mesh3DDecorated.h"
 
 using namespace corecvs;
 
@@ -36,5 +37,19 @@ TEST(Meshdraw, testMeshDraw)
     loader.save(&mesh, "mesh-icosphere.stl");
     loader.save(&mesh, "mesh-icosphere.ply");
     loader.save(&mesh, "mesh-icosphere.obj");
+
+}
+
+TEST(Meshdraw, testMeshScene)
+{
+    cout << "Starting test <meshdraw>. This is a manual test" << endl;
+    Mesh3D mesh;
+    mesh.fillTestScene();
+    mesh.dumpPLY("mesh-example.ply");
+
+    Mesh3DDecorated mesh1;
+    mesh1.fillTestScene();
+    mesh1.dumpPLY("mesh-example1.ply");
+
 
 }

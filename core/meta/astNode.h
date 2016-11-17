@@ -13,6 +13,8 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <iostream>
+#include <unordered_map>
 
 namespace corecvs {
 
@@ -27,12 +29,20 @@ public:
 
     ~ASTContext()
     {
-        SYNC_PRINT(("ASTContext::~ASTContext(): there is %d garbage remaining\n", (int)nodes.size()));
+        //SYNC_PRINT(("ASTContext::~ASTContext(): there is %d garbage remaining\n", (int)nodes.size()));
         for (auto it = nodes.begin(); it != nodes.end(); ++it)
         {
             delete_safe(*it);
         }
     }
+
+    /**
+     * Mark and sweep gc
+     **/
+    void clear();
+    void mark(ASTNodeInt *node);
+    void sweep();
+
 
 };
 
@@ -41,7 +51,42 @@ struct ASTRenderDec {
     const char *lbr;
 
     bool genParameters;
+    std::ostream &output = std::cout;
+
+    std::unordered_map<uint64_t, ASTNodeInt *> *cse = NULL;
+
+    ASTRenderDec(const char *ident, const char *lbr, bool genParameters) :
+        ident(ident), lbr(lbr), genParameters(genParameters)
+    {}
+
+    ASTRenderDec(const char *ident, const char *lbr, bool genParameters,  std::ostream &output ) :
+        ident(ident), lbr(lbr), genParameters(genParameters), output(output)
+    {}
+
+
 };
+
+class ASTNodePayload {
+public:
+    virtual ~ASTNodePayload() {}
+};
+
+/**
+ *   This payload is an essential part of ASTNode that stores arbitrary function
+ *
+ *   This class is resposible for out of tree operations with function
+ **/
+class ASTNodeFunctionPayload : public ASTNodePayload {
+public:
+   /**/
+    virtual int inputNumber() {return 0;}
+    virtual int outputNumber() {return 0;}
+
+    virtual void f(double in[], double out[]) = 0;
+    virtual std::string getCCode();
+    virtual ASTNodeFunctionPayload *derivative(int input);
+};
+
 
 /**
  *  Internal data structure for ASTTree - it records all operations with ASTNode.
@@ -58,6 +103,7 @@ public:
         if (ASTContext::MAIN_CONTEXT == NULL)
             return;
 
+        /* We need to check if this memeory management s*/
         ASTContext::MAIN_CONTEXT->nodes.push_back(this);
     }
 
@@ -80,7 +126,9 @@ public:
         OPERATOR_POW,
         /**/
         OPERATOR_SIN,
-        OPERATOR_COS,
+        OPERATOR_COS,        
+        /**/
+        OPERATOR_FUNCTION,
 
         OPERATOR_LAST
     };
@@ -103,26 +151,51 @@ public:
              case OPERATOR_SIN : return "sin"; break ;
              case OPERATOR_COS : return "cos"; break ;
 
+             case OPERATOR_FUNCTION : return "f()"; break ;
+
              case OPERATOR_LAST : return "R"; break ;
         }
         return "Not in range";
     }
 
+    static inline int getPriority(const Operator &value)
+    {
+        switch (value)
+        {
+             case OPREATOR_ID  : return 40; break ;
+             case OPREATOR_NUM : return 40; break ;
+
+             case OPERATOR_ADD : return 10; break ;
+             case OPERATOR_SUB : return 10; break ;
+             case OPERATOR_MUL : return 20; break ;
+             case OPERATOR_DIV : return 20; break ;
+
+            /**/
+             case OPERATOR_POW : return 30; break ;
+            /**/
+             case OPERATOR_SIN : return 30; break ;
+             case OPERATOR_COS : return 30; break ;
+            /**/
+             case OPERATOR_FUNCTION : return 40; break ;
+
+             case OPERATOR_LAST : return 0; break ;
+        }
+        return 0;
+    }
+
 
 
     ASTNodeInt(/* Context *_owner,*/ Operator _op, ASTNodeInt *_left = NULL, ASTNodeInt *_right = NULL) :
-        op   (_op),
-        left (_left),
-        right(_right)
+        op   (_op)
     {
         _init();
+        children.push_back(_left);
+        children.push_back(_right);
     }
 
     explicit ASTNodeInt(double _value) :
         op   (OPREATOR_NUM),
-        val  (_value),
-        left (NULL),
-        right(NULL)
+        val  (_value)
     {
         _init();
     }
@@ -130,9 +203,7 @@ public:
     explicit ASTNodeInt(const char *_name) :
         op   (OPREATOR_ID),
         val  (0),
-        name (_name),
-        left (NULL),
-        right(NULL)
+        name (_name)
     {
         _init();
     }
@@ -141,7 +212,7 @@ public:
     {
         if (ASTContext::MAIN_CONTEXT == NULL)
             return;
-        delete_safe(payload); /* virual destructor problem here. so far nobody cares */
+        //delete_safe(payload); /* virual destuctor problem here. so far nobody cares */
 #if 0
         auto &vec = owner->nodes;
         vec.erase(std::remove(vec.begin(), vec.end(), this), vec.end());
@@ -155,20 +226,44 @@ public:
     double val;
     std::string name;
 
-    ASTNodeInt *left  = NULL;
-    ASTNodeInt *right = NULL;
+    std::vector<ASTNodeInt *> children;
 
-    void *payload = NULL;
-
-
-   /*friend ASTNode operator +(const ASTNode &left, const ASTNode &right);
-    friend ASTNode operator -(const ASTNode &left, const ASTNode &right);
-    friend ASTNode operator /(const ASTNode &left, const ASTNode &right);*/
+    ASTNodeInt *left () {return children[0];}
+    ASTNodeInt *right() {return children[1];}
 
 
-    void codeGenCpp (const std::string &name, ASTRenderDec identSym = {" ", "\n", true});
-    void codeGenCpp (int ident , ASTRenderDec identSym = {" ", "\n", true});
+public:
+    /* We can unite the fields below */
+    uint64_t hash = 0;
+    uint32_t height = 0;
+    ASTNodePayload *payload = NULL;
 
+    /* Common subexpresstion related variables. Could be moved to payload */
+    int cseCount = 0;
+    int cseName = 0;
+
+    /* Flag used for mark and sweep garbage collection */
+    uint16_t markFlag = 0;
+
+    bool isBinary();
+
+    bool isUnary();
+
+    static ASTRenderDec identSymDefault;
+    static ASTRenderDec identSymLine;
+
+    void codeGenCpp (const std::string &name, ASTRenderDec &identSym = identSymDefault);
+    void codeGenCpp (int ident , ASTRenderDec &identSym = identSymDefault);
+
+    /**
+     * NB This function actually modifies the tree elements.
+     **/
+    void extractConstPool(const std::string &poolname, std::unordered_map<double, std::string> &pool);
+    /* Computes hash and height */
+    void rehash();
+    void cseR(std::unordered_map<uint64_t, ASTNodeInt *> &cse);
+
+    size_t memoryFootprint();
     void print();
     void getVars(std::vector<std::string> &result);
 
@@ -176,6 +271,27 @@ public:
     ASTNodeInt* compute(const std::map<std::string, double>& bind = std::map<std::string, double>());
 
 
+    /*unsafe stuff you can destroy subtree of an another tree by accident*/
+    static void deleteSubtree(ASTNodeInt *tree);
+    void deleteChildren();
+
+
+};
+
+
+class ASTNodeFunctionWrapper : public ASTNodeFunctionPayload {
+public:
+    std::vector<ASTNodeInt *> components;
+
+private:
+    std::vector<std::string> getVars();
+    // ASTNodeFunctionPayload interface
+public:
+    virtual int inputNumber() override;
+    virtual int outputNumber()  override;
+    virtual void f(double in[], double out[])  override;
+    virtual std::string getCCode()  override;
+    virtual ASTNodeFunctionPayload *derivative(int input)  override;
 };
 
 
@@ -281,6 +397,10 @@ inline ASTNode operator -(const double &left, const ASTNode &right)
     return ASTNode(ASTNodeInt::OPERATOR_SUB, ASTNode(left), right);
 }
 
+inline ASTNode operator -(const ASTNode &right)
+{
+    return (0 - right);
+}
 
 inline ASTNode operator /(const double &left, const ASTNode &right)
 {

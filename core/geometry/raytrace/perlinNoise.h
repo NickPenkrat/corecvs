@@ -40,8 +40,7 @@ public:
     PerlinNoiseContainer *n;
 
 
-    PerlinNoise()
-    {
+    PerlinNoise() {
         n = new PerlinNoiseContainer(SIZE, SIZE, SIZE);
 
         std::mt19937 mt;

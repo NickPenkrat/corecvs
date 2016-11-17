@@ -235,7 +235,7 @@ public:
 
 
     /* Some debugger helpers */
-    virtual void dumpInfo(ostream &out = std::cout);
+    virtual void dumpInfo(ostream &out = std::cout, bool brief = false);
 
     // Transforms the whole world using scale*(QX+T) (FixtureCamera's inside CameraFixtures are not moved)
     virtual void transform(const corecvs::Affine3DQ &transformation, const double scale = 1.0);

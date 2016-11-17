@@ -24,12 +24,16 @@ SUBDIRS +=       \
 #    new_board_detector \
 #    cr2reader           \
     debayer          \
-#    qtScriptConsole  \
     softrender       \
     raytracerender   \
     stereo_generator \
     widgets_test \
     example_scene \
+
+
+with_qscript {
+   SUBDIRS += qtScriptConsole
+}
 
 
 with_opencv {

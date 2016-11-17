@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "fixtureCamera.h"
+#include "imageKeyPoints.h"
 
 
 /* Presentation related */
@@ -37,7 +38,8 @@ class SceneFeaturePoint;
 class SceneObservation
 {
 public:
-    SceneObservation(FixtureCamera* cam = nullptr
+    SceneObservation(
+              FixtureCamera     *cam = nullptr
             , SceneFeaturePoint *sfp = nullptr
             , Vector2dd          obs = Vector2dd(0)
             , CameraFixture     *fix = nullptr)
@@ -59,7 +61,9 @@ public:
     bool                onDistorted;                /* true when observation belongs to source-distorted image, def: we assume working with points on undist images */
 
   //MetaContainer       meta;                       /* not used */
-    
+
+    KeyPointArea    keyPointArea;
+
     double          &x() { return observation.x(); }
     double          &y() { return observation.y(); }
 
@@ -79,6 +83,8 @@ public:
         visitor.visit(observation , Vector2dd(0.0) , "observation");
         visitor.visit(accuracy    , Vector2dd(0.0) , "accuracy");
         visitor.visit(onDistorted , false          , "onDistorted");
+
+        keyPointArea.accept<VisitorType>(visitor);
 
         FixtureCamera::IdType id = 0;
         if (camera != NULL) {
@@ -162,13 +168,14 @@ public:
     bool                        hasKnownReprojectedPosition;
 
     enum PointType {
-        POINT_UNKNOWN       = 0x00,
-        POINT_USER_DEFINED  = 0x01,  /**< Point that comes from a file */
-        POINT_RECONSTRUCTED = 0x02,
-        POINT_TEMPORARY     = 0x04,
-        POINT_TRIANGULATE   = 0x08,
-        POINT_RAW_DETECTED  = 0x10,
-        POINT_ALL           = 0xFF
+        POINT_UNKNOWN               = 0x00,
+        POINT_USER_DEFINED          = 0x01,  /**< Point that comes from a file */
+        POINT_RECONSTRUCTED         = 0x02,
+        POINT_TEMPORARY             = 0x04,
+        POINT_TRIANGULATE           = 0x08,
+        POINT_RAW_DETECTED          = 0x10,
+        POINT_RAW_DETECTED_MATCHED  = 0x20,
+        POINT_ALL                   = 0xFF
     };
     PointType                   type;
 
@@ -176,6 +183,7 @@ public:
     {
         switch (value)
         {
+            case POINT_UNKNOWN       : return "POINT_UNKNOWN";
             case POINT_USER_DEFINED  : return "USER_DEFINED" ;
             case POINT_RECONSTRUCTED : return "RECONSTRUCTED";
             case POINT_TEMPORARY     : return "TEMPORARY"    ;
@@ -204,6 +212,7 @@ public:
 
     /* This is a presentation related block we should move it to derived class */
     RGBColor        color;
+
     /**/
 
     SceneFeaturePoint(FixtureScene * owner = NULL) :

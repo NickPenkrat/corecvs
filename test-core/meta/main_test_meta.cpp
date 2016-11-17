@@ -77,8 +77,9 @@ TEST(meta, testmeta)
     cout << "Starting test <meta>" << endl;
 
     ASTNode e = (ASTNode("X") * (ASTNode(5.0)  + ASTNode(4.0)));
-    e.p->codeGenCpp("test");
-    e.p->codeGenCpp("test", {"", "", true});
+    e.p->codeGenCpp("test", e.p->identSymDefault);
+
+    e.p->codeGenCpp("test", ASTNodeInt::identSymLine);
 
     vector<std::string> params;
     e.p->getVars(params);
@@ -98,29 +99,30 @@ TEST(meta, testmeta)
     }
 
     ASTNode dotProduct = (test1 & test2);
-    dotProduct.p->codeGenCpp("dot_product", {"", "", true});
+    ASTRenderDec dec = {"", "", true};
+    dotProduct.p->codeGenCpp("dot_product", dec);
 
     ASTNodeInt *dotRes = dotProduct.p->compute();
-    dotRes->codeGenCpp("dot_product_res", {"", "", true});
+    dotRes->codeGenCpp("dot_product_res", dec);
 
 
     cout << "Some more stuff" << endl;
 
-    GenericQuaternion<ASTNode> Q(  "Qx"_x     , ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
-    GenericQuaternion<ASTNode> P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
-    GenericQuaternion<ASTNode> R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
+    ASTQuaternion Q(  "Qx"_x     , ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
+    ASTQuaternion P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
+    ASTQuaternion R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
 
     ASTNode Z = ((Q+(P^R)) & Q);
-    Z.p->codeGenCpp("quaternion1", {"", "", true});
+    Z.p->codeGenCpp("quaternion1", dec);
 
     ASTNodeInt *Zder = Z.p->derivative(std::string("Qx"));
-    Zder->codeGenCpp("dQx", {"", "", true});
+    Zder->codeGenCpp("dQx", dec);
 
     ASTNodeInt *Zsimp = Zder->compute();
-    Zsimp->codeGenCpp("dQx1", {"", "", true});
+    Zsimp->codeGenCpp("dQx1", dec);
 
     ASTNodeInt *ZsimpAt7 = Zsimp->compute({{"Qx", 7.0}});
-    ZsimpAt7->codeGenCpp("dQx7", {"", "", true});
+    ZsimpAt7->codeGenCpp("dQx7", dec);
 
 
     delete_safe(ASTContext::MAIN_CONTEXT);
@@ -191,12 +193,14 @@ TEST(meta, matrixExample)
     M.atm(2, 1) = ASTNode(0.0);
     M.atm(2, 2) = ASTNode(0.0);*/
 
+    ASTRenderDec dec = {"", "", true};
+
     for (int i = 0; i < 1; i++)
     {
         for (int j = 1; j < 2; j++)
         {
-            M.atm(i,j).p->codeGenCpp("matrixFromQ_00", {"", "", true});
-            M.atm(i,j).p->derivative("y")->compute()->codeGenCpp("matrixFromQ_00", {"", "", true});
+            M.atm(i,j).p->codeGenCpp("matrixFromQ_00", dec);
+            M.atm(i,j).p->derivative("y")->compute()->codeGenCpp("matrixFromQ_00", dec);
         }
     }
     /* Compiled presentation */
@@ -321,3 +325,24 @@ TEST(meta, testmeta)
     std::cout << "Test <meta> PASSED" << std::endl;
 }
 #endif
+
+TEST(meta, testMetaNodeFunction)
+{
+    cout << "Starting meta.testMetaNodeFunction" << endl;
+    ASTContext::MAIN_CONTEXT = new ASTContext();
+    ASTQuaternion Q(ASTNode("Qx"), ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
+
+    ASTMatrix33 M = Q.toMatrixGeneric<ASTMatrix33>();
+
+    ASTNodeFunctionWrapper F;
+    for (int i = 0; i < M.h; i++)
+    {
+        for (int j = 0; j < M.w; j++)
+        {
+            F.components.push_back(M.element(i,j).p);
+        }
+    }
+
+    cout << F.getCCode();
+}
+

@@ -318,6 +318,7 @@ template<class VisitorType>
 };
 
 typedef Vector3d<double>   Vector3dd;
+typedef Vector3d<float>    Vector3df;
 typedef Vector3d<uint32_t> Vector3du32;
 typedef Vector3d<uint16_t> Vector3du16;
 

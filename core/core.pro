@@ -14,7 +14,7 @@ TARGET   = cvs_core
 CONFIG  += staticlib
 
 include(core.pri)                                   # it uses TARGET and detects COREBINDIR!
-include($$ROOT_DIR/git-version.pri)
+include(../git-version.pri)
 
 OBJECTS_DIR = $$ROOT_DIR/.obj/cvs_core$$BUILD_CFG_NAME
 MOC_DIR     = $$OBJECTS_DIR

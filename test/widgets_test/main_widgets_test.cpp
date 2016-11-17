@@ -21,7 +21,7 @@
 #include "chessBoardAssemblerParamsBase.h"
 #include "checkerboardDetectionParameters.h"
 #include "chessBoardCornerDetectorParamsBase.h"
-#include "iterativeReconstructionNonlinearOptimizationParamsWrapper.h"
+//#include "iterativeReconstructionNonlinearOptimizationParamsWrapper.h"
 
 #include "vector2d.h"
 #include "changeReceiver.h"
@@ -135,11 +135,11 @@ int main(int argc, char **argv)
                 ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
                 aabWidget->show();
             }
-            {
+           /* {
                 Reflection *widget_ref = &IterativeReconstructionNonlinearOptimizationParamsWrapper::reflection;
                 ReflectionWidget *aabWidget = new ReflectionWidget(widget_ref);
                 aabWidget->show();
-            }
+            } */
         } else {
             Reflection *widget_ref = (*it).second;
             aabWidget = new ReflectionWidget(widget_ref);

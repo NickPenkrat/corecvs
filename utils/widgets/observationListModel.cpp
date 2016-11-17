@@ -1,4 +1,5 @@
 #include "observationListModel.h"
+#include "pointListEditImageWidget.h" /* We can circunavigate this dependacy*/
 
 /* Model */
 
@@ -26,6 +27,23 @@ QVariant ObservationListModel::data(const QModelIndex &index, int role) const
     }
 
     PointObservation &P = mObservationList->at(index.row());
+
+    if (role == Qt::UserRole)
+    {
+#if 0
+        switch (index.column())
+        {
+            case COLUMN_DATA: {
+                /* A wrapper is created. Take care to destroy it*/
+                DrawKeypointAreaDelegate *delegate = new DrawKeypointAreaDelegate(&P);
+                QVariant toReturn = QVariant::fromValue<DrawDelegate *>(delegate);
+                return toReturn;
+            }
+        }
+#endif
+        return QVariant();
+    }
+
 
     if (role == Qt::DisplayRole)
     {
@@ -88,7 +106,9 @@ bool ObservationListModel::setData(const QModelIndex &index, const QVariant &val
 
     switch (index.column())
     {
-         case COLUMN_X: P.x() = newValue; break;
+         case COLUMN_X: {
+              P.x() = newValue; break;
+         }
          case COLUMN_Y: P.y() = newValue; break;
          case COLUMN_Z: P.z() = newValue; break;
          case COLUMN_U: P.u() = newValue; break;
@@ -120,8 +140,7 @@ bool ObservationListModel::insertRows(int row, int count, const QModelIndex &par
     emit beginInsertRows(parent, row, row + count - 1);
     mObservationList->insert(mObservationList->begin() + row, count, PointObservation());
     emit endInsertRows();
-    // FIXME: I just do not know what happens here, but without return statement
-    //        it does not builds on windows
+
     return false;
 }
 
@@ -134,8 +153,6 @@ bool ObservationListModel::removeRows(int row, int count, const QModelIndex &par
     emit beginRemoveRows(parent, row, row + count - 1);
     mObservationList->erase(mObservationList->begin() + row, mObservationList->begin() + row + count);
     emit endRemoveRows();
-    // FIXME: I just do not know what happens here, but without return statement
-    //        it does not builds on windows
     return false;
 }
 

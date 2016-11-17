@@ -8,87 +8,31 @@
  * \ingroup autotest  
  */
 
+#include <fstream>
 #include <iostream>
 #include "gtest/gtest.h"
 #include "homographyReconstructor.h"
 #include "astNode.h"
 #include "packedDerivative.h"
 
+#if defined (__GNUC__)
+#include <dlfcn.h>
+#endif
+
 #include "global.h"
 
 
 using namespace std;
 
+void asmF(double *in, double *out)
+{
+#if defined (__GNUC__) && __x86_64
 
-double out17(double M3, double M4, double M5, double M6, double M7) {
-return (
- (
-  (
-   (
-    (
-     (
-      0.000000
-     +
-      (
-       2.000000 * M3
-      )
-     )
-    +
-     (
-      2.000000 * M4
-     )
-
-    )
-
-   +
-    (
-     1.000000 * M5
-    )
-
-   )
-
-  /
-   (
-    (
-     (
-      0.000000
-     +
-      (
-       2.000000 * M6
-      )
-
-     )
-
-    +
-     (
-      2.000000 * M7
-     )
-
-    )
-
-   +
-    (
-     1.000000
-    *
-     1.000000
-    )
-
-   )
-
-  )
-
- -
-  2.316912
- )
-
-);
+#endif
 }
 
-
-TEST(jit, testjit)
+TEST(jit, testasm)
 {
-    cout << "Starting test <jit>" << endl;
-    cout << "This test is x64 and GCC only" << endl;
 
 #if defined (__GNUC__) && __x86_64
 
@@ -99,6 +43,22 @@ TEST(jit, testjit)
          "fstpl %0;" : "=m"(sin_a), "=m"(cos_a) : "m"(a));
     printf("sin(29°) = %f, cos(29°) = %f\n", sin_a, cos_a);
 #endif
+
+    double in [5] = {1,2,3,4,5};
+    double out[5] = {0};
+
+    asmF(in, out);
+    for (int i = 0; i < CORE_COUNT_OF(out); i++)
+    {
+        cout << out[i] << " " << endl;
+    }
+
+}
+
+TEST(jit, testjit)
+{
+    cout << "Starting test <jit>" << endl;
+    cout << "This test is x64 and GCC only" << endl;
 
 
     HomographyReconstructor example;
@@ -115,21 +75,22 @@ TEST(jit, testjit)
     }
 
     Matrix33 exampleM = Matrix33::RotateProj(degToRad(-5.0)) * Matrix33::ShiftProj(0.4, 0.6);
+    double din[8] = {
+        exampleM[0], exampleM[1], exampleM[2],
+        exampleM[3], exampleM[4], exampleM[5],
+        exampleM[6], exampleM[7]
+    };
+
 
     cout << "Example Matrix " << endl << exampleM << endl;
 
     /* Double run */
     {
         cout << "Double run.." << endl;
-        double in[8] = {
-            exampleM[0], exampleM[1], exampleM[2],
-            exampleM[3], exampleM[4], exampleM[5],
-            exampleM[6], exampleM[7]
-        };
+
         double out[9*2];
 
-        //TODO: this doesn't compile on win!!!
-        //example.genericCostFunction<double>(in, out);
+        example.genericCostFunction<double>(din, out);
         for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
         {
             cout << out[i] << endl;
@@ -156,32 +117,96 @@ TEST(jit, testjit)
             {"M[3]", exampleM[3]}, {"M[4]", exampleM[4]}, {"M[5]", exampleM[5]},
             {"M[6]", exampleM[6]}, {"M[7]", exampleM[7]}};
 
-/*        for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
-        {
-            out[i].p->codeGenCpp("out");
-        }*/
-
         for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
         {
             cout << out[i].p->compute(binds)->val << endl;
         }
 
-        //out[17].p->codeGenCpp("out17");
-        //out[17].p->compute(binds)->codeGenCpp("out17b");
+#if defined (__GNUC__)
 
-        cout << out17(exampleM[3], exampleM[4], exampleM[5], exampleM[6], exampleM[7]) << endl;
+        ofstream generated("jit.cpp");
+        ASTRenderDec params("", "", false, generated);
+        //params.output = generated;
 
+        generated << "extern \"C\" int  test(int in) {return in+1;}" << endl;
+        generated << "extern \"C\" void function(double *M, double *out) {" << endl;
+        for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "out[%d]", i);
+
+            generated << buffer << " = ";
+            out[i].p->compute()->codeGenCpp(buffer, params);
+            generated << ";\n";
+        }
+        generated << "}\n" << endl;
+
+        generated.close();
+
+        SYNC_PRINT(("Running GCC compiler...\n"));
+        system("gcc -shared -fPIC jit.cpp -o jit.so");
+
+        /*
+         *  DLL Load Stuff
+         */
+
+        SYNC_PRINT(("Loading DLL...\n"));
+        void *handle;
+        typedef int  (*TestFunctor)(int);
+        typedef void (*FFunctor)(double *, double *);
+
+        char *error = NULL;
+
+        handle = dlopen ("jit.so", RTLD_LAZY);
+        if (!handle) {
+            fprintf (stderr, "%s\n", dlerror());
+            exit(1);
+        }
+        error = dlerror();    /* Clear any existing error */
+
+        const char *testName = "test";
+        void *testF = dlsym(handle, testName);
+        if (testF != NULL) {
+            TestFunctor testCall = (TestFunctor)testF;
+            cout << "Dll call result" << testCall(100) << endl;
+        }
+
+        const char *fName = "function";
+        void *fF = dlsym(handle, fName);
+        if (fF != NULL) {
+            FFunctor fCall = (FFunctor)fF;
+            double out[9*2];
+            fCall(din, out);
+
+            for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
+            {
+                cout << out[i] << endl;
+            }
+        }
+
+        /*Constpool test*/
+        SYNC_PRINT(("Constpool extracting...\n"));
+        std::unordered_map<double, string> constpool;
+
+        for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
+        {
+            out[i].p->extractConstPool("c", constpool);
+        }
+        SYNC_PRINT(("finished - size = %d\n", constpool.size()));
+
+
+#endif
 
     }
 
-    #if 1
+#if 1
     /* Packed derivative run*/
     {
         cout << "PackedDerivative run.." << endl;
         PackedDerivative<8> in[8];
         for (size_t i = 0; i < CORE_COUNT_OF(in); i++ )
         {
-            in[i] = PackedDerivative<8>::ID(exampleM[i], (int)i);
+            in[i] = PackedDerivative<8>::ID(exampleM[i], i);
         }
         PackedDerivative<8> out[9*2];
 
@@ -195,4 +220,48 @@ TEST(jit, testjit)
 #endif
 
     cout << "Test <jit> PASSED" << endl;
+}
+
+class ASTNodeDotProduct : public ASTNodeFunctionPayload {
+public:
+
+    // ASTNodeFunctionPayload interface
+
+    virtual int inputNumber() override {
+        return 6;
+    }
+
+    virtual int outputNumber() override {
+        return 1;
+    }
+
+    virtual void f(double in[], double out[]) override {
+        out[0] = in[0] * in[3] + in[1] * in[4] + in[2] * in[5];
+    }
+
+    virtual string getCCode() override {
+        return "out[0] = in[0] * in[3] + in[1] * in[4] + in[2] * in[5]";
+    }
+
+    virtual ASTNodeFunctionPayload *derivative(int input) override
+    {
+        return NULL;
+    }
+};
+
+TEST(jit, testjitfunction)
+{
+    ASTContext::MAIN_CONTEXT = new ASTContext();
+
+
+    cout << "AST fcuntions" << endl;
+
+    ASTNode in[6] = {
+         ASTNode("M[0]"), ASTNode("M[1]"), ASTNode("M[2]"),
+         ASTNode("M[3]"), ASTNode("M[4]"), ASTNode("M[5]"),
+    };
+    ASTNodeInt out(ASTNodeInt::OPERATOR_FUNCTION);
+    out.payload = new ASTNodeDotProduct();
+
+
 }

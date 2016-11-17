@@ -172,9 +172,24 @@ void testJSON_StereoScene()
 
     scene->projectForward(SceneFeaturePoint::POINT_ALL);
 
-    /*
-        Additional camara
-    */
+    /**
+     * Add data to observations
+     **/
+    count = 1;
+    for (SceneFeaturePoint *point: scene->featurePoints())
+    {
+        for (auto &obs: point->observations)
+        {
+            count++;
+            KeyPointArea keyPointArea(5.0, 1.0, 1.0, 1);
+            obs.second.keyPointArea = keyPointArea;
+        }
+    }
+
+
+    /**
+     *   Additional camara
+     **/
 
     FixtureCamera *camera3 = scene->createCamera();
 
@@ -246,7 +261,7 @@ int main (int /*argc*/, char ** /*argv*/)
 {
     printf("Generate some test scenes\n");
 //    testJSON_FixtureScene();
-//    testJSON_StereoScene();
+    testJSON_StereoScene();
     testJSON_StereoRecheck();
 
 	return 0;

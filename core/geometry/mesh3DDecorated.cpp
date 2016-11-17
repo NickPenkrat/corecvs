@@ -36,7 +36,7 @@ void Mesh3DDecorated::switchNormals(bool on)
 
 void Mesh3DDecorated::addAOB(const Vector3dd &c1, const Vector3dd &c2, bool addFaces)
 {
-    addAOB(c1, c2, addFaces);
+    Mesh3D::addAOB(c1, c2, addFaces);
 
   /*  textureCoords.push_back(Vector2dd(0.0,0.0));
     textureCoords.push_back(Vector2dd(1.0,0.0));
@@ -84,6 +84,25 @@ void Mesh3DDecorated::dumpInfo(ostream &out)
     out << "  Textures  :" << textureCoords.size() << endl;
     out << "  Norm Idxes:" << normalId.size() << endl;
     out << "  Tex  Idxes:" << texId.size() << endl;
+}
+
+void Mesh3DDecorated::fillTestScene()
+{
+    Mesh3D::fillTestScene();
+
+    /* Normals */
+    recomputeMeanNormals();
+
+    /* Texture coordinates */
+    textureCoords.push_back(Vector2dd(0.0, 0.0));
+    textureCoords.push_back(Vector2dd(0.0, 1.0));
+    textureCoords.push_back(Vector2dd(1.0, 0.0));
+
+    for (size_t face = 0; face < faces.size(); face++ )
+    {
+        texId.push_back(Vector3d32(0, 1, 2));
+    }
+    hasTexCoords = true;
 }
 
 void Mesh3DDecorated::recomputeMeanNormals()

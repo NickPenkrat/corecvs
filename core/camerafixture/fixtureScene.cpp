@@ -33,7 +33,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
     //SYNC_PRINT(("FixtureScene::projectForward(0x%0X, %s):called\n", mask, round ? "true" : "false"));
     //SYNC_PRINT(("FixtureScene::projectForward(): points %u\n", mSceneFeaturePoints.size()));
 
-    for (auto & point : mSceneFeaturePoints)
+    for (SceneFeaturePoint* point : mSceneFeaturePoints)
     {
         //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
         if ((point->type & mask) == 0) {
@@ -41,9 +41,9 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
             continue;
         }
 
-        for (auto& fixture : mFixtures)
+        for (CameraFixture * fixture : mFixtures)
         {
-            for (auto& camera : fixture->cameras)
+            for (FixtureCamera * camera : fixture->cameras)
             {
                 CameraModel worldCam = fixture->getWorldCamera(camera);
 
@@ -588,37 +588,40 @@ int FixtureScene::getObeservationNumber(FixtureCamera *cam)
     return count;
 }
 
-void FixtureScene::dumpInfo(ostream &out)
+void FixtureScene::dumpInfo(ostream &out, bool brief)
 {
     out << "FixtureScene::dumpInfo():" << endl;
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 
     out << "Camera Prototypes: " << mCameraPrototypes.size() << endl;
-    for (size_t j = 0; j < mCameraPrototypes.size(); j++)
-    {
-        CameraPrototype *proto = mCameraPrototypes[j];
-        out << "     " << "CameraPrototype <" << proto->nameId << "> "  << endl;
-    }
+    if (!brief)
+        for (size_t j = 0; j < mCameraPrototypes.size(); j++)
+        {
+            CameraPrototype *proto = mCameraPrototypes[j];
+            out << "     " << "CameraPrototype <" << proto->nameId << "> "  << endl;
+        }
 
     out << "Orphan Cameras: " << mOrphanCameras.size() << endl;
-    for (size_t j = 0; j < mOrphanCameras.size(); j++)
-    {
-        FixtureCamera *cam = mOrphanCameras[j];
-        out << "     " << "Camera <" << cam->nameId << "> "  << endl;
-    }
-    out << "Fixtures: " << mFixtures.size() << endl;
-    for (size_t i = 0; i < mFixtures.size(); i++)
-    {
-        CameraFixture *fixture = mFixtures[i];
-        out << "  " << "Fixture <" << fixture->name << "> " << fixture->cameras.size() << endl;
-        for(size_t j = 0; j < fixture->cameras.size(); j++)
+    if (!brief)
+        for (size_t j = 0; j < mOrphanCameras.size(); j++)
         {
-            FixtureCamera *cam = fixture->cameras[j];
+            FixtureCamera *cam = mOrphanCameras[j];
             out << "     " << "Camera <" << cam->nameId << "> "  << endl;
-            out << "        " << "Size [" << cam->intrinsics.w() << " x " << cam->intrinsics.h() << "] "  << endl;
-
         }
-    }
+    out << "Fixtures: " << mFixtures.size() << endl;
+    if (!brief)
+        for (size_t i = 0; i < mFixtures.size(); i++)
+        {
+            CameraFixture *fixture = mFixtures[i];
+            out << "  " << "Fixture <" << fixture->name << "> " << fixture->cameras.size() << endl;
+            for(size_t j = 0; j < fixture->cameras.size(); j++)
+            {
+                FixtureCamera *cam = fixture->cameras[j];
+                out << "     " << "Camera <" << cam->nameId << "> "  << endl;
+                out << "        " << "Size [" << cam->intrinsics.w() << " x " << cam->intrinsics.h() << "] "  << endl;
+
+            }
+        }
 
     out << "Points: " << mSceneFeaturePoints.size() << endl;
     out << "   Observations: " <<  totalObservations() << endl;

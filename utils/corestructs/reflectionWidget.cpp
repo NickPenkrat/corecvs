@@ -27,7 +27,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
     layout->setSpacing(3);
     layout->setContentsMargins(3, 3, 3, 3);
 
-    for (int i = 0; i < (int)reflection->fields.size(); i++)
+    for (size_t i = 0; i < reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
         qDebug() << "Processing field:" <<  field->getSimpleName();
@@ -332,7 +332,7 @@ bool ReflectionWidget::setParameters(void *param) const
 {
     DynamicObject obj(reflection, param);
 
-    for (int i = 0; i < (int)reflection->fields.size(); i++)
+    for (size_t i = 0; i < reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
         qDebug() << "Processing field:" <<  field->getSimpleName();

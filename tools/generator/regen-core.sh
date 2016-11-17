@@ -241,16 +241,7 @@ full_ui_classes+=" bitcodeBoardParamsBase"
 
 
 # Reconstruction
-
-enums+=" reconstructionFunctorOptimizationErrorType"
-
-full_ui_classes+=" iterativeReconstructionInitializationParams"
-full_ui_classes+=" iterativeReconstructionFeatureSelectionParams"
-full_ui_classes+=" iterativeReconstructionAppendParams"
-full_ui_classes+=" iterativeReconstructionNonlinearOptimizationParamsWrapper"
-
-full_ui_classes+=" featureDetectionParams"
-full_ui_classes+=" reconstructionFunctorOptimizationParams"
+#full_ui_classes+=" featureDetectionParams"
 
 PRIFILE="${DST_DIR}/generated.pri"
 
