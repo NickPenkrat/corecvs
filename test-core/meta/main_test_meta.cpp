@@ -26,8 +26,6 @@
 using namespace std;
 using namespace corecvs;
 
-#define _WIN32
-
 #if !defined(_WIN32) && !defined(_MSC_VER)
 
 ASTNode operator "" _x(const char * name, size_t /*len*/)
@@ -280,7 +278,7 @@ TEST(meta, matrixExample)
 
 #else
 
-TEST(meta, testmeta)
+srTEST(meta, testmeta)
 {
     ASTContext::MAIN_CONTEXT = new ASTContext();
 
