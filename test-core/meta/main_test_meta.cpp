@@ -276,9 +276,7 @@ TEST(meta, matrixExample)
     /*First compare the output */
 }
 
-#else
-
-srTEST(meta, testmeta)
+TEST(meta, testmeta1)
 {
     ASTContext::MAIN_CONTEXT = new ASTContext();
 
