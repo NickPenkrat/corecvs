@@ -55,7 +55,7 @@ TEST(jit, testasm)
 
 }
 
-TEST(jit, testjit)
+TEST(jit, DISABLED_testjit)
 {
     cout << "Starting test <jit>" << endl;
     cout << "This test is x64 and GCC only" << endl;

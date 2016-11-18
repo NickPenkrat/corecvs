@@ -55,7 +55,7 @@ struct ASTRenderDec {
 
     std::unordered_map<uint64_t, ASTNodeInt *> *cse = NULL;
 
-    ASTRenderDec(const char *ident, const char *lbr, bool genParameters) :
+    ASTRenderDec(const char *ident = "", const char *lbr = "", bool genParameters = true) :
         ident(ident), lbr(lbr), genParameters(genParameters)
     {}
 

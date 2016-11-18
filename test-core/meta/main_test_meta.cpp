@@ -1,5 +1,5 @@
 /**
- * \file main_test_meta.cpp
+  * \file main_test_meta.cpp
  * \brief This is the main file for the test meta
  *
  * \date дек. 15, 2015
@@ -7,7 +7,6 @@
  *
  * \ingroup autotest
  */
-#if !defined(_WIN32) && !defined(_MSC_VER)
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -33,6 +32,8 @@ ASTNode operator "" _x(const char * name, size_t /*len*/)
 }
 
 typedef GenericQuaternion<ASTNode> ASTQuaternion;
+
+#if !defined(_WIN32) && !defined(_MSC_VER)
 
 #if 0
 template<class Element>
@@ -271,11 +272,10 @@ TEST(meta, matrixExample)
 
 
     /*First compare the output */
-
-
-
 }
+
 #else
+
 /*Return back old tests for MSVC*/
 
 #include <iostream>
@@ -297,8 +297,10 @@ TEST(meta, testmeta)
     std::cout << "Starting test <meta>" << std::endl;
 
     ASTNode e = (ASTNode("X") * (ASTNode(5.0)  + ASTNode(4.0)));
+    ASTRenderDec dec = { "", "", true };
+
     e.p->codeGenCpp("test");
-    e.p->codeGenCpp("test", {"", ""});
+    e.p->codeGenCpp("test", dec);
 
     std::cout << "Some more advanced stuff" << std::endl;
 
@@ -311,21 +313,23 @@ TEST(meta, testmeta)
         test2[i] = ASTNode(1);
     }
 
-    (test1 & test2).p->codeGenCpp("dot_product", {"", ""});
+    (test1 & test2).p->codeGenCpp("dot_product", dec);
 
     std::cout << "Some more stuff" << std::endl;
 
     GenericQuaternion<ASTNode> Q(ASTNode("Qx"), ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
     GenericQuaternion<ASTNode> P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
     GenericQuaternion<ASTNode> R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
-    ((Q+(P^R)) & Q).p->codeGenCpp("quaternion1", {"", ""});
+    ((Q+(P^R)) & Q).p->codeGenCpp("quaternion1", dec);
 
     delete_safe(ASTContext::MAIN_CONTEXT);
 
     std::cout << "Test <meta> PASSED" << std::endl;
 }
+
 #endif
 
+#if !defined(_WIN32) && !defined(_MSC_VER)
 TEST(meta, testMetaNodeFunction)
 {
     cout << "Starting meta.testMetaNodeFunction" << endl;
@@ -345,4 +349,4 @@ TEST(meta, testMetaNodeFunction)
 
     cout << F.getCCode();
 }
-
+#endif
