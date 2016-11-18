@@ -67,7 +67,7 @@ static const char *fragmentShaderSource =
     "   //gl_FragColor.rg = vTexCoord;\n"
     "   gl_FragColor.rgb  = texture2D(textureSampler, vTexCoord).rgb;\n"
     "   float diff = dot(normal.xyz, vec3(0.5,0.5,0.5));\n"
-    "   if (diff < 0) diff = 0;\n"
+    "   if (diff < 0.0) diff = 0.0;\n"
     "   gl_FragColor.r += diff;\n"
     "   //gl_FragColor.rgb = normal.xyz;\n"
     "   gl_FragColor.a = 1.0;\n"
@@ -503,7 +503,6 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 glBindTexture(GL_TEXTURE_2D, mBumpmap);
                 mProgram[FACE]->setUniformValue(mTextureSampler, 1);
             }
-
 
             glDrawElements(GL_TRIANGLES, GLsizei(mMesh->faces.size() * 3), GL_UNSIGNED_INT, faceIds.data());
 #endif

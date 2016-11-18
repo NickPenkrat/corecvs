@@ -1,17 +1,26 @@
 #include <QScriptEngine>
 #include <QDebug>
 #include <QDateTime>
+#include <QDir>
 
 #include "scriptWindow.h"
 #include "ui_scriptWindow.h"
 
 ScriptWindow::ScriptWindow(QWidget *parent) :
     QMainWindow(parent),
-    engine(new QScriptEngine),
+    mEngine(new QScriptEngine),
     ui(new Ui::ScriptWindow)
 {
     ui->setupUi(this);
-    connect(ui->executeButton, SIGNAL(released()), this, SLOT(executeScript()));
+    connect(ui->actionExcuteScript, SIGNAL(triggered(bool)), this, SLOT(executeScript()));
+    connect(ui->scriptListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(presetChanged(QListWidgetItem*)));
+
+    mLog = new ScriptLog(mEngine, ui->loggerWidget);
+    QScriptValue loggerValue = mEngine->newQObject(mLog);
+    mEngine->globalObject().setProperty("log", loggerValue);
+
+    reloadScripts(":/new/scripts/scripts");
+
 }
 
 QString ScriptWindow::checkScript(void)
@@ -84,7 +93,7 @@ void ScriptWindow::executeScript(void)
 
     /* Binding a test scene to be accessible */
 
-    QScriptValue value = engine->evaluate(scriptText);
+    QScriptValue value = mEngine->evaluate(scriptText);
 
     if (value.isBool()) {
         qDebug() << "Result is bool:" << value.toBool();
@@ -117,12 +126,12 @@ void ScriptWindow::executeScript(void)
         qDebug() << "Result is date:" << value.toDateTime();
     }
 
-    if (engine->hasUncaughtException()) {
-        QScriptValue errors = engine->uncaughtException();
+    if (mEngine->hasUncaughtException()) {
+        QScriptValue errors = mEngine->uncaughtException();
         if (errors.isError()) {
             qDebug() << "Error: " << errors.toString();
         }
-        QStringList backtrace = engine->uncaughtExceptionBacktrace();
+        QStringList backtrace = mEngine->uncaughtExceptionBacktrace();
         {
             qDebug() << backtrace;
         }
@@ -134,4 +143,47 @@ void ScriptWindow::executeScript(void)
 ScriptWindow::~ScriptWindow()
 {
     delete ui;
+}
+
+
+void ScriptWindow::reloadScripts(QString path)
+{
+    QDir scriptDir(path);
+    if (scriptDir.exists()) {
+        qDebug() << "Enumerating shaders at <" << path << ">";
+        QStringList scriptFiles = scriptDir.entryList(QStringList("*.js"));
+        for (QString scriptFile : scriptFiles)
+        {
+            QString scriptName = scriptFile.left(scriptFile.length() - 3);
+
+            QFile script(scriptDir.filePath(scriptFile));
+            if (!script.exists())
+            {
+                continue;
+            }
+
+            script.open(QIODevice::ReadOnly);
+            QString scriptText;
+            QTextStream scriptStream(&script);
+            scriptText.append(scriptStream.readAll());
+            script.close();
+
+            scriptCache.insert(scriptName, ScriptPreset(scriptName, scriptText));
+
+            ui->scriptListWidget->addItem(scriptName);
+            qDebug() << "Loaded script <"  << scriptName << ">" << endl;
+        }
+    }
+}
+
+void ScriptWindow::presetChanged(QListWidgetItem* item)
+{
+    if (item == NULL) {
+        return;
+    }
+
+    QString name = item->text();
+    if (scriptCache.contains(name)) {
+        ui->textEdit->setPlainText(scriptCache[name].text);
+    }
 }

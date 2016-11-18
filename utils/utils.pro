@@ -108,7 +108,8 @@ HEADERS += \
     uis/histogramDepthDialog.h \
     3d/sceneShaded.h \
     corestructs/reflectionWidget.h \
-    3d/shadedSceneControlWidget.h
+    3d/shadedSceneControlWidget.h \
+    scripting/coreToScript.h
 
 SOURCES += \
     frames.cpp \
