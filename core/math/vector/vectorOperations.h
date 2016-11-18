@@ -38,7 +38,7 @@
 #include <iostream>
 
 #include <stdio.h>
-#include <math.h>
+#include <cmath>
 
 #include "global.h"
 
@@ -275,7 +275,7 @@ public:
      *
      * \param V1
      * \param V2
-     **/    
+     **/
     friend inline ReturnType operator /(const RealType &V1, const RealType &V2)
     {
         int length = V1._size() < V2._size() ? V1._size() : V2._size();
@@ -346,6 +346,22 @@ public:
         for (int i = 0; i < length; i++)
             result += V1._at(i) * V2._at(i);
         return result;
+    }
+
+    /**
+     * returns l-inf on [min(abs(x_i), abs(x_i/y_i))]
+     */
+    inline ElementType absRelInfNorm(const RealType& wrt) const
+    {
+        CORE_ASSERT_TRUE_S(_size() == wrt._size());
+        ElementType norm = 0;
+        for (int i = 0; i < _size(); ++i)
+        {
+            auto wrt_i = wrt._at(i), this_i = _at(i);
+            auto norm_i = std::abs(this_i) / (std::abs(wrt_i) > 1.0 ? std::abs(wrt_i) : 1);
+            norm = std::max(norm, norm_i);
+        }
+        return norm;
     }
 
     /**

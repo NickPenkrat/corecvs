@@ -42,7 +42,7 @@ public:
     enum FieldId {
         COST_ALGORITHM_ID,
         ITERATION_NUMBER_ID,
-        POLINOM_DEGREE_ID,
+        POLYNOM_DEGREE_ID,
         SIMPLE_JACOBIAN_ID,
         EVEN_POWERS_ONLY_ID,
         ESTIMATE_TANGENT_ID,
@@ -65,10 +65,10 @@ public:
     int mIterationNumber;
 
     /** 
-     * \brief Polinom Degree 
-     * Polinom Degree 
+     * \brief Polynom Degree 
+     * Polynom Degree 
      */
-    int mPolinomDegree;
+    int mPolynomDegree;
 
     /** 
      * \brief Simple Jacobian 
@@ -112,9 +112,9 @@ public:
         return mIterationNumber;
     }
 
-    int polinomDegree() const
+    int polynomDegree() const
     {
-        return mPolinomDegree;
+        return mPolynomDegree;
     }
 
     bool simpleJacobian() const
@@ -148,9 +148,9 @@ public:
         mIterationNumber = iterationNumber;
     }
 
-    void setPolinomDegree(int polinomDegree)
+    void setPolynomDegree(int polynomDegree)
     {
-        mPolinomDegree = polinomDegree;
+        mPolynomDegree = polynomDegree;
     }
 
     void setSimpleJacobian(bool simpleJacobian)
@@ -180,7 +180,7 @@ template<class VisitorType>
     {
         visitor.visit((int &)mCostAlgorithm,      static_cast<const EnumField *>    (fields()[COST_ALGORITHM_ID]));
         visitor.visit(mIterationNumber,           static_cast<const IntField *>     (fields()[ITERATION_NUMBER_ID]));
-        visitor.visit(mPolinomDegree,             static_cast<const IntField *>     (fields()[POLINOM_DEGREE_ID]));
+        visitor.visit(mPolynomDegree,             static_cast<const IntField *>     (fields()[POLYNOM_DEGREE_ID]));
         visitor.visit(mSimpleJacobian,            static_cast<const BoolField *>    (fields()[SIMPLE_JACOBIAN_ID]));
         visitor.visit(mEvenPowersOnly,            static_cast<const BoolField *>    (fields()[EVEN_POWERS_ONLY_ID]));
         visitor.visit(mEstimateTangent,           static_cast<const BoolField *>    (fields()[ESTIMATE_TANGENT_ID]));
@@ -196,7 +196,7 @@ template<class VisitorType>
     LineDistortionEstimatorParameters(
           LineDistortionEstimatorCost::LineDistortionEstimatorCost costAlgorithm
         , int iterationNumber
-        , int polinomDegree
+        , int polynomDegree
         , bool simpleJacobian
         , bool evenPowersOnly
         , bool estimateTangent
@@ -205,7 +205,7 @@ template<class VisitorType>
     {
         mCostAlgorithm = costAlgorithm;
         mIterationNumber = iterationNumber;
-        mPolinomDegree = polinomDegree;
+        mPolynomDegree = polynomDegree;
         mSimpleJacobian = simpleJacobian;
         mEvenPowersOnly = evenPowersOnly;
         mEstimateTangent = estimateTangent;

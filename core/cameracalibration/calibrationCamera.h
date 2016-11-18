@@ -120,6 +120,7 @@ struct PinholeCameraIntrinsics : public CameraProjection
     {
         return reverse(pp).normalised() - p.normalised();
     }
+    static Matrix44 RayDiffNormalizerDiff(const double &ux, const double &uy, const double &uz);
 
 
     virtual Vector3dd reverse(const Vector2dd &p) const override
@@ -146,11 +147,35 @@ struct PinholeCameraIntrinsics : public CameraProjection
 
     explicit operator Matrix33() const  { return getKMatrix33(); }
 
+    // XXX: Matrix44 'cause corecvs cannot give me a 2x3 matrix
+    static Matrix44 NormalizerDiff(const double &x, const double &y, const double &z);
+
     Matrix44 getKMatrix() const;
     Matrix44 getInvKMatrix() const;
 
     Matrix33 getKMatrix33() const;
     Matrix33 getInvKMatrix33() const;
+    // Here we will call K^{-1} Ki, the postfix is diff. var
+    // All functions return 4x4 matrices because corecvs does not support matrices of fixed arbitrary size
+    static Matrix44 Kf();
+    static Matrix44 Kif(const double &f, const double &cx, const double &cy);
+    static Matrix44 Kfx();
+    static Matrix44 Kfy();
+    static Matrix44 Kifx(const double &fx, const double &cx);
+    static Matrix44 Kify(const double &fy, const double &cy);
+    static Matrix44 Kcx();
+    static Matrix44 Kicx(const double &fx);
+    static Matrix44 Kcy();
+    static Matrix44 Kicy(const double &fy);
+    static Matrix44 Ks() { return Matrix44(0.0, 1.0, 0.0, 0.0,
+                                           0.0, 0.0, 0.0, 0.0,
+                                           0.0, 0.0, 0.0, 0.0,
+                                           0.0, 0.0, 0.0, 0.0); }
+    static Matrix44 Kis(const double &fx, const double &fy, const double &cy) {
+                           return Matrix44(0.0, -1.0/fx/fy, cy/fx/fy, 0.0,
+                                           0.0,        0.0,       0.0, 0.0,
+                                           0.0,        0.0,       0.0, 0.0,
+                                           0.0,        0.0,       0.0, 0.0); }
 
     double   getVFov() const;
     double   getHFov() const;
