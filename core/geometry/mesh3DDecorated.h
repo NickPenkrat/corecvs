@@ -28,7 +28,7 @@ public:
         TEX_LAST
     };
 
-    RGB24Buffer* tex[TEX_LAST] = {NULL};
+    RGB24Buffer* tex[TEX_LAST];
 
     OBJMaterial() {
 
