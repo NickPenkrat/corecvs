@@ -26,6 +26,10 @@
 using namespace std;
 using namespace corecvs;
 
+#define _WIN32
+
+#if !defined(_WIN32) && !defined(_MSC_VER)
+
 ASTNode operator "" _x(const char * name, size_t /*len*/)
 {
     return ASTNode(name);
@@ -33,7 +37,7 @@ ASTNode operator "" _x(const char * name, size_t /*len*/)
 
 typedef GenericQuaternion<ASTNode> ASTQuaternion;
 
-#if !defined(_WIN32) && !defined(_MSC_VER)
+
 
 #if 0
 template<class Element>
@@ -275,20 +279,6 @@ TEST(meta, matrixExample)
 }
 
 #else
-
-/*Return back old tests for MSVC*/
-
-#include <iostream>
-#include "gtest/gtest.h"
-
-#include "global.h"
-#include "astNode.h"
-
-#include "fixedVector.h"
-#include "matrix33.h"
-#include "quaternion.h"
-
-using namespace corecvs;
 
 TEST(meta, testmeta)
 {
