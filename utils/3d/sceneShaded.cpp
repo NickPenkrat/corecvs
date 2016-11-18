@@ -504,7 +504,6 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 mProgram[FACE]->setUniformValue(mTextureSampler, 1);
             }
 
-
             glDrawElements(GL_TRIANGLES, GLsizei(mMesh->faces.size() * 3), GL_UNSIGNED_INT, faceIds.data());
 #endif
 
