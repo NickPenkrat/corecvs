@@ -159,7 +159,7 @@ void ASTNodeInt::extractConstPool(const std::string &poolname, std::unordered_ma
         //cout << "Checking " << val << " to constpool" << endl;
         auto it = pool.find(val);
         if (it == pool.end()) {
-            int id = pool.size();
+            int id = (int)pool.size();
             char str[1000];
             snprintf2buf(str, "%s%d", poolname.c_str(), id);
             op = OPREATOR_ID;
@@ -232,6 +232,7 @@ size_t ASTNodeInt::memoryFootprint()
         return sizeof(ASTNodeInt) + left()->memoryFootprint();
     }
 
+    return 0;
 }
 
 void ASTNodeInt::rehash()
@@ -633,19 +634,19 @@ std::vector<std::string> ASTNodeFunctionWrapper::getVars()
 
 int ASTNodeFunctionWrapper::inputNumber()
 {
-    return getVars().size();
+    return (int)getVars().size();
 }
 
 int ASTNodeFunctionWrapper::outputNumber()
 {
-    return components.size();
+    return (int)components.size();
 }
 
 void ASTNodeFunctionWrapper::f(double in[], double out[])
 {
     std::vector<std::string> vars = getVars();
 
-    int ins = vars.size();
+    //int ins  = (int)vars.size();
     int outs = outputNumber();
 
     std::map<std::string, double> binds;
@@ -680,18 +681,14 @@ std::string ASTNodeFunctionWrapper::getCCode()
         out << "out[" << i << "] = \n";
         node->codeGenCpp(2, params);
         out << ";\n";
-
-
     }
 
     return out.str();
 }
 
-ASTNodeFunctionPayload *ASTNodeFunctionWrapper::derivative(int input)
+ASTNodeFunctionPayload *ASTNodeFunctionWrapper::derivative(int)
 {
-
+    return NULL;
 }
-
-
 
 } //namespace corecvs
