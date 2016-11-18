@@ -7,6 +7,7 @@
 
 #include <QMetaType>
 #include <QScriptValue>
+#include <QScriptContext>
 
 #ifndef WORK_IN_PROGRESS
 
@@ -24,43 +25,52 @@ public:
     {}
 
 template<class ExposeType>
+    static QScriptValue createMyStruct(QScriptContext *, QScriptEngine *engine)
+    {
+        ExposeType s;
+        return QScriptValue(); //engine->toScriptValue(s);
+    }
+
+template<class ExposeType>
     static QScriptValue toScriptValue(QScriptEngine *engine, const ExposeType &s)
     {
-        corecvs::Reflection *mReflection = ExposeType::reflection;
+          corecvs::Reflection *reflection = &ExposeType::reflection;
+
+          DynamicObject input(&s);
 
           QScriptValue obj = engine->newObject();
-          if (mReflection == NULL)
+          if (reflection == NULL)
           {
               return obj;
           }
 
-          for (size_t i = 0; i < mReflection->fields.size(); i++)
+          for (size_t i = 0; i < reflection->fields.size(); i++)
           {
-              const BaseField *field = mReflection->fields[i];
+              const BaseField *field = reflection->fields[i];
               QString name = field->name.name;
               switch (field->type) {
               case BaseField::TYPE_INT:
               {
                   //const IntField *iField = static_cast<const IntField *>(field);
-                  obj.setProperty(name, *(s.template getField<int>(i)));
+                  obj.setProperty(name, *(input.template getField<int>(i)));
                   break;
               }
               case BaseField::TYPE_DOUBLE:
               {
                   //const DoubleField *dField = static_cast<const DoubleField *>(field);
-                  obj.setProperty(name, *s.template getField<double>(i));
+                  obj.setProperty(name, *input.template getField<double>(i));
                   break;
               }
               case BaseField::TYPE_STRING:
               {
                   //const StringField *sField = static_cast<const StringField *>(field);
-                  obj.setProperty(name, *s.template getField<std::string>(i));
+                  obj.setProperty(name, QString::fromStdString(*input.template getField<std::string>(i)));
                   break;
               }
               case BaseField::TYPE_BOOL:
               {
                   //const BoolField *bField = static_cast<const BoolField *>(field);
-                  obj.setProperty(name, *s.template getField<bool>(i));
+                  obj.setProperty(name, *input.template getField<bool>(i));
                   break;
               }
               case BaseField::TYPE_ENUM:
@@ -102,16 +112,18 @@ template<class ExposeType>
 template<class ExposeType>
     static void fromScriptValue(const QScriptValue &obj, ExposeType &s)
     {
-        corecvs::Reflection *mReflection = ExposeType::reflection;
+        corecvs::Reflection *reflection = &ExposeType::reflection;
 
-        if (mReflection == NULL)
+        DynamicObject input(&s);
+
+        if (reflection == NULL)
         {
-            return obj;
+            return;
         }
 
-        for (size_t i = 0; i < mReflection->fields.size(); i++)
+        for (size_t i = 0; i < reflection->fields.size(); i++)
         {
-            const BaseField *field = mReflection->fields[i];
+            const BaseField *field = reflection->fields[i];
             QString name = field->name.name;
 
             QScriptValue value = obj.property(name);
@@ -119,22 +131,22 @@ template<class ExposeType>
             switch (field->type) {
             case BaseField::TYPE_INT:
             {
-                *(s.template getField<int>(i)) = value.toInt32();
+                *(input.template getField<int>(i)) = value.toInt32();
                 break;
             }
             case BaseField::TYPE_DOUBLE:
             {
-                *s.template getField<double>(i) = value.toNumber();
+                *input.template getField<double>(i) = value.toNumber();
                 break;
             }
             case BaseField::TYPE_STRING:
             {
-                *s.template getField<std::string>(i) = value.toString().toStdString();
+                *input.template getField<std::string>(i) = value.toString().toStdString();
                 break;
             }
             case BaseField::TYPE_BOOL:
             {
-                *s.template getField<bool>(i) = value.toBool();
+                *input.template getField<bool>(i) = value.toBool();
                 break;
             }
             case BaseField::TYPE_ENUM:
@@ -156,7 +168,7 @@ template<class ExposeType>
             case BaseField::TYPE_COMPOSITE:
             {
                 const CompositeField *cField = static_cast<const CompositeField *>(field);
-                const Reflection *subReflection = cField->reflection;
+                //const Reflection *subReflection = cField->reflection;
                  /* NOT SUPPORTED */
                 break;
             }
