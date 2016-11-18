@@ -106,7 +106,7 @@ template<class ExposeType>
 
         if (mReflection == NULL)
         {
-            return obj;
+            return;
         }
 
         for (size_t i = 0; i < mReflection->fields.size(); i++)
