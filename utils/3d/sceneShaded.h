@@ -29,7 +29,7 @@ public:
         EDGE,
         LAST
     };
-    QOpenGLShaderProgram *mProgram[ShaderTarget::LAST] = {NULL};
+    QOpenGLShaderProgram *mProgram[ShaderTarget::LAST];
 
     GLuint mPosAttr;
     GLuint mColAttr;
@@ -56,7 +56,10 @@ public:
 
     SceneShaded()
     {
-
+        for (int target = 0; target < ShaderTarget::LAST; target++)
+        {
+            mProgram[target] == NULL;
+        }
     }
 
     virtual ParametersControlWidgetBase *getContolWidget() override
