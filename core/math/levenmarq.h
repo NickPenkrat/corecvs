@@ -65,7 +65,8 @@ public:
     //FunctionArgs *f;
     FunctionArgs *normalisation;
     double startLambda;
-    double maxLambda;
+    double maxLambda,
+           maxLambdaLogscale = 64;
     double lambdaFactor;
     int    maxIterations;
 
@@ -395,6 +396,10 @@ public:
                 auto dnorm = (diff - diffNew) & (diff + diffNew);
                 if (dnorm > 0.0) // If the current solution is better
                 {
+                    if (g == 0)
+                    {
+                        maxLambda = lambda * std::pow(2.0, maxLambdaLogscale);
+                    }
                     if (trace) {
                         cout << "Accepted" << endl;
                         std::cout << initialNorm - normNew << " decrease in " << LSc << " linsolves" << std::endl;
