@@ -198,6 +198,10 @@ private:
 
             BasicPromotion();
             BasicPromotion(const SparseMatrix &m, int gpuId);
+#if defined(_MSC_VER) && (_MSC_VER < 1900)   // needs only for older than msvc2015 compiler
+
+            BasicPromotion& operator=(BasicPromotion &&rhs);
+#endif
             operator bool() const;
         };
 

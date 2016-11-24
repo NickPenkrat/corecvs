@@ -140,6 +140,17 @@ SparseMatrix::CUDAPromoter::BasicPromotion::BasicPromotion(const SparseMatrix &m
     cudaMemcpy(drp,&m.rowPointers[0], (m.h+1) * sizeof(int)   , cudaMemcpyHostToDevice);
     SparseMatrix::CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
 }
+
+#if defined(_MSC_VER) && (_MSC_VER < 1900)   // needs only for older than msvc2015 compiler
+SparseMatrix::CUDAPromoter::BasicPromotion& SparseMatrix::CUDAPromoter::BasicPromotion::operator=(SparseMatrix::CUDAPromoter::BasicPromotion &&rhs)
+{
+    std::swap(rhs.dev_values, dev_values);
+    std::swap(rhs.dev_columns, dev_columns);
+    std::swap(rhs.dev_rowPointers, dev_rowPointers);
+    return *this;
+}
+#endif
+
 SparseMatrix::CUDAPromoter::BasicPromotion::operator bool() const
 {
     return dev_values && dev_columns && dev_rowPointers;
