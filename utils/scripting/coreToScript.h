@@ -28,7 +28,7 @@ template<class ExposeType>
     static QScriptValue createMyStruct(QScriptContext *, QScriptEngine *engine)
     {
         ExposeType s;
-        return QScriptValue(); //engine->toScriptValue(s);
+        return engine->toScriptValue(s);
     }
 
 template<class ExposeType>

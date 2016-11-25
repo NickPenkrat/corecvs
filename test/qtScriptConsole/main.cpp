@@ -2,10 +2,16 @@
 #include <QApplication>
 #include "coreToScript.h"
 
+#include "qtFileLoader.h"
+
 int main(int argc, char *argv[])
 {
 
     QApplication a(argc, argv);
+    Q_INIT_RESOURCE(main);
+    QTRGB24Loader::registerMyself();
+
+
     ScriptWindow w;
 
 #if 1
