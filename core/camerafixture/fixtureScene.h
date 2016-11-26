@@ -197,7 +197,7 @@ public:
     virtual CameraFixture      *createCameraFixture();
     virtual SceneFeaturePoint  *createFeaturePoint();
 
-    /* These methods completely purge camera from scene */
+    /* These methods completely purge objects from scene */
     virtual void deleteCamera         (FixtureCamera *camera);
     virtual void deleteCameraPrototype(CameraPrototype *cameraProtype);
     virtual void deleteCameraFixture  (CameraFixture *fixture, bool recursive = true);
