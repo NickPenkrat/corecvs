@@ -3,13 +3,27 @@
 #include "featureDetectorProvider.h"
 
 namespace cv {
-    class FeatureDetector;
+#ifdef WITH_OPENCV_3x
+	class Feature2D;
+	typedef Feature2D FeatureDetector;
+#else
+	class FeatureDetector;
+#endif  
 }
+
+#ifdef WITH_OPENCV_3x
+    struct SmartPtrHolder;
+#endif  
 
 class OpenCvFeatureDetectorWrapper : public FeatureDetector
 {
 public:
-    OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector);
+#ifdef WITH_OPENCV_3x
+    OpenCvFeatureDetectorWrapper(SmartPtrHolder *holder);
+#else
+    OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector);  
+#endif  
+    
    ~OpenCvFeatureDetectorWrapper();
 
     double getProperty(const std::string &name) const;
@@ -23,6 +37,9 @@ private:
     OpenCvFeatureDetectorWrapper& operator=(const OpenCvFeatureDetectorWrapper&);
 
     cv::FeatureDetector* detector;
+#ifdef WITH_OPENCV_3x
+	SmartPtrHolder* holder;
+#endif  
 };
 
 extern "C"

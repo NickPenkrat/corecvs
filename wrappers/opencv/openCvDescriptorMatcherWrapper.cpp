@@ -37,12 +37,22 @@ void OpenCvDescriptorMatcherWrapper::knnMatchImpl(RuntimeTypeBuffer &query
 
 void OpenCvDescriptorMatcherWrapper::setProperty(const std::string &name, const double &value)
 {
+#ifdef WITH_OPENCV_3x
+    CORE_UNUSED(name);
+    CORE_UNUSED(value);
+#else
     matcher->set(name, value);
+#endif
 }
 
 double OpenCvDescriptorMatcherWrapper::getProperty(const std::string &name) const
 {
+#ifdef WITH_OPENCV_3x
+    CORE_UNUSED(name);
+    return 0.0;
+#else
     return matcher->get<double>(name);
+#endif
 }
 
 void init_opencv_matchers_provider()
@@ -64,6 +74,8 @@ void init_opencv_matchers_provider()
 
 DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher, const std::string &params)
 {
+    CORE_UNUSED(params);
+
     SWITCH_MATCHER_TYPE(ANN,
         SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););
         SWITCH_TYPE(SURF, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););

@@ -33,7 +33,7 @@ bool OpenCvCheckerboardDetector::detectPattern(corecvs::G8Buffer &buffer)
 bool OpenCvCheckerboardDetector::detectChessBoardOpenCv(corecvs::G8Buffer &buffer)
 {
     IplImage *iplImage = OpenCVTools::getCVImageFromG8Buffer(&buffer);
-    cv::Mat view = cv::Mat(iplImage);
+    CVMAT_FROM_IPLIMAGE( view, iplImage, false );
 
     // TODO: check if we can add full support of aligner (seems to be impossible)
     int hbegin = mPartialBoard ? 3 : idealHeight, hend = idealHeight;
