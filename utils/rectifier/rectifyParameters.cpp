@@ -26,6 +26,9 @@ int BaseReflection<RectifyParameters>::dummy = RectifyParameters::staticInit();
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int RectifyParameters::staticInit()
 {
 

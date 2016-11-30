@@ -5,6 +5,8 @@
 
 #include <opencv2/features2d/features2d.hpp>    // cv::DescriptorMatcher
 
+using namespace corecvs;
+
 OpenCvDescriptorMatcherWrapper::OpenCvDescriptorMatcherWrapper(cv::DescriptorMatcher *matcher)
     : matcher(matcher)
 {}

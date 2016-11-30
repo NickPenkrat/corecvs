@@ -26,6 +26,9 @@ int BaseReflection<CheckerboardDetectionParameters>::dummy = CheckerboardDetecti
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int CheckerboardDetectionParameters::staticInit()
 {
 

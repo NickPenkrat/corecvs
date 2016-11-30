@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -37,7 +37,7 @@ namespace corecvs {
  * \brief Checkerboard Detection Parameters 
  * Checkerboard Detection Parameters 
  **/
-class CheckerboardDetectionParameters : public BaseReflection<CheckerboardDetectionParameters>
+class CheckerboardDetectionParameters : public corecvs::BaseReflection<CheckerboardDetectionParameters>
 {
 public:
     enum FieldId {
@@ -298,25 +298,25 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mEstimateUndistortedFromDistorted, static_cast<const BoolField *>    (fields()[ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID]));
-        visitor.visit(mUseUndistortion,           static_cast<const BoolField *>    (fields()[USE_UNDISTORTION_ID]));
-        visitor.visit((int &)mAlgorithm,          static_cast<const EnumField *>    (fields()[ALGORITHM_ID]));
-        visitor.visit((int &)mChannel,            static_cast<const EnumField *>    (fields()[CHANNEL_ID]));
-        visitor.visit(mCellSizeHor,               static_cast<const DoubleField *>  (fields()[CELLSIZEHOR_ID]));
-        visitor.visit(mCellSizeVert,              static_cast<const DoubleField *>  (fields()[CELLSIZEVERT_ID]));
-        visitor.visit(mCleanExisting,             static_cast<const BoolField *>    (fields()[CLEANEXISTING_ID]));
-        visitor.visit(mPreciseDiameter,           static_cast<const IntField *>     (fields()[PRECISEDIAMETER_ID]));
-        visitor.visit(mIterationCount,            static_cast<const IntField *>     (fields()[ITERATIONCOUNT_ID]));
-        visitor.visit(mMinAccuracy,               static_cast<const DoubleField *>  (fields()[MINACCURACY_ID]));
-        visitor.visit(mPartialBoard,              static_cast<const BoolField *>    (fields()[PARTIALBOARD_ID]));
-        visitor.visit(mFastBoardSpeedup,          static_cast<const BoolField *>    (fields()[FASTBOARDSPEEDUP_ID]));
-        visitor.visit(mDrawSGFsOnBoards,          static_cast<const BoolField *>    (fields()[DRAW_SGFS_ON_BOARDS_ID]));
-        visitor.visit(mSkipUndistortedWithNoDistortedBoard, static_cast<const BoolField *>    (fields()[SKIP_UNDISTORTED_WITH_NO_DISTORTED_BOARD_ID]));
+        visitor.visit(mEstimateUndistortedFromDistorted, static_cast<const corecvs::BoolField *>(fields()[ESTIMATE_UNDISTORTED_FROM_DISTORTED_ID]));
+        visitor.visit(mUseUndistortion,           static_cast<const corecvs::BoolField *>(fields()[USE_UNDISTORTION_ID]));
+        visitor.visit((int &)mAlgorithm,          static_cast<const corecvs::EnumField *>(fields()[ALGORITHM_ID]));
+        visitor.visit((int &)mChannel,            static_cast<const corecvs::EnumField *>(fields()[CHANNEL_ID]));
+        visitor.visit(mCellSizeHor,               static_cast<const corecvs::DoubleField *>(fields()[CELLSIZEHOR_ID]));
+        visitor.visit(mCellSizeVert,              static_cast<const corecvs::DoubleField *>(fields()[CELLSIZEVERT_ID]));
+        visitor.visit(mCleanExisting,             static_cast<const corecvs::BoolField *>(fields()[CLEANEXISTING_ID]));
+        visitor.visit(mPreciseDiameter,           static_cast<const corecvs::IntField *>(fields()[PRECISEDIAMETER_ID]));
+        visitor.visit(mIterationCount,            static_cast<const corecvs::IntField *>(fields()[ITERATIONCOUNT_ID]));
+        visitor.visit(mMinAccuracy,               static_cast<const corecvs::DoubleField *>(fields()[MINACCURACY_ID]));
+        visitor.visit(mPartialBoard,              static_cast<const corecvs::BoolField *>(fields()[PARTIALBOARD_ID]));
+        visitor.visit(mFastBoardSpeedup,          static_cast<const corecvs::BoolField *>(fields()[FASTBOARDSPEEDUP_ID]));
+        visitor.visit(mDrawSGFsOnBoards,          static_cast<const corecvs::BoolField *>(fields()[DRAW_SGFS_ON_BOARDS_ID]));
+        visitor.visit(mSkipUndistortedWithNoDistortedBoard, static_cast<const corecvs::BoolField *>(fields()[SKIP_UNDISTORTED_WITH_NO_DISTORTED_BOARD_ID]));
     }
 
     CheckerboardDetectionParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -353,16 +353,16 @@ template<class VisitorType>
         mSkipUndistortedWithNoDistortedBoard = skipUndistortedWithNoDistortedBoard;
     }
 
-    friend ostream& operator << (ostream &out, CheckerboardDetectionParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, CheckerboardDetectionParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //CHECKERBOARD_DETECTION_PARAMETERS_H_

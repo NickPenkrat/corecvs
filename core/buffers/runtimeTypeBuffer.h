@@ -38,6 +38,9 @@ namespace BufferType
 }
 
 
+class G8Buffer;
+class G12Buffer;
+class RGB24Buffer;
 /*
  * XXX: This is a small wrapper simplifying interfacing with different result type
  *      from different keypoint descriptors;
@@ -181,6 +184,17 @@ public:
     void save(const std::string &filename) const;
     friend std::ostream& ::operator<<(std::ostream &os, const corecvs::RuntimeTypeBuffer &b);
     friend std::istream& ::operator>>(std::istream &is, corecvs::RuntimeTypeBuffer &b);
+
+    /* Obvious converters */
+    /** We need an infrustructure for data conversion based on fastkernels **/
+
+    G8Buffer *toG8Buffer();
+    G12Buffer *toG12Buffer(double min = 0.0, double max = 1.0);
+    /**
+     * We probably we need to select channel
+     **/
+    RGB24Buffer *toRGB24Buffer(double min = 0.0, double max = 1.0);
+
 private:
     void allocate()
     {

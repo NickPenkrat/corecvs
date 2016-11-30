@@ -19,16 +19,20 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
+// namespace corecvs {
 namespace corecvs {
 class CorrespondenceList;
+}
+namespace corecvs {
 class Matrix33;
 }
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -38,7 +42,7 @@ class Matrix33;
  * \brief HomorgaphyReconstructorBlockBase 
  * HomorgaphyReconstructorBlockBase 
  **/
-class HomorgaphyReconstructorBlockBase : public BaseReflection<HomorgaphyReconstructorBlockBase>
+class HomorgaphyReconstructorBlockBase : public corecvs::BaseReflection<HomorgaphyReconstructorBlockBase>
 {
 public:
     enum FieldId {
@@ -54,13 +58,13 @@ public:
      * \brief in0 
      * in0 
      */
-    CorrespondenceList * mIn0;
+    corecvs::CorrespondenceList * mIn0;
 
     /** 
      * \brief out0 
      * out0 
      */
-    Matrix33 * mOut0;
+    corecvs::Matrix33 * mOut0;
 
     /** 
      * \brief algorithm 
@@ -76,12 +80,12 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    CorrespondenceList * in0() const
+    corecvs::CorrespondenceList * in0() const
     {
         return mIn0;
     }
 
-    Matrix33 * out0() const
+    corecvs::Matrix33 * out0() const
     {
         return mOut0;
     }
@@ -92,12 +96,12 @@ public:
     }
 
     /* Section with setters */
-    void setIn0(CorrespondenceList * in0)
+    void setIn0(corecvs::CorrespondenceList * in0)
     {
         mIn0 = in0;
     }
 
-    void setOut0(Matrix33 * out0)
+    void setOut0(corecvs::Matrix33 * out0)
     {
         mOut0 = out0;
     }
@@ -112,20 +116,20 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit((void * &)mIn0,             static_cast<const PointerField *> (fields()[IN0_ID]));
-        visitor.visit((void * &)mOut0,            static_cast<const PointerField *> (fields()[OUT0_ID]));
-        visitor.visit((int &)mAlgorithm,          static_cast<const EnumField *>    (fields()[ALGORITHM_ID]));
+        visitor.visit((void * &)mIn0,             static_cast<const corecvs::PointerField *>(fields()[IN0_ID]));
+        visitor.visit((void * &)mOut0,            static_cast<const corecvs::PointerField *>(fields()[OUT0_ID]));
+        visitor.visit((int &)mAlgorithm,          static_cast<const corecvs::EnumField *>(fields()[ALGORITHM_ID]));
     }
 
     HomorgaphyReconstructorBlockBase()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
     HomorgaphyReconstructorBlockBase(
-          CorrespondenceList * in0
-        , Matrix33 * out0
+          corecvs::CorrespondenceList * in0
+        , corecvs::Matrix33 * out0
         , HomographyAlgorithm::HomographyAlgorithm algorithm
     )
     {
@@ -134,16 +138,16 @@ template<class VisitorType>
         mAlgorithm = algorithm;
     }
 
-    friend ostream& operator << (ostream &out, HomorgaphyReconstructorBlockBase &toSave)
+    friend std::ostream& operator << (std::ostream &out, HomorgaphyReconstructorBlockBase &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //HOMORGAPHYRECONSTRUCTORBLOCKBASE_H_

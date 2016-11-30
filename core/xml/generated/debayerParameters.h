@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -36,7 +36,7 @@ namespace corecvs {
  * \brief Debayer Parameters 
  * Debayer Parameters 
  **/
-class DebayerParameters : public BaseReflection<DebayerParameters>
+class DebayerParameters : public corecvs::BaseReflection<DebayerParameters>
 {
 public:
     enum FieldId {
@@ -93,13 +93,13 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit((int &)mMethod,             static_cast<const EnumField *>    (fields()[METHOD_ID]));
-        visitor.visit(mBayerPos,                  static_cast<const IntField *>     (fields()[BAYER_POS_ID]));
+        visitor.visit((int &)mMethod,             static_cast<const corecvs::EnumField *>(fields()[METHOD_ID]));
+        visitor.visit(mBayerPos,                  static_cast<const corecvs::IntField *>(fields()[BAYER_POS_ID]));
     }
 
     DebayerParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -112,16 +112,16 @@ template<class VisitorType>
         mBayerPos = bayerPos;
     }
 
-    friend ostream& operator << (ostream &out, DebayerParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, DebayerParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //DEBAYER_PARAMETERS_H_

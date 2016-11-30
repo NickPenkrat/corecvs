@@ -40,7 +40,7 @@ DescriptorExtractorProvider::DescriptorExtractorProvider()
 {
 }
 
-void DescriptorExtractor::compute(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &buffer)
+void DescriptorExtractor::compute(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &buffer)
 {
     computeImpl(image, keyPoints, buffer);
 }

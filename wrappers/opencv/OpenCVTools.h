@@ -45,8 +45,8 @@ template<typename OtherStruct>
 class CV2Core {
 public:
 
-    static Vector2dd Vector2ddFromPoint2f(cv::Point2f &input) {
-        return Vector2dd(input.x, input.y);
+    static corecvs::Vector2dd Vector2ddFromPoint2f(cv::Point2f &input) {
+        return corecvs::Vector2dd(input.x, input.y);
     }
 
 };

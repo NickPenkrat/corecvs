@@ -13,10 +13,19 @@
 #include <set>
 #include <regex>
 
+using corecvs::Vector2d;
 using corecvs::Vector2dd;
 using corecvs::Matrix22;
 using corecvs::ConvolveKernel;
 using corecvs::DummyAlgebra;
+using corecvs::NonMaximalSuperssor;
+
+using corecvs::FpKernel;
+using corecvs::FpImage;
+using corecvs::RGB24Buffer;
+using corecvs::Convolver;
+using corecvs::normalPDF;
+
 
 
 template<class KernelType>
@@ -623,7 +632,7 @@ vector<std::string> ChessBoardCornerDetector::debugBuffers() const
     for (size_t i = 0; i < kernels.size(); i++)
     {
         for (int k = 0; k < CornerKernelSet::KERNEL_LAST; k++) {
-            result.push_back(string("kernel_") + std::to_string(k) + "_"  +  std::to_string(i));
+            result.push_back(std::string("kernel_") + std::to_string(k) + "_"  +  std::to_string(i));
         }
     }
     return result;

@@ -1,5 +1,7 @@
 #include "bufferReaderProvider.h"
 
+using corecvs::RuntimeTypeBuffer;
+
 BufferReader* BufferReaderProvider::getBufferReader(const std::string &filename)
 {
     for (std::vector<BufferReaderProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)

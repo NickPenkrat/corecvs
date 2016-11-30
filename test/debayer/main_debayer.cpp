@@ -9,6 +9,9 @@
 #include <time.h>
 #include "converters/errorMetrics.h"
 
+using namespace std;
+using namespace corecvs;
+
 void usage()
 {
     cout << "Demosaic tool"                                                                   << endl

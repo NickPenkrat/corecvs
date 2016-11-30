@@ -26,6 +26,9 @@ int BaseReflection<LensDistortionModelParametersBase>::dummy = LensDistortionMod
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int LensDistortionModelParametersBase::staticInit()
 {
 

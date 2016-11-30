@@ -143,7 +143,7 @@ private:
 class FeatureMatchingPipeline
 {
 public:
-    FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* processState = nullptr);
+    FeatureMatchingPipeline(const std::vector<std::string> &filenames, corecvs::StatusTracker* processState = nullptr);
 	~FeatureMatchingPipeline();
 
     void run();
@@ -180,5 +180,5 @@ private:
 	std::vector<std::pair<bool, std::string> >  loadParams;
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 
-    StatusTracker*                               processState = nullptr;
+    corecvs::StatusTracker*         processState = nullptr;
 };

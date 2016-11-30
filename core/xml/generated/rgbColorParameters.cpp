@@ -26,6 +26,9 @@ int BaseReflection<RgbColorParameters>::dummy = RgbColorParameters::staticInit()
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int RgbColorParameters::staticInit()
 {
 

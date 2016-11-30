@@ -17,6 +17,7 @@ static const char* KEYPOINT_EXTENSION   = "keypoints";
 static const char* DESCRIPTOR_EXTENSION = "descriptors";
 static const char* SIFT_EXTENSION       = "sift";
 
+using namespace corecvs;
 
 std::string changeExtension(const std::string &imgName, const std::string &desiredExt)
 {

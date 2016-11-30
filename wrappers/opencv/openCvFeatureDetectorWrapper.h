@@ -16,7 +16,7 @@ public:
     void   setProperty(const std::string &name, const double &value);
 
 protected:
-    void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nMax);
+    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nMax);
 
 private:
     OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper&);

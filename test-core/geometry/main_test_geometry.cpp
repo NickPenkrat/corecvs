@@ -27,6 +27,8 @@
 
 #include "kdtree.h"
 
+using namespace corecvs;
+
 using corecvs::Polygon;
 using corecvs::Mesh3D;
 using corecvs::AxisAlignedBox3d;

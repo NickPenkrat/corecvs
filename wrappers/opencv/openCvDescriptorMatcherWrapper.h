@@ -16,7 +16,7 @@ public:
     double getProperty(const std::string &name) const;
 
 protected:
-    void knnMatchImpl(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch> > &matches, size_t K);
+    void knnMatchImpl(corecvs::RuntimeTypeBuffer &query, corecvs::RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch> > &matches, size_t K);
 
 private:
     OpenCvDescriptorMatcherWrapper(const OpenCvDescriptorMatcherWrapper &wrapper);

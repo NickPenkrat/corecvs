@@ -10,6 +10,8 @@
 #include <opencv2/core/core.hpp>        // Mat
 #include <opencv2/highgui/highgui.hpp>  // imread
 
+using namespace corecvs;
+
 bool OpenCvBufferReaderProvider::provides(const std::string &filename)
 {
     // TODO: make list of supported formats

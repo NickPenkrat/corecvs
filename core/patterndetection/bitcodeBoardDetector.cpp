@@ -4,6 +4,8 @@
 #include "polygonPointIterator.h"
 #include "ellipticalApproximation.h"
 
+namespace corecvs {
+
 BitcodeBoardDetector::BitcodeBoardDetector() :
     input(NULL),
     stats(NULL)
@@ -356,3 +358,5 @@ BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 hom
     toReturn.score = interSquare.getSDev();
     return toReturn;
 }
+
+} // namespace corecvs

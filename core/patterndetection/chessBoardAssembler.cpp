@@ -36,7 +36,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
         std::vector<OrientedCorner*> ptrs;
         for (auto& c: corners)
             ptrs.push_back(&c);
-        kd = std::unique_ptr<KDTree<OrientedCorner, 2>>(new KDTree<OrientedCorner, 2>(ptrs));
+        kd = std::unique_ptr<corecvs::KDTree<OrientedCorner, 2>>(new corecvs::KDTree<OrientedCorner, 2>(ptrs));
     }
 
     stats->startInterval();

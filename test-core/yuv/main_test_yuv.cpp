@@ -16,9 +16,8 @@
 #include "yuv/yuv422Planes.h"
 
 
-using corecvs::YUV422Planes;
-using corecvs::YUVColor;
-
+using namespace corecvs;
+using namespace std;
 
 TEST(YUV, testYUVConvertion)
 {

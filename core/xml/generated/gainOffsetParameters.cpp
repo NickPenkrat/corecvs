@@ -26,6 +26,9 @@ int BaseReflection<GainOffsetParameters>::dummy = GainOffsetParameters::staticIn
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int GainOffsetParameters::staticInit()
 {
 

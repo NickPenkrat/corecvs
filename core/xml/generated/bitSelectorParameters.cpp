@@ -26,6 +26,9 @@ int BaseReflection<BitSelectorParameters>::dummy = BitSelectorParameters::static
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int BitSelectorParameters::staticInit()
 {
 

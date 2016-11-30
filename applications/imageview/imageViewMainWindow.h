@@ -11,6 +11,8 @@ namespace Ui {
 class ImageViewMainWindow;
 }
 
+using namespace corecvs;
+
 class ImageViewMainWindow : public QWidget
 {
     Q_OBJECT

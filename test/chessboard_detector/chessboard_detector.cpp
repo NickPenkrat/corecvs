@@ -13,6 +13,8 @@
 #include "chessBoardCornerDetector.h"
 #include "chessBoardAssembler.h"
 
+using namespace corecvs;
+
 void usage()
 {
     std::cout << "test_chessboard_detector image [W H]\n"

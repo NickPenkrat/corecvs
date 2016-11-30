@@ -2,6 +2,8 @@
 
 #include "global.h"
 
+using namespace corecvs;
+
 FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type, const std::string &params)
 {
     for (std::vector<FeatureDetectorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)

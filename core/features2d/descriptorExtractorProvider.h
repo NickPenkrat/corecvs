@@ -7,11 +7,11 @@
 class DescriptorExtractor : public virtual AlgoBase
 {
 public:
-    void compute(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors);
+    void compute(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors);
     virtual ~DescriptorExtractor() {}
 
 protected:
-    virtual void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors) = 0;
+    virtual void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors) = 0;
 };
 
 class DescriptorExtractorProviderImpl

@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -36,7 +36,7 @@ namespace corecvs {
  * \brief Output Filter Parameters 
  * Output Filter Parameters 
  **/
-class OutputFilterParameters : public BaseReflection<OutputFilterParameters>
+class OutputFilterParameters : public corecvs::BaseReflection<OutputFilterParameters>
 {
 public:
     enum FieldId {
@@ -76,12 +76,12 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit((int &)mOutputType,         static_cast<const EnumField *>    (fields()[OUTPUT_TYPE_ID]));
+        visitor.visit((int &)mOutputType,         static_cast<const corecvs::EnumField *>(fields()[OUTPUT_TYPE_ID]));
     }
 
     OutputFilterParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -92,16 +92,16 @@ template<class VisitorType>
         mOutputType = outputType;
     }
 
-    friend ostream& operator << (ostream &out, OutputFilterParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, OutputFilterParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //OUTPUT_FILTER_PARAMETERS_H_

@@ -6,7 +6,7 @@
 #include "generated/openCVFilterParameters.h"
 #include "filterBlock.h"
 
-class OpenCVFilter: public FilterBlock
+class OpenCVFilter: public corecvs::FilterBlock
 {
 public:
     OpenCVFilter();
@@ -34,8 +34,8 @@ public:
     virtual ~OpenCVFilter();
 
 private:
-    G12Buffer *input;
-    G12Buffer *result;
+    corecvs::G12Buffer *input;
+    corecvs::G12Buffer *result;
 };
 
 #endif // OPENCVFILTER_H

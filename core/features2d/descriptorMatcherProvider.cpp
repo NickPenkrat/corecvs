@@ -2,6 +2,9 @@
 
 #include "global.h"
 
+
+using namespace corecvs;
+
 DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &type, const MatcherType &matcher, const std::string &params)
 {
     for (std::vector<DescriptorMatcherProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)

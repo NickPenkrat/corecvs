@@ -6,11 +6,11 @@
 class FeatureDetector : public virtual AlgoBase
 {
 public:
-    void detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints);
+    void detect(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints);
     virtual ~FeatureDetector() {}
 
 protected:
-    virtual void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints) = 0;
+    virtual void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints) = 0;
 };
 
 class FeatureDetectorProviderImpl
