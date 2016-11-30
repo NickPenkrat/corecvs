@@ -2,6 +2,8 @@
 
 #include "descriptorMatcherProvider.h"
 
+#ifndef WITH_OPENCV_3x
+
 namespace cv {
     namespace gpu {
         class BruteForceMatcher_GPU_base;
@@ -32,11 +34,6 @@ private:
     cv::ocl::BruteForceMatcher_OCL_base *matcherBF_OCL;
 };
 
-extern "C"
-{
-    void init_opencv_gpu_matchers_provider();
-}
-
 class OpenCvGPUDescriptorMatcherProvider : public DescriptorMatcherProviderImpl
 {
 public:
@@ -49,3 +46,10 @@ public:
 
     bool cudaApi;
 };
+
+#endif
+
+extern "C"
+{
+    void init_opencv_gpu_matchers_provider();
+}

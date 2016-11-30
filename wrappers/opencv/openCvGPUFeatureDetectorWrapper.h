@@ -3,6 +3,12 @@
 #include "featureDetectorProvider.h"
 
 namespace cv {
+#ifdef WITH_OPENCV_3x
+    namespace cuda {
+        class ORB;
+        class SURF_CUDA;
+    }
+#else
     namespace gpu {
         class SURF_GPU;
         class ORB_GPU;
@@ -11,14 +17,25 @@ namespace cv {
     namespace ocl {
         class SURF_OCL;
     }
+#endif
 }
+
+#ifdef WITH_OPENCV_3x
+    struct SmartPtrHolder;
+#endif
 
 class OpenCvGPUFeatureDetectorWrapper : public FeatureDetector
 {
 public:
+
+#ifdef WITH_OPENCV_3x
+    OpenCvGPUFeatureDetectorWrapper(cv::cuda::SURF_CUDA *detector);
+    OpenCvGPUFeatureDetectorWrapper(SmartPtrHolder *holder);
+#else
     OpenCvGPUFeatureDetectorWrapper( cv::gpu::SURF_GPU *detector );
     OpenCvGPUFeatureDetectorWrapper( cv::gpu::ORB_GPU *detector );
     OpenCvGPUFeatureDetectorWrapper( cv::ocl::SURF_OCL *detector );
+#endif
 
     ~OpenCvGPUFeatureDetectorWrapper();
 
@@ -34,9 +51,15 @@ private:
     OpenCvGPUFeatureDetectorWrapper( const OpenCvGPUFeatureDetectorWrapper& );
     OpenCvGPUFeatureDetectorWrapper& operator=( const OpenCvGPUFeatureDetectorWrapper& );
 
+#ifdef WITH_OPENCV_3x
+    SmartPtrHolder*      holder;
+    cv::cuda::SURF_CUDA* detectorSURF_CUDA;
+#else
     cv::gpu::SURF_GPU* detectorSURF_CUDA;
     cv::gpu::ORB_GPU*  detectorORB_CUDA;
-    cv::ocl::SURF_OCL* detectorSURF_OCL;   
+    cv::ocl::SURF_OCL* detectorSURF_OCL;
+#endif
+
 };
 
 extern "C"

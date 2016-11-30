@@ -4,6 +4,8 @@
 
 #include "global.h"
 
+#ifndef WITH_OPENCV_3x
+
 #include <opencv2/features2d/features2d.hpp>    // cv::FeatureExtractor
 #include <opencv2/nonfree/gpu.hpp>       // cv::gpu::SURF
 #include <opencv2/nonfree/ocl.hpp>       // cv::ocl::SURF
@@ -50,9 +52,15 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
         GpuMat cudaImage( img );
         GpuMat cudaDescriptors;
         if ( extractorSURF_CUDA )
+        {
+            //extractorSURF_CUDA->keypointsRatio = ( float )K / img.size().area();
             ( *extractorSURF_CUDA )( cudaImage, GpuMat(), kps, cudaDescriptors, true );
+        }
+            
         else if ( extractorORB_CUDA )
+        {    
             ( *extractorORB_CUDA )( cudaImage, GpuMat(), kps, cudaDescriptors );
+        }
 
         cudaDescriptors.download( desc );
     }
@@ -60,6 +68,7 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     {
         oclMat oclImage( img );
         oclMat oclDescriptors;
+        //extractorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
         ( *extractorSURF_OCL )( oclImage, oclMat(), kps, oclDescriptors, true );
         oclDescriptors.download( desc );
     }
@@ -111,11 +120,11 @@ DescriptorExtractor* OpenCvGPUDescriptorExtractorProvider::getDescriptorExtracto
         SWITCH_TYPE( SURF_GPU,
             return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::SURF_GPU( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ) ); )
         SWITCH_TYPE( ORB_GPU,
-        return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::ORB_GPU( orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize ) ); )
+            return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::ORB_GPU( orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize ) ); )
     }
     else
         SWITCH_TYPE( SURF_GPU,
-        return new OpenCvGPUDescriptorExtractorWrapper( new cv::ocl::SURF_OCL( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ) ); )
+            return new OpenCvGPUDescriptorExtractorWrapper( new cv::ocl::SURF_OCL( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ) ); )
 
     return 0;
 }
@@ -128,3 +137,8 @@ bool OpenCvGPUDescriptorExtractorProvider::provides( const DescriptorType &type 
 }
 
 #undef SWITCH_TYPE
+
+#else
+void init_opencv_gpu_descriptors_provider() {}
+
+#endif

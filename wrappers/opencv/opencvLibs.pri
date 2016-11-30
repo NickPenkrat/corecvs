@@ -43,6 +43,7 @@ with_opencv {
                     $$OPENCV_SRC_MODULES/imgcodecs/include \
                     $$OPENCV_SRC_MODULES/videoio/include \
                     $$OPENCV_SRC_MODULES/cudafeatures2d/include \  # 3.x cuda ORB and Bruteforce matcher
+                    $$OPENCV_SRC_MODULES/cudafilters/include
             }	
 
             !isEmpty(OPENCV_CONTRIB_PATH) {
@@ -109,11 +110,11 @@ with_opencv {
                                 -lopencv_imgcodecs310d -lopencv_videoio310d #-lopencv_ml310d
 
             exists($$OPENCV_PATH/build/bin/Release/opencv_cudafeatures2d310.dll) { # add 3.x cuda opencv libraries
-                OPENCV_310_LIBS_R += -lopencv_cudafeatures2d310  
+                OPENCV_310_LIBS_R += -lopencv_cudafeatures2d310 -lopencv_cudafilters310   
             }
 
             exists($$OPENCV_PATH/build/bin/Debug/opencv_cudafeatures2d310d.dll) { # add 3.x cuda opencv debug libraries
-                OPENCV_310_LIBS_D += -lopencv_cudafeatures2d310d  
+                OPENCV_310_LIBS_D += -lopencv_cudafeatures2d310d -lopencv_cudafilters310d  
             }
 
             !isEmpty(OPENCV_CONTRIB_PATH) {
@@ -169,6 +170,9 @@ with_opencv {
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += $$OPENCV_310_LIBS_ADD_OWN_BUILT
                 DEFINES     += WITH_OPENCV WITH_OPENCV_3x 
+		exists($$OPENCV_PATH/build/bin/Release/opencv_cudafeatures2d310.dll) {
+			DEFINES     += WITH_OPENCV_GPU
+                }
             } else:exists($$OPENCV_PATH/build/x64/vc10/bin/opencv_core249.dll): win32-msvc2010 {    # built OpenCV v.2.4.9 with msvc10 without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc10/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED

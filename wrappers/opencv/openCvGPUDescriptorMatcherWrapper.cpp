@@ -3,6 +3,8 @@
 
 #include "global.h"
 
+#ifndef WITH_OPENCV_3x
+
 #include <opencv2/features2d/features2d.hpp>    // cv::DescriptorMatcher
 #include <opencv2/gpu/gpu.hpp>           // cv::gpu::BruteForceMatcher_GPU_base
 #include <opencv2/ocl/ocl.hpp>        // cv::ocl::BruteForceMatcher_OCL_base
@@ -119,3 +121,8 @@ bool OpenCvGPUDescriptorMatcherProvider::provides( const DescriptorType &type, c
 }
 
 #undef SWITCH_TYPE
+
+#else
+void init_opencv_gpu_matchers_provider() {}
+
+#endif

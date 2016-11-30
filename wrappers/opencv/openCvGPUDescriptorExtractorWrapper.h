@@ -2,6 +2,8 @@
 
 #include "descriptorExtractorProvider.h"
 
+#ifndef WITH_OPENCV_3x
+
 namespace cv {
     namespace gpu {
         class SURF_GPU;
@@ -35,11 +37,6 @@ private:
     cv::ocl::SURF_OCL *extractorSURF_OCL;
 };
 
-extern "C"
-{
-    void init_opencv_gpu_descriptors_provider();
-}
-
 class OpenCvGPUDescriptorExtractorProvider : public DescriptorExtractorProviderImpl
 {
 public:
@@ -51,3 +48,10 @@ public:
 
     bool cudaApi;
 };
+
+#endif
+
+extern "C"
+{
+    void init_opencv_gpu_descriptors_provider();
+}
