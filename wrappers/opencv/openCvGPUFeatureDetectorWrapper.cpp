@@ -6,6 +6,7 @@
 #include "global.h"
 
 static bool deviceFound = false;
+static bool cudaDevice = false;
 
 #include <stdio.h>
 
@@ -158,8 +159,11 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
 
 bool FindGPUDevice( bool& cudaApi )
 {
-    if (deviceFound)
+    if ( deviceFound )
+    {
+        cudaApi = cudaDevice;
         return true;
+    }
 
     const int numCudaDevices = getCudaEnabledDeviceCount();
     bool initProvider = false;
@@ -176,7 +180,7 @@ bool FindGPUDevice( bool& cudaApi )
         {
             deviceFound = initProvider = true; // found cuda device to use
             cout << "OpeCV uses CUDA "<< devInfo.name() << endl;
-            cudaApi = true;
+            cudaDevice = cudaApi = true;
             break;
         }
 
@@ -215,7 +219,7 @@ bool FindGPUDevice( bool& cudaApi )
         deviceFound = initProvider = true;
 
         cv::ocl::setUseOpenCL(true);
-        cudaApi = false;
+        cudaDevice = cudaApi = false;
 #else
         DevicesInfo oclDevices;
         getOpenCLDevices( oclDevices, cv::ocl::CVCL_DEVICE_TYPE_GPU );
@@ -224,7 +228,7 @@ bool FindGPUDevice( bool& cudaApi )
             cv::ocl::setDevice( oclDevices[ 0 ] );
             deviceFound = initProvider = true;
             cout << "OpeCV uses OpenCL "<< oclDevices[ 0 ]->deviceName << endl;
-            cudaApi = false;
+            cudaDevice = cudaApi = false;
         }
 #endif
     }
