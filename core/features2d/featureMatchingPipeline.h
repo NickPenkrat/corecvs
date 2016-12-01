@@ -164,6 +164,8 @@ public:
     tbb::spin_mutex mutex;
 #endif
 
+    static void printCaps();
+
 private:
     struct tic_data
     {
@@ -181,4 +183,5 @@ private:
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 
     corecvs::StatusTracker*         processState = nullptr;
+
 };

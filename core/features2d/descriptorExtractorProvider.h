@@ -19,6 +19,8 @@ class DescriptorExtractorProviderImpl
 public:
     virtual DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "") = 0;
     virtual bool provides(const DescriptorType &type) = 0;
+    virtual std::string name() {return "unknown"; }
+
 
     virtual ~DescriptorExtractorProviderImpl() {}
 };
@@ -28,6 +30,8 @@ class DescriptorExtractorProvider
 public:
     void add(DescriptorExtractorProviderImpl *provider);
     DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
+    std::vector<std::string> getCaps();
+    void print();
 
     static DescriptorExtractorProvider& getInstance();
     ~DescriptorExtractorProvider();

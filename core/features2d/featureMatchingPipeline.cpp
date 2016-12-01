@@ -1481,3 +1481,11 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 
     }
 }
+
+void FeatureMatchingPipeline::printCaps()
+{
+     cout << "Current caps are: " << std::endl;
+     FeatureDetectorProvider::getInstance().print();
+     DescriptorExtractorProvider::getInstance().print();
+     DescriptorMatcherProvider::getInstance().print();
+}

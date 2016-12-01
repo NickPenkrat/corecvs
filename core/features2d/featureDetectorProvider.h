@@ -19,6 +19,8 @@ public:
     virtual FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "") = 0;
     virtual bool provides(const DetectorType &type) = 0;
 
+    virtual std::string name() {return "unknown"; }
+
     virtual ~FeatureDetectorProviderImpl() {}
 };
 
@@ -30,6 +32,9 @@ public:
 
     void add(FeatureDetectorProviderImpl *provider);
     FeatureDetector* getDetector(const DetectorType &type, const std::string &params = "");
+
+    virtual std::vector<std::string> getCaps();
+    void print();
 
 private:
     FeatureDetectorProvider();

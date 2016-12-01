@@ -33,7 +33,9 @@ class OpenCvDescriptorExtractorProvider : public DescriptorExtractorProviderImpl
 {
 public:
     DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
-    bool provides(const DescriptorType &type);
+    virtual bool provides(const DescriptorType &type) override;
+    virtual std::string name() override {return "OpenCV";}
 
     ~OpenCvDescriptorExtractorProvider() {}
+
 };

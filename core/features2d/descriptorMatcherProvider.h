@@ -18,6 +18,7 @@ class DescriptorMatcherProviderImpl
 public:
     virtual DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher, const std::string &params = "") = 0;
     virtual bool provides(const DescriptorType &descriptor, const MatcherType &matcher) = 0;
+    virtual std::string name() {return "unknown"; }
 
     virtual ~DescriptorMatcherProviderImpl() {}
 };
@@ -27,9 +28,14 @@ class DescriptorMatcherProvider
 public:
     void add(DescriptorMatcherProviderImpl *provider);
     DescriptorMatcher* getMatcher(const DescriptorType &descriptor, const MatcherType &matcher, const std::string &params = "");
+    std::vector<std::string> getCaps();
+    void print();
+
     static DescriptorMatcherProvider& getInstance();
 
+
     ~DescriptorMatcherProvider();
+
 
 private:
     DescriptorMatcherProvider();
