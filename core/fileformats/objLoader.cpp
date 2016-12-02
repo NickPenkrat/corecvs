@@ -184,6 +184,7 @@ int OBJLoader::loadMaterial(istream &input, OBJMaterial &material, const std::st
 
     cout << "Loaded" << endl;
     cout << material << endl;
+	return 0;
 }
 
 int OBJLoader::loadOBJSimple(istream &input, Mesh3D &mesh)
