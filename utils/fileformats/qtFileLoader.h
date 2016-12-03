@@ -49,6 +49,8 @@ public:
     virtual bool acceptsFile(string name);
     virtual G12Buffer * load(string name);
 
+    virtual std::string name() override { return "QTG12Loader(multitype)"; }
+
     virtual ~QTG12Loader();
 
 };
@@ -65,6 +67,7 @@ public:
 
     virtual bool acceptsFile(string name);
     virtual RGB24Buffer * load(string name);
+    virtual std::string name() override { return "QTRGB24Loader(multitype)"; }
 
     virtual ~QTRGB24Loader();
 
