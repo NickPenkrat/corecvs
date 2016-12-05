@@ -83,6 +83,11 @@ OpenCVLoaderRGB24Loader::OpenCVLoaderRGB24Loader()
 
 }
 
+bool OpenCVLoaderRGB24Loader::acceptsFile(std::string name)
+{
+    return true;
+}
+
 RGB24Buffer *OpenCVLoaderRGB24Loader::load(std::string name)
 {
     cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_COLOR);
@@ -99,6 +104,11 @@ RGB24Buffer *OpenCVLoaderRGB24Loader::load(std::string name)
 OpenCVLoaderRuntimeTypeBufferLoader::OpenCVLoaderRuntimeTypeBufferLoader()
 {
 
+}
+
+bool OpenCVLoaderRuntimeTypeBufferLoader::acceptsFile(std::string name)
+{
+     return true;
 }
 
 RuntimeTypeBuffer *OpenCVLoaderRuntimeTypeBufferLoader::load(std::string name)

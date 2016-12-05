@@ -8,7 +8,8 @@
 #include "rgb24Buffer.h"
 
 /**
- * This class is depricated.
+ * This class is depricated. Use BufferFactory instead
+ *
  **/
 
 class BufferReader

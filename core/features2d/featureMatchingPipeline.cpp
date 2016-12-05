@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <ctime>  // clock???  Please use PreciseTimer!!!
 
+#include "bufferFactory.h"
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
 #include "descriptorMatcherProvider.h"
@@ -120,10 +121,11 @@ public:
 
             ss1 << image.filename << ", ";
 
-			std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
-            RuntimeTypeBuffer img = reader->read(image.filename);
+            //std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
+            //RuntimeTypeBuffer img = reader->read(image.filename);
 
-            detector->detect(img, image.keyPoints.keyPoints, maxFeatureCount);
+            std::unique_ptr<RuntimeTypeBuffer> img(BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
+            detector->detect((*img.get()), image.keyPoints.keyPoints, maxFeatureCount);
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
             if (cnt % 4 == 0)
