@@ -26,6 +26,8 @@ public:
     void   setProperty(const std::string &name, const double &value);
     double getProperty(const std::string &name) const;
 
+    bool  isParallelable() { return false; }
+
 protected:
     void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors);
 
