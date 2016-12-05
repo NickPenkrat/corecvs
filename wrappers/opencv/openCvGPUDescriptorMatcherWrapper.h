@@ -23,6 +23,7 @@ public:
 
     void   setProperty(const std::string &name, const double &value);
     double getProperty(const std::string &name) const;
+    bool isParallelable() { return false; }
 
 protected:
     void knnMatchImpl(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch> > &matches, size_t K);
