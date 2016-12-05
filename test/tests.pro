@@ -14,7 +14,6 @@ SUBDIRS +=       \
 #   grab         \
     grab_N_captures \
     serialize1   \
-    jitplayground \
     fileloader \
 #   adoptcolor   \
 #    avigrab     \
@@ -24,12 +23,19 @@ SUBDIRS +=       \
 #    new_board_detector \
 #    cr2reader           \
     debayer          \
-#    qtScriptConsole  \
     softrender       \
     raytracerender   \
     stereo_generator \
     widgets_test \
     example_scene \
+
+!win32 {
+    SUBDIRS += jitplayground
+}
+
+with_qscript {
+   SUBDIRS += qtScriptConsole
+}
 
 
 with_opencv {

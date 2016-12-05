@@ -364,7 +364,7 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
          addFace(startId + Vector3d32(LAST_P, ((i + 1) % 5) + ROUND_2, i + ROUND_2));
      }
 
-     /*No we start the subdivision*/
+     /*Now we start the subdivision*/
 
      int faceIndex = primaryIndex;
 
@@ -377,8 +377,9 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
          {
              Vector3d32 face = faces[f];
 
+#if 1
              /**/
-             int startId = (int)vertexes.size();
+             int startId = (int)vertexes.size();             
 
              for (int k = 0; k < 3; k++)
              {
@@ -396,11 +397,18 @@ void Mesh3D::addIcoSphere(Vector3dd center, double radius, int step)
 
                 addVertex(add);
              }
-             addFace(Vector3d32(face[0], startId, startId + 2));
-             addFace(Vector3d32(startId, face[1], startId + 1));
-             addFace(Vector3d32(startId + 1, face[2], startId + 2));
+             int nv1 = startId;
+             int nv2 = startId + 1;
+             int nv3 = startId + 2;
+#else
+            /* We need a clean implementation that glues subdivision references */
 
-             addFace(Vector3d32(startId, startId + 1, startId + 2));
+#endif
+             addFace(Vector3d32(face[0], nv1, nv3));
+             addFace(Vector3d32(nv1, face[1], nv2));
+             addFace(Vector3d32(nv2, face[2], nv3));
+
+             addFace(Vector3d32(nv1, nv2, nv3));
          }
          faceIndex = lastIndex;
      }
@@ -735,17 +743,33 @@ void Mesh3D::fillTestScene()
     addSphere(Vector3dd(0), 50, 10);
 
     /* Face sphere */
-    //int colorStart = (int)facesColor.size();
+    size_t vertexColorStart = vertexesColor.size();
+    size_t faceColorStart   = facesColor.size();
+    size_t edgesColorStart  = edgesColor.size();
 
     currentColor = RGBColor::Red();
 
     addIcoSphere(Vector3dd(100.0,0.0,100.0), 50.0, 1);
-    //int colorEnd = facesColor.size();
+    size_t vertexColorEnd = vertexesColor.size();
+    size_t faceColorEnd   = facesColor.size();
+    size_t edgesColorEnd  = edgesColor.size();
 
-    /*for (int c = colorStart; c < colorEnd; c++)
+    for (size_t c = faceColorStart; c < faceColorEnd; c++)
     {
-        facesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, colorStart, colorEnd));
-    }*/
+        facesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, faceColorStart, faceColorEnd));
+    }
+
+    for (size_t c = vertexColorStart; c < vertexColorEnd; c++)
+    {
+        vertexesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, vertexColorStart, vertexColorEnd));
+    }
+
+    for (size_t c = edgesColorStart; c < edgesColorEnd; c++)
+    {
+        edgesColor[c] = RGBColor::rainbow(lerpLimit(0.0, 1.0, c, edgesColorStart, edgesColorEnd));
+    }
+
+
 
     /* Edge box */
     currentColor = RGBColor::Blue();

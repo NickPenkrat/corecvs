@@ -82,11 +82,21 @@ void LoggerWidget::doDrain(Log::Message message)
     ui.tableWidget->setItem(lastRow, 0, new QTableWidgetItem((*mLevelIcons  [ message.get()->mLevel ]),
                                                        QString(Log::levelName(message.get()->mLevel)),             0));
     ui.tableWidget->setItem(lastRow, 1, new QTableWidgetItem(QString(time2str(message.get()->mTime)),              0));
-    ui.tableWidget->setItem(lastRow, 2, new QTableWidgetItem(QString(         message.get()->mOriginFileName),     0));
-    ui.tableWidget->setItem(lastRow, 3, new QTableWidgetItem(QString::number( message.get()->mOriginLineNumber),   0));
-    ui.tableWidget->setItem(lastRow, 4, new QTableWidgetItem(QString(         message.get()->mOriginFunctionName), 0));
 
-    QTableWidgetItem *item =            new QTableWidgetItem(QString(         message.get()->s.str().c_str()),     0);
+    QString fileName = "NA";
+    if (message.get()->mOriginFileName != NULL) {
+        fileName  = QString(message.get()->mOriginFileName);
+    }
+    QString functionName = "NA";
+    if (message.get()->mOriginFunctionName != NULL) {
+        functionName  = QString(message.get()->mOriginFunctionName);
+    }
+
+
+    ui.tableWidget->setItem(lastRow, 2, new QTableWidgetItem(fileName                                          , 0));
+    ui.tableWidget->setItem(lastRow, 3, new QTableWidgetItem(QString::number( message.get()->mOriginLineNumber), 0));
+    ui.tableWidget->setItem(lastRow, 4, new QTableWidgetItem(functionName                                      , 0));
+    QTableWidgetItem *item =            new QTableWidgetItem(QString(         message.get()->s.str().c_str())  , 0);
     item->setFont(*logFont);
     ui.tableWidget->setItem(lastRow, 5, item);
 

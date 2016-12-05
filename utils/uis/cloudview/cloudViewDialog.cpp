@@ -11,6 +11,8 @@
 #include "qSettingsSetter.h"
 
 #include "meshLoader.h"
+#include "objLoader.h"
+
 
 #include "sceneShaded.h"
 
@@ -97,8 +99,23 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
 
     addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()));
     addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()));
-//    addSubObject("test"  , QSharedPointer<Scene3D>(new SceneShaded()));
 
+#if 0
+    {
+        SceneShaded *shaded = new SceneShaded();
+        Mesh3DDecorated *mesh = new Mesh3DDecorated;
+        mesh->fillTestScene();
+
+        shaded->mMesh = mesh;
+
+        addSubObject("test"  , QSharedPointer<Scene3D>(shaded));
+
+        Mesh3DScene *scene = new Mesh3DScene;
+        scene->switchColor(true);
+        scene->add(*mesh, true);
+        addSubObject("test1"  , QSharedPointer<Scene3D>(scene));
+    }
+#endif
 
     QSharedPointer<CoordinateFrame> worldFrame = QSharedPointer<CoordinateFrame>(new CoordinateFrame());
 
@@ -461,7 +478,6 @@ void CloudViewDialog::childMoveEvent(QMouseEvent *event)
                break;
         }
 #endif
-
     }
 
     if (buttons & Qt::MidButton)
@@ -815,23 +831,49 @@ void CloudViewDialog::loadMesh()
 {
     MeshLoader loader;
 
-    QString type = QString("3D Model (%1)").arg(loader.extentionList().c_str());
+    QString type = QString("Model (%1)").arg(loader.extentionList().c_str());
+    qDebug() << "Type: " << type;
 
     QString fileName = QFileDialog::getOpenFileName(
       this,
       tr("Load 3D Model"),
       ".",
-      type);
+      "3D Model (*.ply *.stl *.obj *.gcode)"
+      /*type*/);
 
-    Mesh3DScene *mesh = new Mesh3DScene();
+     QFileInfo fileInfo(fileName);
 
-    if (!loader.load(mesh, fileName.toStdString()))
-    {
-        delete_safe(mesh);
-           return;
+    if (fileName.endsWith(".obj")) {
+        SceneShaded *shaded = new SceneShaded();
+        Mesh3DDecorated *mesh = new Mesh3DDecorated();
+        OBJLoader objLoader;
+
+        std::ifstream file;
+        file.open(fileName.toStdString(), std::ios::in);
+        objLoader.loadOBJ(file, *mesh);
+        file.close();
+
+        QString mtlFile = fileName + ".mtl";
+        std::ifstream materialFile;
+        materialFile.open(mtlFile.toStdString(), std::ios::in);
+        objLoader.loadMaterial(materialFile, mesh->material, fileInfo.path().toStdString());
+        materialFile.close();
+
+
+        shaded->mMesh = mesh;
+        shaded->mMesh->recomputeMeanNormals();
+        shaded->prepareMesh(this);
+        addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>(shaded));
+    } else {
+        Mesh3DScene *mesh = new Mesh3DScene();
+
+        if (!loader.load(mesh, fileName.toStdString()))
+        {
+            delete_safe(mesh);
+               return;
         }
-    QFileInfo fileInfo(fileName);
-    addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>((Scene3D*)mesh));
+        addSubObject(fileInfo.baseName(), QSharedPointer<Scene3D>((Scene3D*)mesh));
+    }
 }
 
 void CloudViewDialog::addCoordinateFrame()

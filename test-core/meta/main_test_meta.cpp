@@ -1,5 +1,5 @@
 /**
- * \file main_test_meta.cpp
+  * \file main_test_meta.cpp
  * \brief This is the main file for the test meta
  *
  * \date дек. 15, 2015
@@ -7,7 +7,6 @@
  *
  * \ingroup autotest
  */
-#if !defined(_WIN32) && !defined(_MSC_VER)
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -27,12 +26,16 @@
 using namespace std;
 using namespace corecvs;
 
+#if !defined(_WIN32) && !defined(_MSC_VER)
+
 ASTNode operator "" _x(const char * name, size_t /*len*/)
 {
     return ASTNode(name);
 }
 
 typedef GenericQuaternion<ASTNode> ASTQuaternion;
+
+
 
 #if 0
 template<class Element>
@@ -108,9 +111,9 @@ TEST(meta, testmeta)
 
     cout << "Some more stuff" << endl;
 
-    GenericQuaternion<ASTNode> Q(  "Qx"_x     , ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
-    GenericQuaternion<ASTNode> P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
-    GenericQuaternion<ASTNode> R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
+    ASTQuaternion Q(  "Qx"_x     , ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
+    ASTQuaternion P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
+    ASTQuaternion R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
 
     ASTNode Z = ((Q+(P^R)) & Q);
     Z.p->codeGenCpp("quaternion1", dec);
@@ -271,34 +274,19 @@ TEST(meta, matrixExample)
 
 
     /*First compare the output */
-
-
-
 }
-#else
-/*Return back old tests for MSVC*/
 
-#include <iostream>
-#include "gtest/gtest.h"
-
-#include "global.h"
-#include "astNode.h"
-
-#include "fixedVector.h"
-#include "matrix33.h"
-#include "quaternion.h"
-
-using namespace corecvs;
-
-TEST(meta, testmeta)
+TEST(meta, testmeta1)
 {
     ASTContext::MAIN_CONTEXT = new ASTContext();
 
     std::cout << "Starting test <meta>" << std::endl;
 
     ASTNode e = (ASTNode("X") * (ASTNode(5.0)  + ASTNode(4.0)));
+    ASTRenderDec dec = { "", "", true };
+
     e.p->codeGenCpp("test");
-    e.p->codeGenCpp("test", {"", ""});
+    e.p->codeGenCpp("test", dec);
 
     std::cout << "Some more advanced stuff" << std::endl;
 
@@ -311,17 +299,40 @@ TEST(meta, testmeta)
         test2[i] = ASTNode(1);
     }
 
-    (test1 & test2).p->codeGenCpp("dot_product", {"", ""});
+    (test1 & test2).p->codeGenCpp("dot_product", dec);
 
     std::cout << "Some more stuff" << std::endl;
 
     GenericQuaternion<ASTNode> Q(ASTNode("Qx"), ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
     GenericQuaternion<ASTNode> P(ASTNode("Px"), ASTNode("Py"), ASTNode("Pz"), ASTNode("Pt"));
     GenericQuaternion<ASTNode> R(ASTNode("Rx"), ASTNode("Ry"), ASTNode("Rz"), ASTNode("Rt"));
-    ((Q+(P^R)) & Q).p->codeGenCpp("quaternion1", {"", ""});
+    ((Q+(P^R)) & Q).p->codeGenCpp("quaternion1", dec);
 
     delete_safe(ASTContext::MAIN_CONTEXT);
 
     std::cout << "Test <meta> PASSED" << std::endl;
+}
+
+#endif
+
+#if !defined(_WIN32) && !defined(_MSC_VER)
+TEST(meta, testMetaNodeFunction)
+{
+    cout << "Starting meta.testMetaNodeFunction" << endl;
+    ASTContext::MAIN_CONTEXT = new ASTContext();
+    ASTQuaternion Q(ASTNode("Qx"), ASTNode("Qy"), ASTNode("Qz"), ASTNode("Qt"));
+
+    ASTMatrix33 M = Q.toMatrixGeneric<ASTMatrix33>();
+
+    ASTNodeFunctionWrapper F;
+    for (int i = 0; i < M.h; i++)
+    {
+        for (int j = 0; j < M.w; j++)
+        {
+            F.components.push_back(M.element(i,j).p);
+        }
+    }
+
+    cout << F.getCCode();
 }
 #endif

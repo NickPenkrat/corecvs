@@ -2,32 +2,74 @@ TEMPLATE = subdirs
 CONFIG  += ordered
 
 SUBDIRS +=                   \
+##    generator              \   	# It needs core. For true rebuild after it's built, it should regenerate sources and then we should build projects once more.
     core                     \
-    unitTests                \
     utils                    \
-    base_application         \
-    base_application_example \    
-    recorder                 \
-    testbed                  \
-    
+#    test-core                \
+#    test-core-perf           \
+#    tests_big                \
+    \   
 
-win32 {
-    SUBDIRS += directshow
+
+#utility applications
+CONFIG += with_minitools
+with_minitools {
+
+  message (Minitools On)
+
+  SUBDIRS +=                  \
+     cloudview                \
+     rectifier                \
+    imageview                \
+    \
+    \
+    imageAugment             \
+    testbed                  \
+    base_application         \
+    base_application_example \
+    recorder                 \
+
+
 }
 
-unitTests.depends                += core
+
+win32 {
+#    SUBDIRS += directshow
+    directshow.file       = src/open/wrappers/directShow/directShow.pro
+    directshow.depends   += core
+}
+
+generator.depends                += core
 utils.depends                    += core
-directshow.depends               += core
-base_application.depends         += core            # must be utils: as libs building could be done in parallel except apps!
-testbed.depends                  += core            # must be utils: as libs building could be done in parallel except apps!
-recorder.depends                 += base_application
+test-core.depends                += core
+test-core-perf.depends           += core
+
+tests_big.depends                += core utils
+
+testbed.depends                  += core utils
+base_application.depends         += core utils
 base_application_example.depends += base_application
+recorder.depends                 += base_application
+
+cloudview.depends                += utils
+rectifier.depends                += utils
+imageview.depends                += utils
+imageAugment.depends             += utils
 
 core.file                         = core/core.pro
-unitTests.file                    = test-core/unitTests.pro
 utils.file                        = utils/utils.pro
+test-core.file                    = test-core/test-core.pro
+test-core-perf.file               = test-core/-perf/test-core-perf.pro
+tests_big.file                    = test/tests.pro
 base_application.file             = applications/base/baseApplication.pro
 base_application_example.file     = applications/base/baseApplicationExample.pro
 recorder.file                     = applications/recorder/recorder.pro
 testbed.file                      = applications/testbed/testbed.pro
-directshow.file                   = wrappers/directShow/directShow.pro
+cloudview.file                    = applications/cloudview/cloudview.pro
+imageview.file                    = applications/imageview/imageview.pro
+rectifier.file                    = applications/rectifier/rectifier.pro
+imageAugment.file                 = applications/imageAugment/imageAugment.pro
+
+generator.file                    = tools/generator/generator.pro
+vcprojFix.file                    = tools/vcprojFix/vcprojFix.pro
+

@@ -50,10 +50,12 @@ with_libpng {
 DESTDIR  = $$ROOT_DIR/bin
 
 HEADERS += \
-    changeReceiver.h
+    changeReceiver.h \
+    testNativeWidget.h
 
 SOURCES += \
     main_widgets_test.cpp \
+    testNativeWidget.cpp
 
 GEN_FOLDER="../../tools/generator/Generated"
 exists($$GEN_FOLDER/testClass.cpp) {
@@ -73,5 +75,8 @@ exists($$GEN_FOLDER/testClass.cpp) {
 
     DEFINES += INCLUDE_EXAMPLE
 }
+
+FORMS += \
+    testNativeWidget.ui
 
 

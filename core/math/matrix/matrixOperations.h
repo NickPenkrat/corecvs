@@ -337,7 +337,7 @@ public:
     friend inline FixedVector<ElementType, H> operator *(const FixMatrixFixed &M, const VectorType &V)
     {
         FixedVector<ElementType, H> result;
-        typedef decltype(V.at(0) * M.atm(0, 0)) SumType;
+        typedef typename std::remove_const<decltype(V.at(0) * M.atm(0, 0))>::type SumType;
 
         for (int row = 0; row < M.height(); row++)
         {

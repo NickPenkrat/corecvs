@@ -105,8 +105,8 @@ SiftGPU::SiftKeypoint SiftGpu::convert(const KeyPoint &k)
 {
     //TODO: check what orientation and size really represent
     SiftGPU::SiftKeypoint kp = {
-        (float)k.x,
-        (float)k.y,
+        (float)k.position.x(),
+        (float)k.position.y(),
         (float)k.size,
         (float)k.angle
     };

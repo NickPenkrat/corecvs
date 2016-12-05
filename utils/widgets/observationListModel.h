@@ -27,6 +27,7 @@ signals:
 public:
     enum {
         COLUMN_X,
+        COLUMN_DATA = COLUMN_X,
         COLUMN_Y,
         COLUMN_Z,
         COLUMN_U,

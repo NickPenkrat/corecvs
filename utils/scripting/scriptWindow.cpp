@@ -1,22 +1,31 @@
 #include <QScriptEngine>
 #include <QDebug>
 #include <QDateTime>
+#include <QDir>
 
-#include "mainQScriptWindow.h"
-#include "ui_mainQScriptWindow.h"
+#include "scriptWindow.h"
+#include "ui_scriptWindow.h"
 
-MainQScriptWindow::MainQScriptWindow(QWidget *parent) :
+ScriptWindow::ScriptWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainQScriptWindow)
+    mEngine(new QScriptEngine),
+    ui(new Ui::ScriptWindow)
 {
     ui->setupUi(this);
-    connect(ui->executeButton, SIGNAL(released()), this, SLOT(executeScript()));
+    connect(ui->actionExcuteScript, SIGNAL(triggered(bool)), this, SLOT(executeScript()));
+    connect(ui->scriptListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(presetChanged(QListWidgetItem*)));
+
+    mLog = new ScriptLog(mEngine, ui->loggerWidget);
+    QScriptValue loggerValue = mEngine->newQObject(mLog);
+    mEngine->globalObject().setProperty("log", loggerValue);
+
+    reloadScripts(":/new/scripts/scripts");
+
 }
 
-void MainQScriptWindow::executeScript(void)
+QString ScriptWindow::checkScript(void)
 {
     QString scriptText = ui->textEdit->toPlainText();
-
 
     qDebug() << "Parsing:" << scriptText;
 
@@ -39,7 +48,7 @@ void MainQScriptWindow::executeScript(void)
 
          if (lines.size() <= lnum) {
              qDebug() << "No such line" << endl;
-             return;
+             return "";
          }
 
          lines[lnum].insert(cnum + 1, "</font>");
@@ -51,7 +60,7 @@ void MainQScriptWindow::executeScript(void)
          scriptText = lines.join("<br/>");
          ui->textEdit->setHtml(scriptText);
          qDebug() << "Script Text:" << scriptText;
-         return;
+         return "";
     }
 
     if (parseResult.state() == QScriptSyntaxCheckResult::Intermediate)
@@ -65,16 +74,26 @@ void MainQScriptWindow::executeScript(void)
         qDebug() << "Program is ok";
     }
 
+    return scriptText;
 
+}
+
+void ScriptWindow::executeScript(void)
+{
+    QString scriptText = checkScript();
+    if (scriptText.isEmpty()) {
+        return;
+    }
 
 
    /*=============================*/
 
-    QScriptEngine engine;
+    //engine = new QScriptEngine;
     qDebug() << "Executing:" << scriptText;
 
+    /* Binding a test scene to be accessible */
 
-    QScriptValue value = engine.evaluate(scriptText);
+    QScriptValue value = mEngine->evaluate(scriptText);
 
     if (value.isBool()) {
         qDebug() << "Result is bool:" << value.toBool();
@@ -107,12 +126,12 @@ void MainQScriptWindow::executeScript(void)
         qDebug() << "Result is date:" << value.toDateTime();
     }
 
-    if (engine.hasUncaughtException()) {
-        QScriptValue errors = engine.uncaughtException();
+    if (mEngine->hasUncaughtException()) {
+        QScriptValue errors = mEngine->uncaughtException();
         if (errors.isError()) {
             qDebug() << "Error: " << errors.toString();
         }
-        QStringList backtrace = engine.uncaughtExceptionBacktrace();
+        QStringList backtrace = mEngine->uncaughtExceptionBacktrace();
         {
             qDebug() << backtrace;
         }
@@ -121,7 +140,50 @@ void MainQScriptWindow::executeScript(void)
 
 }
 
-MainQScriptWindow::~MainQScriptWindow()
+ScriptWindow::~ScriptWindow()
 {
     delete ui;
+}
+
+
+void ScriptWindow::reloadScripts(QString path)
+{
+    QDir scriptDir(path);
+    if (scriptDir.exists()) {
+        qDebug() << "Enumerating shaders at <" << path << ">";
+        QStringList scriptFiles = scriptDir.entryList(QStringList("*.js"));
+        for (QString scriptFile : scriptFiles)
+        {
+            QString scriptName = scriptFile.left(scriptFile.length() - 3);
+
+            QFile script(scriptDir.filePath(scriptFile));
+            if (!script.exists())
+            {
+                continue;
+            }
+
+            script.open(QIODevice::ReadOnly);
+            QString scriptText;
+            QTextStream scriptStream(&script);
+            scriptText.append(scriptStream.readAll());
+            script.close();
+
+            scriptCache.insert(scriptName, ScriptPreset(scriptName, scriptText));
+
+            ui->scriptListWidget->addItem(scriptName);
+            qDebug() << "Loaded script <"  << scriptName << ">" << endl;
+        }
+    }
+}
+
+void ScriptWindow::presetChanged(QListWidgetItem* item)
+{
+    if (item == NULL) {
+        return;
+    }
+
+    QString name = item->text();
+    if (scriptCache.contains(name)) {
+        ui->textEdit->setPlainText(scriptCache[name].text);
+    }
 }

@@ -6,6 +6,9 @@
  * \ingroup OpenCV
  * \date Nov 26, 2012
  */
+
+#ifndef WITH_OPENCV_3x
+
 #include "g12Buffer.h"
 #include "rgb24Buffer.h"
 #include "flowBuffer.h"
@@ -156,5 +159,7 @@ private:
     BruteForceMatcher< L2<float> >  mMatcher;
     vector<DMatch>                  mMatches;
 };
+
+#endif
 
 /* EOF */

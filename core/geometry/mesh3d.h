@@ -149,7 +149,7 @@ private:
 public:
     virtual ~Mesh3D() {}
 
-    void fillTestScene();
+    virtual void fillTestScene();
 
     virtual void dumpInfo(ostream &out = std::cout);
 };
