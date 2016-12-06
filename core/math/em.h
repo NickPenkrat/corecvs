@@ -12,7 +12,7 @@ struct EM
 {
     EM(const Matrix &A, int N, bool smooth = true, int maxIter = 1000);
 
-    void stepE();
+    double stepE();
     void stepM();
     void runEM(int maxIter = -1);
     void runKMeans();

@@ -131,16 +131,20 @@ void EM::runEM(int mIter)
 {
     if (mIter < 0)
         mIter = maxIter;
+    auto prev = std::numeric_limits<double>::max();
     for (int i = 0; i < mIter; ++i)
     {
         std::cout << "$" << std::flush;
         stepM();
-        stepE();
+        auto res = stepE();
+        if (res >= prev)
+            break;
+        prev = res;
     }
     std::cout << std::endl;
 }
 
-void EM::stepE()
+double EM::stepE()
 {
     double log = 0.0;
     for (int i = 0; i < N; ++i)
@@ -152,9 +156,12 @@ void EM::stepE()
         Matrix U(cov), V(K, K), D(1, K);
         Matrix::svd(&U, &D, &V);
 
-        double det = 1.0;
+        double det = 1.0, ldet = 0.0;
         for (int ii = 0; ii < K; ++ii)
-            det /= D.a(0, ii);
+        {
+            det *= D.a(0, ii);
+            ldet += std::log(D.a(0, ii));
+        }
 
         for (int j = 0; j < M; ++j)
         {
@@ -172,7 +179,8 @@ void EM::stepE()
                 w += dd;
             }
 
-            probabilities.a(j, i) = p * std::sqrt(det) * std::exp( -w / 2.0);
+            probabilities.a(j, i) = p / std::sqrt(det) * std::exp( -w / 2.0);
+            log += std::log(p) - 0.5 * ldet - w / 2.0;
         }
     }
     for (int i = 0; i < M; ++i)
@@ -192,6 +200,7 @@ void EM::stepE()
         for (int j = 0; j < N; ++j)
             probabilities.a(i, j) = probabilities.a(i, j) / sum;
     }
+    return log;
 }
 
 void EM::stepM()
