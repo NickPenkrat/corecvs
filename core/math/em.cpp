@@ -122,20 +122,6 @@ EM::EM(const Matrix &A, int N, bool smooth, int maxIter) :
         means[i] = Vector(K);
         covariances[i] = Matrix(K, K);
     }
-    for (int i = 0; i < M; ++i)
-    {
-        double sum = 0.0;
-        for (int j = 0; j < N; ++j)
-            sum += probabilities.a(i, j);
-        CORE_ASSERT_TRUE_S(std::abs(sum - 1.0) < 1e-6);
-    }
-    for (int i = 0; i < N; ++i)
-    {
-        double sum = 0.0;
-        for (int j = 0; j < M; ++j)
-            sum += probabilities.a(j, i);
-        CORE_ASSERT_TRUE_S(sum > 0.0);
-    }
 
     runKMeans();
     runEM();
@@ -170,7 +156,6 @@ void EM::stepE()
         for (int ii = 0; ii < K; ++ii)
             det /= D.a(0, ii);
 
-        auto uut = U * Ut;
         for (int j = 0; j < M; ++j)
         {
             Vector vv(K);
