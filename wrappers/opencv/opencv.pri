@@ -25,6 +25,7 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
                 $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorExtractorWrapper.h \
                 $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorMatcherWrapper.h \
                 $$OPENCV_WRAPPER_DIR/openCvGPUFeatureDetectorWrapper.h \
+                $$OPENCV_WRAPPER_DIR/openCvGPUDetectAndMatchWrapper.h \
 
     }
 
@@ -45,6 +46,7 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
                 $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorExtractorWrapper.cpp \
                 $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorMatcherWrapper.cpp \
                 $$OPENCV_WRAPPER_DIR/openCvGPUFeatureDetectorWrapper.cpp \
+                $$OPENCV_WRAPPER_DIR/openCvGPUDetectAndMatchWrapper.cpp \
 
     }
 

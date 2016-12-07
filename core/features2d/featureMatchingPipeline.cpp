@@ -9,6 +9,7 @@
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
 #include "descriptorMatcherProvider.h"
+#include "detectExtractAndMatchProvider.h"
 #include "bufferReaderProvider.h"
 #include "vsfmIo.h"
 #include "tbbWrapper.h"
@@ -391,37 +392,42 @@ void MatchingPlanComputationStage::loadResults(FeatureMatchingPipeline *pipeline
     pipeline->matchPlan.load(filename);
 }
 
+void MakeMatchingPlan(FeatureMatchingPipeline& pipeline)
+{
+	MatchPlan &matchPlan = pipeline.matchPlan;
+	std::vector<Image> &images = pipeline.images;
+	size_t N = images.size();
+
+	matchPlan.plan.clear();
+
+	for (size_t i = 0; i < N; ++i)
+	{
+		std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
+		for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
+		{
+			query[j] = (uint16_t)j;
+		}
+
+		for (size_t j = 0; j < N; ++j)
+		{
+			if (i == j)
+				continue;
+			std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
+			for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
+			{
+				train[k] = (uint16_t)k;
+			}
+
+			MatchPlanEntry entry = { (uint16_t)i, (uint16_t)j, query, train };
+			matchPlan.plan.push_back(entry);
+		}
+	}
+}
+
 void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
 {
     pipeline->tic();
-    MatchPlan &matchPlan = pipeline->matchPlan;
-    std::vector<Image> &images = pipeline->images;
-    size_t N = images.size();
-
-    matchPlan.plan.clear();
-
-    for (size_t i = 0; i < N; ++i)
-    {
-        std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
-        for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
-        {
-            query[j] = (uint16_t)j;
-        }
-
-        for (size_t j = 0; j < N; ++j)
-        {
-            if (i == j)
-                continue;
-            std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
-            for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
-            {
-                train[k] = (uint16_t)k;
-            }
-
-            MatchPlanEntry entry = { (uint16_t)i, (uint16_t)j, query, train };
-            matchPlan.plan.push_back(entry);
-        }
-    }
+	MakeMatchingPlan(*pipeline);
     pipeline->toc("Preparing matching plan", "");
 }
 
@@ -475,7 +481,6 @@ public:
 
             std::vector<std::vector<RawMatch>> ml;
             matcher->knnMatch(qb, tb, ml, responsesPerPoint);
-
 
             for (std::vector<std::vector<RawMatch> >::iterator v = ml.begin(); v != ml.end(); ++v)
             {
@@ -1479,4 +1484,55 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
         std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms (" << rh << "h " << rm << "m " << rs << "s left)" << " [ " << one << " ] " <<  std::endl;
 
     }
+}
+
+DetectExtractAndMatchStage::DetectExtractAndMatchStage( DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, size_t responsesPerPoint, const std::string &params ) :
+    detectorType( detectorType ),
+    descriptorType( descriptorType ),
+    matcherType( matcherType ),
+    maxFeatureCount( maxFeatureCount ),
+    responsesPerPoint( responsesPerPoint ),
+    params( params )
+{
+
+}
+
+void DetectExtractAndMatchStage::run(FeatureMatchingPipeline *pipeline)
+{
+    std::unique_ptr<DetectExtractAndMatch> detector( DetectExtractAndMatchProvider::getInstance().getDetector( detectorType, descriptorType, matcherType, params ) );
+    std::stringstream ss1, ss2;
+    pipeline->tic();
+    detector->detectExtractAndMatch( *pipeline, maxFeatureCount, responsesPerPoint );
+    ss1 << "Detect " << detectorType << " and match " << matcherType;
+    pipeline->toc( ss1.str(), ss2.str());
+}
+
+void DetectExtractAndMatchStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
+{
+    pipeline->rawMatches.load( filename );
+}
+
+void DetectExtractAndMatchStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
+{
+    pipeline->rawMatches.save( filename );
+}
+
+void AddDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline, DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType,
+    int maxFeatureCount, const std::string &params, size_t responsesPerPoint )
+{
+#if 1
+    if ( std::string::npos != detectorType  .find( "_GPU" ) &&
+         std::string::npos != descriptorType.find( "_GPU" ) &&
+         std::string::npos != matcherType   .find( "_GPU" ) )
+	{
+        pipeline.add(new DetectExtractAndMatchStage( detectorType, descriptorType, matcherType, maxFeatureCount, responsesPerPoint, "" ), true);
+	}
+	else
+#endif
+	{
+        pipeline.add(new KeyPointDetectionStage( detectorType, maxFeatureCount, params ), true);
+        pipeline.add(new DescriptorExtractionStage( descriptorType, params ), true );
+		pipeline.add(new MatchingPlanComputationStage(), true);
+		pipeline.add(new MatchingStage(descriptorType, matcherType, responsesPerPoint), true);
+	}
 }

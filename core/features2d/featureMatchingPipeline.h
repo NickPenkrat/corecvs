@@ -140,6 +140,31 @@ private:
     bool sortFeatures;
 };
 
+class DetectExtractAndMatchStage : public FeatureMatchingPipelineStage
+{
+public:
+    DetectExtractAndMatchStage( DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, size_t responsesPerPoint = 2,  const std::string &params = "" );
+	void run(FeatureMatchingPipeline *pipeline);
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+
+private:
+    DetectorType detectorType;
+    DescriptorType descriptorType;
+    MatcherType matcherType;
+    int maxFeatureCount;
+    size_t responsesPerPoint;
+    std::string params;
+};
+
+void AddDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline,
+    DetectorType detectorType,
+    DescriptorType descriptorType,
+    MatcherType matcherType,
+	int maxFeatureCount,
+    const std::string &params = "",
+    size_t responsesPerPoint = 2 );
+
 class FeatureMatchingPipeline
 {
 public:
