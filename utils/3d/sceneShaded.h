@@ -58,7 +58,7 @@ public:
     {
         for (int target = 0; target < ShaderTarget::LAST; target++)
         {
-            mProgram[target] == NULL;
+            mProgram[target] = NULL;
         }
     }
 
