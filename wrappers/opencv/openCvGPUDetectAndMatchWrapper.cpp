@@ -123,6 +123,11 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
             gpuImages[ i ].cudaKeypoints.download( keypointsMat ); // copy GPU -> CPU
             detectorORB_CUDA->convertKeyPoints( keypointsMat, keypoints );
         }
+		else if (detectorSURF_OCL)
+		{
+			detectorSURF_OCL->downloadKeypoints(gpuImages[i].oclKeypoints, keypoints);	// copy GPU -> CPU
+			gpuImages[i].oclDescriptors.download(descriptors); // copy GPU -> CPU
+		}
 	
 		FOREACH(const cv::KeyPoint &kp, keypoints)
 		{

@@ -119,8 +119,10 @@ DescriptorExtractor* OpenCvGPUDescriptorExtractorProvider::getDescriptorExtracto
     {
         SWITCH_TYPE( SURF_GPU,
             return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::SURF_GPU( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ) ); )
-        SWITCH_TYPE( ORB_GPU,
-            return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::ORB_GPU( orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize ) ); )
+        
+		// does not work
+		//SWITCH_TYPE( ORB_GPU,
+        //    return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::ORB_GPU( orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize ) ); )
     }
     else
         SWITCH_TYPE( SURF_GPU,
@@ -132,7 +134,6 @@ DescriptorExtractor* OpenCvGPUDescriptorExtractorProvider::getDescriptorExtracto
 bool OpenCvGPUDescriptorExtractorProvider::provides( const DescriptorType &type )
 {
     SWITCH_TYPE(SURF_GPU, return true;);
-    SWITCH_TYPE(ORB_GPU,  return true;);
     return false;
 }
 
