@@ -49,7 +49,7 @@ private:
 
 extern "C"
 {
-	void init_opencv_gpu_detect_extract_and_match_provider();
+    bool init_opencv_gpu_detect_extract_and_match_provider( bool& cudaApi );
 }
 
 class OpenCvGPUDetectExtractAndMatchProvider : public DetectExtractAndMatchProviderImpl

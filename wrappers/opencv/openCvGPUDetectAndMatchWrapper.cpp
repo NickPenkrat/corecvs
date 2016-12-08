@@ -74,7 +74,7 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
             ( *detectorORB_CUDA )( gpuImages[ i ].cudaImg, cv::gpu::GpuMat(), gpuImages[ i ].cudaKeypoints, gpuImages[ i ].cudaDescriptors );
 	}
 
-#if 1
+#if 0
 	for (size_t i = 0; i < numImages; i++)
 	{
 		gpuImages[i].cudaImg.~GpuMat();
@@ -123,7 +123,13 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
             gpuImages[ i ].cudaKeypoints.download( keypointsMat ); // copy GPU -> CPU
             detectorORB_CUDA->convertKeyPoints( keypointsMat, keypoints );
         }
+		else if (detectorSURF_OCL)
+		{
+			detectorSURF_OCL->downloadKeypoints(gpuImages[i].oclKeypoints, keypoints);	// copy GPU -> CPU
+			gpuImages[i].oclDescriptors.download(descriptors); // copy GPU -> CPU
+		}
 	
+        image.keyPoints.keyPoints.clear();
 		FOREACH(const cv::KeyPoint &kp, keypoints)
 		{
 			image.keyPoints.keyPoints.push_back(convert(kp));
@@ -217,11 +223,16 @@ OpenCvGPUDetectExtractAndMatchWrapper::~OpenCvGPUDetectExtractAndMatchWrapper()
 
 extern bool FindGPUDevice(bool& cudaApi);
 
-void init_opencv_gpu_detect_extract_and_match_provider()
+bool  init_opencv_gpu_detect_extract_and_match_provider( bool& cudaApi )
 {
-	bool cudaApi = false;
-	if (FindGPUDevice(cudaApi))
-		DetectExtractAndMatchProvider::getInstance().add(new OpenCvGPUDetectExtractAndMatchProvider(cudaApi));
+	cudaApi = false;
+    if ( FindGPUDevice( cudaApi ) )
+    {
+        DetectExtractAndMatchProvider::getInstance().add( new OpenCvGPUDetectExtractAndMatchProvider( cudaApi ) );
+        return true;
+    }
+		
+    return false;
 }
 
 OpenCvGPUDetectExtractAndMatchProvider::OpenCvGPUDetectExtractAndMatchProvider(bool _cudaApi) : cudaApi(_cudaApi) {}

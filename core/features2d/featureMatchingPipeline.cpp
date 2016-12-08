@@ -36,7 +36,7 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
 
 std::string getFilename(const std::string &imgName)
 {
-    int pos = imgName.find_last_of(PATH_SEPARATOR[0]);
+    int pos = ( int )imgName.find_last_of( PATH_SEPARATOR[ 0 ] );
     std::string res = imgName.substr(pos,imgName.size() - pos);
     return res;
 }
@@ -1500,11 +1500,15 @@ DetectExtractAndMatchStage::DetectExtractAndMatchStage( DetectorType detectorTyp
 void DetectExtractAndMatchStage::run(FeatureMatchingPipeline *pipeline)
 {
     std::unique_ptr<DetectExtractAndMatch> detector( DetectExtractAndMatchProvider::getInstance().getDetector( detectorType, descriptorType, matcherType, params ) );
-    std::stringstream ss1, ss2;
+    std::stringstream ss1;
     pipeline->tic();
-    detector->detectExtractAndMatch( *pipeline, maxFeatureCount, responsesPerPoint );
-    ss1 << "Detect " << detectorType << " and match " << matcherType;
-    pipeline->toc( ss1.str(), ss2.str());
+    detector->detectExtractAndMatch( *pipeline, maxFeatureCount, ( int )responsesPerPoint );
+	const size_t numImages = pipeline->images.size();
+	for (uint i = 0; i < numImages; i++)
+		cout << pipeline->images[i].filename << "\t\t\t " << pipeline->images[i].keyPoints.keyPoints.size() << " keypoints " << endl;
+
+	ss1 << "Detect " << detectorType << " and match " << matcherType;
+    pipeline->toc( ss1.str(), "");
 }
 
 void DetectExtractAndMatchStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)

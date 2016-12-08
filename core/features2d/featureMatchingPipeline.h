@@ -161,7 +161,7 @@ void AddDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline,
     DetectorType detectorType,
     DescriptorType descriptorType,
     MatcherType matcherType,
-	int maxFeatureCount,
+    int maxFeatureCount = 4000,
     const std::string &params = "",
     size_t responsesPerPoint = 2 );
 

@@ -95,17 +95,30 @@ OpenCvGPUDescriptorMatcherProvider::OpenCvGPUDescriptorMatcherProvider( bool cud
 
 DescriptorMatcher* OpenCvGPUDescriptorMatcherProvider::getDescriptorMatcher( const DescriptorType &type, const MatcherType &matcher, const std::string &params )
 {
+	CORE_UNUSED(params);
     if ( cudaApi )
     {
-        SWITCH_MATCHER_TYPE( BF_GPU,
-            SWITCH_TYPE( SURF_GPU, return new OpenCvGPUDescriptorMatcherWrapper( new cv::gpu::BruteForceMatcher_GPU_base( cv::gpu::BruteForceMatcher_GPU_base::L2Dist ) ); );
-            SWITCH_TYPE( ORB_GPU,  return new OpenCvGPUDescriptorMatcherWrapper( new cv::gpu::BruteForceMatcher_GPU_base( cv::gpu::BruteForceMatcher_GPU_base::HammingDist ) ); ); );
+        SWITCH_MATCHER_TYPE(BF_GPU,
+            SWITCH_TYPE(SURF_GPU, return new OpenCvGPUDescriptorMatcherWrapper( new cv::gpu::BruteForceMatcher_GPU_base( cv::gpu::BruteForceMatcher_GPU_base::L2Dist ) ); );
+            SWITCH_TYPE(ORB_GPU,  return new OpenCvGPUDescriptorMatcherWrapper( new cv::gpu::BruteForceMatcher_GPU_base( cv::gpu::BruteForceMatcher_GPU_base::HammingDist ) ); ); );
+
+		SWITCH_MATCHER_TYPE(BF_GPU,
+			SWITCH_TYPE(SIFT, return new OpenCvGPUDescriptorMatcherWrapper(new cv::gpu::BruteForceMatcher_GPU_base(cv::gpu::BruteForceMatcher_GPU_base::L2Dist)););
+		    SWITCH_TYPE(BRISK, return new OpenCvGPUDescriptorMatcherWrapper(new cv::gpu::BruteForceMatcher_GPU_base(cv::gpu::BruteForceMatcher_GPU_base::HammingDist)););
+			SWITCH_TYPE(SURF, return new OpenCvGPUDescriptorMatcherWrapper(new cv::gpu::BruteForceMatcher_GPU_base(cv::gpu::BruteForceMatcher_GPU_base::L2Dist)););
+		    SWITCH_TYPE(ORB, return new OpenCvGPUDescriptorMatcherWrapper(new cv::gpu::BruteForceMatcher_GPU_base(cv::gpu::BruteForceMatcher_GPU_base::HammingDist));););
     }
     else
     {
         SWITCH_MATCHER_TYPE( BF_GPU,
-            SWITCH_TYPE( SURF_GPU, return new OpenCvGPUDescriptorMatcherWrapper( new cv::ocl::BruteForceMatcher_OCL_base( cv::ocl::BruteForceMatcher_OCL_base::L2Dist ) ); );
-            SWITCH_TYPE( ORB_GPU,  return new OpenCvGPUDescriptorMatcherWrapper( new cv::ocl::BruteForceMatcher_OCL_base( cv::ocl::BruteForceMatcher_OCL_base::HammingDist ) ); ); );
+            SWITCH_TYPE(SURF_GPU, return new OpenCvGPUDescriptorMatcherWrapper(new cv::ocl::BruteForceMatcher_OCL_base( cv::ocl::BruteForceMatcher_OCL_base::L2Dist ) ); );
+            SWITCH_TYPE(ORB_GPU,  return new OpenCvGPUDescriptorMatcherWrapper(new cv::ocl::BruteForceMatcher_OCL_base( cv::ocl::BruteForceMatcher_OCL_base::HammingDist ) ); ); );
+
+		SWITCH_MATCHER_TYPE(BF_GPU,
+			SWITCH_TYPE(SIFT, return new OpenCvGPUDescriptorMatcherWrapper(new cv::ocl::BruteForceMatcher_OCL_base(cv::ocl::BruteForceMatcher_OCL_base::L2Dist)););
+		    SWITCH_TYPE(BRISK, return new OpenCvGPUDescriptorMatcherWrapper(new cv::ocl::BruteForceMatcher_OCL_base(cv::ocl::BruteForceMatcher_OCL_base::HammingDist)););
+			SWITCH_TYPE(SURF, return new OpenCvGPUDescriptorMatcherWrapper(new cv::ocl::BruteForceMatcher_OCL_base(cv::ocl::BruteForceMatcher_OCL_base::L2Dist)););
+		    SWITCH_TYPE(ORB, return new OpenCvGPUDescriptorMatcherWrapper(new cv::ocl::BruteForceMatcher_OCL_base(cv::ocl::BruteForceMatcher_OCL_base::HammingDist));););
     }
 
     CORE_ASSERT_FAIL_P(("OpenCvGPUDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcherWrapper", type.c_str(), matcher.c_str()));
@@ -117,6 +130,10 @@ bool OpenCvGPUDescriptorMatcherProvider::provides( const DescriptorType &type, c
     SWITCH_MATCHER_TYPE(BF_GPU,
         SWITCH_TYPE(SURF_GPU, return true;);
         SWITCH_TYPE(ORB_GPU, return true;););
+
+	SWITCH_MATCHER_TYPE(BF_GPU,
+		SWITCH_TYPE(SURF, return true;);
+		SWITCH_TYPE(ORB, return true;););
     return false;
 }
 
