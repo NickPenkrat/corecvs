@@ -77,13 +77,16 @@ public:
     Vector trsv(const Vector &rhs, const char* trans, bool up, int N) const;
     Vector trsv_homebrew(const Vector &rhs, const char* trans,  bool up, int N) const;
     Vector spmv_homebrew(const Vector &rhs, bool trans) const;
+    SparseMatrix spmm_homebrew(const SparseMatrix &rhs, bool transA, bool transB) const;
 #ifdef WITH_MKL
     Vector spmv_mkl     (const Vector &rhs, bool trans) const;
     Vector trsv_mkl(const Vector &rhs, const char* trans,  bool up, int N) const;
+    SparseMatrix spmm_mkl(const SparseMatrix &rhs, bool transA, bool transB) const;
 #endif
 #ifdef WITH_CUSPARSE
     Vector spmv_cusparse(const Vector &rhs, bool trans, int gpuId) const;
     Vector trsv_cusparse(const Vector &rhs, const char* trans,  bool up, int N, int gpuId) const;
+    SparseMatrix spmm_cusparse(const SparseMatrix &rhs, bool transA, bool transB, int devId) const;
 #endif
 
 
@@ -183,7 +186,7 @@ private:
             operator bool() const;
             TriangularPromotion(const SparseMatrix &m, bool upper, int gpuId);
 
-            static void checkError();
+            static void checkError(const char *bar="", int baz = -1);
 
             ~TriangularPromotion();
         };
@@ -195,7 +198,10 @@ private:
 
             BasicPromotion();
             BasicPromotion(const SparseMatrix &m, int gpuId);
+#if defined(_MSC_VER) && (_MSC_VER < 1900)   // needs only for older than msvc2015 compiler
+
             BasicPromotion& operator=(BasicPromotion &&rhs);
+#endif
             operator bool() const;
         };
 
@@ -231,8 +237,20 @@ struct Characterizator<const SparseMatrix&>
     static characteristic_type Characterize(const SparseMatrix& sm);
 };
 
+template<>
+struct Characterizator<const std::tuple<const SparseMatrix&, const SparseMatrix&, bool, bool>&>
+{
+    static const int CHARACTERISTIC_WIDTH = 8;
+    typedef std::array<int, CHARACTERISTIC_WIDTH> characteristic_type;
+    typedef std::tuple<const SparseMatrix&, const SparseMatrix&, bool, bool> inner_type;
+
+    static characteristic_type Characterize(const inner_type &v);
+};
+typedef Characterizator<const std::tuple<const SparseMatrix&, const SparseMatrix&, bool, bool>&> SPMMC;
+
 typedef Wisdom<const SparseMatrix&, SparseImplementations, Vector, const Vector&, bool> SPMVWisdom;
 typedef Wisdom<const SparseMatrix&, SparseImplementations, Vector, const Vector&, const char *, bool, int> TRSVWisdom;
+typedef Wisdom<const SPMMC::inner_type&, SparseImplementations, SparseMatrix> SPMMWisdom;
 
 SparseMatrix operator -(const SparseMatrix &a);
 SparseMatrix operator *(const double       &lhs, const SparseMatrix &rhs);

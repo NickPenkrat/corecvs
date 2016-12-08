@@ -490,7 +490,7 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         CORE_ASSERT_TRUE_S(assembler->kd);
         auto& tree = *assembler->kd;
 
-        for (int i = 0; i < prediction.size(); ++i)
+        for (size_t i = 0; i < prediction.size(); ++i)
         {
             auto res = tree.nearestNeighbour(OrientedCorner(prediction[i]), [&](OrientedCorner* v) { return usedCorners[v - &corners[0]] == 0; });
             if (!res)

@@ -222,6 +222,10 @@ TEST(Similarity, testCostFunction)
     cout << matrix1 << endl;
 }
 
+TEST(Similarity, distanceTest) {
+
+}
+
 
 TEST(Similarity, testConverstions)
 {

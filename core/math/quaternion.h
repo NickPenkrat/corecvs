@@ -11,6 +11,7 @@
 #define QUATERNION_H_
 
 #include "matrix33.h"
+#include "matrix44.h"
 #include "fixedVector.h"
 #include "mathUtils.h"
 
@@ -209,6 +210,8 @@ public:
 
     /**
      * This function is a reworked function form somewhere in Internet. License is unclear
+     * This also takes square roots which is very funny :-D and very corecvs-ish (i.e. dumb
+     * 'cause you'll get a squared square root in the denominator)
      * */
     template <class MatrixType>
     inline MatrixType toMatrixGeneric() const  {
@@ -232,6 +235,148 @@ public:
         return toReturn;
     }
 
+    /*
+     * FULL            = full parametrization of *unit* quaternion
+     * FULL_NORMALIZED = full parametrization, requires normalization
+     * NON_EXCESSIVE   = smooth non-excessive parametrization (w/o one point)
+     */
+    enum class Parametrization { FULL, FULL_NORMALIZED, NON_EXCESSIVE };
+
+    // XXX: The reason for returning Matrix44 is usage in rigid body transformation context
+    static Matrix44 RotationalTransformation(const double &qx, const double &qy, const double &qz, const double &qw, const Parametrization &p, const bool &inverse)
+    {
+        auto qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qw2 = qw * qw,
+             qxqy= qx * qy, qxqz= qx * qz, qxqw= qx * qw, qyqz= qy * qz, qyqw = qy * qw, qzqw = qz * qw;
+        double N;
+        switch (p)
+        {
+            case Parametrization::FULL:
+                return !inverse ?
+                     Matrix44(1.0 - 2.0*(qy2 + qz2),     2.0*(qxqy - qzqw),     2.0*(qxqz + qyqw), 0.0,
+                                  2.0*(qxqy + qzqw), 1.0 - 2.0*(qx2 + qz2),     2.0*(qyqz - qxqw), 0.0,
+                                  2.0*(qxqz - qyqw),     2.0*(qyqz + qxqw), 1.0 - 2.0*(qx2 + qy2), 0.0,
+                                                0.0,                   0.0,                   0.0, 1.0)
+                   : Matrix44(1.0 - 2.0*(qy2 + qz2),     2.0*(qxqy + qzqw),     2.0*(qxqz - qyqw), 0.0,
+                                  2.0*(qxqy - qzqw), 1.0 - 2.0*(qx2 + qz2),     2.0*(qyqz + qxqw), 0.0,
+                                  2.0*(qxqz + qyqw),     2.0*(qyqz - qxqw), 1.0 - 2.0*(qx2 + qy2), 0.0,
+                                                0.0,                   0.0,                   0.0, 1.0);
+
+
+                break;
+            case Parametrization::FULL_NORMALIZED:
+                N = qx2 + qy2 + qz2 + qw2;
+                return !inverse ?
+                    Matrix44((qw2+qx2-qy2-qz2) / N,  2.0*(-qzqw+qxqy) / N,   2.0*(qyqw+qxqz) / N, 0.0,
+                               2.0*(qzqw+qxqy) / N, (qw2-qx2+qy2-qz2) / N,  2.0*(-qxqw+qyqz) / N, 0.0,
+                              2.0*(-qyqw+qxqz) / N,   2.0*(qxqw+qyqz) / N, (qw2-qx2-qy2+qz2) / N, 0.0,
+                                               0.0,                   0.0,                   0.0, 1.0)
+                  : Matrix44((qw2+qx2-qy2-qz2) / N,   2.0*(qzqw+qxqy) / N,  2.0*(-qyqw+qxqz) / N, 0.0,
+                              2.0*(-qzqw+qxqy) / N, (qw2-qx2+qy2-qz2) / N,   2.0*(qxqw+qyqz) / N, 0.0,
+                               2.0*(qyqw+qxqz) / N,  2.0*(-qxqw+qyqz) / N, (qw2-qx2-qy2+qz2) / N, 0.0,
+                                               0.0,                   0.0,                   0.0, 1.0);
+                break;
+            case Parametrization::NON_EXCESSIVE:
+                N = (qx2 + qy2 + qz2 - 1.0) * 2.0;
+                return !inverse ?
+                    Matrix44(N*qy2+N*qz2+1.0,    N*(-qxqy+qz),    -N*(qxqz+qy), 0.0,
+                                -N*(qxqy+qz), N*qx2+N*qz2+1.0,     N*(qx-qyqz), 0.0,
+                                N*(-qxqz+qy),    -N*(qx+qyqz), N*qx2+N*qy2+1.0, 0.0,
+                                         0.0,             0.0,             0.0, 1.0)
+                  : Matrix44(N*qy2+N*qz2+1.0,    -N*(qxqy+qz),    N*(-qxqz+qy), 0.0,
+                                N*(-qxqy+qz), N*qx2+N*qz2+1.0,    -N*(qx+qyqz), 0.0,
+                                -N*(qxqz+qy),     N*(qx-qyqz), N*qx2+N*qy2+1.0, 0.0,
+                                         0.0,             0.0,             0.0, 1.0);
+                break;
+        }
+        CORE_ASSERT_TRUE_S(false);
+        return Matrix44();
+    }
+
+    // XXX: The reason for returning Matrix44 is usage in rigid body transformation context
+    static void DiffTransformation(const double &qx, const double &qy, const double &qz, const double &qw, const Parametrization &p, const bool &inverse, Matrix44 &Rqx, Matrix44 &Rqy, Matrix44 &Rqz, Matrix44 &Rqw)
+    {
+        auto fillFun = inverse ? &Matrix44::FillWithArgsT : &Matrix44::FillWithArgs;
+        switch(p)
+        {
+            case Parametrization::FULL:
+                fillFun(Rqx,
+                       0.0, 2.0*qy, 2.0*qz, 0.0,
+                    2.0*qy,-4.0*qx,-2.0*qw, 0.0,
+                    2.0*qz, 2.0*qw,-4.0*qx, 0.0,
+                       0.0,    0.0,    0.0, 0.0);
+                fillFun(Rqy,
+                    -4.0*qy, 2.0*qx, 2.0*qw, 0.0,
+                     2.0*qx,    0.0, 2.0*qz, 0.0,
+                    -2.0*qw, 2.0*qz,-4.0*qy, 0.0,
+                        0.0,    0.0,    0.0, 0.0);
+                fillFun(Rqz,
+                    -4.0*qz,-2.0*qw, 2.0*qx, 0.0,
+                     2.0*qw,-4.0*qz, 2.0*qy, 0.0,
+                     2.0*qx, 2.0*qy,    0.0, 0.0,
+                        0.0,    0.0,    0.0, 0.0);
+                fillFun(Rqw,
+                        0.0,-2.0*qz, 2.0*qy, 0.0,
+                     2.0*qz,    0.0,-2.0*qx, 0.0,
+                    -2.0*qy, 2.0*qx,    0.0, 0.0,
+                        0.0,    0.0,    0.0, 0.0);
+                break;
+            case Parametrization::FULL_NORMALIZED:
+                {
+                    double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qw2 = qw * qw;
+                    double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz, qxqw = qx * qw, qyqw = qy * qw, qzqw = qz * qw;
+                    double N = qx2 + qy2 + qz2 + qw2;
+                    double N2= N * N;
+                    fillFun(Rqx,
+                                         4.0*qx*(qy2 + qz2) / N2, (4.0*qx*(qzqw - qxqy) + 2.0*qy*N) / N2, (-4.0*qx*(qyqw + qxqz) + 2.0*qz*N) / N2, 0,
+                        (-4.0*qx*(qzqw +  qxqy) + 2.0*qy*N) / N2,               -4.0*qx*(qw2 + qy2) / N2, (-2.0*qw*N + 4.0*qx*(qxqw - qyqz)) / N2, 0,
+                          (4.0*qx*(qyqw - qxqz) + 2.0*qz*N) / N2, (2.0*qw*N - 4.0*qx*(qxqw + qyqz)) / N2,                -4.0*qx*(qw2 + qz2) / N2, 0,
+                                                               0,                                      0,                                       0, 0);
+                    fillFun(Rqy,
+                                        -4.0*qy*(qw2 + qx2) / N2, (2.0*qx*N + 4.0*qy*(qzqw - qxqy)) / N2, (2.0*qw*N - 4.0*qy*(qyqw + qxqz)) / N2, 0,
+                          (2.0*qx*N - 4.0*qy*(qzqw + qxqy)) / N2,                4.0*qy*(qx2 + qz2) / N2, (4.0*qy*(qxqw - qyqz) + 2.0*qz*N) / N2, 0,
+                         (-2.0*qw*N + 4.0*qy*(qyqw - qxqz)) / N2,(-4.0*qy*(qxqw + qyqz) + 2.0*qz*N) / N2,               -4.0*qy*(qw2 + qz2) / N2, 0,
+                                                               0,                                      0,                                      0, 0);
+                    fillFun(Rqz,
+                                        -4.0*qz*(qw2 + qx2) / N2,(-2.0*qw*N + 4.0*qz*(qzqw - qxqy)) / N2, (2.0*qx*N - 4.0*qz*(qyqw + qxqz)) / N2, 0,
+                          (2.0*qw*N - 4.0*qz*(qzqw + qxqy)) / N2,               -4.0*qz*(qw2 + qy2) / N2, (2.0*qy*N + 4.0*qz*(qxqw - qyqz)) / N2, 0,
+                          (2.0*qx*N + 4.0*qz*(qyqw - qxqz)) / N2, (2.0*qy*N - 4.0*qz*(qxqw + qyqz)) / N2,                4.0*qz*(qx2 + qy2) / N2, 0,
+                                                               0,                                      0,                                      0, 0);
+                    fillFun(Rqw,
+                                         4.0*qw*(qy2 + qz2) / N2, (4.0*qw*(qzqw - qxqy) - 2.0*qz*N) / N2, (-4.0*qw*(qyqw + qxqz) + 2.0*qy*N) / N2, 0,
+                         (-4.0*qw*(qzqw + qxqy) + 2.0*qz*N) / N2,                4.0*qw*(qx2 + qz2) / N2,  (4.0*qw*(qxqw - qyqz) - 2.0*qx*N) / N2, 0,
+                          (4.0*qw*(qyqw - qxqz) - 2.0*qy*N) / N2,(-4.0*qw*(qxqw + qyqz) + 2.0*qx*N) / N2,                 4.0*qw*(qx2 + qy2) / N2, 0,
+                                                               0,                                      0,                                       0, 0);
+
+                }
+                break;
+            case Parametrization::NON_EXCESSIVE:
+                {
+                    double qx2 = qx * qx, qy2 = qy * qy, qz2 = qz * qz, qxqyqz = qx * qy * qz;
+                    double qxqy= qx * qy, qxqz = qx * qz, qyqz = qy * qz,
+                        qx3 = qx2 * qx, qy3 = qy2 * qy, qz3 = qz2 * qz, qx2qy = qx2 * qy, qx2qz = qx2 * qz, qxqy2 = qx * qy2, qy2qz = qy2 * qz, qxqz2 = qx * qz2, qyqz2 = qy * qz2;
+                    fillFun(Rqx,
+                                                    4.0*qx*(qy2+qz2),-6.0*qx2qy+4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,-6.0*qx2qz-4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
+                        -6.0*qx2qy-4.0*qxqz-2.0*qy3-2.0*qyqz2+2.0*qy,            4.0*qx*(2.0*qx2+qy2+2.0*qz2-1.0),        6.0*qx2-4.0*qxqyqz+2.0*qy2+2.0*qz2-2, 0.0,
+                        -6.0*qx2qz+4.0*qxqy-2.0*qy2qz-2.0*qz3+2.0*qz,     -6.0*qx2-4.0*qxqyqz-2.0*qy2-2.0*qz2+2.0,            4.0*qx*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
+                                                                 0.0,                                         0.0,                                         0.0, 0.0);
+
+                    fillFun(Rqy,
+                                    4.0*qy*(qx2+2.0*qy2+2.0*qz2-1.0),-2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx+4.0*qyqz,     -2.0*qx2-4.0*qxqyqz-6.0*qy2-2.0*qz2+2.0, 0.0,
+                        -2.0*qx3-6.0*qxqy2-2.0*qxqz2+2.0*qx-4.0*qyqz,                            4.0*qy*(qx2+qz2),-2.0*qx2qz+4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz, 0.0,
+                              2.0*qx2-4.0*qxqyqz+6.0*qy2+2.0*qz2-2.0,-2.0*qx2qz-4.0*qxqy-6.0*qy2qz-2.0*qz3+2.0*qz,            4.0*qy*(2.0*qx2+2.0*qy2+qz2-1.0), 0.0,
+                                                                 0.0,                                         0.0,                                         0.0, 0.0);
+
+                    fillFun(Rqz,
+                                4.0*qz*(qx2+2.0*qy2+2.0*qz2-1.0),      2.0*qx2-4.0*qxqyqz+2.0*qy2+6.0*qz2-2.0,-2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx-4.0*qyqz, 0.0,
+                         -2.0*qx2-4.0*qxqyqz-2.0*qy2-6.0*qz2+2.0,            4.0*qz*(2.0*qx2+qy2+2.0*qz2-1.0),-2.0*qx2qy+4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy, 0.0,
+                    -2.0*qx3-2.0*qxqy2-6.0*qxqz2+2.0*qx+4.0*qyqz,-2.0*qx2qy-4.0*qxqz-2.0*qy3-6.0*qyqz2+2.0*qy,                            4.0*qz*(qx2+qy2), 0.0,
+                                                             0.0,                                         0.0,                                         0.0, 0.0);
+
+                }
+                break;
+        }
+    }
+
     inline Matrix33 toMatrix() const {
         return toMatrixGeneric<Matrix33>();
     }
@@ -242,7 +387,7 @@ public:
      *   NB - this function expects normalized quaternion as input.
      *   Normalise it explicitly
      **/
-    inline double  getAngle() const  {        
+    inline double  getAngle() const  {
         return 2 * acos(t());
     }
 

@@ -1183,6 +1183,12 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
     CORE_ASSERT_FALSE((m < n), "SVDCMP: You must augment A with extra zero rows");
     CORE_ASSERT_TRUE(n > 0, "A width should not be zero");
 
+#ifdef WITH_BLAS
+    // Stupidity remains here, just non-super-stupid method
+    Vector vv(n);
+    LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'O', 'A', m, n, &A->a(0, 0), A->stride, &W->a(0, 0), 0, 1, &V->a(0, 0), V->stride, &vv[0]);
+    V->transpose();
+#else
     rv1 = new double[n];
 
     /* Householder reduction to bidigonal form */
@@ -1432,12 +1438,13 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
         }
     }
     delete[] rv1;
+#endif
 }
 
 std::pair<bool, Matrix> Matrix::incompleteCholseky()
 {
-	auto res = SparseMatrix(*this).incompleteCholseky();
-	return std::make_pair(res.first, Matrix(res.second));
+    auto res = SparseMatrix(*this).incompleteCholseky();
+    return std::make_pair(res.first, Matrix(res.second));
 }
 
 

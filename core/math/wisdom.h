@@ -232,7 +232,7 @@ private:
                         auto accId = std::get<1>(tt);
                         auto accel = acc[i];
                         auto impl = std::get<0>(tt);
-                        auto tid = std::get<2>(tt);
+                        //auto tid = std::get<2>(tt);
 
                         auto start = std::chrono::high_resolution_clock::now();
                         auto lock = AcceleratorController::Lock(accel, accId);

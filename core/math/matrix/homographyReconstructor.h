@@ -84,6 +84,8 @@ public:
 
     void normalisePoints(Matrix33 &transformLeft, Matrix33 &transformRight);
 
+    Matrix getJacobian(const Matrix33 &H) const;
+
     virtual ~HomographyReconstructor();
 
 private:
@@ -122,6 +124,7 @@ private:
         CostFunction(HomographyReconstructor *_reconstructor) : FunctionArgs(8, _reconstructor->getConstraintNumber()), reconstructor(_reconstructor) {}
 
         virtual void operator()(const double in[], double out[]);
+        Matrix getJacobian(const double in[], double dlta=1e-7);
     };
 
     /**
@@ -211,7 +214,7 @@ public:
             {
                 out[argout++] = diff.x();
                 out[argout++] = diff.y();
-            }           
+            }
         }
 
         for (unsigned i = 0; i < p2l.size(); i++)

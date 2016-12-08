@@ -1,4 +1,5 @@
 #include "flatPatternCalibrator.h"
+#include "tbb/tbb.h"
 
 corecvs::FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const LineDistortionEstimatorParameters distortionEstimatorParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), intrinsics(lockParams), lockParams(lockParams), distortionEstimationParams(distortionEstimatorParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
@@ -11,18 +12,97 @@ void corecvs::FlatPatternCalibrator::addPattern(const ObservationList &patternPo
     locationData.push_back(position);
     points.push_back(patternPoints);
     K += patternPoints.size();
+    for (auto& pp: patternPoints)
+    {
+        CORE_ASSERT_TRUE_S(!std::isnan(pp.projection[0]));
+        CORE_ASSERT_TRUE_S(!std::isnan(pp.projection[1]));
+        CORE_ASSERT_TRUE_S(!std::isnan(pp.point[0]));
+        CORE_ASSERT_TRUE_S(!std::isnan(pp.point[1]));
+        CORE_ASSERT_TRUE_S(!std::isnan(pp.point[2]));
+    }
 }
 
 void corecvs::FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LMiterations)
 {
+    std::cout << "SOLVING FPC" << std::endl;
     if (runPresolver)
     {
-        solveInitialIntrinsics();
-        solveInitialExtrinsics();
-        std::cout << std::endl << this << "RES Full projective: " << getRmseReprojectionError() << std::endl;
-        enforceParams();
+        double bestError = std::numeric_limits<double>::max();
+        std::vector<CameraLocationData> bestLocations;
+        PinholeCameraIntrinsics bestIntrinsics;
+        LensDistortionModelParameters bestDistortion;
+        for (int i = 0; i < presolverIterations; ++i)
+        {
+            if (!solveInitialIntrinsics())
+            {
+                CORE_ASSERT_TRUE_S(i > 0);
+                break;
+            }
+            solveInitialExtrinsics();
+
+            double projective, enforced, distorted;
+            projective = getRmseReprojectionError();
+            enforceParams();
+            enforced = getRmseReprojectionError();
+
+            if (std::isnan(enforced))
+                break;
+
+            if (enforced < bestError)
+            {
+                bestError = enforced;
+                bestLocations = locationData;
+                bestIntrinsics = intrinsics;
+                bestDistortion = distortionParams;
+                std::cout << "*" << std::flush;
+            }
+
+            if (!(constraints & CameraConstraints::UNLOCK_DISTORTION))
+                break;
+
+            if (!distortionEstimated)
+                distortionParams.mNormalizingFocal = std::max(!intrinsics.principal, 1.0);
+            if (distortionEstimated)
+            {
+                solveInitialDistortion(false);
+
+                distorted = getRmseReprojectionError();
+                if (std::isnan(distorted))
+                    break;
+
+                if (distorted < bestError)
+                {
+                    bestError = distorted;
+                    bestLocations = locationData;
+                    bestIntrinsics = intrinsics;
+                    bestDistortion = distortionParams;
+                    std::cout << "@" << std::flush;
+                }
+            }
+
+
+            solveInitialDistortion(true);
+
+            distorted = getRmseReprojectionError();
+            if (std::isnan(distorted))
+                break;
+
+            if (distorted < bestError)
+            {
+                bestError = distorted;
+                bestLocations = locationData;
+                bestIntrinsics = intrinsics;
+                bestDistortion = distortionParams;
+                std::cout << "$" << std::flush;
+            }
+        }
+        CORE_ASSERT_TRUE_S(bestError != std::numeric_limits<double>::max());
+
+        locationData = bestLocations;
+        intrinsics = bestIntrinsics;
+        distortionParams = bestDistortion;
+        std::cout << std::endl;
     }
-    std::cout << std::endl << this << "RES Constrained init: " << getRmseReprojectionError() << std::endl;
 
     if(runLM) refineGuess(LMiterations);
     std::cout << std::endl <<  this << "RES LM: " << getRmseReprojectionError() << std::endl;
@@ -51,10 +131,249 @@ double corecvs::FlatPatternCalibrator::getRmseReprojectionError()
     getFullReprojectionError(&err[0]);
 
     double sqs = 0.0;
-    for (auto e : err) {
+    for (auto& e : err)
         sqs += e * e;
-    }
     return sqrt(sqs / K);
+}
+
+void corecvs::FlatPatternCalibrator::solveInitialDistortion(bool enforcePrincipal)
+{
+    auto premap = getRmseReprojectionError();
+    distortionParams.mMapForward = true;
+    distortionParams.mKoeff.resize(distortionEstimationParams.mPolynomDegree);
+    if (enforcePrincipal)
+    {
+        distortionParams.mPrincipalX = intrinsics.cx();
+        distortionParams.mPrincipalY = intrinsics.cy();
+    }
+
+    std::vector<Vector2dd> proj, pt;
+    for (int i = 0; i < N; ++i)
+    {
+        auto R = Quaternion::RotationalTransformation(locationData[i].orientation[0], locationData[i].orientation[1], locationData[i].orientation[2], locationData[i].orientation[3], Quaternion::Parametrization::FULL_NORMALIZED, false);
+        auto& C = locationData[i].position;
+
+        for (auto& ptp: points[i])
+        {
+            Vector3dd pp = ptp.point;
+
+            pp[1] *= factor;
+
+            auto res = intrinsics.project(R * (pp - C));
+            proj.push_back(res);
+            pt.push_back(ptp.projection);
+        }
+    }
+    distortionParams.solveRadial(proj, pt);
+    auto postmap = getRmseReprojectionError();
+    if (premap > postmap)
+        std::cout << "^" << std::flush;
+    distortionEstimated = true;
+}
+
+Matrix corecvs::FlatPatternCalibrator::getJacobian()
+{
+    Matrix J(getOutputNum(), getInputNum());
+    int idx = 0;
+
+    auto f = intrinsics.focal[0], fx = intrinsics.focal[0], fy = intrinsics.focal[1];
+    auto cx= intrinsics.principal[0], cy = intrinsics.principal[1];
+    auto skew = intrinsics.skew;
+
+    bool distorting = !!(constraints & CameraConstraints::UNLOCK_DISTORTION);
+    for (size_t i = 0; i < N; ++i)
+    {
+        auto& QQ = locationData[i].orientation;
+        auto qx = QQ[0], qy = QQ[1], qz = QQ[2], qw = QQ[3];
+        auto& CC = locationData[i].position;
+        auto tx = CC[0], ty = CC[1], tz = CC[2];
+        Matrix44 R = Quaternion::RotationalTransformation(qx, qy, qz, qw, Quaternion::Parametrization::FULL_NORMALIZED, false), Rqx, Rqy, Rqz, Rqw,
+                 Tc(1.0, 0.0, 0.0, -tx,
+                    0.0, 1.0, 0.0, -ty,
+                    0.0, 0.0, 1.0, -tz,
+                    0.0, 0.0, 0.0, 1.0),
+                 Kf = PinholeCameraIntrinsics::Kf(), Kfx = PinholeCameraIntrinsics::Kfx(), Kfy = PinholeCameraIntrinsics::Kfy(), Kcx = PinholeCameraIntrinsics::Kcx(), Kcy = PinholeCameraIntrinsics::Kcy(), Ks = PinholeCameraIntrinsics::Ks(),
+                 K = intrinsics.getKMatrix();
+        Quaternion::DiffTransformation(qx, qy, qz, qw, Quaternion::Parametrization::FULL_NORMALIZED, false, Rqx, Rqy, Rqz, Rqw);
+
+        for (auto& ptp: points[i])
+        {
+            auto pp = ptp.point;
+            auto pr = ptp.projection;
+
+            auto    TX = Tc * Vector4dd(pp[0], pp[1], pp[2], 1.0);
+            auto   RTX = R * TX;
+            auto K2RTX = K * RTX;
+            auto  KRTX = Vector2dd(K2RTX[0], K2RTX[1]) / K2RTX[2];
+            Vector2dd DKRTX;
+            Matrix22 DD;
+
+            if (distorting)
+            {
+                DKRTX = distortionParams.mapForward(KRTX);
+                DD = distortionParams.jacobian(KRTX[0], KRTX[1]);
+            }
+            auto PCIND = PinholeCameraIntrinsics::NormalizerDiff(K2RTX[0], K2RTX[1], K2RTX[2]);
+
+
+            int argin = 0;
+            if (!(constraints & CameraConstraints::LOCK_FOCAL))
+            {
+                if (!(constraints & CameraConstraints::EQUAL_FOCAL))
+                {
+                    auto dfx = Kfx * RTX;
+                    auto dfy = Kfy * RTX;
+                    auto ndfx = PCIND * dfx;
+                    auto ndfy = PCIND * dfy;
+
+                    Vector2dd _dfx(ndfx[0], ndfx[1]),
+                              _dfy(ndfy[0], ndfy[1]);
+                    if (distorting)
+                    {
+                        _dfx = DD * _dfx,
+                        _dfy = DD * _dfy;
+                    }
+
+                    J.a(idx,         argin) = _dfx[0];
+                    J.a(idx + 1,     argin) = _dfx[1];
+                    J.a(idx,     argin + 1) = _dfy[0];
+                    J.a(idx + 1, argin + 1) = _dfy[1];
+                    argin += 2;
+                }
+                else
+                {
+                    auto df = Kf * RTX;
+                    auto ndf = PCIND * df;
+
+                    Vector2dd _df(ndf[0], ndf[1]);
+                    if (distorting)
+                        _df = DD * _df;
+                    J.a(idx,         argin) = _df[0];
+                    J.a(idx + 1,     argin) = _df[1];
+                    argin++;
+                }
+            }
+
+            if (!(constraints & CameraConstraints::LOCK_PRINCIPAL))
+            {
+                auto dcx = Kcx * RTX;
+                auto dcy = Kcy * RTX;
+                auto ndcx = PCIND * dcx;
+                auto ndcy = PCIND * dcy;
+
+                Vector2dd _dcx(ndcx[0], ndcx[1]),
+                          _dcy(ndcy[0], ndcy[1]);
+                if (distorting)
+                {
+                    _dcx = DD * _dcx,
+                    _dcy = DD * _dcy;
+                }
+
+                J.a(idx,         argin) = _dcx[0];
+                J.a(idx + 1,     argin) = _dcx[1];
+                J.a(idx,     argin + 1) = _dcy[0];
+                J.a(idx + 1, argin + 1) = _dcy[1];
+                argin += 2;
+            }
+
+            if (!(constraints & CameraConstraints::LOCK_SKEW))
+            {
+                auto ds = Ks * RTX;
+                auto nds = PCIND * ds;
+
+                Vector2dd _ds(nds[0], nds[1]);
+                if (distorting)
+                    _ds = DD * _ds;
+
+                J.a(idx,         argin) = _ds[0];
+                J.a(idx + 1,     argin) = _ds[1];
+                argin++;
+            }
+
+            if (!!(constraints & CameraConstraints::UNLOCK_YSCALE))
+            {
+                auto ds = K * R * Vector4dd(0, pr[1], 0, 0);
+                auto nds = PCIND * ds;
+
+                Vector2dd _ds(nds[0], nds[1]);
+                if (distorting)
+                    _ds = DD * _ds;
+
+                J.a(idx,         argin) = _ds[0];
+                J.a(idx + 1,     argin) = _ds[1];
+                argin++;
+            }
+
+            // now we optimize 6-dof position
+            int pos_argin = argin + i * 7;
+            auto dqx = K * Rqx * TX,
+                 dqy = K * Rqy * TX,
+                 dqz = K * Rqz * TX,
+                 dqw = K * Rqw * TX,
+                 dtx = K * R * Vector4dd( -1,  0,  0, 0),
+                 dty = K * R * Vector4dd(  0, -1,  0, 0),
+                 dtz = K * R * Vector4dd(  0,  0, -1, 0);
+#define DDD(p) \
+            auto nd ## p = PCIND * d ## p; \
+            Vector2dd _d ## p(nd ## p[0], nd ## p[1]); \
+            if (distorting) \
+            _d ## p = DD * _d ## p; \
+            J.a(idx,     pos_argin) = _d ## p[0]; \
+            J.a(idx + 1, pos_argin) = _d ## p[1]; \
+            ++pos_argin;
+
+            DDD(tx)
+            DDD(ty)
+            DDD(tz)
+            DDD(qx)
+            DDD(qy)
+            DDD(qz)
+            DDD(qw)
+
+            if (distorting)
+            {
+                auto principalJacobian = distortionParams.principalJacobian(KRTX[0], KRTX[1]),
+                     tangentialJacobian = distortionParams.tangentialJacobian(KRTX[0], KRTX[1]);
+                auto polynomialJacobian = distortionParams.polynomialJacobian(KRTX[0], KRTX[1]);
+
+
+
+                int polyDeg = distortionEstimationParams.mPolynomDegree;
+                int degStart = 0, degIncrement = 1;
+                if (distortionEstimationParams.mEvenPowersOnly)
+                    degIncrement = 2;
+
+
+                int distortion_argin = argin + N * 7;
+                for (int k = degStart; k < polyDeg; k += degIncrement)
+                {
+                    for (int j = 0; j < 2; ++j)
+                        J.a(idx + j, distortion_argin) = polynomialJacobian.a(j, k);
+                    distortion_argin++;
+                }
+
+                if (distortionEstimationParams.mEstimateTangent)
+                {
+                    for (int j = 0; j < 2; ++j)
+                        for (int k = 0; k < 2; ++k)
+                            J.a(idx + k, distortion_argin + j) = tangentialJacobian.a(k, j);
+                    distortion_argin += 2;
+                }
+
+                if (distortionEstimationParams.mEstimateCenter)
+                {
+                    for (int j = 0; j < 2; ++j)
+                        for (int k = 0; k < 2; ++k)
+                            J.a(idx + k, distortion_argin + j) = principalJacobian.a(k, j);
+                }
+            }
+
+            idx += 2;
+        }
+    }
+
+    CORE_ASSERT_TRUE_S(idx == getOutputNum());
+    return J;
 }
 
 void corecvs::FlatPatternCalibrator::getFullReprojectionError(double out[])
@@ -63,40 +382,36 @@ void corecvs::FlatPatternCalibrator::getFullReprojectionError(double out[])
 
     for (size_t i = 0; i < N; ++i)
     {
-        Quaternion& R = locationData[i].orientation;
-        R.normalise();
-        Vector3dd& C = locationData[i].position;
-        ObservationList& pt = points[i];
-        for (PointObservation& ptp: pt)
+        auto R = Quaternion::RotationalTransformation(locationData[i].orientation[0], locationData[i].orientation[1], locationData[i].orientation[2], locationData[i].orientation[3], Quaternion::Parametrization::FULL_NORMALIZED, false);
+        auto& C = locationData[i].position;
+
+        for (auto& ptp: points[i])
         {
             Vector3dd pp = ptp.point;
 
             pp[1] *= factor;
 
-            Vector2dd res = intrinsics.project(R * (pp - C));
+            auto res = intrinsics.project(R * (pp - C));
             if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
             {
                 CORE_ASSERT_TRUE_S(distortionParams.mMapForward);
                 res = distortionParams.mapForward(res);
             }
-            Vector2dd diff = res - ptp.projection;
+            auto diff = res - ptp.projection;
 
             out[idx++] = diff.x();
             out[idx++] = diff.y();
         }
     }
-#ifdef PENALIZE_QNORM
-    CORE_ASSERT_TRUE_S(idx == getOutputNum() - N);
-#else
+
     CORE_ASSERT_TRUE_S(idx == getOutputNum());
-#endif
 }
 
 #define IFNOT(cond, expr) \
     if (!(constraints & CameraConstraints::cond)) \
-    { \
-        expr; \
-    }
+{ \
+    expr; \
+}
 
 int corecvs::FlatPatternCalibrator::getInputNum() const
 {
@@ -113,7 +428,7 @@ int corecvs::FlatPatternCalibrator::getInputNum() const
 
     if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
     {
-        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        int polyDeg = distortionEstimationParams.mPolynomDegree;
         if (distortionEstimationParams.mEvenPowersOnly)
             polyDeg /= 2;
         input += polyDeg;
@@ -129,11 +444,7 @@ int corecvs::FlatPatternCalibrator::getInputNum() const
 
 int corecvs::FlatPatternCalibrator::getOutputNum() const
 {
-#ifdef PENALIZE_QNORM
-    return (int)K * 2 + (int)N;
-#else
     return (int)K * 2;
-#endif
 }
 
 void corecvs::FlatPatternCalibrator::enforceParams()
@@ -158,11 +469,10 @@ void corecvs::FlatPatternCalibrator::enforceParams()
 #undef LOCK
 }
 
-void corecvs::FlatPatternCalibrator::solveInitialIntrinsics()
+bool corecvs::FlatPatternCalibrator::solveInitialIntrinsics()
 {
     computeHomographies();
-    computeAbsoluteConic();
-    extractIntrinsics();
+    return computeAbsoluteConic();
 }
 
 void corecvs::FlatPatternCalibrator::solveInitialExtrinsics()
@@ -187,8 +497,8 @@ void corecvs::FlatPatternCalibrator::solveInitialExtrinsics()
         auto r3 = r1 ^ r2;
 
         corecvs::Matrix33 R(r1[0], r2[0], r3[0],
-                r1[1], r2[1], r3[1],
-                r1[2], r2[2], r3[2]), V;
+                            r1[1], r2[1], r3[1],
+                            r1[2], r2[2], r3[2]), V;
 
         corecvs::Vector3dd W;
         corecvs::Matrix::svd(&R, &W, &V);
@@ -232,13 +542,12 @@ void corecvs::FlatPatternCalibrator::readParams(const double in[])
         {
             GET_PARAM(locationData[i].orientation[j]);
         }
-            locationData[i].orientation.normalise();
-        }
+    }
     IF_GET_PARAM(UNLOCK_YSCALE, factor);
     if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
     {
         distortionParams.mMapForward = true;
-        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        int polyDeg = distortionEstimationParams.mPolynomDegree;
         distortionParams.mKoeff.resize(polyDeg);
         for (auto& k: distortionParams.mKoeff)
             k = 0.0;
@@ -248,7 +557,7 @@ void corecvs::FlatPatternCalibrator::readParams(const double in[])
             polyDeg /= 2;
             degStart = 1;
             degIncrement = 2;
-    }
+        }
         for (int i = 0; i < polyDeg; ++i, degStart += degIncrement)
         {
             GET_PARAM(distortionParams.mKoeff[degStart]);
@@ -305,7 +614,7 @@ void corecvs::FlatPatternCalibrator::writeParams(double out[])
     if (!!(constraints & CameraConstraints::UNLOCK_DISTORTION))
     {
         distortionParams.mMapForward = true;
-        int polyDeg = distortionEstimationParams.mPolinomDegree;
+        int polyDeg = distortionEstimationParams.mPolynomDegree;
         distortionParams.mKoeff.resize(polyDeg);
         int degStart = 0, degIncrement = 1;
         if (distortionEstimationParams.mEvenPowersOnly)
@@ -342,29 +651,35 @@ void corecvs::FlatPatternCalibrator::LMCostFunction::operator() (const double in
 {
     calibrator->readParams(in);
     calibrator->getFullReprojectionError(out);
+}
 
-#ifdef PENALIZE_QNORM
-    for (size_t i = 0; i < calibrator->N; ++i)
-    {
-        out[2 * calibrator->K + i] = 1.0 - calibrator->locationData[i].orientation.sumAllElementsSq();
-    }
-#endif
+Matrix corecvs::FlatPatternCalibrator::LMCostFunction::getJacobian(const double in[], double dlta)
+{
+    calibrator->readParams(in);
+    return calibrator->getJacobian();
 }
 
 void corecvs::FlatPatternCalibrator::refineGuess(int LMiterations)
 {
     std::vector<double> in(getInputNum()), out(getOutputNum());
-    distortionParams.mPrincipalX = intrinsics.cx();
-    distortionParams.mPrincipalY = intrinsics.cy();
-    distortionParams.mNormalizingFocal = !intrinsics.principal;
+    if (!distortionEstimated)
+    {
+        distortionParams.mPrincipalX = intrinsics.cx();
+        distortionParams.mPrincipalY = intrinsics.cy();
+        distortionParams.mNormalizingFocal = !intrinsics.principal;
+    }
     writeParams(&in[0]);
 
     LevenbergMarquardt levmar(LMiterations);
     levmar.f = new LMCostFunction(this);
-    levmar.fastFix4Placer = false;
 
     auto res = levmar.fit(in, out);
+    levmar.dampening = LevenbergMarquardt::Dampening::DIAGONAL;
+    res = levmar.fit(res, out);
+
     readParams(&res[0]);
+    for (auto& q: locationData)
+        q.orientation.normalise();
 }
 
 void corecvs::FlatPatternCalibrator::computeHomographies()
@@ -378,9 +693,11 @@ void corecvs::FlatPatternCalibrator::computeHomographies()
 
         for (auto& ptp: pts)
         {
-            ptsI.push_back(ptp.projection);
+            if (!distortionEstimated)
+                ptsI.push_back(ptp.projection);
+            else
+                ptsI.push_back(distortionParams.mapBackward(ptp.projection));
             ptsP.push_back(ptp.point.xy());
-
         }
 
         HomographyReconstructor p2i;
@@ -394,12 +711,15 @@ void corecvs::FlatPatternCalibrator::computeHomographies()
         auto res = p2i.getBestHomographyLSE();
         res = p2i.getBestHomographyLM(res);
         res = B.inv() * res * A;
+        for (int i = 0; i < 3; ++i)
+            for (int j = 0; j < 3; ++j)
+                CORE_ASSERT_TRUE_S(!std::isnan(res.a(i, j)));
 
         homographies.push_back(res);
     }
 }
 
-void corecvs::FlatPatternCalibrator::computeAbsoluteConic()
+bool corecvs::FlatPatternCalibrator::computeAbsoluteConic()
 {
     absoluteConic = corecvs::Vector(6);
 
@@ -408,7 +728,7 @@ void corecvs::FlatPatternCalibrator::computeAbsoluteConic()
     if (n < 3) forceZeroSkew = true;
 
     if (forceZeroSkew) ++n_equ;
-  //int n_equ_actual = n_equ;
+    //int n_equ_actual = n_equ;
     if (n_equ < 6) n_equ = 6;
 
     corecvs::Matrix A(n_equ, 6);
@@ -459,25 +779,41 @@ void corecvs::FlatPatternCalibrator::computeAbsoluteConic()
     corecvs::Matrix V(6, 6), W(1, 6);
     corecvs::Matrix::svd(&A, &W, &V);
 
-    double min_singular = 1e100;
-    int id = -1;
+    std::array<std::pair<double, int>, 6> sv;
 
     for (int j = 0; j < 6; ++j)
+        sv[j] = std::make_pair(W.a(0, j), j);
+    std::sort(sv.begin(), sv.end());
+
+    double minErr = std::numeric_limits<double>::max();
+    PinholeCameraIntrinsics bestIntrinsics;
+    for (int i = 0; i < 6; ++i)
     {
-        if (min_singular > W.a(0, j))
+        auto id = sv[i].second;
+        for (int j = 0; j < 6; ++j)
         {
-            min_singular = W.a(0, j);
-            id = j;
+            absoluteConic[j] = V.a(j, id);
+            CORE_ASSERT_TRUE_S(!std::isnan(absoluteConic[j]));
+        }
+        if (extractIntrinsics())
+        {
+            auto err = getRmseReprojectionError();
+            if (err < minErr)
+            {
+                minErr = err;
+                bestIntrinsics = intrinsics;
+            }
         }
     }
-
-    for (int j = 0; j < 6; ++j)
+    if (minErr != std::numeric_limits<double>::max())
     {
-        absoluteConic[j] = V.a(j, id);
+        intrinsics = bestIntrinsics;
+        return true;
     }
+    return false;
 }
 
-void corecvs::FlatPatternCalibrator::extractIntrinsics()
+bool corecvs::FlatPatternCalibrator::extractIntrinsics()
 {
     double b11, b12, b22, b13, b23, b33;
     b11 = absoluteConic[0];
@@ -487,15 +823,32 @@ void corecvs::FlatPatternCalibrator::extractIntrinsics()
     b23 = absoluteConic[4];
     b33 = absoluteConic[5];
 
+    if (b11 == 0.0)
+        return false;
+
     double cx, cy, fx, fy, lambda, skew;
+    if (b11*b22-b12*b12 <= 0.0)
+        return false;
     cy = (b12 * b13 - b11 * b23) / (b11 * b22 - b12 * b12);
     lambda = b33 - (b13 * b13 + cy * (b12 * b13 - b11 * b23)) / b11;
+    if (lambda / b11 <= 0.0)
+        return false;
     fx = sqrt(lambda / b11);
     fy = sqrt(lambda * b11 / (b11 * b22 - b12 * b12));
     skew = -b12 * fx * fx * fy / lambda;
     cx = skew * cy / fx - b13 * fx * fx / lambda;
 
+#define ASSERT_GOOD(s) \
+    CORE_ASSERT_TRUE_S((!std::isnan(s)) && std::isfinite(s));
+    ASSERT_GOOD(fx);
+    ASSERT_GOOD(fy);
+    ASSERT_GOOD(cx);
+    ASSERT_GOOD(cy);
+    ASSERT_GOOD(skew);
+
     intrinsics = PinholeCameraIntrinsics(fx, fy, cx, cy, skew);
     intrinsics.size = lockParams.size;
     intrinsics.distortedSize = lockParams.distortedSize;
+
+    return true;
 }

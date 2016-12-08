@@ -187,7 +187,10 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
     CORE_UNUSED(_filename);
 }
 
-KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params) : detectorType(type), params(params), maxFeatureCount(maxFeatureCount)
+KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params) :
+    detectorType(type),
+    maxFeatureCount(maxFeatureCount),
+    params(params)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();

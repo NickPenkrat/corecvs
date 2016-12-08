@@ -74,12 +74,12 @@ int LineDistortionEstimatorParameters::staticInit()
     /*  */ 
     IntField* field2 = new IntField
         (
-          LineDistortionEstimatorParameters::POLINOM_DEGREE_ID,
-          offsetof(LineDistortionEstimatorParameters, mPolinomDegree),
+          LineDistortionEstimatorParameters::POLYNOM_DEGREE_ID,
+          offsetof(LineDistortionEstimatorParameters, mPolynomDegree),
           6,
-          "Polinom Degree",
-          "Polinom Degree",
-          "Polinom Degree",
+          "Polynom Degree",
+          "Polynom Degree",
+          "Polynom Degree",
           true,
          0,
          20

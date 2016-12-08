@@ -23,7 +23,7 @@ LineDistortionEstimatorParametersControlWidget::LineDistortionEstimatorParameter
 
     QObject::connect(mUi->costAlgorithmComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->iterationNumberSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->polinomDegreeSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->polynomDegreeSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->simpleJacobianCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->evenPowersOnlyCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->estimateTangentCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
@@ -65,7 +65,7 @@ LineDistortionEstimatorParameters *LineDistortionEstimatorParametersControlWidge
     return new LineDistortionEstimatorParameters(
           static_cast<LineDistortionEstimatorCost::LineDistortionEstimatorCost>(mUi->costAlgorithmComboBox->currentIndex())
         , mUi->iterationNumberSpinBox->value()
-        , mUi->polinomDegreeSpinBox->value()
+        , mUi->polynomDegreeSpinBox->value()
         , mUi->simpleJacobianCheckBox->isChecked()
         , mUi->evenPowersOnlyCheckBox->isChecked()
         , mUi->estimateTangentCheckBox->isChecked()
@@ -79,7 +79,7 @@ void LineDistortionEstimatorParametersControlWidget::setParameters(const LineDis
     bool wasBlocked = blockSignals(true);
     mUi->costAlgorithmComboBox->setCurrentIndex(input.costAlgorithm());
     mUi->iterationNumberSpinBox->setValue(input.iterationNumber());
-    mUi->polinomDegreeSpinBox->setValue(input.polinomDegree());
+    mUi->polynomDegreeSpinBox->setValue(input.polynomDegree());
     mUi->simpleJacobianCheckBox->setChecked(input.simpleJacobian());
     mUi->evenPowersOnlyCheckBox->setChecked(input.evenPowersOnly());
     mUi->estimateTangentCheckBox->setChecked(input.estimateTangent());
