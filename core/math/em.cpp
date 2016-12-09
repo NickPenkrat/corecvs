@@ -30,7 +30,8 @@ void EM::runKMeans()
     for (int it = 0; it < maxIter; ++it)
     {
         std::cout << "|" << std::flush;
-        for (int i = 0; i < N; ++i)
+        parallelable_for(0, N, [&](const corecvs::BlockedRange<int> &r){
+        for (int i = r.begin(); i != r.end(); ++i)
         {
             auto& m = means[i];
             for (int j = 0; j < K; ++j)
@@ -45,7 +46,7 @@ void EM::runKMeans()
                 }
             if (cnt == 0)
             {
-                std::cout << "CLUSTER DEGENERATED" << std::endl;
+                std::cout << "^" << std::flush;
                 std::random_device rd;
                 int id = std::uniform_int_distribution<int>(0, M - 1)(rd);
                 for (int j = 0; j < K; ++j)
@@ -53,10 +54,11 @@ void EM::runKMeans()
                 cnt = 1;
             }
             m = m / cnt;
-        }
+        }});
 
-        double sdist = 0.0;
-        for (int i = 0; i < M; ++i)
+        std::atomic<double> sdist(0.0);
+        parallelable_for(0, M, [&](const corecvs::BlockedRange<int> &r){
+        for (int i = r.begin(); i != r.end(); ++i)
         {
             Vector vv(K);
             for (int j = 0; j < K; ++j)
@@ -70,10 +72,16 @@ void EM::runKMeans()
                     minDist = (means[j] - vv).sumAllElementsSq();
                     maxId = j;
                 }
-            sdist += minDist;
             for (int j = 0; j < N; ++j)
                 probabilities.a(i, j) = (j == maxId) ? 1.0 : 0.0;
-        }
+            double val, inc;
+            do
+            {
+               val = sdist;
+               inc = val + minDist;
+
+            } while (!sdist.compare_exchange_strong(val, inc));
+        }});
         if (prev == sdist)
             break;
         prev = sdist;
@@ -146,8 +154,9 @@ void EM::runEM(int mIter)
 
 double EM::stepE()
 {
-    double log = 0.0;
-    for (int i = 0; i < N; ++i)
+    std::atomic<double> log(0.0);
+    parallelable_for(0, N, [&](const BlockedRange<int> &r){
+    for (int i = r.begin(); i != r.end(); ++i)
     {
         auto& mean = means[i];
         auto& cov  = covariances[i];
@@ -180,17 +189,23 @@ double EM::stepE()
             }
 
             probabilities.a(j, i) = p / std::sqrt(det) * std::exp( -w / 2.0);
-            log += std::log(p) - 0.5 * ldet - w / 2.0;
+            double val, pval, ilog = std::log(p) - 0.5 * ldet - w / 2.0;
+            do
+            {
+                val = log;
+                pval = log + ilog;
+            } while(!log.compare_exchange_strong(val, pval));
         }
-    }
-    for (int i = 0; i < M; ++i)
+    }});
+    parallelable_for(0, M, [&](const BlockedRange<int> &r){
+    for (int i = r.begin(); i != r.end(); ++i)
     {
         double sum = 0.0;
         for (int j = 0; j < N; ++j)
             sum += probabilities.a(i, j);
         if (sum == 0.0)
         {
-            std::cout << "POINT DIVERGED" << std::endl;
+            std::cout << "." << std::flush;
             std::random_device rd;
             int id = std::uniform_int_distribution<int>(0, M - 1)(rd);
             probabilities.a(i, id) = 1;
@@ -199,7 +214,7 @@ double EM::stepE()
         CORE_ASSERT_TRUE_S(!std::isnan(sum));
         for (int j = 0; j < N; ++j)
             probabilities.a(i, j) = probabilities.a(i, j) / sum;
-    }
+    }});
     return log;
 }
 
@@ -268,7 +283,7 @@ void EM::stepM()
         }
         ps += p;
     }
-    CORE_ASSERT_TRUE_S(std::abs(ps - M) / M < 1e-9);
+//    CORE_ASSERT_TRUE_S(std::abs(ps - M) / M < 1e-9);
     for (int i = 0; i < N; ++i)
         prior[i] /= M;
 }
