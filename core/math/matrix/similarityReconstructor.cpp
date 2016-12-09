@@ -13,6 +13,11 @@ void SimilarityReconstructor::addPoint2PointConstraint(const Vector3dd &from, co
     p2p.push_back(Correspondence3D(from,to));
 }
 
+void SimilarityReconstructor::addPoint2PointConstraint(double fromX, double fromY, double fromZ, double toX, double toY, double toZ)
+{
+    addPoint2PointConstraint(Vector3dd(fromX, fromY, fromZ), Vector3dd(toX, toY, toZ));
+}
+
 void SimilarityReconstructor::reset(void)
 {
     p2p.clear();
@@ -254,6 +259,26 @@ double SimilarityReconstructor::getCostFunction(const Similarity &input)
 SimilarityReconstructor::~SimilarityReconstructor()
 {
 
+}
+
+void SimilarityReconstructor::reportInputQuality()
+{
+    /* Check all tha pairs of correspondance */
+
+    double meanScaler = 1.0; /* arithmetic avrage? Really? */
+
+    cout << "Pairs ratio (expected to be constant):" << endl;
+    for (size_t i = 0; i < p2p.size(); i++)
+    {
+        for (size_t j = i + 1; j < p2p.size(); j++)
+        {
+            double d1 = (p2p[i].start - p2p[j].start).l2Metric();
+            double d2 = (p2p[i].end   - p2p[j].end  ).l2Metric();
+
+            double scaler = d1 / d2;
+            cout << i << " " << j << " " << scaler << endl;
+        }
+    }
 }
 
 

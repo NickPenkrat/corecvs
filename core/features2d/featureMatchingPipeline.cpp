@@ -353,10 +353,10 @@ void FileNameRefinedMatchingPlanComputationStage::run(FeatureMatchingPipeline *p
 
     for (size_t i = 0; i < N; ++i)
     {
-        std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
+        std::deque<uint32_t> query(images[i].keyPoints.keyPoints.size());
         for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
         {
-            query[j] = (uint16_t)j;
+            query[j] = (uint32_t)j;
         }
 
         for (size_t j = 0; j < N; ++j)
@@ -374,10 +374,10 @@ void FileNameRefinedMatchingPlanComputationStage::run(FeatureMatchingPipeline *p
             {
                 continue;
             }
-            std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
+            std::deque<uint32_t> train(images[j].keyPoints.keyPoints.size());
             for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
             {
-                train[k] = (uint16_t)k;
+                train[k] = (uint32_t)k;
             }
 
             MatchPlanEntry entry = { (uint16_t)i, (uint16_t)j, query, train };
@@ -406,25 +406,25 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
 
     matchPlan.plan.clear();
 
-    for (size_t i = 0; i < N; ++i)
+    for (size_t img1Id = 0; img1Id < N; ++img1Id)
     {
-        std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
-        for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
+        std::deque<uint32_t> query(images[img1Id].keyPoints.keyPoints.size());
+        for (size_t j = 0; j < images[img1Id].keyPoints.keyPoints.size(); ++j)
         {
-            query[j] = (uint16_t)j;
+            query[j] = (uint32_t)j;
         }
 
-        for (size_t j = 0; j < N; ++j)
+        for (size_t img2Id = 0; img2Id < N; ++img2Id)
         {
-            if (i == j)
+            if (img1Id == img2Id)
                 continue;
-            std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
-            for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
+            std::deque<uint32_t> train(images[img2Id].keyPoints.keyPoints.size());
+            for (size_t k = 0; k < images[img2Id].keyPoints.keyPoints.size(); ++k)
             {
-                train[k] = (uint16_t)k;
+                train[k] = (uint32_t)k;
             }
 
-            MatchPlanEntry entry = { (uint16_t)i, (uint16_t)j, query, train };
+            MatchPlanEntry entry = { (uint16_t)img1Id, (uint16_t)img2Id, query, train };
             matchPlan.plan.push_back(entry);
         }
     }
@@ -465,11 +465,12 @@ public:
             size_t s = i;
             size_t I = matchPlan.plan[s].queryImg;
             size_t J = matchPlan.plan[s].trainImg;
-            auto &query = matchPlan.plan[s];
+            MatchPlanEntry &query = matchPlan.plan[s];
 
             RuntimeTypeBuffer qb(images[I].descriptors.mat);
             RuntimeTypeBuffer tb(images[J].descriptors.mat);
 
+#if 0
             for (size_t j = 0; j < query.queryFeatures.size(); ++j)
             {
                 memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
@@ -478,6 +479,7 @@ public:
             {
                 memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
             }
+#endif
 
             std::vector<std::vector<RawMatch>> ml;
             matcher->knnMatch(qb, tb, ml, responsesPerPoint);
@@ -614,6 +616,7 @@ public:
                 RuntimeTypeBuffer qb(images[Is].descriptors.mat);
                 RuntimeTypeBuffer tb(images[Js].descriptors.mat);
 
+#if 0
                 for (size_t j = 0; j < query.queryFeatures.size(); ++j)
                 {
                     memcpy(qb.row<void>(j), images[Is].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
@@ -622,6 +625,7 @@ public:
                 {
                     memcpy(tb.row<void>(j), images[Js].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
                 }
+#endif
 
                 std::vector<std::vector<RawMatch>> ml;
                 matcher->knnMatch(qb, tb, ml, responsesPerPoint);
@@ -754,6 +758,7 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     RawMatches &rawMatches = pipeline->rawMatches;
     RefinedMatches &refinedMatches = pipeline->refinedMatches;
     std::vector<Image> &images = pipeline->images;
+
     size_t N = images.size();
     size_t responsesPerPoint = 2;
     size_t P = N*(N-1)/2;

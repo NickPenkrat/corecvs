@@ -191,7 +191,7 @@ public:
     G8Buffer *toG8Buffer();
     G12Buffer *toG12Buffer(double min = 0.0, double max = 1.0);
     /**
-     * We probably we need to select channel
+     * TODO: We probably we need to allow to select channel
      **/
     RGB24Buffer *toRGB24Buffer(double min = 0.0, double max = 1.0);
 
@@ -203,7 +203,10 @@ private:
     }
     void copy(uint8_t *src)
     {
-        memcpy(data, src, getDataSize());
+        SYNC_PRINT(("RuntimeTypeBuffer:copy(%p -> %p [%d]):called\n", src, data, getDataSize()));
+        if (src != NULL) { /*memcpy: (ISO/IEC 9899:1999): 7.1.4 */
+            memcpy(data, src, getDataSize());
+        }
     }
     uint8_t *data;
     size_t rows;
