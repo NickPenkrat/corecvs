@@ -14,7 +14,7 @@
 #endif
 
 #ifdef WITH_OPENCV_3x
-struct SmartPtrHolder
+struct SmartPtrExtractorHolder
 {
     cv::Ptr< cv::xfeatures2d::SIFT >            sift;
     cv::Ptr< cv::xfeatures2d::SURF >            surf;
@@ -24,7 +24,7 @@ struct SmartPtrHolder
     cv::Ptr< cv::ORB >                          orb;
 };
 
-OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(SmartPtrHolder *holder) : holder(holder)
+OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(SmartPtrExtractorHolder *holder) : holder(holder)
 {
     extractor = holder->sift.get();
     if (!extractor)
@@ -117,7 +117,7 @@ DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(c
     BriskParams briskParams(params);
     OrbParams orbParams(params);
 #ifdef WITH_OPENCV_3x
-    SmartPtrHolder* holder = new SmartPtrHolder;
+	SmartPtrExtractorHolder* holder = new SmartPtrExtractorHolder;
     if (type == "SIFT")
     {
         cv::Ptr< cv::xfeatures2d::SIFT > ptr = cv::xfeatures2d::SIFT::create(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);

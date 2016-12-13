@@ -133,8 +133,8 @@ int main(int /*argc*/, char ** /*argv*/)
     std::vector<std::string> conditFileNames;
     std::vector<std::string> houseFileNames;
 
-    std::string sConditPath = sTopconDir + std::string( "\\data\\Measure_23\\condit\\" );
-    std::string sHousePath  = sTopconDir + std::string( "\\data\\Measure_23\\house\\" );
+    std::string sConditPath = sTopconDir + std::string( "\\data\\Measure_23_canon700dFF24_MSK_GPS\\condit\\" );
+    std::string sHousePath  = sTopconDir + std::string( "\\data\\Measure_23_canon700dFF24_MSK_GPS\\house\\" );
 
     static const uint   numImages = 2;
     const char*         conditImageNames[] = { "IMG_0287.JPG", "IMG_0290.JPG" };

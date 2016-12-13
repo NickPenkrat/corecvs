@@ -12,14 +12,14 @@ namespace cv {
 }
 
 #ifdef WITH_OPENCV_3x
-struct SmartPtrHolder;
+struct SmartPtrExtractorHolder;
 #endif  
 
 class OpenCvDescriptorExtractorWrapper : public DescriptorExtractor
 {
 public:
 #ifdef WITH_OPENCV_3x
-    OpenCvDescriptorExtractorWrapper(SmartPtrHolder *holder);
+	OpenCvDescriptorExtractorWrapper(SmartPtrExtractorHolder *holder);
 #else
     OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *detector);
 #endif
@@ -37,7 +37,7 @@ private:
     cv::DescriptorExtractor *extractor;
 
 #ifdef WITH_OPENCV_3x
-    SmartPtrHolder* holder;
+	SmartPtrExtractorHolder* holder;
 #endif
 };
 

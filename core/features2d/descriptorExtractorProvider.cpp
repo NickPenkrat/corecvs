@@ -12,7 +12,16 @@ DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const D
             return (*p)->getDescriptorExtractor(type, params);
         }
     }
-    CORE_ASSERT_FAIL_P(("DescriptorExtractorProvider::getDescriptorExtractor(%s): no providers", type.c_str()));
+
+	try 
+	{
+		CORE_ASSERT_FAIL_P(("DescriptorExtractorProvider::getDescriptorExtractor(%s): no providers", type.c_str()));
+	}
+	catch (AssertException)
+	{
+	
+	}
+
     return 0;
 }
 

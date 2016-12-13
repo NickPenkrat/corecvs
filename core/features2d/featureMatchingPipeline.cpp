@@ -123,7 +123,9 @@ public:
 			std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
             RuntimeTypeBuffer img = reader->read(image.filename);
 
-            detector->detect(img, image.keyPoints.keyPoints, maxFeatureCount);
+			if (detector.get())
+				detector->detect(img, image.keyPoints.keyPoints, maxFeatureCount);
+
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
             if (cnt % 4 == 0)
@@ -188,7 +190,7 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
 KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params) : detectorType(type), params(params), maxFeatureCount(maxFeatureCount)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
-    parallelable = detector->isParallelable();
+	parallelable = detector ? detector->isParallelable() : false;
     delete detector;
 }
 
@@ -256,7 +258,8 @@ public:
             RuntimeTypeBuffer img = reader->read(image.filename);
             corecvs::RGB24Buffer bufferRGB = reader->readRgb(image.filename);
             delete reader;
-            extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
+			if (extractor)
+				extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
@@ -323,7 +326,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, const std::string &params) : descriptorType(type), params(params)
 {
     DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
-    parallelable = extractor->isParallelable();
+	parallelable = extractor ? extractor->isParallelable() : false;
     delete extractor;
 }
 
@@ -434,7 +437,7 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
 MatchingStage::MatchingStage(DescriptorType type, MatcherType matcherType, size_t responsesPerPoint) : descriptorType(type), matcherType(matcherType), responsesPerPoint(responsesPerPoint)
 {
     DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
-    parallelable = matcher->isParallelable();
+	parallelable = matcher ? matcher->isParallelable() : false;
     delete matcher;
 }
 
@@ -480,7 +483,8 @@ public:
             }
 
             std::vector<std::vector<RawMatch>> ml;
-            matcher->knnMatch(qb, tb, ml, responsesPerPoint);
+			if (matcher)
+				matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
             for (std::vector<std::vector<RawMatch> >::iterator v = ml.begin(); v != ml.end(); ++v)
             {
@@ -530,12 +534,21 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     MatchPlan &matchPlan = pipeline->matchPlan;
     RawMatches &rawMatches = pipeline->rawMatches;
 
-    CORE_ASSERT_TRUE_S(matchPlan.plan.size());
+	try
+	{
+		CORE_ASSERT_TRUE_S(matchPlan.plan.size());
+	}
+	catch (AssertException)
+	{
+
+	}
+    
     rawMatches.matches.clear();
     rawMatches.matches.resize(matchPlan.plan.size());
 
     size_t S = matchPlan.plan.size();
-    corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
+	if (S)
+		corecvs::parallelable_for ((size_t)0, S, CORE_MAX(S / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelMatcher(pipeline, descriptorType, matcherType, responsesPerPoint), parallelable);
 
     std::stringstream ss;
     pipeline->toc("Computing raw matches", ss.str());
@@ -623,8 +636,8 @@ public:
                 }
 
                 std::vector<std::vector<RawMatch>> ml;
-                matcher->knnMatch(qb, tb, ml, responsesPerPoint);
-
+				if (matcher)
+					matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
                 for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
                 {
@@ -731,7 +744,7 @@ public:
 MatchAndRefineStage::MatchAndRefineStage(DescriptorType descriptorType, MatcherType matcherType, double scaleThreshold, bool thresholdDistance) : descriptorType(descriptorType), matcherType(matcherType), scaleThreshold(scaleThreshold), thresholdDistance(thresholdDistance)
 {
     DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
-    parallelable = matcher->isParallelable();
+	parallelable = matcher ? matcher->isParallelable() : false;
     delete matcher;
 }
 
@@ -1502,8 +1515,16 @@ void DetectExtractAndMatchStage::run(FeatureMatchingPipeline *pipeline)
     std::unique_ptr<DetectExtractAndMatch> detector( DetectExtractAndMatchProvider::getInstance().getDetector( detectorType, descriptorType, matcherType, params ) );
     std::stringstream ss1;
     pipeline->tic();
-    detector->detectExtractAndMatch( *pipeline, maxFeatureCount, ( int )responsesPerPoint );
+
 	const size_t numImages = pipeline->images.size();
+	if (detector.get())
+		detector->detectExtractAndMatch( *pipeline, maxFeatureCount, ( int )responsesPerPoint );
+	else
+	{
+		for (uint i = 0; i < numImages; i++)
+			pipeline->images[i].keyPoints.keyPoints.clear();
+	}
+
 	for (uint i = 0; i < numImages; i++)
 		std::cerr << pipeline->images[i].filename << "\t\t\t " << pipeline->images[i].keyPoints.keyPoints.size() << " keypoints " << endl;
 

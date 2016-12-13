@@ -11,7 +11,16 @@ FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type, 
             return (*p)->getFeatureDetector(type, params);
         }
     }
-    CORE_ASSERT_FAIL_P(("FeatureDetectorProvider::getDetector(%s): no providers", type.c_str()));
+
+	try 
+	{
+		CORE_ASSERT_FAIL_P(("FeatureDetectorProvider::getDetector(%s): no providers", type.c_str()));
+	}
+	catch (AssertException)
+	{
+
+	}
+
     return 0;
 }
 

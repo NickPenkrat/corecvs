@@ -11,7 +11,16 @@ DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &t
             return (*p)->getDescriptorMatcher(type, matcher, params);
         }
     }
-    CORE_ASSERT_FAIL_P(("DescriptorMatcherProvider::getMatcher(%s, %s): no providers", type.c_str(), matcher.c_str()));
+
+	try
+	{
+		CORE_ASSERT_FAIL_P(("DescriptorMatcherProvider::getMatcher(%s, %s): no providers", type.c_str(), matcher.c_str()));	
+	}
+	catch (AssertException)
+	{
+	
+	}
+
     return 0;
 }
 
