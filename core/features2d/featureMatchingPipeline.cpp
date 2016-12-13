@@ -257,11 +257,16 @@ public:
 
             ss1 << image.filename << ", ";
 
-            BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
+            /*BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
             RuntimeTypeBuffer img = reader->read(image.filename);
             corecvs::RGB24Buffer bufferRGB = reader->readRgb(image.filename);
-            delete reader;
-            extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
+            delete reader;*/
+            std::unique_ptr<RuntimeTypeBuffer> img      (BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
+            std::unique_ptr<RGB24Buffer      > bufferRGB(BufferFactory::getInstance()->loadRGB24Bitmap(image.filename));
+
+
+
+            extractor->compute(*img.get(), image.keyPoints.keyPoints, image.descriptors.mat);
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
@@ -276,10 +281,10 @@ public:
                 for (int xx = x - sz; xx <= x + sz; ++xx)
                     for (int yy = y - sz; yy <= y + sz; ++yy)
                     {
-                        if (!bufferRGB.isValidCoord(yy, xx))
+                        if (!bufferRGB->isValidCoord(yy, xx))
                             continue;
 
-                        auto color = bufferRGB.element(yy, xx);
+                        auto color = bufferRGB->element(yy, xx);
                         mean += RGB24Buffer::RGBEx32(color);
                         cnt++;
                     }

@@ -72,3 +72,20 @@ public:
     virtual ~QTRGB24Loader();
 
 };
+
+class QTRuntimeLoader : public BufferLoader<RuntimeTypeBuffer>{
+public:
+    static int registerMyself()
+    {
+        BufferFactory::getInstance()->registerLoader(new QTRuntimeLoader());   // TODO: memory leak: this loader is never destroyed!!!
+        return 0;
+    }
+
+    virtual bool acceptsFile(string name);
+    virtual RuntimeTypeBuffer * load(string name);
+    virtual std::string name() override { return "QTRuntimeLoader(multitype)"; }
+
+    virtual ~QTRuntimeLoader();
+
+
+};
