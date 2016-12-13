@@ -1505,7 +1505,7 @@ void DetectExtractAndMatchStage::run(FeatureMatchingPipeline *pipeline)
     detector->detectExtractAndMatch( *pipeline, maxFeatureCount, ( int )responsesPerPoint );
 	const size_t numImages = pipeline->images.size();
 	for (uint i = 0; i < numImages; i++)
-		cout << pipeline->images[i].filename << "\t\t\t " << pipeline->images[i].keyPoints.keyPoints.size() << " keypoints " << endl;
+		std::cerr << pipeline->images[i].filename << "\t\t\t " << pipeline->images[i].keyPoints.keyPoints.size() << " keypoints " << endl;
 
 	ss1 << "Detect " << detectorType << " and match " << matcherType;
     pipeline->toc( ss1.str(), "");

@@ -43,7 +43,7 @@ bool checkFiles( std::vector<std::string>& fileNames )
     {
         if ( !checkIfExists( fileNames[ i ] ) )
         {
-            std::cerr << "Error: unable to find file " << fileNames[i] << std::endl;
+            std::cout << "Error: unable to find file " << fileNames[i] << std::endl;
             return false;
         }
     }
@@ -53,25 +53,51 @@ bool checkFiles( std::vector<std::string>& fileNames )
 
 void performPipelineTest( DetectorType detectorType, MatcherType matcherType, std::vector<std::string> filenames )
 {
-    static const uint numRuns = 1 + 1;
-    std::cout << std::endl << "Running " << detectorType << " detector/descriptor and " << matcherType << " matcher " << numRuns << " times" << std::endl;
+    static const uint numRuns = 2;
+	std::cout << "------------------------------" << std::endl;
+    std::cout << std::endl << "Running " << detectorType << " detector/descriptor and " << matcherType << " matcher " << numRuns << " times on" << std::endl;
+	for (uint i = 0; i < filenames.size(); i++)
+		std::cout << "\t" << filenames[i] << std::endl;
+
     FeatureMatchingPipeline pipeline( filenames );
     AddDetectExtractAndMatchStage( pipeline, detectorType, detectorType, matcherType );
     pipeline.add( new RefineMatchesStage(), true );
 
+#if 1
+	std::chrono::time_point<std::chrono::system_clock> start, end;
     for ( uint runIdx = 0; runIdx <= numRuns; runIdx++ )
     {
         pipeline.run();
+		if (!runIdx)
+			start = std::chrono::system_clock::now();
     }
+
+	end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	std::cout << "pipeline run time: " << elapsed_seconds.count() / numRuns << " seconds" << std::endl;
+#else
+	size_t tic, toc;
+	for (uint runIdx = 0; runIdx <= numRuns; runIdx++)
+	{
+		pipeline.run();
+		if (!runIdx)
+			tic = clock();
+	}
+
+	toc = clock();
+	size_t elapsed = toc - tic;
+	std::cout << "pipeline run time: " << elapsed / numRuns << " ms" << std::endl;
+#endif
 }
 
 int main(int /*argc*/, char ** /*argv*/)
 {
+	std::cout << "Running feature matching pipeline test" << std::endl;
     const char* sTopconDirEnv = "TOPCON_DIR";
     const char* sTopconDir = getenv( sTopconDirEnv );
     if ( !sTopconDir )
     {
-        std::cerr << "FAILED: Unable to find " << sTopconDirEnv << " terminating" << std::endl;
+		std::cout << "FAILED: Unable to find " << sTopconDirEnv << " terminating" << std::endl;
         return -1;
     }
 
@@ -91,10 +117,10 @@ int main(int /*argc*/, char ** /*argv*/)
     gpuFound = init_opencv_gpu_detect_extract_and_match_provider( cudaApi );
 
     if ( !gpuFound )
-        std::cerr << "WARNING: Unable to find compartible gpu. Only cpu versions are tested" << std::endl;
+		std::cout << "WARNING: Unable to find compartible gpu. Only cpu versions are tested" << std::endl;
 
     if ( gpuFound && !cudaApi )
-        std::cerr << "WARNING: Unable to find CUDA compartible gpu. ORB_GPU detector is not available" << std::endl;
+		std::cout << "WARNING: Unable to find CUDA compartible gpu. ORB_GPU detector is not available" << std::endl;
 
 #   endif
 #endif
@@ -108,7 +134,7 @@ int main(int /*argc*/, char ** /*argv*/)
     std::vector<std::string> houseFileNames;
 
     std::string sConditPath = sTopconDir + std::string( "\\data\\Measure_23\\condit\\" );
-    std::string sHousePath = sTopconDir + std::string( "\\data\\Measure_23\\house\\" );
+    std::string sHousePath  = sTopconDir + std::string( "\\data\\Measure_23\\house\\" );
 
     static const uint   numImages = 2;
     const char*         conditImageNames[] = { "IMG_0287.JPG", "IMG_0290.JPG" };
@@ -145,5 +171,6 @@ int main(int /*argc*/, char ** /*argv*/)
     if ( cudaApi )
         performPipelineTest( "ORB_GPU", "BF_GPU", houseFileNames );
 
+	std::cout << std::endl << "Finished" << std::endl;
     return 0;
 }
