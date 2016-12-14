@@ -17,25 +17,36 @@
 using namespace cv::gpu;
 using namespace cv::ocl;
 
-extern void MakeMatchingPlan(FeatureMatchingPipeline& pipeline);
+extern void makeMatchingPlan(FeatureMatchingPipeline& pipeline);
 
 struct GPUImageDetectData
 {
-	cv::gpu::GpuMat cudaImg;
-	cv::gpu::GpuMat cudaKeypoints;
-	cv::gpu::GpuMat cudaDescriptors;
-    cv::ocl::oclMat oclImg;
-    cv::ocl::oclMat oclKeypoints;
-    cv::ocl::oclMat oclDescriptors;
+	GpuMat cudaImg;
+	GpuMat cudaKeypoints;
+	GpuMat cudaDescriptors;
+    oclMat oclImg;
+    oclMat oclKeypoints;
+    oclMat oclDescriptors;
 
-	GPUImageDetectData(const cv::gpu::GpuMat& img) : cudaImg(img) {}
-    GPUImageDetectData( const cv::ocl::oclMat& img ) : oclImg( img ) {}
+	GPUImageDetectData(const GpuMat& img) : cudaImg(img) {}
+    GPUImageDetectData(const oclMat& img) : oclImg(img) {}
 };
+
+template < typename T >
+T downsample( const T& original, float factor )
+{
+    T downsampled;
+    resize( original, downsampled, cv::Size(), factor, factor, cv::INTER_LINEAR );
+    return downsampled;
+}
 
 void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint )
 {
 	const size_t numImages = pipeline.images.size();
 	std::vector<GPUImageDetectData> gpuImages;
+
+    const bool resize = false;
+    const float uniformScaleFactor = 1.0f;
 
 	for (size_t i = 0; i < numImages; i++)
 	{
@@ -44,14 +55,21 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
 
 		std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
 		RuntimeTypeBuffer img = reader->read(image.filename);
+        
         if ( detectorSURF_OCL )
         {
             GPUImageDetectData gpuImage( cv::ocl::oclMat( convert( img ) ) );
+            if ( resize )
+                gpuImage.oclImg = downsample( gpuImage.oclImg, uniformScaleFactor );
+
             gpuImages.push_back( gpuImage );
         }
         else
         {
             GPUImageDetectData gpuImage( cv::gpu::GpuMat( convert( img ) ) );
+            if ( resize )
+                gpuImage.cudaImg = downsample( gpuImage.cudaImg, uniformScaleFactor );
+
             gpuImages.push_back( gpuImage );
         }
 	}
@@ -140,7 +158,7 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
 		image.descriptors.mat = convert(descriptors);
 	}
 
-	MakeMatchingPlan(pipeline); // compartibility call, to fill in required data
+    makeMatchingPlan( pipeline ); // compartibility call, to fill in required data
 
 	size_t S = pipeline.matchPlan.plan.size();
     CORE_ASSERT_TRUE_S( S );

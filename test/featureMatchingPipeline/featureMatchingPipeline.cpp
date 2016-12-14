@@ -60,7 +60,7 @@ void performPipelineTest( DetectorType detectorType, MatcherType matcherType, st
 		std::cout << "\t" << filenames[i] << std::endl;
 
     FeatureMatchingPipeline pipeline( filenames );
-    AddDetectExtractAndMatchStage( pipeline, detectorType, detectorType, matcherType );
+    addDetectExtractAndMatchStage( pipeline, detectorType, detectorType, matcherType );
     pipeline.add( new RefineMatchesStage(), true );
 
 #if 1

@@ -26,7 +26,7 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
                 $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorMatcherWrapper.h \
                 $$OPENCV_WRAPPER_DIR/openCvGPUFeatureDetectorWrapper.h \
                 $$OPENCV_WRAPPER_DIR/openCvGPUDetectAndMatchWrapper.h \
-
+                $$OPENCV_WRAPPER_DIR/openCvGPUDetectAndExtractWrapper.h \
     }
 
     SOURCES += \
@@ -47,7 +47,7 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
                 $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorMatcherWrapper.cpp \
                 $$OPENCV_WRAPPER_DIR/openCvGPUFeatureDetectorWrapper.cpp \
                 $$OPENCV_WRAPPER_DIR/openCvGPUDetectAndMatchWrapper.cpp \
-
+                $$OPENCV_WRAPPER_DIR/openCvGPUDetectAndExtractWrapper.cpp \
     }
 
     # Face Detection
