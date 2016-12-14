@@ -29,13 +29,14 @@ public:
 class KeyPointDetectionStage : public FeatureMatchingPipelineStage
 {
 public:
-    KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params = "");
+    KeyPointDetectionStage( DetectorType type, int maxFeatureCount, float uniformScaleFactor = 1.0f, const std::string &params = "" );
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
     ~KeyPointDetectionStage() {}
 private:
     DetectorType detectorType;
+    float uniformScaleFactor;
     bool parallelable;
     int maxFeatureCount;
     std::string params;
@@ -44,13 +45,14 @@ private:
 class DescriptorExtractionStage : public FeatureMatchingPipelineStage
 {
 public:
-    DescriptorExtractionStage(DescriptorType type, const std::string &params = "");
+    DescriptorExtractionStage( DescriptorType type, float uniformScaleFactor = 1.0f, const std::string &params = "" );
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
     ~DescriptorExtractionStage() {}
 private:
     DescriptorType descriptorType;
+    float uniformScaleFactor;
     bool parallelable;
     std::string params;
 };
@@ -140,10 +142,27 @@ private:
     bool sortFeatures;
 };
 
+class DetectAndExtractStage : public FeatureMatchingPipelineStage
+{
+public:
+    DetectAndExtractStage( DetectorType detectorType, DescriptorType descriptorType, int maxFeatureCount, float uniformScaleFactor = 1.0f, const std::string &params = "" );
+    void run( FeatureMatchingPipeline *pipeline );
+    void loadResults( FeatureMatchingPipeline *pipeline, const std::string &filename );
+    void saveResults( FeatureMatchingPipeline *pipeline, const std::string &filename ) const;
+
+private:
+    DetectorType detectorType;
+    DescriptorType descriptorType;
+    int maxFeatureCount;
+    float uniformScaleFactor;
+    bool parallelable;
+    std::string params;
+};
+
 class DetectExtractAndMatchStage : public FeatureMatchingPipelineStage
 {
 public:
-    DetectExtractAndMatchStage( DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, size_t responsesPerPoint = 2,  const std::string &params = "" );
+    DetectExtractAndMatchStage( DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, float uniformScaleFactor = 1.0f, size_t responsesPerPoint = 2, const std::string &params = "" );
 	void run(FeatureMatchingPipeline *pipeline);
 	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
@@ -153,17 +172,26 @@ private:
     DescriptorType descriptorType;
     MatcherType matcherType;
     int maxFeatureCount;
+    float uniformScaleFactor;
     size_t responsesPerPoint;
     std::string params;
 };
 
-void AddDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline,
+void addDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline,
     DetectorType detectorType,
     DescriptorType descriptorType,
     MatcherType matcherType,
     int maxFeatureCount = 4000,
+    float uniformScaleFactor = 1.0f,
     const std::string &params = "",
     size_t responsesPerPoint = 2 );
+
+void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
+	DetectorType detectorType,
+	DescriptorType descriptorType,
+	int maxFeatureCount = 4000,
+	float uniformScaleFactor = 1.0f,
+	const std::string &params = "");
 
 class FeatureMatchingPipeline
 {

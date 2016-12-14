@@ -18,6 +18,7 @@
 #       include "openCvGPUFeatureDetectorWrapper.h"
 #       include "openCvGPUDescriptorMatcherWrapper.h"
 #       include "openCvGPUDetectAndMatchWrapper.h"
+#       include "openCvGPUDetectAndExtractWrapper.h"
 #   endif
 
 #include <opencv2/core/core.hpp>
@@ -60,8 +61,15 @@ void performPipelineTest( DetectorType detectorType, MatcherType matcherType, st
 		std::cout << "\t" << filenames[i] << std::endl;
 
     FeatureMatchingPipeline pipeline( filenames );
-    AddDetectExtractAndMatchStage( pipeline, detectorType, detectorType, matcherType );
+
+#if 1
+	addDetectAndExtractStage(pipeline, detectorType, detectorType);
+	pipeline.add(new MatchingPlanComputationStage(), true);
+	pipeline.add(new MatchAndRefineStage(detectorType, matcherType), true);
+#else
+    addDetectExtractAndMatchStage( pipeline, detectorType, detectorType, matcherType );
     pipeline.add( new RefineMatchesStage(), true );
+#endif
 
 #if 1
 	std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -105,24 +113,24 @@ int main(int /*argc*/, char ** /*argv*/)
     bool gpuFound = false;
     
 #ifdef WITH_OPENCV
+#   ifdef WITH_OPENCV_GPU
+	init_opencv_gpu_detectors_provider();
+	init_opencv_gpu_matchers_provider();
+	init_opencv_gpu_descriptors_provider();
+	gpuFound = init_opencv_gpu_detect_and_extract_provider(cudaApi);
+	//gpuFound = init_opencv_gpu_detect_extract_and_match_provider(cudaApi);
+
+	if (!gpuFound)
+		std::cout << "WARNING: Unable to find compartible gpu. Only cpu versions are tested" << std::endl;
+
+	if (gpuFound && !cudaApi)
+		std::cout << "WARNING: Unable to find CUDA compartible gpu. ORB_GPU detector is not available" << std::endl;
+
+#   endif
     init_opencv_detectors_provider();
     init_opencv_matchers_provider();
     init_opencv_reader_provider();
     init_opencv_descriptors_provider();
-
-#   ifdef WITH_OPENCV_GPU
-    init_opencv_gpu_detectors_provider();
-    init_opencv_gpu_matchers_provider();
-    init_opencv_gpu_descriptors_provider();
-    gpuFound = init_opencv_gpu_detect_extract_and_match_provider( cudaApi );
-
-    if ( !gpuFound )
-		std::cout << "WARNING: Unable to find compartible gpu. Only cpu versions are tested" << std::endl;
-
-    if ( gpuFound && !cudaApi )
-		std::cout << "WARNING: Unable to find CUDA compartible gpu. ORB_GPU detector is not available" << std::endl;
-
-#   endif
 #endif
 #ifdef WITH_SIFTGPU
     init_siftgpu_detector_provider();

@@ -12,11 +12,11 @@ DetectExtractAndMatch* DetectExtractAndMatchProvider::getDetector(const Detector
 		}
 	}
 
-	try
+	//try
 	{
 		CORE_ASSERT_FAIL_P(("DetectExtractAndMatchProvider::getDetector(%s,%s,%s): no providers", detectorType.c_str(), descriptorType.c_str(), matcherType.c_str()));
 	}
-	catch (AssertException)
+	//catch (AssertException)
 	{
 	
 	}
