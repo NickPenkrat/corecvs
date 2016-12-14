@@ -219,7 +219,7 @@ V parallelable_reduce(const I& from, const I& to, const V& id, const F &f, const
 template <typename I, typename V, typename F, typename R>
 V parallelable_reduce(const I& from, const I& to, const typename BlockedRange<I>::size_type &grainsize, const V& id, const F &f, const R &r)
 {
-    return parallel_reduce(corecvs::BlockedRange<I>(from, to, grainsize), id, f, r);
+    return parallelable_reduce(corecvs::BlockedRange<I>(from, to, grainsize), id, f, r);
 }
 
 
