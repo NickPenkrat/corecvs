@@ -32,21 +32,10 @@ struct GPUImageDetectData
     GPUImageDetectData(const oclMat& img) : oclImg(img) {}
 };
 
-template < typename T >
-T downsample( const T& original, float factor )
-{
-    T downsampled;
-    resize( original, downsampled, cv::Size(), factor, factor, cv::INTER_LINEAR );
-    return downsampled;
-}
-
 void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint )
 {
 	const size_t numImages = pipeline.images.size();
 	std::vector<GPUImageDetectData> gpuImages;
-
-    const bool resize = false;
-    const float uniformScaleFactor = 1.0f;
 
 	for (size_t i = 0; i < numImages; i++)
 	{
@@ -59,17 +48,11 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
         if ( detectorSURF_OCL )
         {
             GPUImageDetectData gpuImage( cv::ocl::oclMat( convert( img ) ) );
-            if ( resize )
-                gpuImage.oclImg = downsample( gpuImage.oclImg, uniformScaleFactor );
-
             gpuImages.push_back( gpuImage );
         }
         else
         {
             GPUImageDetectData gpuImage( cv::gpu::GpuMat( convert( img ) ) );
-            if ( resize )
-                gpuImage.cudaImg = downsample( gpuImage.cudaImg, uniformScaleFactor );
-
             gpuImages.push_back( gpuImage );
         }
 	}

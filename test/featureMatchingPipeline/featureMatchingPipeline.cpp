@@ -52,7 +52,7 @@ bool checkFiles( std::vector<std::string>& fileNames )
     return true;
 }
 
-void performPipelineTest( DetectorType detectorType, MatcherType matcherType, std::vector<std::string> filenames )
+void performPipelineTest( DetectorType detectorType, MatcherType matcherType, int downsample, std::vector<std::string> filenames )
 {
     static const uint numRuns = 2;
 	std::cout << "------------------------------" << std::endl;
@@ -62,14 +62,9 @@ void performPipelineTest( DetectorType detectorType, MatcherType matcherType, st
 
     FeatureMatchingPipeline pipeline( filenames );
 
-#if 1
-	addDetectAndExtractStage(pipeline, detectorType, detectorType);
+    addDetectAndExtractStage( pipeline, detectorType, detectorType, 4000, downsample, "", false );
 	pipeline.add(new MatchingPlanComputationStage(), true);
 	pipeline.add(new MatchAndRefineStage(detectorType, matcherType), true);
-#else
-    addDetectExtractAndMatchStage( pipeline, detectorType, detectorType, matcherType );
-    pipeline.add( new RefineMatchesStage(), true );
-#endif
 
 #if 1
 	std::chrono::time_point<std::chrono::system_clock> start, end;
@@ -98,8 +93,12 @@ void performPipelineTest( DetectorType detectorType, MatcherType matcherType, st
 #endif
 }
 
-int main(int /*argc*/, char ** /*argv*/)
+int main(int argc, char ** argv)
 {
+    int downsample = 1;
+    if ( argc >= 2 )
+        downsample = atoi( argv[ 1 ] );
+
 	std::cout << "Running feature matching pipeline test" << std::endl;
     const char* sTopconDirEnv = "TOPCON_DIR";
     const char* sTopconDir = getenv( sTopconDirEnv );
@@ -160,24 +159,24 @@ int main(int /*argc*/, char ** /*argv*/)
     if ( !checkFiles( conditFileNames ) || !checkFiles( houseFileNames ) )
         return 0;
 
-    performPipelineTest( "SURF", "BF", conditFileNames );
+    performPipelineTest( "SURF", "BF", downsample, conditFileNames );
     if ( gpuFound )
-        performPipelineTest( "SURF_GPU", "BF_GPU", conditFileNames );
+        performPipelineTest( "SURF_GPU", "BF_GPU", downsample, conditFileNames );
 
-    performPipelineTest( "ORB", "BF", conditFileNames );
+    performPipelineTest( "ORB", "BF", downsample, conditFileNames );
 
-    if ( cudaApi )
-        performPipelineTest( "ORB_GPU", "BF_GPU", conditFileNames );
+    //if ( cudaApi )
+    //    performPipelineTest( "ORB_GPU", "BF_GPU", downsample, conditFileNames );
 
-    performPipelineTest( "SURF", "BF", houseFileNames );
+    performPipelineTest( "SURF", "BF", downsample, houseFileNames );
 
     if ( gpuFound )
-        performPipelineTest( "SURF_GPU", "BF_GPU", houseFileNames );
+        performPipelineTest( "SURF_GPU", "BF_GPU", downsample, houseFileNames );
 
-    performPipelineTest( "ORB", "BF", houseFileNames );
+    performPipelineTest( "ORB", "BF", downsample, houseFileNames );
 
-    if ( cudaApi )
-        performPipelineTest( "ORB_GPU", "BF_GPU", houseFileNames );
+    //if ( cudaApi )
+    //    performPipelineTest( "ORB_GPU", "BF_GPU", downsample, houseFileNames );
 
 	std::cout << std::endl << "Finished" << std::endl;
     return 0;

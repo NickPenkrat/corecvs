@@ -15,14 +15,6 @@
 using namespace cv::gpu;
 using namespace cv::ocl;
 
-template < typename T >
-T downsample( const T& original, float factor )
-{
-    T downsampled;
-    resize( original, downsampled, cv::Size(), factor, factor, cv::INTER_LINEAR );
-    return downsampled;
-}
-
 OpenCvGPUDescriptorExtractorWrapper::OpenCvGPUDescriptorExtractorWrapper( cv::gpu::SURF_GPU *extractor ) : extractorSURF_CUDA( extractor ),
     extractorORB_CUDA( 0 ),
     extractorSURF_OCL( 0 )
@@ -49,9 +41,6 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     , std::vector<KeyPoint> &keyPoints
     , RuntimeTypeBuffer &descriptors)
 {
-    const bool resize = false;
-    float uniformScaleFactor = 1.0f;
-
     std::vector<cv::KeyPoint> kps;
     FOREACH(const KeyPoint& kp, keyPoints)
     {
@@ -61,9 +50,6 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     if ( extractorSURF_CUDA || extractorORB_CUDA )
     {    
         GpuMat cudaImage( img );
-        if ( resize )
-            cudaImage = downsample( cudaImage, uniformScaleFactor );
-
         GpuMat cudaDescriptors;
         if ( extractorSURF_CUDA )
         {
@@ -81,9 +67,6 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     else if ( extractorSURF_OCL )
     {
         oclMat oclImage( img );
-        if ( resize )
-            oclImage = downsample( oclImage, uniformScaleFactor );
-
         oclMat oclDescriptors;
         //extractorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
         ( *extractorSURF_OCL )( oclImage, oclMat(), kps, oclDescriptors, true );

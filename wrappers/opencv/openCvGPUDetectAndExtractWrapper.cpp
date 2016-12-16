@@ -19,14 +19,6 @@ using namespace cv::gpu;
 using namespace cv::ocl;
 using namespace cv;
 
-template < typename T >
-T downsample( const T& original, float factor )
-{
-    T downsampled;
-    resize( original, downsampled, cv::Size(), factor, factor, cv::INTER_LINEAR );
-    return downsampled;
-}
-
 void OpenCvGPUDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &image, std::vector<::KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints)
 {
 	if (image.getType() != BufferType::U8 || !image.isValid())
@@ -34,17 +26,11 @@ void OpenCvGPUDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &i
 		std::cerr << __LINE__ << "Invalid image type" << std::endl;
 	}
 
-	const bool resize = false;
-	float uniformScaleFactor = 1.0f;
-
 	std::vector<cv::KeyPoint> kps;
 	cv::Mat cv_descriptors;
 	if (detectorSURF_CUDA || detectorORB_CUDA)
 	{
 		GpuMat img(convert(image));
-		if (resize)
-			img = downsample(img, uniformScaleFactor);
-
 		GpuMat cudaDescriptors;
 		GpuMat mask;
 		if (detectorSURF_CUDA)
@@ -64,9 +50,6 @@ void OpenCvGPUDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &i
 	else if (detectorSURF_OCL)
 	{
 		oclMat img(convert(image));
-		if (resize)
-			img = downsample(img, uniformScaleFactor);
-
 		oclMat mask;
 		oclMat oclDescriptors;
 		//max keypoints = min(keypointsRatio * img.size().area(), 65535)
@@ -77,17 +60,11 @@ void OpenCvGPUDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &i
 	else if (detectorSURF)
 	{
 		Mat img(convert(image));
-		if (resize)
-			img = downsample(img, uniformScaleFactor);
-
 		(*detectorSURF)(img, Mat(), kps, cv_descriptors, false);
 	}
 	else if (detectorORB)
 	{
 		Mat img(convert(image));
-		if (resize)
-			img = downsample(img, uniformScaleFactor);
-
 		(*detectorORB)(img, Mat(), kps, cv_descriptors, false);
 	}
 

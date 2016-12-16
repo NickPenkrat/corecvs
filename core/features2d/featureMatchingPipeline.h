@@ -29,14 +29,14 @@ public:
 class KeyPointDetectionStage : public FeatureMatchingPipelineStage
 {
 public:
-    KeyPointDetectionStage( DetectorType type, int maxFeatureCount, float uniformScaleFactor = 1.0f, const std::string &params = "" );
+    KeyPointDetectionStage( DetectorType type, int maxFeatureCount, int downsampleFactor = 1, const std::string &params = "" );
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
     ~KeyPointDetectionStage() {}
 private:
     DetectorType detectorType;
-    float uniformScaleFactor;
+    int downsampleFactor;
     bool parallelable;
     int maxFeatureCount;
     std::string params;
@@ -45,15 +45,16 @@ private:
 class DescriptorExtractionStage : public FeatureMatchingPipelineStage
 {
 public:
-    DescriptorExtractionStage( DescriptorType type, float uniformScaleFactor = 1.0f, const std::string &params = "" );
+    DescriptorExtractionStage( DescriptorType type, int downsampleFactor = 1, const std::string &params = "", bool keypointsColor = true );
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
     ~DescriptorExtractionStage() {}
 private:
     DescriptorType descriptorType;
-    float uniformScaleFactor;
+    int downsampleFactor;
     bool parallelable;
+    bool keypointsColor;
     std::string params;
 };
 
@@ -145,7 +146,7 @@ private:
 class DetectAndExtractStage : public FeatureMatchingPipelineStage
 {
 public:
-    DetectAndExtractStage( DetectorType detectorType, DescriptorType descriptorType, int maxFeatureCount, float uniformScaleFactor = 1.0f, const std::string &params = "" );
+    DetectAndExtractStage( DetectorType detectorType, DescriptorType descriptorType, int maxFeatureCount, int downsampleFactor = 1, const std::string &params = "", bool keypointsColor = true );
     void run( FeatureMatchingPipeline *pipeline );
     void loadResults( FeatureMatchingPipeline *pipeline, const std::string &filename );
     void saveResults( FeatureMatchingPipeline *pipeline, const std::string &filename ) const;
@@ -154,15 +155,16 @@ private:
     DetectorType detectorType;
     DescriptorType descriptorType;
     int maxFeatureCount;
-    float uniformScaleFactor;
+    int downsampleFactor;
     bool parallelable;
+    bool keypointsColor;
     std::string params;
 };
 
 class DetectExtractAndMatchStage : public FeatureMatchingPipelineStage
 {
 public:
-    DetectExtractAndMatchStage( DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, float uniformScaleFactor = 1.0f, size_t responsesPerPoint = 2, const std::string &params = "" );
+    DetectExtractAndMatchStage( DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, int downsampleFactor = 1, size_t responsesPerPoint = 2, const std::string &params = "" );
 	void run(FeatureMatchingPipeline *pipeline);
 	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
 	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
@@ -172,7 +174,7 @@ private:
     DescriptorType descriptorType;
     MatcherType matcherType;
     int maxFeatureCount;
-    float uniformScaleFactor;
+    int downsampleFactor;
     size_t responsesPerPoint;
     std::string params;
 };
@@ -182,7 +184,7 @@ void addDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline,
     DescriptorType descriptorType,
     MatcherType matcherType,
     int maxFeatureCount = 4000,
-    float uniformScaleFactor = 1.0f,
+    int downsampleFactor = 1,
     const std::string &params = "",
     size_t responsesPerPoint = 2 );
 
@@ -190,8 +192,9 @@ void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
 	DetectorType detectorType,
 	DescriptorType descriptorType,
 	int maxFeatureCount = 4000,
-	float uniformScaleFactor = 1.0f,
-	const std::string &params = "");
+    int downsampleFactor = 1,
+	const std::string &params = "",
+    bool keypointsColor = true );
 
 class FeatureMatchingPipeline
 {

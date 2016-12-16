@@ -98,7 +98,7 @@ Image::Image(const size_t &id) : id(id)
 {
 }
 
-Image::Image(const size_t &id, const std::string& filename) : id(id), filename(filename)
+Image::Image( const size_t &id, const std::string& filename ) : id( id ), filename( filename )
 {
 }
 

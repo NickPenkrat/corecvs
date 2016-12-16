@@ -91,23 +91,12 @@ void OpenCvGPUFeatureDetectorWrapper::setProperty( const std::string &name, cons
     CORE_UNUSED( value );
 }
 
-template < typename T >
-T downsample( const T& original, float factor )
-{
-    T downsampled;
-    resize( original, downsampled, cv::Size(), factor, factor, cv::INTER_LINEAR );
-    return downsampled;
-}
-
 void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int K )
 {
     if ( image.getType() != BufferType::U8 || !image.isValid() )
     {
         std::cerr << __LINE__ << "Invalid image type" << std::endl;
     }
-
-    const bool resize = false;
-    float uniformScaleFactor = 1.0f;
 
 	std::vector<cv::KeyPoint> kps;
 #ifdef WITH_OPENCV_3x
@@ -136,9 +125,6 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     if ( detectorSURF_CUDA || detectorORB_CUDA )
     {
         cv::gpu::GpuMat img( convert( image ) );
-        if ( resize )
-            img = downsample( img, uniformScaleFactor );
-
         cv::gpu::GpuMat mask;
 
         if ( detectorSURF_CUDA )
@@ -156,9 +142,6 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     else if ( detectorSURF_OCL )
     {
         cv::ocl::oclMat img( convert( image ) );
-        if ( resize )
-            img = downsample( img, uniformScaleFactor );
-
         cv::ocl::oclMat mask;
         //max keypoints = min(keypointsRatio * img.size().area(), 65535)
         detectorSURF_OCL->keypointsRatio = ( float )K / img.size().area();

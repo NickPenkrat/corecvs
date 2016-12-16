@@ -79,7 +79,7 @@ void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vec
 {
 	std::vector<cv::KeyPoint> kps;
 	cv::Mat img = convert(image);
-
+  
 	detector->detect(img, kps);
 
 	keyPoints.clear();

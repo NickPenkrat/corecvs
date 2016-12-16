@@ -175,12 +175,15 @@ public:
         return type;
     }
 
+    void downsample( int factor );
+
     void load(std::istream &is);
     void save(std::ostream &os) const;
     void load(const std::string &filename);
     void save(const std::string &filename) const;
     friend std::ostream& ::operator<<(std::ostream &os, const corecvs::RuntimeTypeBuffer &b);
     friend std::istream& ::operator>>(std::istream &is, corecvs::RuntimeTypeBuffer &b);
+
 private:
     void allocate()
     {
