@@ -50,6 +50,7 @@ HEADERS += \
     \
     math/avx/avxInteger.h \
     math/avx/int16x16.h \
+    math/avx/int32x16v.h \
     math/avx/int32x8.h \
     math/avx/int64x4.h \
     \

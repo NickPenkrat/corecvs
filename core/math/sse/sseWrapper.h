@@ -26,6 +26,7 @@
 #endif // WITH_SSE
 
 #ifdef WITH_AVX
+#include "float32x8.h"
 #include "doublex4.h"
 #include "doublex8.h"
 #include "doublexT4.h"
@@ -36,6 +37,7 @@
 #include "avxInteger.h"
 #include "int64x4.h"
 #include "int32x8.h"
+#include "int32x16v.h"
 #include "int16x16.h"
 #endif // WITH_AVX2
 
