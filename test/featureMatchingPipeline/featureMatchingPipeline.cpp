@@ -6,6 +6,7 @@
 
 #include "global.h"
 #include "featureMatchingPipeline.h"
+#include "trackPainter.h"
 
 #ifdef WITH_OPENCV
 #include "openCvFeatureDetectorWrapper.h"
@@ -66,7 +67,6 @@ void performPipelineTest( DetectorType detectorType, MatcherType matcherType, in
 	pipeline.add(new MatchingPlanComputationStage(), true);
 	pipeline.add(new MatchAndRefineStage(detectorType, matcherType), true);
 
-#if 1
 	std::chrono::time_point<std::chrono::system_clock> start, end;
     for ( uint runIdx = 0; runIdx <= numRuns; runIdx++ )
     {
@@ -77,20 +77,93 @@ void performPipelineTest( DetectorType detectorType, MatcherType matcherType, in
 
 	end = std::chrono::system_clock::now();
 	std::chrono::duration<double> elapsed_seconds = end - start;
-	std::cout << "pipeline run time: " << elapsed_seconds.count() / numRuns << " seconds" << std::endl;
-#else
-	size_t tic, toc;
+	std::cout << "pipeline run time: " << elapsed_seconds.count() / numRuns << " seconds, " << pipeline.refinedMatches.matchSets[0].matches.size() << " refined matches" << std::endl;
+}
+
+static std::string getFiledir(const std::string &imgName)
+{
+	int pos = (int)imgName.find_last_of(PATH_SEPARATOR[0]);
+	std::string res = imgName.substr(0, pos + 1);
+	return res;
+}
+
+void performFastMatchingTest(DetectorType detectorType, MatcherType matcherType, int downsample, std::vector<std::string> filenames)
+{
+	static const uint numRuns = 2;
+	std::cout << "------------------------------" << std::endl;
+	std::cout << std::endl << "Running " << detectorType << " detector/descriptor and " << matcherType << " matcher " << numRuns << " times on" << std::endl;
+	for (uint i = 0; i < filenames.size(); i++)
+		std::cout << "\t" << filenames[i] << std::endl;
+
+	std::vector<std::string> refFilename;
+	std::vector<std::string> otherFilename;
+	refFilename.push_back(filenames[0]);
+	FeatureMatchingPipeline detectReferenceFeaturesPipeline(refFilename);
+	addDetectAndExtractStage(detectReferenceFeaturesPipeline, detectorType, detectorType, 4000, downsample, "", false);
+	otherFilename.push_back(filenames[1]);
+	FeatureMatchingPipeline detectionPipeline(otherFilename);
+	addDetectAndExtractStage(detectionPipeline, detectorType, detectorType, 4000, downsample, "", false);
+	FeatureMatchingPipeline matchingPipeline(filenames);
+	matchingPipeline.add(new MatchingPlanComputationStage(), true);
+	matchingPipeline.add(new MatchAndRefineStage(detectorType, matcherType), true);
+	matchingPipeline.detectorType = detectorType;
+	matchingPipeline.descriptorType = detectorType;
+
+	std::chrono::time_point<std::chrono::system_clock> start, end;
+	detectReferenceFeaturesPipeline.run();
+
 	for (uint runIdx = 0; runIdx <= numRuns; runIdx++)
 	{
-		pipeline.run();
+		detectionPipeline.run();
+		matchingPipeline.images.clear();
+		matchingPipeline.images.push_back(detectReferenceFeaturesPipeline.images[0]);
+		matchingPipeline.images.push_back(detectionPipeline.images[0]);
+		matchingPipeline.run();
 		if (!runIdx)
-			tic = clock();
+			start = std::chrono::system_clock::now();
 	}
 
-	toc = clock();
-	size_t elapsed = toc - tic;
-	std::cout << "pipeline run time: " << elapsed / numRuns << " ms" << std::endl;
-#endif
+	end = std::chrono::system_clock::now();
+	std::chrono::duration<double> elapsed_seconds = end - start;
+	std::cout << "pipeline run time: " << elapsed_seconds.count() / numRuns << " seconds, " << matchingPipeline.refinedMatches.matchSets[0].matches.size() << " refined matches" << std::endl;
+
+	std::stringstream ss;
+	ss << detectorType << ' ' << matcherType;
+	if (downsample > 1)
+		ss << " downsample " << downsample;
+
+	for (size_t j = 0; j < matchingPipeline.refinedMatches.matchSets.size(); j++)
+	{
+		std::vector<std::string> imageNames;
+		RefinedMatchSet& set = matchingPipeline.refinedMatches.matchSets[j];
+		Image imgA = matchingPipeline.images[set.imgA];
+		Image imgB = matchingPipeline.images[set.imgB];
+		imageNames.push_back(imgA.filename);
+		imageNames.push_back(imgB.filename);
+		
+		std::vector< cvs::Match > matches;
+		matches.resize(set.matches.size());
+		std::vector<std::vector<Vector2dd>> keypoints;
+		keypoints.resize(set.matches.size());
+
+		for (uint i = 0; i < set.matches.size(); i++)
+		{	
+			std::vector<Vector2dd> keypointsPerMatch;
+			Vector2dd point(imgA.keyPoints.keyPoints[i].x() * downsample, imgA.keyPoints.keyPoints[i].y() * downsample);
+			keypointsPerMatch.push_back( point );
+
+			point = Vector2dd(imgB.keyPoints.keyPoints[i].x() * downsample, imgB.keyPoints.keyPoints[i].y() * downsample);
+			keypointsPerMatch.push_back( point );
+
+			keypoints[i] = keypointsPerMatch;
+		}
+
+		for (uint i = 0; i < set.matches.size(); i++)
+			matches[i] = &keypoints[i];
+
+		cvs::TrackPainter painter(imageNames, matches);
+		painter.paintTracksOnImages(true, ss.str());
+	}
 }
 
 int main(int argc, char ** argv)
@@ -159,24 +232,50 @@ int main(int argc, char ** argv)
     if ( !checkFiles( conditFileNames ) || !checkFiles( houseFileNames ) )
         return 0;
 
-    performPipelineTest( "SURF", "BF", downsample, conditFileNames );
-    if ( gpuFound )
-        performPipelineTest( "SURF_GPU", "BF_GPU", downsample, conditFileNames );
+	if (false)
+	{
+		performPipelineTest("SURF", "BF", downsample, conditFileNames);
+		if (gpuFound)
+			performPipelineTest("SURF_GPU", "BF_GPU", downsample, conditFileNames);
 
-    performPipelineTest( "ORB", "BF", downsample, conditFileNames );
+		performPipelineTest("ORB", "BF", downsample, conditFileNames);
 
-    //if ( cudaApi )
-    //    performPipelineTest( "ORB_GPU", "BF_GPU", downsample, conditFileNames );
+		//if ( cudaApi )
+		//    performPipelineTest( "ORB_GPU", "BF_GPU", downsample, conditFileNames );
 
-    performPipelineTest( "SURF", "BF", downsample, houseFileNames );
+		performPipelineTest("SURF", "BF", downsample, houseFileNames);
 
-    if ( gpuFound )
-        performPipelineTest( "SURF_GPU", "BF_GPU", downsample, houseFileNames );
+		if (gpuFound)
+			performPipelineTest("SURF_GPU", "BF_GPU", downsample, houseFileNames);
 
-    performPipelineTest( "ORB", "BF", downsample, houseFileNames );
+		performPipelineTest("ORB", "BF", downsample, houseFileNames);
 
-    //if ( cudaApi )
-    //    performPipelineTest( "ORB_GPU", "BF_GPU", downsample, houseFileNames );
+		//if ( cudaApi )
+		//    performPipelineTest( "ORB_GPU", "BF_GPU", downsample, houseFileNames );
+
+	}
+	else
+	{		
+		performFastMatchingTest("SURF", "BF", downsample, conditFileNames);
+		if (gpuFound)
+			performFastMatchingTest("SURF_GPU", "BF_GPU", downsample, conditFileNames);
+
+		performFastMatchingTest("ORB", "BF", downsample, conditFileNames);
+
+		//if ( cudaApi )
+		//    performFastMatchingTest( "ORB_GPU", "BF_GPU", downsample, conditFileNames );
+
+		performFastMatchingTest("SURF", "BF", downsample, houseFileNames);
+
+		if (gpuFound)
+			performFastMatchingTest("SURF_GPU", "BF_GPU", downsample, houseFileNames);
+
+		performFastMatchingTest("ORB", "BF", downsample, houseFileNames);
+
+		//if ( cudaApi )
+		//    performFastMatchingTest( "ORB_GPU", "BF_GPU", downsample, houseFileNames );
+
+	}
 
 	std::cout << std::endl << "Finished" << std::endl;
     return 0;

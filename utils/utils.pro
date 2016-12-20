@@ -29,6 +29,7 @@ CONFIG += with_widgets
 #
 HEADERS += \
     frames.h \
+    trackPainter.h \
     framesources/imageCaptureInterface.h \
     framesources/cameraControlParameters.h \
     framesources/decoders/mjpegDecoder.h \
@@ -113,6 +114,7 @@ HEADERS += \
 
 SOURCES += \
     frames.cpp \
+    trackPainter.cpp \
     framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
     framesources/cameraControlParameters.cpp \
     framesources/decoders/mjpegDecoder.cpp \

@@ -732,7 +732,9 @@ public:
                     final_matches.push_back(Match((uint16_t)I, (uint16_t)J, rm.featureQ, rm.featureT, rm.distance, rm.best2ndBest));
             }
 
-            refinedMatches.matchSets[J*(J-1)/2+I]=(RefinedMatchSet(I, J, final_matches));
+			size_t idx = J*(J - 1) / 2 + I;
+			refinedMatches.matchSets[idx] = (RefinedMatchSet(I, J, final_matches));
+			ss1  << "\t" << refinedMatches.matchSets[idx].matches.size() << " matches, ";
             cnt++;
             if (cnt % 16 == 0)
             {
@@ -1551,7 +1553,7 @@ public:
             image.keyPoints.keyPoints.clear();
             image.descriptors.mat = RuntimeTypeBuffer();
 
-            ss1 << image.filename << ", ";
+            ss1 << image.filename << ",\n";
 
             std::unique_ptr<BufferReader> reader( BufferReaderProvider::getInstance().getBufferReader( image.filename ) );
             RuntimeTypeBuffer img = reader->read( image.filename );
