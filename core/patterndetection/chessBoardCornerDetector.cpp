@@ -18,6 +18,7 @@ using corecvs::Vector2dd;
 using corecvs::Matrix22;
 using corecvs::ConvolveKernel;
 using corecvs::DummyAlgebra;
+using corecvs::Statistics;
 using corecvs::NonMaximalSuperssor;
 
 using corecvs::FpKernel;

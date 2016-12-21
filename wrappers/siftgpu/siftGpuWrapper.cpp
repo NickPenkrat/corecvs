@@ -11,6 +11,8 @@
 
 #include <GL/glew.h>        // GL_LUMINANCE, ...
 
+using namespace corecvs;
+
 SiftGpu::SiftGpu(double filterWidthFactor,
         double orientationFactor,
         double descriptorGridSize,

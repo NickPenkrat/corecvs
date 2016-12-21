@@ -77,7 +77,7 @@ SiftGpuMatcher::SiftGpuMatcher(const SiftGpuMatcher &matcher)
     CORE_UNUSED(matcher);
 }
 
-void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeTypeBuffer &trainDescriptors, std::vector<std::vector<RawMatch> >& matches, size_t K)
+void SiftGpuMatcher::knnMatchImpl( corecvs::RuntimeTypeBuffer &queryDescriptors, corecvs::RuntimeTypeBuffer &trainDescriptors, std::vector<std::vector<RawMatch> >& matches, size_t K)
 {
     if(!queryDescriptors.isValid() || !trainDescriptors.isValid())
     {
@@ -86,7 +86,7 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
     }
 
     CORE_ASSERT_TRUE_S(queryDescriptors.getType() == trainDescriptors.getType());
-    CORE_ASSERT_TRUE_S(queryDescriptors.getType() == BufferType::F32);
+    CORE_ASSERT_TRUE_S(queryDescriptors.getType() == corecvs::BufferType::F32);
 
     matches.resize(queryDescriptors.getRows());
 

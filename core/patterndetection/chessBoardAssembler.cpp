@@ -6,6 +6,7 @@
 #include <queue>
 
 using corecvs::Vector2dd;
+using corecvs::Statistics;
 
 ChessBoardAssembler::ChessBoardAssembler(ChessBoardAssemblerParams params) : ChessBoardAssemblerParams(params)
 {

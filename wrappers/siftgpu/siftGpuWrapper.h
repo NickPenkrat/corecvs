@@ -3,6 +3,7 @@
 
 #include "global.h"
 
+#include "runtimeTypeBuffer.h"
 #include "imageKeyPoints.h"
 #include "descriptorExtractorProvider.h"
 #include "featureDetectorProvider.h"
@@ -37,12 +38,12 @@ public:
     }
     bool isParallelable() { return false; }
 
-	void operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
+    void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
 
-	void operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint> &keypoints, RuntimeTypeBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
+    void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint> &keypoints, corecvs::RuntimeTypeBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
 protected:
-	void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors);
-	void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int);
+    void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors);
+    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int);
 
 	static SiftGPU::SiftKeypoint convert(const KeyPoint &k);
 	static KeyPoint convert(const SiftGPU::SiftKeypoint &k);
