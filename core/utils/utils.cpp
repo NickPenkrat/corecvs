@@ -8,17 +8,16 @@
  */
 
 #if !defined( DSP_TARGET ) && !defined( WIN32 ) && !defined( WIN64 )
-
 #include <iostream>
-#include <sstream>
 #include <exception>
 #include <cstdlib>
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <execinfo.h>
-
 #endif
+
+#include <sstream>
 
 #include "utils.h"
 

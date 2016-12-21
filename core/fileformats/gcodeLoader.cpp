@@ -1,7 +1,9 @@
 #include "gcodeLoader.h"
 
 #include <sstream>
+#include <cctype>
 #include "utils.h"
+
 
 namespace corecvs {
 

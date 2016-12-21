@@ -1,3 +1,5 @@
+#include <random>
+
 #include "raytraceRenderer.h"
 #include "preciseTimer.h"
 #include "bmpLoader.h"
