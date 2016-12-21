@@ -44,7 +44,6 @@ with_opencv {
 #        matcher_basic \
 #        matcher_full \
         chessboard_detector \
-        featureMatchingPipeline \
 }
 
 grab                                = grab/grab.pro
@@ -85,4 +84,3 @@ qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro
 
 stereo_generator                    = stereo_generator/stereo_generator.pro
 
-featureMatchingPipeline             = featureMatchingPipeline/featureMatchingPipeline.pro

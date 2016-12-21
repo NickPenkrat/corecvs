@@ -149,7 +149,7 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
                 continue;
 
             BufferReaderProvider::writeRgb(dst, ss.str());
-			std::cout << "Written to " << outputName << std::endl;
+            std::cout << "Written to \"" << outputName << '\"' << std::endl;
         }
     }
 }
@@ -183,10 +183,10 @@ void TrackPainter::paintTracksOnImages(bool pairs, std::string suffix, std::stri
 //            continue;
 //        images.push_back(std::make_pair(p.first, p.second));
 //    }
-    cout << "paintTracksOnImages #trackedFeatures=" << matches.size() << " => #images=" << images.size() << endl;
+    //cout << "paintTracksOnImages #trackedFeatures=" << matches.size() << " => #images=" << images.size() << endl;
 
     int N = (int)images.size();
 	corecvs::parallelable_for(0, pairs ? N * N : N, ParallelTrackPainter(images, matches, colorizer, pairs, suffix, outDir));
 
-    cout << "paintTracksOnImages done." << endl;
+    //cout << "paintTracksOnImages done." << endl;
 }
