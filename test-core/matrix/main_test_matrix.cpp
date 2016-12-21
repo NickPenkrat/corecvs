@@ -1822,3 +1822,41 @@ TEST(EM, EM)
     ASSERT_NEAR(!(mean1 - em.means[0]), 0.0, 1e-3);
     ASSERT_NEAR(!(mean2 - em.means[1]), 0.0, 1e-3);
 }
+
+
+TEST(Matrix, invPosdefSqrt)
+{
+    double a[]= {
+        9, 0, 0,
+        0, 8, 0,
+        0, 0, 7
+    };
+    double b[]= {
+        std::cos(0.123), std::sin(0.123), 0.0,
+       -std::sin(0.123), std::cos(0.123), 0.0,
+                    0.0,             0.0, 1.0
+    };
+    double c[]= {
+       1.0,              0.0,             0.0,
+       0.0,  std::cos(0.456), std::sin(0.456),
+       0.0, -std::sin(0.456), std::cos(0.456)
+    };
+    double d[]= {
+        std::cos(0.789),  0.0,std::sin(0.789),
+                    0.0,  1.0,            0.0,
+       -std::sin(0.789),  0.0,std::cos(0.789)
+    };
+    corecvs::Matrix A(3, 3, a), B(3, 3, b), C(3, 3, c), D(3, 3, d), W;
+    auto CC = D * C * B * A * B.t() * C.t() * D.t();
+    std::cout << (W = CC.invPosdefSqrt().t()*CC*CC.invPosdefSqrt()) << std::endl << std::endl << B * C * D << std::endl;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            ASSERT_NEAR(W.a(i, j), i == j ? 1.0 : 0.0,
+#ifdef WITH_BLAS
+                // lapack is good
+                1e-9);
+#else
+                // corecvs is not
+                1e-3);
+#endif
+}

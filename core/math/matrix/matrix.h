@@ -168,6 +168,14 @@ public:
 
     static void svd (Matrix  *A, Matrix *W, Matrix *V);
     static void svd (Matrix  *A, DiagonalMatrix *W, Matrix *V);
+    /*
+     * Computes "square root" of symmetrical posdef matrix and applies additional
+     * transform pretransform (on the left)
+     *
+     * This routine returns A^{-1}
+     */
+
+    Matrix invPosdefSqrt(const Matrix* preTransform = nullptr) const;
 
     static void svd (Matrix33 *A, Vector3dd *W, Matrix33 *V);
     static void svdDesc (Matrix33 *A, Vector3dd *W, Matrix33 *V);
