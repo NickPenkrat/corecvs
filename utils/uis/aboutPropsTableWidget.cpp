@@ -1,7 +1,9 @@
 #include "aboutPropsTableWidget.h"
 #include <QHeaderView>
 
+#ifdef WITH_OPENCV
 #include <opencv2/core/version.hpp>
+#endif
 
 #ifdef WITH_TBB
 #include <tbb/tbb_stddef.h>

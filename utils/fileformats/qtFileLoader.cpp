@@ -169,12 +169,12 @@ QTRGB24Loader::~QTRGB24Loader()
     // TODO Auto-generated destructor stub
 }
 
-bool QTRuntimeLoader::acceptsFile(std::__cxx11::string name)
+bool QTRuntimeLoader::acceptsFile(std::string name)
 {
     return true;
 }
 
-RuntimeTypeBuffer *QTRuntimeLoader::load(std::__cxx11::string name)
+RuntimeTypeBuffer *QTRuntimeLoader::load(std::string name)
 {
     QString qtName = QString::fromStdString(name);
     QImage image(qtName);
