@@ -26,6 +26,9 @@ int BaseReflection<Draw3dParameters>::dummy = Draw3dParameters::staticInit();
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int Draw3dParameters::staticInit()
 {
 
@@ -35,6 +38,8 @@ int Draw3dParameters::staticInit()
         "draw 3d Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(Draw3dParameters);
      
 
     EnumField* field0 = new EnumField
@@ -54,7 +59,6 @@ int Draw3dParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     CompositeField* field1 = new CompositeField
@@ -67,7 +71,16 @@ int Draw3dParameters::staticInit()
           "Point Color",
            NULL
         );
-    field1->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field1->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field1);
     /*  */ 
     BoolField* field2 = new BoolField
@@ -80,7 +93,6 @@ int Draw3dParameters::staticInit()
           "Point Color Override"
         );
     field2->widgetHint=BaseField::CHECK_BOX;
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     IntField* field3 = new IntField
@@ -95,7 +107,6 @@ int Draw3dParameters::staticInit()
          0,
          255
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     CompositeField* field4 = new CompositeField
@@ -108,7 +119,16 @@ int Draw3dParameters::staticInit()
           "Edge Color",
            NULL
         );
-    field4->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field4->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field4);
     /*  */ 
     BoolField* field5 = new BoolField
@@ -121,7 +141,6 @@ int Draw3dParameters::staticInit()
           "Edge Color Override"
         );
     field5->widgetHint=BaseField::CHECK_BOX;
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     IntField* field6 = new IntField
@@ -136,7 +155,6 @@ int Draw3dParameters::staticInit()
          0,
          255
         );
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     CompositeField* field7 = new CompositeField
@@ -149,7 +167,16 @@ int Draw3dParameters::staticInit()
           "Face Color",
            NULL
         );
-    field7->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field7->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field7);
     /*  */ 
     BoolField* field8 = new BoolField
@@ -162,7 +189,6 @@ int Draw3dParameters::staticInit()
           "Face Color Override"
         );
     field8->widgetHint=BaseField::CHECK_BOX;
-    field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
     BoolField* field9 = new BoolField
@@ -175,7 +201,6 @@ int Draw3dParameters::staticInit()
           "Show caption"
         );
     field9->widgetHint=BaseField::CHECK_BOX;
-    field9->precision=-1;
     fields().push_back(field9);
     /*  */ 
     IntField* field10 = new IntField
@@ -190,7 +215,6 @@ int Draw3dParameters::staticInit()
          0,
          255
         );
-    field10->precision=-1;
     fields().push_back(field10);
     /*  */ 
     IntField* field11 = new IntField
@@ -205,7 +229,6 @@ int Draw3dParameters::staticInit()
          0,
          255
         );
-    field11->precision=-1;
     fields().push_back(field11);
     /*  */ 
     CompositeField* field12 = new CompositeField
@@ -218,7 +241,16 @@ int Draw3dParameters::staticInit()
           "Font Color",
            NULL
         );
-    field12->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field12->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field12);
     /*  */ 
     EnumField* field13 = new EnumField
@@ -236,7 +268,6 @@ int Draw3dParameters::staticInit()
           )
         );
     field13->widgetHint=BaseField::COMBO_BOX;
-    field13->precision=-1;
     fields().push_back(field13);
     /*  */ 
     IntField* field14 = new IntField
@@ -251,7 +282,6 @@ int Draw3dParameters::staticInit()
          0,
          255
         );
-    field14->precision=-1;
     fields().push_back(field14);
     /*  */ 
     DoubleField* field15 = new DoubleField
@@ -282,7 +312,6 @@ int Draw3dParameters::staticInit()
          0,
          19
         );
-    field16->precision=-1;
     fields().push_back(field16);
     /*  */ 
     BoolField* field17 = new BoolField
@@ -295,7 +324,6 @@ int Draw3dParameters::staticInit()
           "Decal Left Cam"
         );
     field17->widgetHint=BaseField::CHECK_BOX;
-    field17->precision=-1;
     fields().push_back(field17);
     /*  */ 
     IntField* field18 = new IntField
@@ -310,7 +338,6 @@ int Draw3dParameters::staticInit()
          0,
          255
         );
-    field18->precision=-1;
     fields().push_back(field18);
     /*  */ 
     BoolField* field19 = new BoolField
@@ -323,7 +350,6 @@ int Draw3dParameters::staticInit()
           "Decal Right Cam"
         );
     field19->widgetHint=BaseField::CHECK_BOX;
-    field19->precision=-1;
     fields().push_back(field19);
     /*  */ 
     IntField* field20 = new IntField
@@ -338,7 +364,6 @@ int Draw3dParameters::staticInit()
          0,
          255
         );
-    field20->precision=-1;
     fields().push_back(field20);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

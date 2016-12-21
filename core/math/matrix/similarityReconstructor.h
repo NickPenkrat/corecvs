@@ -97,6 +97,8 @@ public:
 
     SimilarityReconstructor();
     void addPoint2PointConstraint(const Vector3dd &from, const Vector3dd &to);
+    void addPoint2PointConstraint(double fromX, double fromY, double fromZ, double toX, double toY, double toZ);
+
     void reset(void);
 
     /**
@@ -154,6 +156,8 @@ public:
         //using FunctionArgs::operator();
     };
 
+    /* This method checks one of the invariants. It just prints the result */
+    void reportInputQuality();
 };
 
 

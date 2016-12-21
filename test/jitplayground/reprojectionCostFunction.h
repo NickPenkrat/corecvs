@@ -51,9 +51,9 @@ public:
         for (size_t targetId = 0; targetId < scene->featurePoints().size(); targetId++)
         {
             Vector3dd p = scene->featurePoints()[targetId]->position;
-            in[targetId * 3]     = DoubleType(p.x());
-            in[targetId * 3 + 1] = DoubleType(p.y());
-            in[targetId * 3 + 2] = DoubleType(p.z());
+            in[targetId * Vector3dd::LENGTH]     = DoubleType(p.x());
+            in[targetId * Vector3dd::LENGTH + 1] = DoubleType(p.y());
+            in[targetId * Vector3dd::LENGTH + 2] = DoubleType(p.z());
         }
 
         int pointParameters = scene->featurePoints().size() * 3;
@@ -78,7 +78,7 @@ public:
     template<typename DoubleType>
     void costFunction(const DoubleType *in, DoubleType *out)
     {
-        int pointParameters = scene->featurePoints().size() * 3;
+        int pointParameters = scene->featurePoints().size() * Vector3dd::LENGTH;
         int outCount = 0;
 
         for (size_t targetId = 0; targetId < scene->featurePoints().size(); targetId++)

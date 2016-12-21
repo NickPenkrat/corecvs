@@ -43,7 +43,6 @@ TEST(Levenberg, testMarquardtLevenberg)
     LevenbergTest function;
 
     LevenbergMarquardt optimiser;
-
     optimiser.f = (FunctionArgs *)&function;
     optimiser.maxIterations = 20;
 

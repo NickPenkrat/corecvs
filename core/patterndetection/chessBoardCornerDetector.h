@@ -41,6 +41,14 @@ struct OrientedCorner
     Vector2dd v2;
     double score;
 
+    double& operator[](const int r)
+    {
+        return pos[r];
+    }
+    double operator[](const int r) const
+    {
+        return pos[r];
+    }
     /**
      * Computes multi-scale score of corner based on image-intensity and gradient magnitude
      *
@@ -95,16 +103,16 @@ struct CornerKernelSet
         KERNEL_D,
         KERNEL_LAST
     };
-    DpKernel  K[KERNEL_LAST];
-    FpKernel fK[KERNEL_LAST];
+    corecvs::DpKernel  K[KERNEL_LAST];
+    corecvs::FpKernel fK[KERNEL_LAST];
 
     CornerKernelSet(double r, double alpha, double psi, bool minify = false);
 
     /**
      * Computes const function for entire image
      **/
-    void computeCost(DpImage &img, DpImage &c, bool parallelable = true, bool new_style = true);
-    void computeCost(FpImage &img, DpImage &c);
+    void computeCost(corecvs::DpImage &img, corecvs::DpImage &c, bool parallelable = true, bool new_style = true);
+    void computeCost(corecvs::FpImage &img, corecvs::DpImage &c);
 
 
 
@@ -126,22 +134,22 @@ public:
 
     void setMinAngle(double rad)
     {
-        setMinAngleDeg(radToDeg(rad));
+        setMinAngleDeg(corecvs::radToDeg(rad));
     }
 
     double minAngle() const
     {
-        return degToRad(minAngleDeg());
+        return corecvs::degToRad(minAngleDeg());
     }
 
     void setSectorSize(double rad)
     {
-        setSectorSizeDeg(radToDeg(rad));
+        setSectorSizeDeg(corecvs::radToDeg(rad));
     }
 
     double sectorSize() const
     {
-        return degToRad(sectorSizeDeg());
+        return corecvs::degToRad(sectorSizeDeg());
     }
 
     vector<double> patternStartAngle() const
@@ -149,7 +157,7 @@ public:
         vector<double> toReturn = patternStartAngleDeg();
         for (size_t i = 0; i < toReturn.size(); i++)
         {
-            toReturn[i] = degToRad(toReturn[i]);
+            toReturn[i] = corecvs::degToRad(toReturn[i]);
         }
         return toReturn;
     }
@@ -214,7 +222,7 @@ public:
     corecvs::Statistics *getStatistics()            { return stats; }
 
     std::vector<std::string> debugBuffers() const;
-    RGB24Buffer *getDebugBuffer(const std::string& name) const;
+    corecvs::RGB24Buffer *getDebugBuffer(const std::string& name) const;
 
 private:
     corecvs::Statistics *stats = nullptr;

@@ -40,11 +40,13 @@ TEST(Similarity, testSimilarity)
 
     SimilarityReconstructor reconstructor;
 
-
     for (unsigned i = 0; i < data.size(); i++)
     {
         reconstructor.addPoint2PointConstraint(data[i], out[i]);
     }
+
+    reconstructor.reportInputQuality();
+
 
     Similarity sim = reconstructor.getBestSimilarity();
 
@@ -187,6 +189,18 @@ TEST(Similarity, testSimilarity1)
     file.close();
 }
 
+TEST(Similarity, sometest)
+{
+     SimilarityReconstructor reconstructor;
+
+    reconstructor.addPoint2PointConstraint(112.197, 505.767, 168.688,  7.490554, -2.335910, 14.622676);
+    reconstructor.addPoint2PointConstraint(129.957, 531.517, 165.094,  1.111781, -0.814799,  8.308385);
+    reconstructor.addPoint2PointConstraint(163.171, 507.859, 175.788, -7.069553, -4.640409, 16.500148);
+
+    reconstructor.reportInputQuality();
+
+}
+
 TEST(Similarity, testCostFunction)
 {
     Similarity s;
@@ -220,6 +234,10 @@ TEST(Similarity, testCostFunction)
     cout << matrix << endl;
     cout << "=======" << endl;
     cout << matrix1 << endl;
+}
+
+TEST(Similarity, distanceTest) {
+
 }
 
 

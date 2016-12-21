@@ -26,6 +26,9 @@ int BaseReflection<BaseParameters>::dummy = BaseParameters::staticInit();
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int BaseParameters::staticInit()
 {
 
@@ -35,6 +38,8 @@ int BaseParameters::staticInit()
         "Base parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(BaseParameters);
      
 
     EnumField* field0 = new EnumField
@@ -53,7 +58,6 @@ int BaseParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     BoolField* field1 = new BoolField
@@ -66,7 +70,6 @@ int BaseParameters::staticInit()
           "mirror"
         );
     field1->widgetHint=BaseField::CHECK_BOX;
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     BoolField* field2 = new BoolField
@@ -79,7 +82,6 @@ int BaseParameters::staticInit()
           "swapCameras"
         );
     field2->widgetHint=BaseField::RADIO_BUTTON;
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     BoolField* field3 = new BoolField
@@ -92,7 +94,6 @@ int BaseParameters::staticInit()
           "filterLock"
         );
     field3->widgetHint=BaseField::RADIO_BUTTON;
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     BoolField* field4 = new BoolField
@@ -105,7 +106,6 @@ int BaseParameters::staticInit()
           "enableFilterGraph"
         );
     field4->widgetHint=BaseField::CHECK_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     DoubleField* field5 = new DoubleField
@@ -136,7 +136,6 @@ int BaseParameters::staticInit()
          0,
          2024
         );
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     IntField* field7 = new IntField
@@ -151,7 +150,6 @@ int BaseParameters::staticInit()
          0,
          4096
         );
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     BoolField* field8 = new BoolField
@@ -164,7 +162,6 @@ int BaseParameters::staticInit()
           "Select crop height so that full image will fit"
         );
     field8->widgetHint=BaseField::CHECK_BOX;
-    field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
     BoolField* field9 = new BoolField
@@ -177,7 +174,6 @@ int BaseParameters::staticInit()
           "Select crop width so that full image will fit"
         );
     field9->widgetHint=BaseField::CHECK_BOX;
-    field9->precision=-1;
     fields().push_back(field9);
     /*  */ 
     IntField* field10 = new IntField
@@ -192,7 +188,6 @@ int BaseParameters::staticInit()
          0,
          1024
         );
-    field10->precision=-1;
     fields().push_back(field10);
     /*  */ 
     IntField* field11 = new IntField
@@ -207,7 +202,6 @@ int BaseParameters::staticInit()
          0,
          2048
         );
-    field11->precision=-1;
     fields().push_back(field11);
     /*  */ 
     EnumField* field12 = new EnumField
@@ -226,7 +220,6 @@ int BaseParameters::staticInit()
           )
         );
     field12->widgetHint=BaseField::COMBO_BOX;
-    field12->precision=-1;
     fields().push_back(field12);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

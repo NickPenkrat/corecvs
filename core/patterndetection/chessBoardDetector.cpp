@@ -5,6 +5,8 @@
 
 #include <ostream>
 
+using namespace corecvs;
+
 ChessboardDetector::ChessboardDetector(
         CheckerboardDetectionParameters params,
         BoardAlignerParams alignerParams,

@@ -313,6 +313,7 @@ void Grid3DScene::drawMyself(CloudViewDialog* /*dialog*/ /*, const Draw3dParamet
     }
     GLboolean textureState = glIsEnabled(GL_TEXTURE_2D);
     glDisable(GL_TEXTURE_2D);
+    glShadeModel(GL_FLAT);
     glCallList(mGridId);
     if (textureState) {
         glEnable(GL_TEXTURE_2D);
@@ -387,9 +388,14 @@ void Plane3DScene::drawMyself(CloudViewDialog* /*dialog*/)
     {
         qDebug("Grid3DScene was not initialized");
     }
+    GLboolean textureState = glIsEnabled(GL_TEXTURE_2D);
     glDisable(GL_TEXTURE_2D);
+
     glCallList(mPlaneListId);
-   // glEnable(GL_TEXTURE_2D);
+
+    if (textureState) {
+        glEnable(GL_TEXTURE_2D);
+    }
 }
 
 void CameraScene::prepareMesh(CloudViewDialog * /*dialog*/)

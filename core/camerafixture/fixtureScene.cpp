@@ -31,30 +31,21 @@ FixtureScene::FixtureScene() :
 void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 {
     //SYNC_PRINT(("FixtureScene::projectForward(0x%0X, %s):called\n", mask, round ? "true" : "false"));
-
     //SYNC_PRINT(("FixtureScene::projectForward(): points %u\n", mSceneFeaturePoints.size()));
 
-    for (size_t pointId = 0; pointId < mSceneFeaturePoints.size(); pointId++)
+    for (SceneFeaturePoint* point : mSceneFeaturePoints)
     {
-        SceneFeaturePoint *point = mSceneFeaturePoints[pointId];
-
         //cout << "Projecting point:" << point->name << " (" << point->position << ")"<< endl;
-
-        if ( (point->type & mask) == 0) {
+        if ((point->type & mask) == 0) {
             //printf("Skipping (type = %x, mask = %x)\n", point->type, mask);
             continue;
         }
 
-        //cout << "Projecting" << endl;
-
-        for (size_t fixtureId = 0; fixtureId < mFixtures.size(); fixtureId++)
+        for (CameraFixture * fixture : mFixtures)
         {
-            CameraFixture &fixture = *mFixtures[fixtureId];
-            for (size_t camId = 0; camId < fixture.cameras.size(); camId++)
+            for (FixtureCamera * camera : fixture->cameras)
             {
-                FixtureCamera *camera = fixture.cameras[camId];
-                CameraModel worldCam = fixture.getWorldCamera(camera);
-
+                CameraModel worldCam = fixture->getWorldCamera(camera);
 
                 Vector2dd projection = worldCam.project(point->position);
                 if (!worldCam.isVisible(projection) || !worldCam.isInFront(point->position))
@@ -65,22 +56,13 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                     projection.y() = fround(projection.y());
                 }
 
-                SceneObservation observation;
-                observation.accuracy     = Vector2dd(0.0, 0.0);
-                observation.camera       = camera;
-                observation.featurePoint = point;
-                observation.isKnown      = true;
-                observation.observation  = projection;
-
-                Vector3dd direct = worldCam.dirToPoint(point->position).normalised();
-                Vector3dd indirect = worldCam.intrinsics.reverse(projection).normalised();
-
+                SceneObservation observation(camera, point, projection, fixture);
                 if (!round) {
-                    observation.observDir = direct;
-                } else {
-                    observation.observDir = indirect;
+                    observation.observDir = worldCam.dirToPoint(point->position).normalised();  // direct
                 }
-
+                else {
+                    observation.observDir = worldCam.intrinsics.reverse(projection).normalised();  // indirect
+                }
                 /*if (direct.notTooFar(indirect, 1e-7))
                 {
                     SYNC_PRINT(("Ok\n"));
@@ -90,8 +72,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
                 }*/
 
                 point->observations[camera] = observation;
-                point->observations__[WPP(mFixtures[fixtureId], camera)] = observation;
-                //cout << "Camera:" << camera->fileName << " = " << projection << endl;
+                point->observations__[WPP(fixture, camera)] = observation;
             }
         }
     }
@@ -99,52 +80,68 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 
 void FixtureScene::triangulate(SceneFeaturePoint *point)
 {
-   MulticameraTriangulator triangulator;
+    //TODO: why don't use here:
+    //      point->ensureDistortedObservations(false);
+    //      point->position = point->triangulate();
+    //
+    // that uses internally:    mct.triangulateLM(mct.triangulate()) ???
 
-  /* for (size_t stationId = 0; stationId < mFixtures.size(); stationId++)
-   {
-       CameraFixture &station = *mFixtures[stationId];
-       for (size_t camId = 0; camId < station.cameras.size(); camId++)
-       {
-           FixtureCamera *camera = station.cameras[camId];
-           CameraModel worldCam = station.getWorldCamera(camera);
+    if (point->observations.size() < 2)
+    {
+        SYNC_PRINT(("FixtureScene::triangulate(): too few observations"));
+        return;
+    }
 
+    //if (sourceWithDistortion)
+    //{
+    //    for (auto& pos : point->observations)
+    //    {
+    //        FixtureCamera    *cam = pos.first;
+    //        SceneObservation &obs = pos.second;
+    //
+    //        obs.observation = cam->distortion.mapBackward(obs.observation);   // convert given distorted projection to undistorted coords
+    //    }
+    //}
 
+    MulticameraTriangulator triangulator;
+    triangulator.trace = true;
 
-       }
-   }*/
+    for (auto& pos : point->observations)
+    {
+        FixtureCamera    *cam = pos.first;
+        SceneObservation &obs = pos.second;
+        if (cam->cameraFixture == NULL)
+            continue;
 
-   triangulator.trace = true;
+        Vector2dd projection = obs.getDistorted(false);     // convert projection 'dist => undist' if need
 
-   if (point->observations.size() < 2)
-   {
-       SYNC_PRINT(("FixtureScene::triangulate(): Too few observations"));
-       return;
-   }
+        FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
+        triangulator.addCamera(worldCam.getCameraMatrix(), projection);
+    }
 
-   for (auto it = point->observations.begin(); it != point->observations.end(); it++)
-   {
-       FixtureCamera *cam = it->first;
-       const SceneObservation &observ = it->second;
+    bool ok = true;
+    Vector3dd point3d = triangulator.triangulateLM(triangulator.triangulate(&ok));
 
-       if (cam->cameraFixture == NULL) {
-           continue;
-       }
+    if (!ok) {
+        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
+        return;
+    }
+    cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
 
-       FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
-       triangulator.addCamera(worldCam.getCameraMatrix(), observ.observation);
-   }
+    //if (sourceWithDistortion)
+    //{
+    //    for (auto& pos : point->observations)
+    //    {
+    //        FixtureCamera    *cam = pos.first;
+    //        SceneObservation &obs = pos.second;
+    //        obs.observation = cam->distortion.mapForward(obs.observation);   // convert undistorted projection to the distorted one
+    //    }
+    //}
 
-   bool ok;
-   Vector3dd point3d = triangulator.triangulate(&ok);
-
-   if (!ok) {
-       SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
-       return;
-   }
-   cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
-
-   point->position = point3d;       //TODO: why it's stored into the position field instead of reProjPosition?
+    if (point->hasKnownPosition)
+        point->reprojectedPosition = point3d;   // store at the reprojectedPosition as "position" is untouchable
+    else
+        point->position = point3d;              //TODO: why it's stored into the position field instead of reprojectedPosition?
 }
 
 CameraPrototype *FixtureScene::createCameraPrototype()
@@ -657,7 +654,6 @@ void FixtureScene::setPrototypeCount(size_t count)
     while (mCameraPrototypes.size() < count) {
         createCameraPrototype();
     }
-
 }
 
 void FixtureScene::setOrphanCameraCount(size_t count)

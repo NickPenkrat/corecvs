@@ -72,11 +72,9 @@ bool DynamicObject::simulateConstructor()
         default:
             break;
         }
-
-
-
     }
 
+    return true;
 }
 
 bool BaseField::isInputPin() const {

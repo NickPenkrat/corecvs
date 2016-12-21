@@ -84,3 +84,95 @@ std::ostream& operator<<(std::ostream &os, const corecvs::RuntimeTypeBuffer &b)
     return os;
 }
 
+#include "g12Buffer.h"
+#include "g8Buffer.h"
+#include "rgb24Buffer.h"
+
+namespace corecvs {
+
+/* Converters */
+G8Buffer *RuntimeTypeBuffer::toG8Buffer()
+{
+    if (!isValid())
+        return NULL;
+    G8Buffer *buffer = new G8Buffer(rows, cols);
+    if (type == BufferType::U8)
+    {
+        buffer->fillWithRaw(data);
+    }
+
+    if (type == BufferType::F32)
+    {
+
+        for (size_t i = 0; i < rows; i++)
+        {
+            for (size_t j = 0; j < cols; j++)
+            {
+                buffer->element(i,j) = at<float>(i,j);
+            }
+        }
+    }
+    return buffer;
+}
+
+G12Buffer *RuntimeTypeBuffer::toG12Buffer(double min, double max)
+{
+    if (!isValid())
+        return NULL;
+    G12Buffer *buffer = new G12Buffer(rows, cols);
+    if (type == BufferType::U8)
+    {
+        for (size_t i = 0; i < rows; i++)
+        {
+            for (size_t j = 0; j < cols; j++)
+            {
+                buffer->element(i,j) = at<uint8_t>(i,j) << 4;
+            }
+        }
+    }
+
+    if (type == BufferType::F32)
+    {
+        for (size_t i = 0; i < rows; i++)
+        {
+            for (size_t j = 0; j < cols; j++)
+            {
+                double value = lerpLimit(0, G12Buffer::BUFFER_MAX_VALUE, at<float>(i,j), min, max);
+                buffer->element(i,j) = (uint16_t)value;
+            }
+        }
+    }
+    return buffer;
+}
+
+RGB24Buffer *RuntimeTypeBuffer::toRGB24Buffer(double min, double max)
+{
+    if (!isValid())
+        return NULL;
+    RGB24Buffer *buffer = new RGB24Buffer(rows, cols);
+    if (type == BufferType::U8)
+    {
+        for (size_t i = 0; i < rows; i++)
+        {
+            for (size_t j = 0; j < cols; j++)
+            {
+                buffer->element(i,j) = RGBColor::gray(at<uint8_t>(i,j));
+            }
+        }
+    }
+
+    if (type == BufferType::F32)
+    {
+        for (size_t i = 0; i < rows; i++)
+        {
+            for (size_t j = 0; j < cols; j++)
+            {
+                double value = lerpLimit(0, 0xFF, at<float>(i,j), min, max);
+                buffer->element(i,j) = RGBColor::gray(value);
+            }
+        }
+    }
+    return buffer;
+}
+
+} //namespace corecvs

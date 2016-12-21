@@ -21,7 +21,7 @@
 
 #include "global.h"
 
-
+using namespace corecvs;
 using namespace std;
 
 void asmF(double *in, double *out)
@@ -55,7 +55,7 @@ TEST(jit, testasm)
 
 }
 
-TEST(jit, testjit)
+TEST(jit, DISABLED_testjit)
 {
     cout << "Starting test <jit>" << endl;
     cout << "This test is x64 and GCC only" << endl;
@@ -220,4 +220,48 @@ TEST(jit, testjit)
 #endif
 
     cout << "Test <jit> PASSED" << endl;
+}
+
+class ASTNodeDotProduct : public ASTNodeFunctionPayload {
+public:
+
+    // ASTNodeFunctionPayload interface
+
+    virtual int inputNumber() override {
+        return 6;
+    }
+
+    virtual int outputNumber() override {
+        return 1;
+    }
+
+    virtual void f(double in[], double out[]) override {
+        out[0] = in[0] * in[3] + in[1] * in[4] + in[2] * in[5];
+    }
+
+    virtual string getCCode() override {
+        return "out[0] = in[0] * in[3] + in[1] * in[4] + in[2] * in[5]";
+    }
+
+    virtual ASTNodeFunctionPayload *derivative(int input) override
+    {
+        return NULL;
+    }
+};
+
+TEST(jit, testjitfunction)
+{
+    ASTContext::MAIN_CONTEXT = new ASTContext();
+
+
+    cout << "AST fcuntions" << endl;
+
+    ASTNode in[6] = {
+         ASTNode("M[0]"), ASTNode("M[1]"), ASTNode("M[2]"),
+         ASTNode("M[3]"), ASTNode("M[4]"), ASTNode("M[5]"),
+    };
+    ASTNodeInt out(ASTNodeInt::OPERATOR_FUNCTION);
+    out.payload = new ASTNodeDotProduct();
+
+
 }

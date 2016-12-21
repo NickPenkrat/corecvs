@@ -26,6 +26,9 @@ int BaseReflection<OpenCVBMParameters>::dummy = OpenCVBMParameters::staticInit()
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int OpenCVBMParameters::staticInit()
 {
 
@@ -35,6 +38,8 @@ int OpenCVBMParameters::staticInit()
         "OpenCV BM Parameters Class",
         ""
     );
+
+     getReflection()->objectSize = sizeof(OpenCVBMParameters);
      
 
     IntField* field0 = new IntField
@@ -49,7 +54,6 @@ int OpenCVBMParameters::staticInit()
          5,
          255
         );
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -64,7 +68,6 @@ int OpenCVBMParameters::staticInit()
          0,
          1600
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     IntField* field2 = new IntField
@@ -79,7 +82,6 @@ int OpenCVBMParameters::staticInit()
          1,
          1000
         );
-    field2->precision=-1;
     fields().push_back(field2);
     /*  */ 
     IntField* field3 = new IntField
@@ -94,7 +96,6 @@ int OpenCVBMParameters::staticInit()
          1,
          1000
         );
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     IntField* field4 = new IntField
@@ -109,7 +110,6 @@ int OpenCVBMParameters::staticInit()
          0,
          1000
         );
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     IntField* field5 = new IntField
@@ -124,7 +124,6 @@ int OpenCVBMParameters::staticInit()
          0,
          1000
         );
-    field5->precision=-1;
     fields().push_back(field5);
     /*  */ 
     IntField* field6 = new IntField
@@ -139,7 +138,6 @@ int OpenCVBMParameters::staticInit()
          0,
          1000
         );
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     IntField* field7 = new IntField
@@ -154,7 +152,6 @@ int OpenCVBMParameters::staticInit()
          0,
          1000
         );
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     IntField* field8 = new IntField
@@ -169,7 +166,6 @@ int OpenCVBMParameters::staticInit()
          -1,
          1000
         );
-    field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

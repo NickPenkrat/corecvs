@@ -4,7 +4,6 @@
  * \ingroup cppcorefiles
  *
  **/
-
 #include <type_traits>
 #include <cstring>
 
@@ -191,7 +190,6 @@ public:
 //        typedef typename SceneType::FixtureType  RealFixtureType;
 //        typedef typename SceneType::PointType    RealPointType;
 
-
         /* So far compatibilty is on */
         int camsize = (int)cameras.size();
         visitor.visit(camsize, 0, "cameras.size");
@@ -214,8 +212,6 @@ public:
         visitor.visit(name, std::string(""), "name");
     }
 
-
 };
 
 } // namespace corecvs
-

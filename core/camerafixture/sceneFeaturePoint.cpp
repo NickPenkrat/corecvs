@@ -20,6 +20,31 @@ std::string SceneObservation::getPointName()
     return featurePoint ? featurePoint->name : "";
 }
 
+int SceneObservation::ensureDistorted(bool distorted)
+{
+    if (!(distorted ^ onDistorted))                         // if we have what is requested, use it
+        return false;
+
+    //cout << "SceneObservation::ensureDistorted: convert to " << (distorted ? "dist" : "undist") << " coords" << endl;
+    //auto obs = observation;
+
+    observation = getDistorted(distorted);
+    onDistorted = distorted;                        // this must be after the function above call!
+
+    //cout << "SceneObservation::ensureDistorted(" << (distorted ? "dist" : "undist") << ") " << obs << " => " << observation << endl;
+    return true;
+}
+
+Vector2dd SceneObservation::getDistorted(bool distorted)
+{
+    if (distorted) {
+        return  onDistorted ? observation : camera->distortion.mapForward(observation);  // undist => dist
+    }
+    else {
+        return !onDistorted ? observation : camera->distortion.mapBackward(observation); // dist => undist
+    }
+}
+
 FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)
 {
     CORE_ASSERT_TRUE_S(featurePoint);
@@ -28,26 +53,18 @@ FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)
     return featurePoint->ownerScene->getCameraById(id);
 }
 
-bool SceneFeaturePoint::hasObservation(FixtureCamera *cam)
-{
-    auto it = observations.find(cam);
-    return (it != observations.end());
-}
-
 SceneObservation *SceneFeaturePoint::getObservation(FixtureCamera *cam)
 {
     auto it = observations.find(cam);
     if (it == observations.end()) {
-        return NULL;
+        return nullptr;
     }
-
     return &((*it).second);
 }
 
 void SceneFeaturePoint::removeObservation(SceneObservation *in)
 {
     auto it = observations.begin();
-
     for (; it != observations.end(); it++)
     {
         //FixtureCamera *cam = it->first;
@@ -65,23 +82,53 @@ void SceneFeaturePoint::removeObservation(SceneObservation *in)
     observations.erase(it);
 }
 
-Vector3dd SceneFeaturePoint::triangulate(bool use__, uint32_t mask)
+int SceneFeaturePoint::ensureDistortedObservations(bool distorted)
+{
+    int toReturn = 0;
+    for (auto& obs : observations)      // we need to calc dist/undist coords for all observations if need
+    {
+        toReturn += obs.second.ensureDistorted(distorted);
+    }
+    return toReturn;
+}
+
+Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
 {
     MulticameraTriangulator mct;
-    int id = 0;
+    int id = 0, ptr = 0;
     if (use__)
     {
         for (auto& obs: observations__)
-            if (mask & (1 << id))
+        {
+            if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
+            {
                 mct.addCamera(obs.first.u->getMMatrix(obs.first.v), obs.second.observation);
+                if (mask && ptr + 1 < mask->size())
+                    CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
+                ++ptr;
+            }
+            if (mask && ptr == mask->size())
+                break;
+            ++id;
+        }
     }
     else
     {
         for (auto& obs : observations)
         {
+            //cout << "SceneFeaturePoint::triangulate(" << name << ") distorted:" << obs.second.onDistorted << " " << obs.second.observation << endl;
+
             CORE_ASSERT_TRUE_S(obs.second.cameraFixture != NULL);
-            if (mask & (1 << id))
+            if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
+            {
                 mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
+                if (mask && ptr + 1 < mask->size())
+                    CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
+                ++ptr;
+            }
+            if (mask && ptr == mask->size())
+                break;
+            ++id;
         }
     }
 

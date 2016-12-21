@@ -1232,7 +1232,7 @@ private:
     static void _copy(ElementType* dst, const ElementType* src, IndexType cnt)
     {
         /*
-         * Using traits swithc to memcpy if possible
+         * Using traits switch to memcpy if possible
          */
         if (TRIVIALLY_COPY_CONSTRUCTIBLE)
         {

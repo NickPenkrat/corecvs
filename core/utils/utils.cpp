@@ -20,6 +20,7 @@
 #include <sstream>
 
 #include "utils.h"
+#include <sstream>
 
 
 namespace corecvs {
@@ -94,7 +95,8 @@ string toNativeSlashes(const string& str)
 #endif
 }
 
-void stringSplit(const string &s, char delim, std::vector<string> &elems) {
+void stringSplit(const string &s, char delim, std::vector<string> &elems)
+{
     std::stringstream ss(s);
     string item;
     while (getline(ss, item, delim)) {
@@ -102,8 +104,8 @@ void stringSplit(const string &s, char delim, std::vector<string> &elems) {
     }
 }
 
-
-std::vector<string> stringSplit(const string &s, char delim) {
+std::vector<string> stringSplit(const string &s, char delim)
+{
     std::vector<string> elems;
     stringSplit(s, delim, elems);
     return elems;

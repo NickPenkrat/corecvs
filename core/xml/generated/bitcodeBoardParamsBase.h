@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -36,7 +36,7 @@ namespace corecvs {
  * \brief Bitcode Board Params Base 
  * Bitcode Board Params Base 
  **/
-class BitcodeBoardParamsBase : public BaseReflection<BitcodeBoardParamsBase>
+class BitcodeBoardParamsBase : public corecvs::BaseReflection<BitcodeBoardParamsBase>
 {
 public:
     enum FieldId {
@@ -297,25 +297,25 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mVertical,                  static_cast<const BoolField *>    (fields()[VERTICAL_ID]));
-        visitor.visit(mCellSize,                  static_cast<const IntField *>     (fields()[CELLSIZE_ID]));
-        visitor.visit(mBlackColor,                static_cast<const IntField *>     (fields()[BLACKCOLOR_ID]));
-        visitor.visit(mWhiteColor,                static_cast<const IntField *>     (fields()[WHITECOLOR_ID]));
-        visitor.visit(mIdentSize,                 static_cast<const DoubleField *>  (fields()[IDENTSIZE_ID]));
-        visitor.visit(mBoardHeight,               static_cast<const IntField *>     (fields()[BOARDHEIGHT_ID]));
-        visitor.visit(mBoardWidth,                static_cast<const IntField *>     (fields()[BOARDWIDTH_ID]));
-        visitor.visit(mCodeWidth,                 static_cast<const IntField *>     (fields()[CODEWIDTH_ID]));
-        visitor.visit(mCodeHeight,                static_cast<const IntField *>     (fields()[CODEHEIGHT_ID]));
-        visitor.visit(mBitcodeIdentSize,          static_cast<const DoubleField *>  (fields()[BITCODEIDENTSIZE_ID]));
-        visitor.visit(mBitcodeConfidence,         static_cast<const DoubleField *>  (fields()[BITCODECONFIDENCE_ID]));
-        visitor.visit((int &)mBitcodeOrientation, static_cast<const EnumField *>    (fields()[BITCODEORIENTATION_ID]));
-        visitor.visit(mCenterToZeroX,             static_cast<const DoubleField *>  (fields()[CENTERTOZEROX_ID]));
-        visitor.visit(mCenterToZeroY,             static_cast<const DoubleField *>  (fields()[CENTERTOZEROY_ID]));
+        visitor.visit(mVertical,                  static_cast<const corecvs::BoolField *>(fields()[VERTICAL_ID]));
+        visitor.visit(mCellSize,                  static_cast<const corecvs::IntField *>(fields()[CELLSIZE_ID]));
+        visitor.visit(mBlackColor,                static_cast<const corecvs::IntField *>(fields()[BLACKCOLOR_ID]));
+        visitor.visit(mWhiteColor,                static_cast<const corecvs::IntField *>(fields()[WHITECOLOR_ID]));
+        visitor.visit(mIdentSize,                 static_cast<const corecvs::DoubleField *>(fields()[IDENTSIZE_ID]));
+        visitor.visit(mBoardHeight,               static_cast<const corecvs::IntField *>(fields()[BOARDHEIGHT_ID]));
+        visitor.visit(mBoardWidth,                static_cast<const corecvs::IntField *>(fields()[BOARDWIDTH_ID]));
+        visitor.visit(mCodeWidth,                 static_cast<const corecvs::IntField *>(fields()[CODEWIDTH_ID]));
+        visitor.visit(mCodeHeight,                static_cast<const corecvs::IntField *>(fields()[CODEHEIGHT_ID]));
+        visitor.visit(mBitcodeIdentSize,          static_cast<const corecvs::DoubleField *>(fields()[BITCODEIDENTSIZE_ID]));
+        visitor.visit(mBitcodeConfidence,         static_cast<const corecvs::DoubleField *>(fields()[BITCODECONFIDENCE_ID]));
+        visitor.visit((int &)mBitcodeOrientation, static_cast<const corecvs::EnumField *>(fields()[BITCODEORIENTATION_ID]));
+        visitor.visit(mCenterToZeroX,             static_cast<const corecvs::DoubleField *>(fields()[CENTERTOZEROX_ID]));
+        visitor.visit(mCenterToZeroY,             static_cast<const corecvs::DoubleField *>(fields()[CENTERTOZEROY_ID]));
     }
 
     BitcodeBoardParamsBase()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -352,16 +352,16 @@ template<class VisitorType>
         mCenterToZeroY = centerToZeroY;
     }
 
-    friend ostream& operator << (ostream &out, BitcodeBoardParamsBase &toSave)
+    friend std::ostream& operator << (std::ostream &out, BitcodeBoardParamsBase &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //BITCODE_BOARD_PARAMS_BASE_H_

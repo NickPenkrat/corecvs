@@ -6,7 +6,7 @@ SOURCES += \
     reflection/deserializerVisitor.cpp \
     reflection/commandLineSetter.cpp \
     reflection/reflection.cpp \
-    $$PWD/extendedVisitor.cpp
+    reflection/extendedVisitor.cpp \
     
     
 HEADERS += \
@@ -17,4 +17,4 @@ HEADERS += \
     reflection/serializerVisitor.h \
     reflection/deserializerVisitor.h \
     reflection/commandLineSetter.h \
-    $$PWD/extendedVisitor.h
+    reflection/extendedVisitor.h \

@@ -8,6 +8,7 @@
 #include <opencv2/features2d/features2d.hpp>    // cv::FeatureDetector
 #include <opencv2/nonfree/features2d.hpp>       // cv::SURF, cv::SIFT
 
+using namespace corecvs;
 
 OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector) : detector(detector)
 {}

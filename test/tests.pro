@@ -14,7 +14,6 @@ SUBDIRS +=       \
 #   grab         \
     grab_N_captures \
     serialize1   \
-    jitplayground \
     fileloader \
 #   adoptcolor   \
 #    avigrab     \
@@ -24,13 +23,19 @@ SUBDIRS +=       \
 #    new_board_detector \
 #    cr2reader           \
     debayer          \
-    qtScriptConsole  \
     softrender       \
     raytracerender   \
-    pmvs_generator   \
     stereo_generator \
     widgets_test \
     example_scene \
+
+!win32 {
+    SUBDIRS += jitplayground
+}
+
+with_qscript {
+   SUBDIRS += qtScriptConsole
+}
 
 
 with_opencv {
@@ -38,16 +43,7 @@ with_opencv {
 #        distortion_corrector \
 #        matcher_basic \
 #        matcher_full \
-#        camera_calibration \
         chessboard_detector \
-        calibration \
-#        calibration_job_generate \
-#        calibration_job_detect \
-#        calibration_job_estimate_distortion \
-#        calibration_job_apply_undistortion \
-        calibration_job_calibrate \
-#        \
-        geometry_verificator \
 
 }
 
@@ -83,19 +79,7 @@ distortion_corrector	            = distortion_corrector/distortion_corrector.pro
 matcher_basic                       = matcher_basic/matcher_basic.pro
 matcher_full                        = matcher_full/matcher_full.pro
 
-camera_calibration                  = camera_calibration/camera_calibration.pro
 chessboard_detector                 = chessboard_detector/chessboard_detector.pro
-
-calibration                         = calibration/calibration.pro
-
-calibration_job_generate            = calibration_job_generate/calibration_job_generate.pro
-calibration_job_detect              = calibration_job_detect/calibration_job_detect.pro
-calibration_job_estimate_distortion = calibration_job_estimate_distortion/calibration_job_estimate_distortion.pro
-calibration_job_apply_undistortion  = calibration_job_apply_undistortion/calibration_job_apply_undistortion.pro
-calibration_job_calibrate           = calibration_job_calibrate/calibration_job_calibrate.pro
-
-geometry_verificator                = geometry_verificator/geometry_verificator.pro
-pmvs_generator                      = pmvs_generator/pmvs_generator.pro
 
 qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro
 

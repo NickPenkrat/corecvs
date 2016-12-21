@@ -4,10 +4,8 @@
  *
  * \ingroup cppcorefiles
  *
-
  *
  **/
-
 #if __cplusplus > 199711L
 #define CHRONO_CLOCK
 #endif
@@ -35,7 +33,7 @@
 namespace corecvs {
 
 #ifdef WINDOWS_CLOCK
-int64_t PreciseTimer::mFreq = 0L;
+double PreciseTimer::mFreq = 0;
 #endif
 
 #ifdef CHRONO_CLOCK
@@ -46,19 +44,24 @@ PreciseTimer PreciseTimer::CurrentETime()
 {
     PreciseTimer T;
 
-#if defined (CHRONO_CLOCK)
+#if defined(CHRONO_CLOCK)
     high_resolution_clock::time_point now = high_resolution_clock::now();
     T.setTime(duration_cast<nanoseconds>(now.time_since_epoch()).count());
+
 #elif defined(QT_CLOCK)
     QTime time = QTime::currentTime();
     T.setTime(((((int64_t)time.hour() * 60 + time.minute()) * 60 + time.second()) * 1000 + time.msec()) * 1000 * 1000);
+
 #elif defined(WINDOWS_CLOCK)
-    if (!mFreq) {
-        QueryPerformanceFrequency((LARGE_INTEGER*)&mFreq);
-    }
     LARGE_INTEGER time;
+    if (mFreq == 0)
+    {
+        QueryPerformanceFrequency(&time);
+        mFreq = 1e9 / time.QuadPart;
+    }
     QueryPerformanceCounter(&time);
-    T.setTime((time.QuadPart * 1000 * 1000 * 1000) / mFreq);
+    T.setTime(static_cast<int64_t>(time.QuadPart * mFreq + 0.5));
+
 #else
     struct timeval timeVal;
     gettimeofday(&timeVal, NULL);

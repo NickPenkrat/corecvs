@@ -38,7 +38,6 @@ public:
 
     /**
      * Mark and sweep gc
-     * We reuse
      **/
     void clear();
     void mark(ASTNodeInt *node);
@@ -56,7 +55,7 @@ struct ASTRenderDec {
 
     std::unordered_map<uint64_t, ASTNodeInt *> *cse = NULL;
 
-    ASTRenderDec(const char *ident, const char *lbr, bool genParameters) :
+    ASTRenderDec(const char *ident = "", const char *lbr = "", bool genParameters = true) :
         ident(ident), lbr(lbr), genParameters(genParameters)
     {}
 
@@ -80,10 +79,14 @@ public:
 class ASTNodeFunctionPayload : public ASTNodePayload {
 public:
    /**/
+    virtual int inputNumber() {return 0;}
+    virtual int outputNumber() {return 0;}
+
     virtual void f(double in[], double out[]) = 0;
     virtual std::string getCCode();
-    virtual ASTNodeFunctionPayload *derivative();
+    virtual ASTNodeFunctionPayload *derivative(int input);
 };
+
 
 /**
  *  Internal data structure for ASTTree - it records all operations with ASTNode.
@@ -273,6 +276,22 @@ public:
     void deleteChildren();
 
 
+};
+
+
+class ASTNodeFunctionWrapper : public ASTNodeFunctionPayload {
+public:
+    std::vector<ASTNodeInt *> components;
+
+private:
+    std::vector<std::string> getVars();
+    // ASTNodeFunctionPayload interface
+public:
+    virtual int inputNumber() override;
+    virtual int outputNumber()  override;
+    virtual void f(double in[], double out[])  override;
+    virtual std::string getCCode()  override;
+    virtual ASTNodeFunctionPayload *derivative(int input)  override;
 };
 
 

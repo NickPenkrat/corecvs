@@ -10,12 +10,10 @@
  * \author alexander
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <limits>
 #include <vector>
 #include <thread>
+#include <cmath>
 
 #include "global.h"
 
@@ -54,13 +52,21 @@ private:
         TOTAL_TIME,
         LOCAL_STATS_LAST
     };
-
 public:
+    enum class Dampening
+    {
+        EQUAL,
+        DIAGONAL,
+        GAUSS_NEWTON
+    };
+
+
     FunctionClass *f;
     //FunctionArgs *f;
     FunctionArgs *normalisation;
     double startLambda;
-    double maxLambda;
+    double maxLambda,
+           maxLambdaLogscale = 64;
     double lambdaFactor;
     int    maxIterations;
 
@@ -69,12 +75,15 @@ public:
     bool trace         = false;
     bool traceMatrix   = false;
     bool traceJacobian = false;
+    Dampening dampening = Dampening::EQUAL;
 
     Statistics *stats;
 
     double f0, x0;
     double fTolerance = 1e-9,
            xTolerance = 1e-9;
+    int    nonToleratedIterationsLimit = 2;
+    int    nonToleratedIterations = 0;
 #if 0
     bool useConjugatedGradient = false;
     int  conjugatedGradientIterations = 100;
@@ -135,7 +144,10 @@ public:
 
         Vector initial = diff;
         F(beta, initial);
+
         initial -= target;
+        Vector xx0 = beta;
+        nonToleratedIterations = 0;
         double initialNorm = f0 = initial.sumAllElementsSq();
         x0 = !beta;
         int LSc = 0;
@@ -265,13 +277,27 @@ public:
                 MatrixClass A(JTJ);
                 Vector B(d);
 
-                for (int j = 0; j < A.h; j++)
+                switch(dampening)
                 {
-                    double a = A.a(j, j) + lambda;
-                    //double b = A.a(j, j) * (1.0 + lambda);
-                    A.a(j, j) = a;
+                case Dampening::EQUAL:
+                    for (int j = 0; j < A.h; j++)
+                    {
+                        double a = A.a(j, j) + lambda;
+                        A.a(j, j) = a;
+                    }
+                    break;
+                case Dampening::DIAGONAL:
+                    for (int j = 0; j < A.h; j++)
+                    {
+                        double b = A.a(j, j) * (1.0 + lambda);
+                        A.a(j, j) = b;
+                    }
+                    break;
+                case Dampening::GAUSS_NEWTON:
+                    // NOTE: if G-N stucks we'll terminate, but make
+                    //       some pointless iterations
+                    break;
                 }
-
                 /*
                  * NOTE: A'A (generally) is semi-positive-definite, but if you are
                  *       solving well-posed problems then diag(A'A) > 0 and A'A is
@@ -300,7 +326,7 @@ public:
                         {
                         auto res = MinresQLP<MatrixClass>::Solve(A, B, delta);
                         auto P = A.incompleteCholseky();
-                        auto PP = [&](const Vector& x)->Vector { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); };
+                        auto PP = [&](const Vector& x)->Vector { return P.second.trsv(x, "TN", true, 2); };
                         auto res2 = MinresQLP<MatrixClass>::Solve(A, PP, B, delta);
                         if (res != res2)
                         {
@@ -316,19 +342,11 @@ public:
                         break;
                     case LinearSolver::MINRESQLP_IC0:
                         {
-#ifndef WITH_CUSPARSE
                         auto P123 = A.incompleteCholseky();
-#else
-                        decltype(A.incompleteCholseky()) P123;
-                        std::thread t1([&](){ P123 = A.incompleteCholseky(); std::cout << "IC0 completed" << std::endl;});
-                        std::thread t2([&]() { A.promoteToGpu(); for (int i = 0; i < 3; ++i) auto vv = A * B; });
-                        t1.join();
-                        t2.join();
-#endif
                         MinresQLPStatus res123;
                         if (P123.first)
                         {
-                            auto PP123 = [&](const Vector& x)->Vector { return P123.second.dtrsv_un(P123.second.dtrsv_ut(x)); };
+                            auto PP123 = [&](const Vector& x)->Vector { return P123.second.trsv(x, "TN", true, 2); };
                             res123 = MinresQLP<MatrixClass>::Solve(A, PP123, B, delta);
                         }
                         else
@@ -375,8 +393,13 @@ public:
                     cout << "  Guess:" <<  normNew << " - ";
                 }
 
-                if (normNew < norm) // If the current solution is better
+                auto dnorm = (diff - diffNew) & (diff + diffNew);
+                if (dnorm > 0.0) // If the current solution is better
                 {
+                    if (g == 0)
+                    {
+                        maxLambda = lambda * std::pow(2.0, maxLambdaLogscale);
+                    }
                     if (trace) {
                         cout << "Accepted" << endl;
                         std::cout << initialNorm - normNew << " decrease in " << LSc << " linsolves" << std::endl;
@@ -387,16 +410,22 @@ public:
                     if (traceMatrix) {
                         cout << "Old soluton:" << endl << beta << endl;
                     }
-                    double funTolerance = (norm - normNew) / f0;// / (1.0 + norm);
-                    double xxTolerance = !delta / x0;// / (1.0 + !beta);
+                    double funTolerance = (diffNew - diff).absRelInfNorm(diff);
+                    double xxTolerance = delta.absRelInfNorm(beta);
                     if (trace)
-                    std::cout << "Tolerances: |f(x)-f(x+d)|/(1.0+f(x): " << funTolerance << " |d|/|1+|x||: " << xxTolerance << std::endl;
+                    std::cout << "Tolerances: dF: " << funTolerance << " dx: " << xxTolerance << std::endl;
                     if (funTolerance < fTolerance && xxTolerance < xTolerance)
                     {
-                        converged = true;
-                        if (trace)
-                        std::cout << "CONVERGED (FTOL+XTOL)" << std::endl;
+                        nonToleratedIterations++;
+                        if (nonToleratedIterations >= nonToleratedIterationsLimit)
+                        {
+                            converged = true;
+                            if (trace)
+                                std::cout << "CONVERGED (FTOL+XTOL)" << std::endl;
+                        }
                     }
+                    else
+                        nonToleratedIterations = 0;
                     lambda /= lambdaFactor;
                     norm = normNew;
                     beta += delta;
@@ -425,7 +454,7 @@ public:
             }
 
             iterationTimes[TOTAL_TIME] += start.nsecsToNow();
-    #if 1
+    #if 0
             if (traceProgress)
             {
                 printStats(iterationTimes);

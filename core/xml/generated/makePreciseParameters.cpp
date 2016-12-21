@@ -26,6 +26,9 @@ int BaseReflection<MakePreciseParameters>::dummy = MakePreciseParameters::static
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int MakePreciseParameters::staticInit()
 {
 

@@ -76,7 +76,7 @@
     <field type="Line Distortion Estimator Cost"   name="Cost Algorithm"  defaultValue="0" />
 
     <field type="int"       name="Iteration Number"  defaultValue="1000"  max="99999" min="0"/>
-    <field type="int"       name="Polinom Degree"    defaultValue="6"  prefix="x^" max="20" min="0"/>
+    <field type="int"       name="Polynom Degree"    defaultValue="6"  prefix="x^" max="20" min="0"/>
 
     <field type="bool"      name="Simple Jacobian"   defaultValue="true" />
     <field type="bool"      name="Even powers only"  defaultValue="false" />

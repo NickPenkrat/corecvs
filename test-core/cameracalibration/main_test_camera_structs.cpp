@@ -9,7 +9,6 @@
 
 #include "calibrationCamera.h"
 #include "calibrationLocation.h"
-#include "calibrationPhotostation.h"
 
 #include <random>
 
@@ -18,7 +17,7 @@ const int RNG_RETRIES = 8192;
 
 TEST(CalibrationStructsTest, testFundamentalProvider)
 {
-    std::mt19937 rng(DEFAULT_SEED);
+    std::mt19937 rng((std::random_device())());
     std::uniform_real_distribution<double> unif(-1e3, 1e3);
 
     int validCnt = 0;
@@ -36,6 +35,12 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
                 Vector3dd(unif(rng), unif(rng), unif(rng)),
                 Quaternion(unif(rng), unif(rng), unif(rng), unif(rng)).normalised()));
         auto E  = camera1.fundamentalTo(camera2);
+        auto F  = CameraModel::Fundamental(camera1.getCameraMatrix(), camera2.getCameraMatrix());
+
+        auto vv = E.rank2Nullvectors();
+        ASSERT_NEAR(!(E * vv[1]), 0.0, 1e-6 * !vv[1]);
+        ASSERT_NEAR(!(vv[0] * E), 0.0, 1e-6 * !vv[0]);
+
         for (int j = 0; j < RNG_RETRIES; ++j)
         {
             corecvs::Vector3dd pt(unif(rng), unif(rng), unif(rng));
@@ -45,7 +50,11 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
                 auto p2 = camera2.project(pt);
                 corecvs::Vector3dd L(p1[0], p1[1], 1.0);
                 corecvs::Vector3dd R(p2[0], p2[1], 1.0);
-                ASSERT_NEAR(L & (E * R), 0.0, 1e-3);
+
+                auto el = E * R;
+                auto fl = F * R;
+                ASSERT_NEAR(L & (E * R) / std::sqrt(el[0] * el[0] + el[1] * el[1]), 0.0, 1e-6);
+                ASSERT_NEAR(L & (F * R) / std::sqrt(fl[0] * fl[0] + fl[1] * fl[1]), 0.0, 1e-6);
                 validCnt++;
             }
         }
@@ -160,87 +169,6 @@ TEST(CalibrationStructsTest, testCameraStruct)
         corecvs::Vector2dd dst1(dst1t[0] / dst1t[2], dst1t[1] / dst1t[2]);
         ASSERT_NEAR(dst1[0], dst2[0], 1e-6);
         ASSERT_NEAR(dst1[1], dst2[1], 1e-6);
-    }
-}
-
-TEST(CalibrationStructsTest, testPhotostationStruct)
-{
-    using namespace corecvs;
-    /*using corecvs::PinholeCameraIntrinsics;
-    using corecvs::CameraModel;
-    using corecvs::Vector3dd;
-    using corecvs::Vector2dd;
-    using corecvs::Quaternion;
-    using corecvs::Matrix44;
-    using corecvs::FixedVector;*/
-
-
-    // Here we test interoperability of photostation struct
-    // and returned projection matrix
-    PinholeCameraIntrinsics intrinsics(1.0, 2.0, 3.0, 4.0, 5.0);
-    CameraModel camera(
-            intrinsics,
-            CameraLocationData(
-                Vector3dd(6.0, 7.0, 8.0),
-                Quaternion(0.5, 0.5, 0.5, 0.5).normalised()));
-
-    Photostation ps;
-    ps.setLocation(CameraLocationData(
-            Vector3dd(9.0, 10.0, 11.0),
-            Quaternion(-1.0, 2.0, 3.0, -4.0).normalised()));
-    ps.cameras = { camera };
-
-    Matrix44 M[] = {
-        ps.getMMatrix(0),
-        ps.getRawCamera(0).getCameraMatrix()
-    };
-    CameraModel C = ps.getRawCamera(0);
-
-    std::mt19937 rng(DEFAULT_SEED);
-    std::uniform_real_distribution<double> unif(-1e3, 1e3);
-
-    for (int i = 0; i < RNG_RETRIES; ++i)
-    {
-        Vector4dd src1;
-        Vector3dd src2;
-        Vector2dd pt;
-
-        for (int j = 0; j < Vector3dd::LENGTH; j++) {
-            src2[j] = unif(rng);
-            src1[j] = src2[j];
-        }
-        pt[0] = unif(rng);
-        pt[1] = unif(rng);
-
-        src1[3] = 1.0;
-
-
-        Vector2dd dst2 = C .project(src2);
-        Vector2dd dst3 = ps.project(src2, 0);
-
-        Vector4dd dst1t = M[0] * src1;
-        Vector4dd dst4t = M[1] * src1;
-
-        Vector2dd dst1 = dst1t.xyz().project();
-        Vector2dd dst4 = dst4t.xyz().project();
-
-        Vector2dd ref = dst3;
-
-        if (i < 10 || i > RNG_RETRIES - 10) {
-            cout << ref << std::endl;
-            cout << dst1 << std::endl;
-            cout << dst2 << std::endl;
-            cout << dst4 << std::endl;
-        }
-        else if (i == 10)
-            cout << "..." << std::endl;
-
-        CORE_ASSERT_TRUE_P(dst1.notTooFar(ref, 1e-6), (" "));
-        CORE_ASSERT_TRUE_P(dst2.notTooFar(ref, 1e-6), (" "));
-        CORE_ASSERT_TRUE_P(dst4.notTooFar(ref, 1e-6), (" "));
-
-        ASSERT_NEAR(!(C.rayFromPixel(pt).a - ps.rayFromPixel(pt, 0).a), 0.0, 1e-9);
-        ASSERT_NEAR(!(C.rayFromPixel(pt).p - ps.rayFromPixel(pt, 0).p), 0.0, 1e-9);
     }
 }
 

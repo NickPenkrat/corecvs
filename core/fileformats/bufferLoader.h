@@ -23,13 +23,27 @@ public:
     BufferLoader() {}
 
     virtual bool acceptsFile(string name) = 0;
-
     virtual BufferType *load(string name) = 0;
 
-//  virtual BufferType *load(string name, fstream input) = 0;
-
+    virtual std::string name() {return "noname";}
     virtual ~BufferLoader() {}
 
 };
+
+template <typename BufferType>
+class BufferSaver
+{
+public:
+    BufferSaver() {}
+
+    virtual bool acceptsFile(string name) = 0;
+    virtual bool load(BufferType &buffer, string name) = 0;
+
+    virtual std::string name() {return "noname";}
+    virtual ~BufferSaver() {}
+
+};
+
+
 
 } //namespace corecvs

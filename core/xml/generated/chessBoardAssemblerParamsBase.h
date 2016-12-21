@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -35,7 +35,7 @@ namespace corecvs {
  * \brief Chess Board Assembler Params Base 
  * Chess Board Assembler Params Base 
  **/
-class ChessBoardAssemblerParamsBase : public BaseReflection<ChessBoardAssemblerParamsBase>
+class ChessBoardAssemblerParamsBase : public corecvs::BaseReflection<ChessBoardAssemblerParamsBase>
 {
 public:
     enum FieldId {
@@ -45,6 +45,7 @@ public:
         COSTTHRESHOLD_ID,
         MINSEEDDISTANCE_ID,
         HYPOTHESISDIMENSIONS_ID,
+        KDTREE_ID,
         HYPOTHESISDIMFIRST_ID,
         HYPOTHESISDIMSECOND_ID,
         CHESS_BOARD_ASSEMBLER_PARAMS_BASE_FIELD_ID_NUM
@@ -87,6 +88,12 @@ public:
      * Hypothesis type: consider only hypothesis that fits specified number of dims 
      */
     int mHypothesisDimensions;
+
+    /** 
+     * \brief kdtree 
+     * Use k-d tree for greedy expansion 
+     */
+    bool mKdtree;
 
     /** 
      * \brief hypothesisDimFirst 
@@ -138,6 +145,11 @@ public:
         return mHypothesisDimensions;
     }
 
+    bool kdtree() const
+    {
+        return mKdtree;
+    }
+
     int hypothesisDimFirst() const
     {
         return mHypothesisDimFirst;
@@ -179,6 +191,11 @@ public:
         mHypothesisDimensions = hypothesisDimensions;
     }
 
+    void setKdtree(bool kdtree)
+    {
+        mKdtree = kdtree;
+    }
+
     void setHypothesisDimFirst(int hypothesisDimFirst)
     {
         mHypothesisDimFirst = hypothesisDimFirst;
@@ -194,19 +211,20 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mSeedThreshold,             static_cast<const DoubleField *>  (fields()[SEEDTHRESHOLD_ID]));
-        visitor.visit(mSeedTgPenalty,             static_cast<const DoubleField *>  (fields()[SEEDTGPENALTY_ID]));
-        visitor.visit(mConservativity,            static_cast<const DoubleField *>  (fields()[CONSERVATIVITY_ID]));
-        visitor.visit(mCostThreshold,             static_cast<const DoubleField *>  (fields()[COSTTHRESHOLD_ID]));
-        visitor.visit(mMinSeedDistance,           static_cast<const DoubleField *>  (fields()[MINSEEDDISTANCE_ID]));
-        visitor.visit(mHypothesisDimensions,      static_cast<const IntField *>     (fields()[HYPOTHESISDIMENSIONS_ID]));
-        visitor.visit(mHypothesisDimFirst,        static_cast<const IntField *>     (fields()[HYPOTHESISDIMFIRST_ID]));
-        visitor.visit(mHypothesisDimSecond,       static_cast<const IntField *>     (fields()[HYPOTHESISDIMSECOND_ID]));
+        visitor.visit(mSeedThreshold,             static_cast<const corecvs::DoubleField *>(fields()[SEEDTHRESHOLD_ID]));
+        visitor.visit(mSeedTgPenalty,             static_cast<const corecvs::DoubleField *>(fields()[SEEDTGPENALTY_ID]));
+        visitor.visit(mConservativity,            static_cast<const corecvs::DoubleField *>(fields()[CONSERVATIVITY_ID]));
+        visitor.visit(mCostThreshold,             static_cast<const corecvs::DoubleField *>(fields()[COSTTHRESHOLD_ID]));
+        visitor.visit(mMinSeedDistance,           static_cast<const corecvs::DoubleField *>(fields()[MINSEEDDISTANCE_ID]));
+        visitor.visit(mHypothesisDimensions,      static_cast<const corecvs::IntField *>(fields()[HYPOTHESISDIMENSIONS_ID]));
+        visitor.visit(mKdtree,                    static_cast<const corecvs::BoolField *>(fields()[KDTREE_ID]));
+        visitor.visit(mHypothesisDimFirst,        static_cast<const corecvs::IntField *>(fields()[HYPOTHESISDIMFIRST_ID]));
+        visitor.visit(mHypothesisDimSecond,       static_cast<const corecvs::IntField *>(fields()[HYPOTHESISDIMSECOND_ID]));
     }
 
     ChessBoardAssemblerParamsBase()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -217,6 +235,7 @@ template<class VisitorType>
         , double costThreshold
         , double minSeedDistance
         , int hypothesisDimensions
+        , bool kdtree
         , int hypothesisDimFirst
         , int hypothesisDimSecond
     )
@@ -227,20 +246,21 @@ template<class VisitorType>
         mCostThreshold = costThreshold;
         mMinSeedDistance = minSeedDistance;
         mHypothesisDimensions = hypothesisDimensions;
+        mKdtree = kdtree;
         mHypothesisDimFirst = hypothesisDimFirst;
         mHypothesisDimSecond = hypothesisDimSecond;
     }
 
-    friend ostream& operator << (ostream &out, ChessBoardAssemblerParamsBase &toSave)
+    friend std::ostream& operator << (std::ostream &out, ChessBoardAssemblerParamsBase &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //CHESS_BOARD_ASSEMBLER_PARAMS_BASE_H_

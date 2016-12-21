@@ -41,7 +41,9 @@ class SiftGpuDescriptorMatcherProvider : public DescriptorMatcherProviderImpl
 {
 public:
     DescriptorMatcher* getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher, const std::string& params = "");
-    bool provides(const DescriptorType &type, const MatcherType &matcher);
+    virtual bool provides(const DescriptorType &type, const MatcherType &matcher);
+    virtual std::string name() override {return "SiftGpu";}
+
     ~SiftGpuDescriptorMatcherProvider() {}
 protected:
 };

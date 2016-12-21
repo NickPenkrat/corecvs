@@ -26,6 +26,9 @@ int BaseReflection<Draw3dViMouseParameters>::dummy = Draw3dViMouseParameters::st
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int Draw3dViMouseParameters::staticInit()
 {
 
@@ -35,6 +38,8 @@ int Draw3dViMouseParameters::staticInit()
         "draw 3d ViMouse Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(Draw3dViMouseParameters);
      
 
     DoubleField* field0 = new DoubleField
@@ -104,7 +109,6 @@ int Draw3dViMouseParameters::staticInit()
           )
         );
     field3->widgetHint=BaseField::COMBO_BOX;
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     EnumField* field4 = new EnumField
@@ -123,7 +127,6 @@ int Draw3dViMouseParameters::staticInit()
           )
         );
     field4->widgetHint=BaseField::COMBO_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

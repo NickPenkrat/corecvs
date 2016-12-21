@@ -342,18 +342,18 @@ public:
         mTarget->drawLine(p[p.size() - 1].x(), p[p.size() - 1].y(), p[0].x(), p[0].y(), color);
     }
 
-    void drawHLine(int x1, int y1, int x2, ElementType &color)
+    void drawHLine(int x1, int y1, int x2, const ElementType &color)
     {
         drawSpan(HLineSpanInt(y1, x1, x2), color);
     }
 
-    void drawSpan(const HLineSpanInt &span, ElementType &color)
+    void drawSpan(const HLineSpanInt &span, const ElementType &color)
     {
         HLineSpanInt tspan = span;
         tspan.clip(mTarget->w, mTarget->h);
         for (int j = tspan.x1; j < tspan.x2; j++)
         {
-            mTarget->element(tspan.y, j) = color;
+            mTarget->element(tspan.y(), j) = color;
         }
     }
 

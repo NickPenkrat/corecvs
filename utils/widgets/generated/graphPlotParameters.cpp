@@ -26,6 +26,9 @@ int BaseReflection<GraphPlotParameters>::dummy = GraphPlotParameters::staticInit
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int GraphPlotParameters::staticInit()
 {
 
@@ -35,6 +38,8 @@ int GraphPlotParameters::staticInit()
         "Graph Plot Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(GraphPlotParameters);
      
 
     EnumField* field0 = new EnumField
@@ -51,7 +56,6 @@ int GraphPlotParameters::staticInit()
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
-    field0->precision=-1;
     fields().push_back(field0);
     /*  */ 
     IntField* field1 = new IntField
@@ -66,7 +70,6 @@ int GraphPlotParameters::staticInit()
          1,
          99
         );
-    field1->precision=-1;
     fields().push_back(field1);
     /*  */ 
     DoubleField* field2 = new DoubleField
@@ -95,7 +98,6 @@ int GraphPlotParameters::staticInit()
           "xGrid"
         );
     field3->widgetHint=BaseField::CHECK_BOX;
-    field3->precision=-1;
     fields().push_back(field3);
     /*  */ 
     BoolField* field4 = new BoolField
@@ -108,7 +110,6 @@ int GraphPlotParameters::staticInit()
           "yGrid"
         );
     field4->widgetHint=BaseField::CHECK_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     DoubleField* field5 = new DoubleField
@@ -166,7 +167,6 @@ int GraphPlotParameters::staticInit()
           "selectGraph"
         );
     field8->widgetHint=BaseField::CHECK_BOX;
-    field8->precision=-1;
     fields().push_back(field8);
     /*  */ 
     BoolField* field9 = new BoolField
@@ -179,7 +179,6 @@ int GraphPlotParameters::staticInit()
           "Fix Time value"
         );
     field9->widgetHint=BaseField::RADIO_BUTTON;
-    field9->precision=-1;
     fields().push_back(field9);
     /*  */ 
     BoolField* field10 = new BoolField
@@ -192,7 +191,6 @@ int GraphPlotParameters::staticInit()
           "Fix Grid value"
         );
     field10->widgetHint=BaseField::RADIO_BUTTON;
-    field10->precision=-1;
     fields().push_back(field10);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

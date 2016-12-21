@@ -6,6 +6,36 @@
 #include "advancedImageWidget.h"
 #include "observationListModel.h"
 
+
+/**
+ *
+ **/
+class DrawDelegate {
+public:
+    virtual void drawAt(QPainter &painter, Vector2dd position, int state)
+    {
+        Q_UNUSED(painter);
+        Q_UNUSED(position);
+        Q_UNUSED(state);
+    }
+};
+
+Q_DECLARE_METATYPE(DrawDelegate *);
+
+class DrawKeypointAreaDelegate : public DrawDelegate {
+public:
+    SceneObservation *observation = NULL;
+
+
+    // DrawDelegate interface
+public:
+
+    DrawKeypointAreaDelegate(SceneObservation *obs) : observation(obs)
+    {}
+
+    virtual void drawAt(QPainter &painter, Vector2dd position, int state) override;
+};
+
 class PointImageEditorInterface : public QObject
 {
     Q_OBJECT
@@ -17,6 +47,7 @@ public:
     virtual void setPoint(size_t id, const Vector2dd &value) = 0;
 
     virtual QString getMeta(size_t id) = 0;
+    virtual DrawDelegate *getDrawDelegate(size_t id) = 0;
 
     virtual bool deletePoint(size_t id) = 0;
     virtual bool appendPoint() = 0;
@@ -49,16 +80,16 @@ public:
 
 
    ObservationListModel *mObservationListModel;
-   QToolButton *mAddButton;
-   QToolButton *mMoveButton;
-   QToolButton *mDeleteButton;
-   QToolButton *mAddInfoButton;
+   QToolButton          *mAddButton;
+   QToolButton          *mMoveButton;
+   QToolButton          *mDeleteButton;
+   QToolButton          *mAddInfoButton;
 
 
    PointListEditImageWidget(QWidget *parent = NULL, bool showHeader = true);
    void setObservationModel(ObservationListModel *observationListModel);
 
-   int mSelectedPoint;
+   int          mSelectedPoint;
 
    // AdvancedImageWidget interface
 public slots:
@@ -66,12 +97,13 @@ public slots:
    virtual void toolButtonReleased(QWidget *button) override;
    virtual void childMousePressed(QMouseEvent *event) override;
    virtual void childMouseMoved(QMouseEvent *event) override;
-   void invalidateModel();
+
+   void         invalidateModel();
 
 protected:
-   int findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
-   Vector2dd getPointById(int row);
-   QString   getMetaById (int row);
+   int          findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
+   Vector2dd    getPointById(int row);
+   QString      getMetaById (int row);
 };
 
 /**
@@ -92,23 +124,23 @@ public:
 
 
    PointImageEditorInterface *mObservationListModel;
-   QItemSelectionModel *selectionModel;
+   QItemSelectionModel       *selectionModel;
 
-   vector<Vector2dd> pointList;
+   vector<Vector2dd>          pointList;
 
-   QToolButton *mAddButton;
-   QToolButton *mMoveButton;
-   QToolButton *mDeleteButton;
-   QToolButton *mAddInfoButton;
+   int                        mSelectedPoint;
 
+   QToolButton               *mAddButton;
+   QToolButton               *mMoveButton;
+   QToolButton               *mDeleteButton;
+   QToolButton               *mAddInfoButton;
+
+   QComboBox *mDelegateStyleBox = NULL;
 
    PointListEditImageWidgetUnited(QWidget *parent = NULL, bool showHeader = true);
+
    void setObservationModel(PointImageEditorInterface *observationListModel);
    void setSelectionModel(QItemSelectionModel *selectionModel);
-
-   int mSelectedPoint;
-
-
 
    // AdvancedImageWidget interface
 public slots:
@@ -116,12 +148,13 @@ public slots:
    virtual void toolButtonReleased(QWidget *button) override;
    virtual void childMousePressed(QMouseEvent *event) override;
    virtual void childMouseMoved(QMouseEvent *event) override;
-   void invalidateModel();
 
-   void selectPoint(int id);
+   void         invalidateModel();
+
+   void         selectPoint(int id);
 
 protected:
-   int findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
+   int          findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
 
    enum ArrowType {
        NONE_ARROW   = 0x0,

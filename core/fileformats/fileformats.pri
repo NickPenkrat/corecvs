@@ -8,7 +8,7 @@ HEADERS += \
     fileformats/metamap.h \
     fileformats/meshLoader.h \
     fileformats/objLoader.h \
-    $$PWD/gcodeLoader.h
+    fileformats/gcodeLoader.h \
 
 
 SOURCES += \
@@ -20,6 +20,5 @@ SOURCES += \
     fileformats/stlLoader.cpp \
     fileformats/meshLoader.cpp \
     fileformats/objLoader.cpp \
-    $$PWD/gcodeLoader.cpp
-    
-    
+    fileformats/gcodeLoader.cpp \
+

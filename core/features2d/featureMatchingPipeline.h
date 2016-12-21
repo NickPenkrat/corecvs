@@ -33,7 +33,7 @@ public:
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-    ~KeyPointDetectionStage() {};
+    ~KeyPointDetectionStage() {}
 private:
     DetectorType detectorType;
     bool parallelable;
@@ -48,7 +48,7 @@ public:
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-    ~DescriptorExtractionStage() {};
+    ~DescriptorExtractionStage() {}
 private:
     DescriptorType descriptorType;
     bool parallelable;
@@ -143,7 +143,7 @@ private:
 class FeatureMatchingPipeline
 {
 public:
-    FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* processState = nullptr);
+    FeatureMatchingPipeline(const std::vector<std::string> &filenames, corecvs::StatusTracker* processState = nullptr);
 	~FeatureMatchingPipeline();
 
     void run();
@@ -164,6 +164,8 @@ public:
     tbb::spin_mutex mutex;
 #endif
 
+    static void printCaps();
+
 private:
     struct tic_data
     {
@@ -180,5 +182,6 @@ private:
 	std::vector<std::pair<bool, std::string> >  loadParams;
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 
-    StatusTracker*                               processState = nullptr;
+    corecvs::StatusTracker*         processState = nullptr;
+
 };

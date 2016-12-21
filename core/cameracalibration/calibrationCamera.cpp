@@ -6,6 +6,148 @@ namespace corecvs {
 
 int ScenePart::OBJECT_COUNT = 0;
 
+Matrix44 PinholeCameraIntrinsics::Kf()
+{
+    return Matrix44(1.0, 0.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kfx()
+{
+    return Matrix44(1.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kfy()
+{
+    return Matrix44(0.0, 0.0, 0.0, 0.0,
+                    0.0, 1.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kcx()
+{
+    return Matrix44(0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kcy()
+{
+    return Matrix44(0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0,
+                    0.0, 0.0, 0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kif(const double &f, const double &cx, const double &cy)
+{
+    auto f2 = f * f;
+    auto f21 = 1.0 / f2;
+    return Matrix44(-f21, 0.0, cx / f2, 0.0,
+                     0.0,-f21, cy / f2, 0.0,
+                     0.0, 0.0,     0.0, 0.0,
+                     0.0, 0.0,     0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kifx(const double &fx, const double &cx)
+{
+    auto f2 = fx * fx;
+    auto f21 = 1.0 / f2;
+    return Matrix44(-f21, 0.0, cx / f2, 0.0,
+                     0.0, 0.0,     0.0, 0.0,
+                     0.0, 0.0,     0.0, 0.0,
+                     0.0, 0.0,     0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kify(const double &fy, const double &cy)
+{
+    auto f2 = fy * fy;
+    auto f21 = 1.0 / f2;
+    return Matrix44(0.0, 0.0,     0.0, 0.0,
+                    0.0,-f21, cy / f2, 0.0,
+                    0.0, 0.0,     0.0, 0.0,
+                    0.0, 0.0,     0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kicx(const double &fx)
+{
+    return Matrix44(0.0, 0.0, -1.0 / fx, 0.0,
+                    0.0, 0.0,       0.0, 0.0,
+                    0.0, 0.0,       0.0, 0.0,
+                    0.0, 0.0,       0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::Kicy(const double &fy)
+{
+    return Matrix44(0.0, 0.0,       0.0, 0.0,
+                    0.0, 0.0, -1.0 / fy, 0.0,
+                    0.0, 0.0,       0.0, 0.0,
+                    0.0, 0.0,       0.0, 0.0);
+}
+
+
+
+Matrix44 PinholeCameraIntrinsics::NormalizerDiff(const double &x, const double &y, const double &z)
+{
+    double zz = z * z;
+    return Matrix44(1.0 / z,     0.0, -x / zz, 0.0,
+                        0.0, 1.0 / z, -y / zz, 0.0,
+                        0.0,     0.0,     0.0, 0.0,
+                        0.0,     0.0,     0.0, 0.0);
+}
+
+Matrix44 PinholeCameraIntrinsics::RayDiffNormalizerDiff(const double &ux, const double &uy, const double &uz)
+{
+    auto ux2 = ux*ux, uy2 = uy * uy, uz2 = uz * uz,
+            uxuy= ux*uy, uxuz= ux * uz, uyuz= uy * uz;
+    auto N = ux2 + uy2 + uz2;
+    auto N2 = std::sqrt(N);
+    auto N32 = N * N2, N21 = 1.0 / N2;
+    return corecvs::Matrix44   (-ux2/N32+N21,    -uxuy/N32,    -uxuz/N32, 0.0,
+                                   -uxuy/N32, -uy2/N32+N21,    -uyuz/N32, 0.0,
+                                   -uxuz/N32,    -uyuz/N32, -uz2/N32+N21, 0.0,
+                                         0.0,          0.0,          0.0, 0.0);
+}
+
+Matrix33 CameraModel::Fundamental(const Matrix44 &L, const Matrix44 &R)
+{
+    const Matrix44 P[2] = {R, L};
+    Matrix44 t[3][3];
+    int rows[3][3][2][3]
+// C++ generally and corecvs particullary are not very cool at clever indexing
+#define X1 {0, 1, 2}
+#define X2 {0, 2, 0}
+#define X3 {0, 0, 1}
+#define Y1 {1, 1, 2}
+#define Y2 {1, 2, 0}
+#define Y3 {1, 0, 1}
+     = {
+        {{ X1, Y1 }, { X2, Y1 }, { X3, Y1 }},
+        {{ X1, Y2 }, { X2, Y2 }, { X3, Y2 }},
+        {{ X1, Y3 }, { X2, Y3 }, { X3, Y3 }}
+     };
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            for (int k = 0; k < 2; ++k)
+                for (int l = 0; l < 4; ++l)
+                {
+                    t[i][j].a(k * 2,     l) = P[rows[i][j][k][0]].a(rows[i][j][k][1], l);
+                    t[i][j].a(k * 2 + 1, l) = P[rows[i][j][k][0]].a(rows[i][j][k][2], l);
+                }
+    Matrix33 F;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            F.a(i, j) = t[i][j].det();
+    return F;
+}
+
 Matrix33 CameraModel::fundamentalTo(const CameraModel &right) const
 {
     Matrix33 K1 = intrinsics.getKMatrix33();

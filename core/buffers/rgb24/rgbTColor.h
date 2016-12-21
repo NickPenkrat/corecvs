@@ -602,8 +602,6 @@ public:
 
 typedef RGBTColor<uint16_t> RGBColor48;
 
-} //namespace corecvs
-
 #ifdef REFLECTION_IN_CORE
     template<typename T>
     int RGBTColor<T>::dummy = staticInit();
@@ -611,5 +609,8 @@ typedef RGBTColor<uint16_t> RGBColor48;
     template<typename T>
     const Reflection RGBTColor<T>::reflect;
 #endif
+
+} //namespace corecvs
+
 
 #endif // CRGBTCOLOR_H_

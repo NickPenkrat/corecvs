@@ -14,6 +14,8 @@ TEMPLATE = lib
 TARGET   = cvs_utils
 CONFIG  += staticlib
 
+include($$ROOT_DIR/git-version.pri)
+
 include(utils.pri)                      # it uses TARGET and detects UTILS_BINDIR, OBJECTS_DIR,...!
 
 QT += gui
@@ -91,22 +93,23 @@ HEADERS += \
     distortioncorrector/lensDistortionModelParametersControlWidget.h \
     distortioncorrector/calibrationFeaturesWidget.h \
     os/UsbBusResetter.h \
-    photostationcalibration/calibrationJob.h \
     uis/cloudview/scene3dTreeView.h \
     tablecontrol/rotaryTableControlWidget.h \
     tablecontrol/rotaryTableMeshModel.h \
     tablecontrol/rotationPlanGenerator.h \
     capture/abstractImageNamer.h \
+    capture/abstractManipulatorInterface.h \
     corestructs/cameraModel/affine3dControlWidget.h \
     corestructs/cameraModel/fixtureControlWidget.h \
     widgets/observationListModel.h \
     distortioncorrector/pointListEditImageWidget.h \
     corestructs/cameraModel/featurePointControlWidget.h \
     uis/aboutPropsTableWidget.h \
-    capture/abstractManipulatorInterface.h \
     uis/histogramDepthDialog.h \
     3d/sceneShaded.h \
-    corestructs/reflectionWidget.h
+    corestructs/reflectionWidget.h \
+    3d/shadedSceneControlWidget.h \
+    scripting/coreToScript.h
 
 SOURCES += \
     frames.cpp \
@@ -172,7 +175,6 @@ SOURCES += \
     distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
     distortioncorrector/calibrationFeaturesWidget.cpp \
     os/UsbBusResetter.cpp \
-    photostationcalibration/calibrationJob.cpp \
     uis/cloudview/scene3dTreeView.cpp \
     tablecontrol/rotaryTableControlWidget.cpp \
     tablecontrol/rotaryTableMeshModel.cpp \
@@ -186,7 +188,8 @@ SOURCES += \
     uis/aboutPropsTableWidget.cpp \
     uis/histogramDepthDialog.cpp \
     3d/sceneShaded.cpp \
-    corestructs/reflectionWidget.cpp
+    corestructs/reflectionWidget.cpp \
+    3d/shadedSceneControlWidget.cpp
 
 
 FORMS += \
@@ -199,6 +202,7 @@ FORMS += \
     corestructs/cameraModel/affine3dControlWidget.ui \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui \
+    3d/shadedSceneControlWidget.ui
 
 
 # =============================================================
@@ -330,8 +334,6 @@ HEADERS += \
     uis/aboutDialog.h \
     uis/textLabelWidget.h \
     uis/pointsRectificationWidget.h \
-    \
-    capture/photostationCaptureDialog.h \
 
 SOURCES += \
     widgets/generated/graphPlotParametersControlWidget.cpp \
@@ -385,8 +387,7 @@ SOURCES += \
     uis/aboutDialog.cpp \
     uis/textLabelWidget.cpp \
     uis/pointsRectificationWidget.cpp \
-    \
-    capture/photostationCaptureDialog.cpp \
+
 
 
 FORMS += \
@@ -429,8 +430,7 @@ FORMS += \
     \
     rectifier/rectifyParametersControlWidget.ui \
     distortioncorrector/distortionWidget.ui \
-    \
-    capture/photostationCaptureDialog.ui \
+
 
 }
 
@@ -581,5 +581,13 @@ with_synccam {
 
     DEFINES += WITH_SYNCCAM
 }
+
+
+with_qscript {
+    SOURCES += scripting/scriptWindow.cpp
+    HEADERS += scripting/scriptWindow.h
+    FORMS   += scripting/scriptWindow.ui
+}
+
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml

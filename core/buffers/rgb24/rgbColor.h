@@ -579,9 +579,18 @@ template<class VisitorType>
         return Vector3dd(r(), g(), b());
     }
 
+    Vector3df toFloat() const
+    {
+        return Vector3df(r(), g(), b());
+    }
+
     uint32_t toRGBInt() const
     {
         return ((uint32_t)r() << 16) | ((uint32_t)g() << 8) | ((uint32_t)b());
+    }
+    uint32_t toBGRInt() const
+    {
+        return ((uint32_t)b() << 16) | ((uint32_t)g() << 8) | ((uint32_t)r());
     }
     uint32_t toBRGInt() const
     {

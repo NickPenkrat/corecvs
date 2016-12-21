@@ -7,6 +7,8 @@
 #include <opencv2/features2d/features2d.hpp>    // cv::DescriptorExtractor
 #include <opencv2/nonfree/features2d.hpp>       // cv::SURF
 
+using namespace corecvs;
+
 OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *extractor)
     : extractor(extractor)
 {}

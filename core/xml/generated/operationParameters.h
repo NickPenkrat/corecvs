@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -36,7 +36,7 @@ namespace corecvs {
  * \brief Operation Parameters 
  * Operation Parameters 
  **/
-class OperationParameters : public BaseReflection<OperationParameters>
+class OperationParameters : public corecvs::BaseReflection<OperationParameters>
 {
 public:
     enum FieldId {
@@ -76,12 +76,12 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit((int &)mOperation,          static_cast<const EnumField *>    (fields()[OPERATION_ID]));
+        visitor.visit((int &)mOperation,          static_cast<const corecvs::EnumField *>(fields()[OPERATION_ID]));
     }
 
     OperationParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -92,16 +92,16 @@ template<class VisitorType>
         mOperation = operation;
     }
 
-    friend ostream& operator << (ostream &out, OperationParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, OperationParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //OPERATION_PARAMETERS_H_

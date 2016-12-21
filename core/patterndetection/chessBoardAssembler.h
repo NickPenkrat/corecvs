@@ -12,6 +12,7 @@
 
 #include "generated/chessBoardAssemblerParamsBase.h"
 #include "convolver/convolver.h"    // corecvs::DpImage
+#include "kdtree.h"
 
 using corecvs::DpImage;
 using corecvs::Vector2dd;
@@ -116,6 +117,7 @@ protected: //private:
     BoardAligner                        *aligner = nullptr;
     DpImage                             *buffer  = nullptr;
 
+    std::unique_ptr<corecvs::KDTree<OrientedCorner, 2>> kd;
 #ifdef WITH_TBB
     tbb::mutex                          mutex;
 #endif

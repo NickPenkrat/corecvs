@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <ctime>  // clock???  Please use PreciseTimer!!!
 
+#include "bufferFactory.h"
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
 #include "descriptorMatcherProvider.h"
@@ -17,6 +18,7 @@ static const char* KEYPOINT_EXTENSION   = "keypoints";
 static const char* DESCRIPTOR_EXTENSION = "descriptors";
 static const char* SIFT_EXTENSION       = "sift";
 
+using namespace corecvs;
 
 std::string changeExtension(const std::string &imgName, const std::string &desiredExt)
 {
@@ -29,6 +31,14 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
     res.resize(dotPos + 1 + desiredExt.size());
 
     std::copy(desiredExt.begin(), desiredExt.end(), res.begin() + dotPos + 1);
+    return res;
+}
+
+
+std::string getFilename(const std::string &imgName)
+{
+    int pos = imgName.find_last_of(PATH_SEPARATOR[0]);
+    std::string res = imgName.substr(pos,imgName.size() - pos);
     return res;
 }
 
@@ -111,10 +121,11 @@ public:
 
             ss1 << image.filename << ", ";
 
-			std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
-            RuntimeTypeBuffer img = reader->read(image.filename);
+            //std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
+            //RuntimeTypeBuffer img = reader->read(image.filename);
 
-            detector->detect(img, image.keyPoints.keyPoints, maxFeatureCount);
+            std::unique_ptr<RuntimeTypeBuffer> img(BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
+            detector->detect((*img.get()), image.keyPoints.keyPoints, maxFeatureCount);
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
             if (cnt % 4 == 0)
@@ -176,7 +187,10 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
     CORE_UNUSED(_filename);
 }
 
-KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params) : detectorType(type), params(params), maxFeatureCount(maxFeatureCount)
+KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params) :
+    detectorType(type),
+    maxFeatureCount(maxFeatureCount),
+    params(params)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();
@@ -243,31 +257,39 @@ public:
 
             ss1 << image.filename << ", ";
 
-            BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
+            /*BufferReader* reader = BufferReaderProvider::getInstance().getBufferReader(image.filename);
             RuntimeTypeBuffer img = reader->read(image.filename);
             corecvs::RGB24Buffer bufferRGB = reader->readRgb(image.filename);
-            delete reader;
-            extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
+            delete reader;*/
+            std::unique_ptr<RuntimeTypeBuffer> img      (BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
+            std::unique_ptr<RGB24Buffer      > bufferRGB(BufferFactory::getInstance()->loadRGB24Bitmap(image.filename));
+
+
+
+            extractor->compute(*img.get(), image.keyPoints.keyPoints, image.descriptors.mat);
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
             for (auto& kp: image.keyPoints.keyPoints)
             {
-                int r = 0, g = 0, b = 0;
+                RGB24Buffer::RGBEx32 mean(RGBColor::Black());
                 int cnt = 0;
-                int x = kp.x, y = kp.y, sz = kp.size / 2;
+                int x = kp.position.x();
+                int y = kp.position.y();
+                int sz = kp.size / 2;
+
                 for (int xx = x - sz; xx <= x + sz; ++xx)
                     for (int yy = y - sz; yy <= y + sz; ++yy)
-                        if (xx >= 0 && xx < bufferRGB.w && yy >= 0 && yy < bufferRGB.h)
-                        {
-                            auto color = bufferRGB.element(yy, xx);
-                            r += color.r();
-                            g += color.g();
-                            b += color.b();
-                            cnt++;
-                        }
-                r /= cnt; g /= cnt; b /= cnt;
-                kp.color = corecvs::RGBColor(r, g, b);
+                    {
+                        if (!bufferRGB->isValidCoord(yy, xx))
+                            continue;
+
+                        auto color = bufferRGB->element(yy, xx);
+                        mean += RGB24Buffer::RGBEx32(color);
+                        cnt++;
+                    }
+                mean /= cnt;
+                kp.color = mean.toRGBColor();
             }
 
             kpt += image.keyPoints.keyPoints.size();
@@ -336,10 +358,10 @@ void FileNameRefinedMatchingPlanComputationStage::run(FeatureMatchingPipeline *p
 
     for (size_t i = 0; i < N; ++i)
     {
-        std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
+        std::deque<uint32_t> query(images[i].keyPoints.keyPoints.size());
         for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
         {
-            query[j] = (uint16_t)j;
+            query[j] = (uint32_t)j;
         }
 
         for (size_t j = 0; j < N; ++j)
@@ -357,10 +379,10 @@ void FileNameRefinedMatchingPlanComputationStage::run(FeatureMatchingPipeline *p
             {
                 continue;
             }
-            std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
+            std::deque<uint32_t> train(images[j].keyPoints.keyPoints.size());
             for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
             {
-                train[k] = (uint16_t)k;
+                train[k] = (uint32_t)k;
             }
 
             MatchPlanEntry entry = { (uint16_t)i, (uint16_t)j, query, train };
@@ -389,25 +411,25 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
 
     matchPlan.plan.clear();
 
-    for (size_t i = 0; i < N; ++i)
+    for (size_t img1Id = 0; img1Id < N; ++img1Id)
     {
-        std::deque<uint16_t> query(images[i].keyPoints.keyPoints.size());
-        for (size_t j = 0; j < images[i].keyPoints.keyPoints.size(); ++j)
+        std::deque<uint32_t> query(images[img1Id].keyPoints.keyPoints.size());
+        for (size_t j = 0; j < images[img1Id].keyPoints.keyPoints.size(); ++j)
         {
-            query[j] = (uint16_t)j;
+            query[j] = (uint32_t)j;
         }
 
-        for (size_t j = 0; j < N; ++j)
+        for (size_t img2Id = 0; img2Id < N; ++img2Id)
         {
-            if (i == j)
+            if (img1Id == img2Id)
                 continue;
-            std::deque<uint16_t> train(images[j].keyPoints.keyPoints.size());
-            for (size_t k = 0; k < images[j].keyPoints.keyPoints.size(); ++k)
+            std::deque<uint32_t> train(images[img2Id].keyPoints.keyPoints.size());
+            for (size_t k = 0; k < images[img2Id].keyPoints.keyPoints.size(); ++k)
             {
-                train[k] = (uint16_t)k;
+                train[k] = (uint32_t)k;
             }
 
-            MatchPlanEntry entry = { (uint16_t)i, (uint16_t)j, query, train };
+            MatchPlanEntry entry = { (uint16_t)img1Id, (uint16_t)img2Id, query, train };
             matchPlan.plan.push_back(entry);
         }
     }
@@ -448,11 +470,12 @@ public:
             size_t s = i;
             size_t I = matchPlan.plan[s].queryImg;
             size_t J = matchPlan.plan[s].trainImg;
-            auto &query = matchPlan.plan[s];
+            MatchPlanEntry &query = matchPlan.plan[s];
 
             RuntimeTypeBuffer qb(images[I].descriptors.mat);
             RuntimeTypeBuffer tb(images[J].descriptors.mat);
 
+#if 0
             for (size_t j = 0; j < query.queryFeatures.size(); ++j)
             {
                 memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
@@ -461,6 +484,7 @@ public:
             {
                 memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
             }
+#endif
 
             std::vector<std::vector<RawMatch>> ml;
             matcher->knnMatch(qb, tb, ml, responsesPerPoint);
@@ -597,6 +621,7 @@ public:
                 RuntimeTypeBuffer qb(images[Is].descriptors.mat);
                 RuntimeTypeBuffer tb(images[Js].descriptors.mat);
 
+#if 0
                 for (size_t j = 0; j < query.queryFeatures.size(); ++j)
                 {
                     memcpy(qb.row<void>(j), images[Is].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
@@ -605,6 +630,7 @@ public:
                 {
                     memcpy(tb.row<void>(j), images[Js].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
                 }
+#endif
 
                 std::vector<std::vector<RawMatch>> ml;
                 matcher->knnMatch(qb, tb, ml, responsesPerPoint);
@@ -737,6 +763,7 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
     RawMatches &rawMatches = pipeline->rawMatches;
     RefinedMatches &refinedMatches = pipeline->refinedMatches;
     std::vector<Image> &images = pipeline->images;
+
     size_t N = images.size();
     size_t responsesPerPoint = 2;
     size_t P = N*(N-1)/2;
@@ -1297,8 +1324,8 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
         for (size_t k = 0; k < images[i].keyPoints.keyPoints.size(); ++k)
         {
             features[i][k] = SiftFeature(
-                    images[i].keyPoints.keyPoints[k].x,
-                    images[i].keyPoints.keyPoints[k].y,
+                    images[i].keyPoints.keyPoints[k].position.x(),
+                    images[i].keyPoints.keyPoints[k].position.y(),
                     data,
                     images[i].keyPoints.keyPoints[k].size,
                     images[i].keyPoints.keyPoints[k].angle,
@@ -1468,4 +1495,12 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
         std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms (" << rh << "h " << rm << "m " << rs << "s left)" << " [ " << one << " ] " <<  std::endl;
 
     }
+}
+
+void FeatureMatchingPipeline::printCaps()
+{
+     cout << "Current caps are: " << std::endl;
+     FeatureDetectorProvider::getInstance().print();
+     DescriptorExtractorProvider::getInstance().print();
+     DescriptorMatcherProvider::getInstance().print();
 }

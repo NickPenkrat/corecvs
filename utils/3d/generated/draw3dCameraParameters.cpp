@@ -26,6 +26,9 @@ int BaseReflection<Draw3dCameraParameters>::dummy = Draw3dCameraParameters::stat
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int Draw3dCameraParameters::staticInit()
 {
 
@@ -35,6 +38,8 @@ int Draw3dCameraParameters::staticInit()
         "draw 3d Camera Parameters",
         ""
     );
+
+     getReflection()->objectSize = sizeof(Draw3dCameraParameters);
      
 
     DoubleField* field0 = new DoubleField
@@ -118,7 +123,6 @@ int Draw3dCameraParameters::staticInit()
           )
         );
     field4->widgetHint=BaseField::COMBO_BOX;
-    field4->precision=-1;
     fields().push_back(field4);
     /*  */ 
     CompositeField* field5 = new CompositeField
@@ -131,7 +135,16 @@ int Draw3dCameraParameters::staticInit()
           "Point Color",
            NULL
         );
-    field5->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field5->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dCameraParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field5);
     /*  */ 
     BoolField* field6 = new BoolField
@@ -144,7 +157,6 @@ int Draw3dCameraParameters::staticInit()
           "Point Color Override"
         );
     field6->widgetHint=BaseField::CHECK_BOX;
-    field6->precision=-1;
     fields().push_back(field6);
     /*  */ 
     IntField* field7 = new IntField
@@ -159,7 +171,6 @@ int Draw3dCameraParameters::staticInit()
          0,
          255
         );
-    field7->precision=-1;
     fields().push_back(field7);
     /*  */ 
     CompositeField* field8 = new CompositeField
@@ -172,7 +183,16 @@ int Draw3dCameraParameters::staticInit()
           "Edge Color",
            NULL
         );
-    field8->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field8->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dCameraParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field8);
     /*  */ 
     BoolField* field9 = new BoolField
@@ -185,7 +205,6 @@ int Draw3dCameraParameters::staticInit()
           "Edge Color Override"
         );
     field9->widgetHint=BaseField::CHECK_BOX;
-    field9->precision=-1;
     fields().push_back(field9);
     /*  */ 
     IntField* field10 = new IntField
@@ -200,7 +219,6 @@ int Draw3dCameraParameters::staticInit()
          0,
          255
         );
-    field10->precision=-1;
     fields().push_back(field10);
     /*  */ 
     CompositeField* field11 = new CompositeField
@@ -213,7 +231,16 @@ int Draw3dCameraParameters::staticInit()
           "Face Color",
            NULL
         );
-    field11->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field11->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dCameraParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field11);
     /*  */ 
     BoolField* field12 = new BoolField
@@ -226,7 +253,6 @@ int Draw3dCameraParameters::staticInit()
           "Face Color Override"
         );
     field12->widgetHint=BaseField::CHECK_BOX;
-    field12->precision=-1;
     fields().push_back(field12);
     /*  */ 
     BoolField* field13 = new BoolField
@@ -239,7 +265,6 @@ int Draw3dCameraParameters::staticInit()
           "Show caption"
         );
     field13->widgetHint=BaseField::CHECK_BOX;
-    field13->precision=-1;
     fields().push_back(field13);
     /*  */ 
     IntField* field14 = new IntField
@@ -254,7 +279,6 @@ int Draw3dCameraParameters::staticInit()
          0,
          255
         );
-    field14->precision=-1;
     fields().push_back(field14);
     /*  */ 
     IntField* field15 = new IntField
@@ -269,7 +293,6 @@ int Draw3dCameraParameters::staticInit()
          0,
          255
         );
-    field15->precision=-1;
     fields().push_back(field15);
     /*  */ 
     CompositeField* field16 = new CompositeField
@@ -282,7 +305,16 @@ int Draw3dCameraParameters::staticInit()
           "Font Color",
            NULL
         );
-    field16->precision=-1;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field16->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dCameraParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field16);
     /*  */ 
     EnumField* field17 = new EnumField
@@ -300,7 +332,6 @@ int Draw3dCameraParameters::staticInit()
           )
         );
     field17->widgetHint=BaseField::COMBO_BOX;
-    field17->precision=-1;
     fields().push_back(field17);
     /*  */ 
     IntField* field18 = new IntField
@@ -315,7 +346,6 @@ int Draw3dCameraParameters::staticInit()
          0,
          255
         );
-    field18->precision=-1;
     fields().push_back(field18);
     /*  */ 
     DoubleField* field19 = new DoubleField
@@ -346,7 +376,6 @@ int Draw3dCameraParameters::staticInit()
          0,
          19
         );
-    field20->precision=-1;
     fields().push_back(field20);
     /*  */ 
     BoolField* field21 = new BoolField
@@ -359,7 +388,6 @@ int Draw3dCameraParameters::staticInit()
           "Decal Left Cam"
         );
     field21->widgetHint=BaseField::CHECK_BOX;
-    field21->precision=-1;
     fields().push_back(field21);
     /*  */ 
     IntField* field22 = new IntField
@@ -374,7 +402,6 @@ int Draw3dCameraParameters::staticInit()
          0,
          255
         );
-    field22->precision=-1;
     fields().push_back(field22);
     /*  */ 
     BoolField* field23 = new BoolField
@@ -387,7 +414,6 @@ int Draw3dCameraParameters::staticInit()
           "Decal Right Cam"
         );
     field23->widgetHint=BaseField::CHECK_BOX;
-    field23->precision=-1;
     fields().push_back(field23);
     /*  */ 
     IntField* field24 = new IntField
@@ -402,7 +428,6 @@ int Draw3dCameraParameters::staticInit()
          0,
          255
         );
-    field24->precision=-1;
     fields().push_back(field24);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

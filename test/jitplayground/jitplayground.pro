@@ -18,10 +18,12 @@ include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TA
 
 SOURCES += main_jitplayground.cpp \
     reprojectionCostFunction.cpp \
-    dllFunction.cpp
+    dllFunction.cpp \
+
+
 HEADERS += main_jitplayground.h \
     reprojectionCostFunction.h \
-    dllFunction.h
+    dllFunction.h \
 
 !win32 {
   LIBS += -ldl

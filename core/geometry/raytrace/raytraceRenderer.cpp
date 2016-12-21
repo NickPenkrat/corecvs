@@ -3,6 +3,7 @@
 #include "raytraceRenderer.h"
 #include "preciseTimer.h"
 #include "bmpLoader.h"
+#include <random>
 
 RaytraceRenderer::RaytraceRenderer()
 {

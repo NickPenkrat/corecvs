@@ -3,11 +3,12 @@
 
 #include <vector>
 
+#include "cameraConstraints.h"
 #include "homographyReconstructor.h"
 #include "levenmarq.h"
 #include "lineDistortionEstimatorParameters.h"
+#include "calibrationCamera.h"
 
-#include "calibrationPhotostation.h"
 #include "selectableGeometryFeatures.h"
 
 // In order to get 3-dof rotation, we should penalize for quaternion norm
@@ -31,18 +32,19 @@ public:
     void addPattern(const ObservationList &patternPoints, const CameraLocationData &position = CameraLocationData());
 
     // Runs (pre-) solver
-	void solve(bool runPresolver = true,bool runLM = false, int LMiterations = 1000);
+    void solve(bool runPresolver = true,bool runLM = false, int LMiterations = 10000);
 
     PinholeCameraIntrinsics getIntrinsics();
     LensDistortionModelParameters getDistortion();
 
     std::vector<CameraLocationData> getExtrinsics();
-    
+
     // Returns RMSE for reprojection
     double getRmseReprojectionError();
 
     // Returns full error
     void getFullReprojectionError(double out[]);
+    Matrix getJacobian();
 
     int getInputNum() const;
     int getOutputNum() const;
@@ -53,11 +55,12 @@ private:
     void enforceParams();
 
     // Presolver
-	void solveInitialIntrinsics();
-	void solveInitialExtrinsics();
+    bool solveInitialIntrinsics();
+    void solveInitialExtrinsics();
     void computeHomographies();
-    void computeAbsoluteConic();
-    void extractIntrinsics();
+    bool computeAbsoluteConic();
+    bool extractIntrinsics();
+    void solveInitialDistortion(bool enforcePrincipal);
 
     // LM-solver
     void refineGuess(int LMiterations);
@@ -72,18 +75,20 @@ private:
         {
         }
         void operator()(const double in[], double out[]);
+        Matrix getJacobian(const double in[], double dlta = 1e-7);
         FlatPatternCalibrator *calibrator;
     };
 
     corecvs::Vector absoluteConic;
-
+    bool distortionEstimated = false;
+    int presolverIterations = 200;
     std::vector<corecvs::Matrix33> homographies;
     std::vector<ObservationList> points;
-	std::vector<CameraLocationData> locationData;
+    std::vector<CameraLocationData> locationData;
     PinholeCameraIntrinsics intrinsics, lockParams;
     LineDistortionEstimatorParameters distortionEstimationParams;
     LensDistortionModelParameters distortionParams;
-	CameraConstraints constraints;
+    CameraConstraints constraints;
     bool forceZeroSkew;
 };
 

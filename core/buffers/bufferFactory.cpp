@@ -33,6 +33,34 @@ BufferFactory* BufferFactory::getInstance()
     return sThis.get();
 }
 
+void BufferFactory::printCaps()
+{
+    BufferFactory *factory = BufferFactory::getInstance();
+
+    cout << "BufferFactory knows:" << endl;
+
+    cout << "  G12 loader" << endl;
+    for (auto it : factory->mLoadersG12)
+    {
+        cout << "     " << it->name() << endl;
+    }
+
+    cout << "  RGB24 loader" << endl;
+    for (auto it : factory->mLoadersRGB24)
+    {
+        cout << "     " << it->name() << endl;
+    }
+
+    cout << "  RuntimeType loader" << endl;
+    for (auto it : factory->mLoadersRuntime)
+    {
+        cout << "     " << it->name() << endl;
+    }
+
+}
+
+/* Use template function instead of */
+
 G12Buffer *BufferFactory::loadG12Bitmap(string name)
 {
     vector<BufferLoader<G12Buffer> *>::iterator it;
@@ -58,6 +86,22 @@ RGB24Buffer *BufferFactory::loadRGB24Bitmap(string name)
             continue;
 
         RGB24Buffer *result = (*it)->load(name);
+        if (result != NULL)
+            return result;
+    }
+
+    return NULL;
+}
+
+RuntimeTypeBuffer *BufferFactory::loadRuntimeTypeBitmap(std::string name)
+{
+    vector<BufferLoader<RuntimeTypeBuffer> *>::iterator it;
+    for (it = mLoadersRuntime.begin(); it != mLoadersRuntime.end(); it++)
+    {
+        if (!((*it)->acceptsFile(name)))
+            continue;
+
+        RuntimeTypeBuffer *result = (*it)->load(name);
         if (result != NULL)
             return result;
     }

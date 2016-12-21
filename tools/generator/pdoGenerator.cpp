@@ -250,7 +250,7 @@ void PDOGenerator::generatePDOH()
 
     result +=
     "\n"
-    "using namespace corecvs;\n"
+    "// using namespace corecvs;\n"
     "\n";
 
     /* Probably we don't need actual includes here.
@@ -260,7 +260,7 @@ void PDOGenerator::generatePDOH()
     " *  Additional includes for Pointer Types.\n"
     " */\n"
     "\n"
-    "namespace corecvs {\n";
+    "// namespace corecvs {\n";
 
     /* We don't bother vector is fast enough */
     vector<QString> pointedTypes;
@@ -273,13 +273,25 @@ void PDOGenerator::generatePDOH()
         QString target = QString(cfield->targetClass);
         if (std::find(pointedTypes.begin(), pointedTypes.end(), target) != pointedTypes.end())
             continue;
+        QStringList namespaces = target.split("::");
+        for (int n = 0; n < namespaces.size() - 1; n++)
+        {
+    result += "namespace " + namespaces[n] + " {\n";
+        }
+
     result +=
-    "class " + target + ";\n";
+    "class " + namespaces.last() + ";\n";
+
+        for (int n = 0; n < namespaces.size() - 1; n++)
+        {
+    result += "}\n";
+        }
+
         pointedTypes.push_back(target);
     }
 
     result +=
-    "}\n"
+    "// }\n"
     "/*\n"
     " *  Additional includes for enum section.\n"
     " */\n";
@@ -307,7 +319,7 @@ void PDOGenerator::generatePDOH()
     " * \\brief "+classDescr+" \n"
     " * "+classComment+" \n"
     " **/\n"
-    "class "+className+" : public BaseReflection<"+className+">\n"
+    "class "+className+" : public corecvs::BaseReflection<"+className+">\n"
     "{\n"
     "public:\n"
 
@@ -467,7 +479,7 @@ void PDOGenerator::generatePDOH()
         enterFieldContext(i);
 
     result+=
-    "        visitor.visit("+ j(simplifiedType+cppName+",",27) + j(" static_cast<const "+fieldRefType+" *>", 35)+"(fields()["+fieldEnumId+"]));\n";
+    "        visitor.visit("+ j(simplifiedType+cppName+",",27) + j(" static_cast<const corecvs::"+fieldRefType+" *>", 35)+"(fields()["+fieldEnumId+"]));\n";
 
     }
 
@@ -476,7 +488,7 @@ void PDOGenerator::generatePDOH()
     "\n"
     "    "+className+"()\n"
     "    {\n"
-    "        DefaultSetter setter;\n"
+    "        corecvs::DefaultSetter setter;\n"
     "        accept(setter);\n"
     "    }\n"
     "\n";
@@ -506,19 +518,19 @@ void PDOGenerator::generatePDOH()
     }
 
     result+=
-//    "        DefaultSetter setter;\n"
+//    "        corecvs::DefaultSetter setter;\n"
 //    "        accept(setter);\n"
     "    }\n\n"
-    "    friend ostream& operator << (ostream &out, "+className+" &toSave)\n"
+    "    friend std::ostream& operator << (std::ostream &out, "+className+" &toSave)\n"
     "    {\n"
-    "        PrinterVisitor printer(out);\n"
-    "        toSave.accept<PrinterVisitor>(printer);\n"
+    "        corecvs::PrinterVisitor printer(out);\n"
+    "        toSave.accept<corecvs::PrinterVisitor>(printer);\n"
     "        return out;\n"
     "    }\n"
     "\n"
     "    void print ()\n"
     "    {\n"
-    "        cout << *this;\n"
+    "        std::cout << *this;\n"
     "    }\n";
 
     /* OGL style getter and setter */
@@ -574,6 +586,9 @@ void PDOGenerator::generatePDOCpp()
     "} // namespace corecvs \n"
     "\n"
     "SUPPRESS_OFFSET_WARNING_BEGIN\n"
+    "\n"
+    "\n"
+    "using namespace corecvs;\n"
     "\n"
     "int "+className+"::staticInit()\n"
     "{\n"

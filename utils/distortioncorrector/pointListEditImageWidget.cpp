@@ -12,6 +12,7 @@ PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHea
     mDeleteButton  = addToolButton("Delete Point",      QIcon(":/new/prefix1/vector_delete.png"  ), false);
     mAddInfoButton = addToolButton("Toggle info",       QIcon(":/new/prefix1/info_rhombus.png"   ), false);
     mAddInfoButton ->setCheckable(true);
+
 }
 
 void PointListEditImageWidget::setObservationModel(ObservationListModel *observationListModel)
@@ -272,6 +273,20 @@ PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, 
     mDeleteButton  = addToolButton("Delete Point",      QIcon(":/new/prefix1/vector_delete.png"  ), false);
     mAddInfoButton = addToolButton("Toggle info",       QIcon(":/new/prefix1/info_rhombus.png"   ), false);
     mAddInfoButton ->setCheckable(true);
+
+    /*Delegate activity*/
+    mDelegateStyleBox = new QComboBox(this);
+    mDelegateStyleBox->addItem("No Delegate");
+    mDelegateStyleBox->addItem("Selected");
+    mDelegateStyleBox->addItem("Only");
+    mDelegateStyleBox->addItem("All");
+
+    mDelegateStyleBox->setEnabled(true);
+
+    QWidget* holder = mUi->frame_2;
+    holder->layout()->addWidget(mDelegateStyleBox);
+    connect(mDelegateStyleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
+
 }
 
 void PointListEditImageWidgetUnited::setObservationModel(PointImageEditorInterface *observationListModel)
@@ -404,21 +419,6 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
     {
         Vector2dd point = mObservationListModel->getPoint(i);
         Vector2dd imageCoords = imageToWidgetF(point);
-        painter.setPen(Qt::yellow);
-        drawCircle(painter, imageCoords, 5);
-        painter.setPen(Qt::blue);
-        drawCircle(painter, imageCoords, 10);
-
-        if (mAddInfoButton->isChecked())
-        {
-            QString meta = mObservationListModel->getMeta(i);
-            QPointF pos = Core2Qt::QPointFromVector2dd(imageCoords + Vector2dd(5, -10));
-            painter.setPen(Qt::black);
-            painter.drawText(pos, meta);
-            pos += QPointF(1,1);
-            painter.setPen(Qt::white);
-            painter.drawText(pos, meta);
-        }
 
         bool isSelected = false;
         if (selectionModel != NULL)
@@ -428,39 +428,79 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
             isSelected = (i == mSelectedPoint);
         }
 
-        int flags = NONE_ARROW;
+        /* We should probably use our own mechnism */
+        bool drawDelegate = false;
+        if (mDelegateStyleBox->currentIndex() == 2 ||
+            mDelegateStyleBox->currentIndex() == 3 )
+            drawDelegate = true;
+        if (mDelegateStyleBox->currentIndex() == 1 && isSelected)
+            drawDelegate = true;
 
-        if (isSelected) {
-            painter.setPen(Qt::red);
-            drawCircle(painter, imageCoords, 7);
+        if (drawDelegate)
+        {
+            QTransform old = painter.transform();
+            Matrix33 matrix = currentTransformMatrix();
+            QTransform transform = Core2Qt::QTransformFromMatrix(matrix);
+            painter.setTransform(transform, true);
 
-            imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
-            painter.setPen(Qt::cyan);
-            drawCircle(painter, imageCoords, 3);
-
-            if (imageCoords.x() < mOutputRect.left ()) flags |= LEFT_ARROW;
-            if (imageCoords.x() > mOutputRect.right()) flags |= RIGHT_ARROW;
-
-            if (imageCoords.y() < mOutputRect.top   ()) flags |= TOP_ARROW;
-            if (imageCoords.y() > mOutputRect.bottom()) flags |= BOTTOM_ARROW;
+            DrawDelegate *delegate = mObservationListModel->getDrawDelegate(i);
+            if (delegate != NULL) {
+                delegate->drawAt(painter, point, isSelected);
+            }
+            painter.setTransform(old);
         }
 
-        painter.setBrush(Qt::red);
-        painter.setPen(Qt::blue);
-        paintDirectionArrows(painter, flags);
-        painter.setBrush(Qt::NoBrush);
+        if (mDelegateStyleBox->currentIndex() != 2)
+        {
+            painter.setPen(Qt::yellow);
+            drawCircle(painter, imageCoords, 5);
+            painter.setPen(Qt::blue);
+            drawCircle(painter, imageCoords, 10);
+
+            if (mAddInfoButton->isChecked())
+            {
+                QString meta = mObservationListModel->getMeta(i);
+                QPointF pos = Core2Qt::QPointFromVector2dd(imageCoords + Vector2dd(5, -10));
+                painter.setPen(Qt::black);
+                painter.drawText(pos, meta);
+                pos += QPointF(1,1);
+                painter.setPen(Qt::white);
+                painter.drawText(pos, meta);
+            }
+            int flags = NONE_ARROW;
+
+            if (isSelected)
+            {
+                painter.setPen(Qt::red);
+                drawCircle(painter, imageCoords, 7);
+
+                imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
+                painter.setPen(Qt::cyan);
+                drawCircle(painter, imageCoords, 3);
+
+                if (imageCoords.x() < mOutputRect.left ()) flags |= LEFT_ARROW;
+                if (imageCoords.x() > mOutputRect.right()) flags |= RIGHT_ARROW;
+
+                if (imageCoords.y() < mOutputRect.top   ()) flags |= TOP_ARROW;
+                if (imageCoords.y() > mOutputRect.bottom()) flags |= BOTTOM_ARROW;
+            }
+
+            painter.setBrush(Qt::red);
+            painter.setPen(Qt::blue);
+            paintDirectionArrows(painter, flags);
+            painter.setBrush(Qt::NoBrush);
+        }
     }
 
-    /* Draw additional points*/
-    for (size_t i = 0; i < pointList.size(); i++)
+    /* Draw additional points */
+    for (Vector2dd &point : pointList)
     {
-        Vector2dd &p = pointList[i];
-        Vector2dd imageCoords = imageToWidgetF(p);
+        Vector2dd imageCoords = imageToWidgetF(point);
 
         /*painter.setPen(Qt::green);
         drawLine(painter, imageCoords - Vector2dd( 4.0, 4.0), imageCoords + Vector2dd(4.0,  4.0));
         drawLine(painter, imageCoords - Vector2dd(-4.0, 4.0), imageCoords + Vector2dd(-4.0, 4.0));*/
-        paintTarget( painter, imageCoords, 10);
+        paintTarget(painter, imageCoords, 10);
     }
 }
 
@@ -567,34 +607,58 @@ void PointListEditImageWidgetUnited::childMouseMoved(QMouseEvent * event)
     {
         switch (mCurrentToolClass)
         {
-        case MOVE_POINT_TOOL:
-        {
-            //   qDebug() << "Drag in selected tool";
-            if (!mIsMouseLeftPressed)
-                break;
-
-            Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
-            Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
-            Vector2dd shift = (dragStart - currentPoint);
-
-
-           /* for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+            case MOVE_POINT_TOOL:
             {
-                mFeatures.mSelectedPoints[i]->position -= shift;
-            }*/
-            if (mSelectedPoint >= 0) {
-                Vector2dd currentPoint = mObservationListModel->getPoint(mSelectedPoint);
-                currentPoint -= shift;
-                mObservationListModel->setPoint(mSelectedPoint, currentPoint);
+                //   qDebug() << "Drag in selected tool";
+                if (!mIsMouseLeftPressed)
+                    break;
+
+                Vector2dd dragStart    = widgetToImageF(Qt2Core::Vector2ddFromQPoint(mSelectionEnd));
+                Vector2dd currentPoint = widgetToImageF(Qt2Core::Vector2ddFromQPoint(event->pos()));
+                Vector2dd shift        = (dragStart - currentPoint);
+
+                /*for (unsigned i = 0; i < mFeatures.mSelectedPoints.size(); i++)
+                 {
+                     mFeatures.mSelectedPoints[i]->position -= shift;
+                 }*/
+                if (mSelectedPoint >= 0)
+                {
+                    Vector2dd currentPoint = mObservationListModel->getPoint(mSelectedPoint);
+                    currentPoint -= shift;
+                    mObservationListModel->setPoint(mSelectedPoint, currentPoint);
+                }
+
+                mUi->widget->update();
             }
-
-
-            mUi->widget->update();
-        }
-        default:
-            break;
+            default:
+                break;
         }
     }
 
     AdvancedImageWidget::childMouseMoved(event);
+}
+
+void DrawKeypointAreaDelegate::drawAt(QPainter &painter, Vector2dd position, int state)
+{
+    if (observation == NULL)
+        return;
+
+    painter.setPen(state ? Qt::blue : Qt::yellow);
+
+    KeyPointArea &area = observation->keyPointArea;
+
+    painter.drawEllipse(
+        position.x() - area.size / 2,
+        position.y() - area.size / 2,
+        area.size,
+        area.size);
+    painter.drawLine(
+        position.x(),
+        position.y(),
+        cos(degToRad(area.angle)) * observation->keyPointArea.size / 2.0 + position.x(),
+        sin(degToRad(area.angle)) * observation->keyPointArea.size / 2.0 + position.y()
+
+                     );
+
+
 }

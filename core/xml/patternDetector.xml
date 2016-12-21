@@ -85,7 +85,7 @@
     <field type="double" name="minSeedDistance"      defaultValue="15.0"   comment="Minimal seed distance" />
     <field type="int"    name="hypothesisDimensions" defaultValue="1"      comment="Hypothesis type: consider only hypothesis that fits specified number of dims" />
 
-
+	<field type="bool"   name="kdtree" defaultValue="false" comment="Use k-d tree for greedy expansion" />
     <field type="int"    name="hypothesisDimFirst"   defaultValue="18" />
     <field type="int"    name="hypothesisDimSecond"  defaultValue="11" />
   </class>

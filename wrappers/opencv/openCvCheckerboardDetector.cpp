@@ -1,7 +1,7 @@
 #include "openCvCheckerboardDetector.h"
 #include "selectableGeometryFeatures.h"  // ObservationList
 #include "checkerboardDetectionParameters.h"
-#include "preciseTimer.h"
+
 /// OpenCV wrapper
 #include "OpenCVTools.h"
 

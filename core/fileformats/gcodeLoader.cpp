@@ -13,9 +13,7 @@ using std::vector;
 using std::pair;
 
 GcodeLoader::GcodeLoader()
-{
-
-}
+{}
 
 vector<pair<char, double>> parseLine(string gline)
 {
@@ -24,7 +22,7 @@ vector<pair<char, double>> parseLine(string gline)
     for (string s: split)
     {
         pair<char, double> p;
-        if (!s.empty() && std::isalpha(s[0])) {
+        if (!s.empty() && isalpha(s[0])) {
             p.first = s[0];
         }
         s = s.substr(1);
@@ -90,7 +88,7 @@ int GcodeLoader::loadGcode(istream &input, Mesh3D &mesh)
             case 'g':
             {
                 Vector3dd target = currentPosition;
-                for (int i = 1; i < tokens.size(); i++)
+                for (int i = 1; i < (int)tokens.size(); i++)
                 {
                     switch (tokens[i].first) {
                         case 'x': target.x() = tokens[i].second; break;
@@ -164,9 +162,7 @@ int GcodeLoader::loadGcode(istream &input, Mesh3D &mesh)
 }
 
 GcodeLoader::~GcodeLoader()
-{
-
-}
+{}
 
 } // namespace corecvs
 

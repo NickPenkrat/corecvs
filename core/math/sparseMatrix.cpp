@@ -10,15 +10,15 @@
 
 using namespace corecvs;
 
-//#define STRONG_TRIAG
+#define STRONG_TRIAG
 
 void corecvs::SparseMatrix::checkCorrectness() const
 {
-    CORE_ASSERT_TRUE_S(h + 1 == rowPointers.size());
+    CORE_ASSERT_TRUE_S(h + 1 == (int)rowPointers.size());
     CORE_ASSERT_TRUE_S(rowPointers.size());
-    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == columns.size());
-    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == values.size());
-    for (int i = 0; i + 1 < rowPointers.size(); ++i)
+    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == (int)columns.size());
+    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == (int)values.size());
+    for (size_t i = 0; i + 1 < rowPointers.size(); ++i)
         CORE_ASSERT_TRUE_S(rowPointers[i] <= rowPointers[i + 1]);
     for (int i = 0; i < h; ++i)
         for (int j = rowPointers[i]; j + 1 < rowPointers[i + 1]; ++j)
@@ -28,28 +28,62 @@ void corecvs::SparseMatrix::checkCorrectness() const
         }
 }
 
+struct Registrant
+{
+    Registrant()
+    {
+        std::cout << "Registering in spmvwisdom" << std::endl;
+        SPMVWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::HOMEBREW, [](int, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_homebrew(v, trans); });
+#ifdef WITH_CUSPARSE
+        SPMVWisdom::Register(AcceleratorTypes::CUDA, SparseImplementations::CUSPARSE, [](int id, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_cusparse(v, trans, id); });
+#endif
+#ifdef WITH_MKL
+        SPMVWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::MKL,      [](int, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_mkl(v, trans); });
+#endif
+
+        std::cout << "Registering in trsvwisdom" << std::endl;
+        TRSVWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::HOMEBREW, [](int, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_homebrew(v, trans, up, N); });
+#if 1
+#ifdef WITH_CUSPARSE
+        TRSVWisdom::Register(AcceleratorTypes::CUDA, SparseImplementations::CUSPARSE, [](int dev, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_cusparse(v, trans, up, N, dev); });
+#endif
+#ifdef WITH_MKL
+        TRSVWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::MKL, [](int, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_mkl(v, trans, up, N); });
+#endif
+#endif
+        std::cout << "Registering in spmmwisdom" << std::endl;
+        SPMMWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::HOMEBREW, [](int, const SPMMC::inner_type& t) { return std::get<0>(t).spmm_homebrew(std::get<1>(t), std::get<2>(t), std::get<3>(t)); });
+#if 1
+#ifdef WITH_CUSPARSE
+        SPMMWisdom::Register(AcceleratorTypes::CUDA,  SparseImplementations::CUSPARSE, [](int dev, const SPMMC::inner_type& t) { return std::get<0>(t).spmm_cusparse(std::get<1>(t), std::get<2>(t), std::get<3>(t), dev); });
+#endif
+#endif
+#ifdef WITH_MKL
+        SPMMWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::MKL, [](int, const SPMMC::inner_type& t) { return std::get<0>(t).spmm_mkl(std::get<1>(t), std::get<2>(t), std::get<3>(t)); });
+#endif
+    }
+
+};
+
+std::unique_ptr<Registrant> reg(new Registrant);
 
 std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky(bool allow_parallel)
 {
     // Here we will consturct incomplete upper-triangular cholesky-factor for matrix
     // If we do not succeed, we'll return <false, ()> 'cause it is 2016 now,
+    // we are retrograds (and do not use boost)
     // and std::optional from C++17 is not yet ready (and usage of std::experimental
     // is prohibited)
     // We will start from the same NNZ-structure
 
-#if 1
     SparseMatrix A(*this);
     int N = h;
-    int n = N;
+    //int n = N;
     for (int k = 0; k < N; ++k)
     {
         int i_k_k = getIndex(k, k);
 
-#if 0
-        double pivot = A.a(k, k);
-#else
         double pivot = i_k_k >= 0 ? A.values[i_k_k] : 0.0;
-#endif
         if (pivot <= 0.0)
         {
             std::cout << "Non-positive pivot R" << std::endl;
@@ -58,57 +92,16 @@ std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky(bool all
         CORE_ASSERT_TRUE_S(A.a(k, k) == pivot);
         CORE_ASSERT_TRUE_S(columns[i_k_k] == k);
         pivot = std::sqrt(pivot);
-#if 0
-        A.a(k, k) = pivot;
-#else
-        A.values[i_k_k] = pivot;
-#endif
 
-#if 0
-        for (int i = k + 1; i < n; ++i)
-            if (A.a(k, i) != 0.0)
-                A.a(k, i) /= pivot;
-#else
+        A.values[i_k_k] = pivot;
+
         for (int i_k_i = i_k_k + 1; i_k_i < A.rowPointers[k + 1]; ++i_k_i)
             A.values[i_k_i] /= pivot;
-#endif
 
-#if 0
-        for (int j = k + 1; j < n; ++j)
-            for (int i = j; i < n; ++i)
-                if (A.a(j, i) != 0.0)
-                    A.a(j, i) -= A.a(k, i) * A.a(k, j);
-#else
-if (!allow_parallel) {
-        int i_k_j = i_k_k + 1;
-        for (; i_k_j < A.rowPointers[k + 1]; ++i_k_j)
+        if (!allow_parallel)
         {
-            int j = A.columns[i_k_j];
-            int i_j_i = getUBIndex(j, j);
-
-            double a_k_j = A.values[i_k_j];
-            if (a_k_j == 0.0)
-                continue;
-
-            int i_k_i = i_k_j;
-            for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
-            {
-                int i = A.columns[i_j_i];
-                while (i_k_i < A.rowPointers[k + 1] && A.columns[i_k_i] < i) ++i_k_i;
-                if (i_k_i == A.rowPointers[k + 1])
-                    break;
-                if (A.columns[i_k_i] > i)
-                    continue;
-                double a_k_i = A.values[i_k_i];
-                A.values[i_j_i] -= a_k_i * a_k_j;
-            }
-        }
-}else{
-
-        int i_k_j_ = i_k_k + 1;
-        corecvs::parallelable_for(i_k_j_, A.rowPointers[k + 1], 512, [&](const corecvs::BlockedRange<int> &r)
-        {
-            for (int i_k_j = r.begin(); i_k_j != r.end(); ++i_k_j)
+            int i_k_j = i_k_k + 1;
+            for (; i_k_j < A.rowPointers[k + 1]; ++i_k_j)
             {
                 int j = A.columns[i_k_j];
                 int i_j_i = getUBIndex(j, j);
@@ -130,15 +123,38 @@ if (!allow_parallel) {
                     A.values[i_j_i] -= a_k_i * a_k_j;
                 }
             }
-        });
-}
-#endif
+        }
+        else
+        {
+            int i_k_j_ = i_k_k + 1;
+            corecvs::parallelable_for(i_k_j_, A.rowPointers[k + 1], 512, [&](const corecvs::BlockedRange<int> &r)
+            {
+                for (int i_k_j = r.begin(); i_k_j != r.end(); ++i_k_j)
+                {
+                    int j = A.columns[i_k_j];
+                    int i_j_i = getUBIndex(j, j);
+
+                    double a_k_j = A.values[i_k_j];
+                    if (a_k_j == 0.0)
+                        continue;
+
+                    int i_k_i = i_k_j;
+                    for (; i_j_i < A.rowPointers[j + 1]; ++i_j_i)
+                    {
+                        int i = A.columns[i_j_i];
+                        while (i_k_i < A.rowPointers[k + 1] && A.columns[i_k_i] < i) ++i_k_i;
+                        if (i_k_i == A.rowPointers[k + 1])
+                            break;
+                        if (A.columns[i_k_i] > i)
+                            continue;
+                        double a_k_i = A.values[i_k_i];
+                        A.values[i_j_i] -= a_k_i * a_k_j;
+                    }
+                }
+            });
+        }
     }
-#if 0
-    for (int i = 0; i < n; ++i)
-        for (int j = i + 1; j < n; ++j)
-            A.a(j, i) = 0.0;
-#else
+
     int nnz = 0;
     for (int i = 0; i < N; ++i)
     {
@@ -153,70 +169,8 @@ if (!allow_parallel) {
     }
     A.columns.resize(nnz);
     A.values.resize(nnz);
-#endif
 
     return std::make_pair(true, A);
-#else
-    std::vector<double> u_values(values);
-    int N = h;
-    CORE_ASSERT_TRUE_S(h == w);
-    for (int k = 0; k < N; ++k)
-    {
-        int k_k_id = rowPointers[k];
-        while (k_k_id < rowPointers[k + 1] && columns[k_k_id] < k) ++k_k_id;
-
-        if (k_k_id >= rowPointers[k + 1] || columns[k_k_id] != k || u_values[k_k_id] <= 0.0)
-            return std::make_pair(false, SparseMatrix());
-
-        double a_kk = std::sqrt(u_values[k_k_id]);
-        u_values[k_k_id] = a_kk;
-        for (int i = k_k_id + 1; i < rowPointers[k + 1]; ++i)
-            u_values[i] = u_values[i] / a_kk;
-
-        int j_k_id = k_k_id + 1;
-        for (int j = k + 1; j < N; ++j)
-        {
-            double a_j_k = 0.0;
-            if (columns[j_k_id] == j && j_k_id < rowPointers[j + 1])
-            {
-                a_j_k = u_values[j_k_id];
-            }
-
-            int j_j_id = rowPointers[j];
-            while (j_j_id < rowPointers[j + 1] && columns[j_j_id] < j) ++j_j_id;
-
-            if (j_j_id >= rowPointers[j + 1] || columns[j_j_id] != j)
-            {
-                std::cout << "Mystery things happen in ICP" << std::endl;
-                return std::make_pair(false, SparseMatrix());
-            }
-
-            int i_j_id = j_j_id;
-            int i_k_id = k_k_id + 1;
-            while(columns[i_k_id] < j && i_k_id < rowPointers[k + 1]) ++i_k_id;
-
-            for (; i_j_id < rowPointers[j];  ++i_j_id)
-            {
-                int i = columns[i];
-                while (columns[i_k_id] < i && i_k_id < rowPointers[k + 1]) ++i_k_id;
-
-                double a_i_k = 0.0;
-                if (columns[i_k_id] == i && i_k_id < rowPointers[k + 1])
-                    a_i_k = u_values[i_k_id];
-
-                u_values[i_j_id] -= a_i_k * a_j_k;
-            }
-            if (columns[j_k_id] == j && j_k_id < rowPointers[k + 1])
-                j_k_id++;
-        }
-    }
-    for (int i = 1; i < N; ++i)
-    {
-        for (int j = rowPointers[i]; j < rowPointers[i + 1] && columns[j] < i; ++j)
-            u_values[j] = 0.0;
-    }
-    return std::make_pair(true, SparseMatrix(N, N, u_values, columns, rowPointers));
-#endif
 }
 
 corecvs::Vector corecvs::SparseMatrix::dtrsv(const Vector &rhs, bool upper, bool notrans) const
@@ -236,8 +190,6 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
     CORE_ASSERT_TRUE_S(h == w);
     CORE_ASSERT_TRUE_S(h == rhs.size());
     corecvs::Vector res(rhs.size());
-#ifndef WITH_MKL
-//    auto startCVS = std::chrono::high_resolution_clock::now();
 
     std::vector<int> first(h), id(h), next(h);
     for (int i = 0; i < h; ++i)
@@ -280,15 +232,6 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
         CORE_ASSERT_TRUE_S(std::abs(pivot) > 0.0);
         res[j] = sum / pivot;
     }
- //   auto stopCVS = std::chrono::high_resolution_clock::now();
-#else
-//    auto startMKL = std::chrono::high_resolution_clock::now();
-    mkl_cspblas_dcsrtrsv("U", "T", "N", &h, &values[0], &rowPointers[0], &columns[0], &rhs[0], &res[0]);
-//    auto stopMKL = std::chrono::high_resolution_clock::now();
-//    auto timeCVS = (stopCVS - startCVS).count() / 1e9;
-//    auto timeMKL = (stopMKL - startMKL).count() / 1e9;
-//    std::cout << (timeMKL < timeCVS ? "corecvs" : "MKL") << " sucks: CVS@" << timeCVS << ", MKL@" << timeMKL << std::endl;
-#endif
     return res;
 }
 corecvs::Vector corecvs::SparseMatrix::dtrsv_lt(const Vector &rhs) const
@@ -372,6 +315,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ln(const Vector &rhs) const
 
 corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
 {
+//    std::cout << "[UN]" << std::flush;
 
     /*
      * /# # # # #\ / x_1 \   / b_1 \
@@ -384,8 +328,6 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
     corecvs::Vector res(rhs.size());
     CORE_ASSERT_TRUE_S(h == w);
     CORE_ASSERT_TRUE_S(h == rhs.size());
-#ifndef WITH_MKL
-//    auto startCVS = std::chrono::high_resolution_clock::now();
     for (int i = h - 1; i >= 0; --i)
     {
         double sum = rhs[i];
@@ -399,17 +341,6 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
             sum -= values[i_i_j] * res[columns[i_i_j]];
         res[i] = sum / values[i_i_i];
     }
-//    auto stopCVS = std::chrono::high_resolution_clock::now();
-#else
-#ifdef WITH_MKL
-//    auto startMKL = std::chrono::high_resolution_clock::now();
-    mkl_cspblas_dcsrtrsv("U", "N", "N", &h, &values[0], &rowPointers[0], &columns[0], &rhs[0], &res[0]);
-//    auto stopMKL = std::chrono::high_resolution_clock::now();
-//    auto timeCVS = (stopCVS - startCVS).count() / 1e9;
-//    auto timeMKL = (stopMKL - startMKL).count() / 1e9;
-//    std::cout << (timeMKL < timeCVS ? "corecvs" : "MKL") << " sucks: CVS@" << timeCVS << ", MKL@" << timeMKL << std::endl;
-#endif
-#endif
     return res;
 }
 
@@ -891,124 +822,389 @@ SparseMatrix corecvs::operator -(const SparseMatrix &lhs, const SparseMatrix &rh
     return SparseMatrix(lhs.h, lhs.w, values, columns, rowPointers);
 }
 
-Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
+SparseMatrix SparseMatrix::spmm_homebrew(const SparseMatrix &rhs, bool transA, bool transB) const
 {
-#ifndef WITH_CUSPARSE
-    CORE_ASSERT_TRUE_S(lhs.w == rhs.size());
-    Vector ans(lhs.h);
-    int N = lhs.h;
-    int bs = 512;
+    if (transA)
+    {
+        SparseMatrix smT = this->t();
+        return smT.spmm_homebrew(rhs, false, transB);
+    }
+    if (transB)
+    {
+        SparseMatrix smT = rhs.t();
+        return spmm_homebrew(smT, false, false);
+    }
+    CORE_ASSERT_TRUE_S(w == rhs.h);
+    int N = std::max(std::max(this->h, this->w), std::max(rhs.h, rhs.w));
+    std::vector<double> values, acc(N);
+    std::vector<int> columns, rowPointers(this->h + 1), index(N, -10);
+    int h = this->h;
+    int w = rhs.w;
 
-    auto startCPU = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < h; ++i)
+    {
+        int ii = -1, l = 0;
+        for (int jj = this->rowPointers[i]; jj < this->rowPointers[i + 1]; ++jj)
+        {
+            int j = this->columns[jj];
+            for (int k = rhs.rowPointers[j]; k < rhs.rowPointers[j + 1]; ++k)
+            {
+                if (index[rhs.columns[k]] == -10)
+                {
+                    index[rhs.columns[k]] = ii;
+                    ii = rhs.columns[k];
+                    ++l;
+                }
+            }
+        }
+        rowPointers[i + 1] = rowPointers[i] + l;
+        columns.resize(rowPointers[i + 1]);
+        values.resize(rowPointers[i + 1]);
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+        {
+            columns[j] = ii;
+            ii = index[ii];
+            index[columns[j]] = -10;
+        }
+        index.clear();
+        index.resize(N, -10);
+    }
+    rowPointers[0] = 0;
+
+    for (int i = 0; i < h; ++i)
+    {
+        std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1]]);
+        for (int jj = this->rowPointers[i]; jj < this->rowPointers[i + 1]; ++jj)
+        {
+            int j = this->columns[jj];
+            double val = this->values[jj];
+            for (int k = rhs.rowPointers[j]; k < rhs.rowPointers[j + 1]; ++k)
+            {
+                acc[rhs.columns[k]] += val * rhs.values[k];
+            }
+        }
+        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+        {
+            values[j] = acc[columns[j]];
+            acc[columns[j]] = 0.0;
+        }
+    }
+    return SparseMatrix(h, w, values, columns, rowPointers);
+}
+
+#ifdef WITH_MKL
+SparseMatrix SparseMatrix::spmm_mkl(const SparseMatrix &rhs, bool transA, bool transB) const
+{
+    if (transB)
+    {
+        std::cout << "MKL: EXPLICIT TRANSPOSE" << std::endl;
+        SparseMatrix smT = rhs.t();
+        return spmm_mkl(smT, transA, false);
+    }
+    if (&rhs == this)
+    {
+        std::cout << "MKL: ATA? DETECTED" << std::endl;
+        auto lhs_mkl = (sparse_matrix_t)*this;
+        sparse_matrix_t res;
+        mkl_sparse_spmm(transA ? SPARSE_OPERATION_TRANSPOSE : SPARSE_OPERATION_NON_TRANSPOSE, lhs_mkl, lhs_mkl, &res);
+        mkl_sparse_destroy(lhs_mkl);
+        SparseMatrix ress(res);
+        mkl_sparse_destroy(res);
+        return ress;
+    }
+    auto lhs_mkl = (sparse_matrix_t)*this;
+    auto rhs_mkl = (sparse_matrix_t)rhs;
+    sparse_matrix_t res;
+    mkl_sparse_spmm(transA ? SPARSE_OPERATION_TRANSPOSE : SPARSE_OPERATION_NON_TRANSPOSE, lhs_mkl, rhs_mkl, &res);
+    mkl_sparse_destroy(lhs_mkl);
+    mkl_sparse_destroy(rhs_mkl);
+    SparseMatrix ress(res);
+    mkl_sparse_destroy(res);
+    return ress;
+}
+#endif
+
+#ifdef WITH_CUSPARSE
+SparseMatrix SparseMatrix::spmm_cusparse(const SparseMatrix &rhs, bool transA, bool transB, int dev) const
+{
+    cudaSetDevice(dev);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    promoteToGpu(dev);
+    rhs.promoteToGpu(dev);
+
+    cusparseHandle_t   handle = 0;
+    cusparseMatDescr_t descrA = 0, descrB = 0, descrC = 0;
+
+    auto status = cusparseCreate(&handle);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    if (status != CUSPARSE_STATUS_SUCCESS)
+    {
+        std::cout << "CUSPARSE INIT FAILED" << std::endl;
+    }
+
+    cusparseCreateMatDescr(&descrA);
+    cusparseSetMatType(descrA, CUSPARSE_MATRIX_TYPE_GENERAL);
+    cusparseSetMatIndexBase(descrA, CUSPARSE_INDEX_BASE_ZERO);
+    cusparseCreateMatDescr(&descrB);
+    cusparseSetMatType(descrB, CUSPARSE_MATRIX_TYPE_GENERAL);
+    cusparseSetMatIndexBase(descrB, CUSPARSE_INDEX_BASE_ZERO);
+    cusparseCreateMatDescr(&descrC);
+    cusparseSetMatType(descrC, CUSPARSE_MATRIX_TYPE_GENERAL);
+    cusparseSetMatIndexBase(descrC, CUSPARSE_INDEX_BASE_ZERO);
+
+    int baseC, nnzC;
+    int *nnzP = &nnzC;
+    cusparseSetPointerMode(handle, CUSPARSE_POINTER_MODE_HOST);
+    int *rowPointersC;
+    int m = transA ? w : h, k = transA ? h : w, n = transB ? rhs.h : rhs.w;
+    cudaMalloc((void**)&rowPointersC, sizeof(int) * (1 + m));
+    auto ctransA = transA ? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE,
+         ctransB = transB ? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE;
+
+    cusparseXcsrgemmNnz(handle, ctransA, ctransB, m, n, k,
+            descrA,     nnz(),     gpuPromotion->basicPromotions[dev].dev_rowPointers.get(),     gpuPromotion->basicPromotions[dev].dev_columns.get(),
+            descrB, rhs.nnz(), rhs.gpuPromotion->basicPromotions[dev].dev_rowPointers.get(), rhs.gpuPromotion->basicPromotions[dev].dev_columns.get(),
+            descrC, rowPointersC, nnzP);
+
+    if (nnzP)
+        nnzC = *nnzP;
+    else
+    {
+        cudaMemcpy(&nnzC, rowPointersC + m, sizeof(int), cudaMemcpyDeviceToHost);
+        cudaMemcpy(&baseC, rowPointersC, sizeof(int), cudaMemcpyDeviceToHost);
+        nnzC -= baseC;
+    }
+    double *valuesC;
+    int *columnsC;
+    cudaMalloc((void**)&valuesC, sizeof(double) * nnzC);
+    cudaMalloc((void**)&columnsC, sizeof(int) * nnzC);
+
+    cusparseDcsrgemm(handle, ctransA, ctransB, m, n, k,
+            descrA, nnz(),
+                gpuPromotion->basicPromotions[dev].dev_values.get(),     gpuPromotion->basicPromotions[dev].dev_rowPointers.get(),     gpuPromotion->basicPromotions[dev].dev_columns.get(),
+            descrB, rhs.nnz(),
+            rhs.gpuPromotion->basicPromotions[dev].dev_values.get(), rhs.gpuPromotion->basicPromotions[dev].dev_rowPointers.get(), rhs.gpuPromotion->basicPromotions[dev].dev_columns.get(),
+            descrC,
+            valuesC, rowPointersC, columnsC);
+
+    std::vector<int> crp(m + 1), cc(nnzC);
+    std::vector<double> cv(nnzC);
+
+    cudaMemcpy(&crp[0], rowPointersC, sizeof(int) * (m + 1), cudaMemcpyDeviceToHost);
+    cudaMemcpy(&cc[0], columnsC, sizeof(int) * nnzC, cudaMemcpyDeviceToHost);
+    cudaMemcpy(&cv[0], valuesC, sizeof(double) * nnzC, cudaMemcpyDeviceToHost);
+
+    cudaFree(rowPointersC);
+    cudaFree(columnsC);
+    cudaFree(valuesC);
+
+    return SparseMatrix(m, n, cv, cc, crp);
+}
+#endif
+
+Vector SparseMatrix::spmv_homebrew(const Vector &rhs, bool trans) const
+{
+    if (trans)
+    {
+        CORE_ASSERT_TRUE_S(rhs.size() == h);
+        Vector ans(w);
+
+        for (int i = 0; i < h; ++i)
+        {
+            for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+                ans[columns[j]] += values[j] * rhs[i];
+        }
+
+        return ans;
+    }
+    CORE_ASSERT_TRUE_S(w == rhs.size());
+    Vector ans(h);
+    int N = h;
+    std::size_t bs = 512;
+
     corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
     {
         for (int i = r.begin(); i != r.end(); ++i)
         {
             double res = 0.0;
-            for (int j = lhs.rowPointers[i]; j < lhs.rowPointers[i + 1]; ++j)
-                res += lhs.values[j] * rhs[lhs.columns[j]];
+            for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
+                res += values[j] * rhs[columns[j]];
             ans[i] = res;
         }
     });
-    auto stopCPU = std::chrono::high_resolution_clock::now();
     return ans;
-#else
-    double cpuClock = 0.0, gpuClock = 0.0;
-    CORE_ASSERT_TRUE_S(lhs.w == rhs.size());
-    Vector ans(lhs.h);
-    int N = lhs.h;
+}
 
-    bool shouldScheduleCPU = !lhs.gpuPromotion || lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY || lhs.gpuPromotion->total >= SparseMatrix::SPMV_RETRY && lhs.gpuPromotion->cpu > lhs.gpuPromotion->gpu;
-    bool shouldScheduleGPU = lhs.gpuPromotion && (lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY || lhs.gpuPromotion->gpu > lhs.gpuPromotion->cpu);
-    auto cpuSPMV = [&]()
+Vector SparseMatrix::trsv(const Vector &rhs, const char* trans, bool up, int N) const
+{
+    return TRSVWisdom::WiseRun(*this, rhs, trans, up, N);
+}
+
+#ifdef WITH_CUSPARSE
+Vector SparseMatrix::spmv_cusparse(const Vector &rhs, bool trans, int dev) const
+{
+    cudaSetDevice(dev);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    promoteToGpu(dev);
+    int ansSize = trans ? w : h;
+    Vector ans(ansSize);
+    CORE_ASSERT_TRUE_S(rhs.size() == w + h - ansSize);
+
+    double *dev_rhs, *dev_res;
+    cudaMalloc(&(void*&)dev_rhs, rhs.size() * sizeof(double));
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cudaMalloc(&(void*&)dev_res, ansSize * sizeof(double));
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+
+    cusparseHandle_t   handle = 0;
+    cusparseMatDescr_t descr  = 0;
+
+    auto status = cusparseCreate(&handle);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    if (status != CUSPARSE_STATUS_SUCCESS)
     {
-        int bs = 512;
-
-        auto startCPU = std::chrono::high_resolution_clock::now();
-        corecvs::parallelable_for(0, N, bs, [&](const corecvs::BlockedRange<int> &r)
-        {
-            for (int i = r.begin(); i != r.end(); ++i)
-            {
-                double res = 0.0;
-                for (int j = lhs.rowPointers[i]; j < lhs.rowPointers[i + 1]; ++j)
-                    res += lhs.values[j] * rhs[lhs.columns[j]];
-                ans[i] = res;
-            }
-        });
-        auto stopCPU = std::chrono::high_resolution_clock::now();
-        cpuClock = (stopCPU - startCPU).count() / 1e9;
-    };
-    Vector resGpu(lhs.h);
-    auto gpuSPMV = [&]()
-    {
-       auto startGPU = std::chrono::high_resolution_clock::now();
-       double *dev_rhs, *dev_res;
-       cudaMalloc(&(void*&)dev_rhs, rhs.size() * sizeof(double));
-       cudaMalloc(&(void*&)dev_res, lhs.h * sizeof(double));
-
-       cusparseHandle_t   handle = 0;
-       cusparseMatDescr_t descr  = 0;
-
-       auto status = cusparseCreate(&handle);
-       if (status != CUSPARSE_STATUS_SUCCESS)
-       {
-           std::cout << "CUSPARSE INIT FAILED" << std::endl;
-       }
-
-       status = cusparseCreateMatDescr(&descr);
-       if (status != CUSPARSE_STATUS_SUCCESS)
-       {
-           std::cout << "CUSPARSE MD FAILED" << std::endl;
-       }
-
-        cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
-        cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
-
-        cudaMemcpy(dev_rhs, &rhs[0], rhs.size() * sizeof(double), cudaMemcpyHostToDevice);
-        cudaMemset(dev_res, 0, lhs.h * sizeof(double));
-
-        double alpha = 1.0, beta = 0.0;
-           status = cusparseDcsrmv(handle, CUSPARSE_OPERATION_NON_TRANSPOSE, lhs.h, lhs.w, lhs.nnz(), &alpha, descr, lhs.gpuPromotion->dev_values.get(), lhs.gpuPromotion->dev_rowPointers.get(), lhs.gpuPromotion->dev_columns.get(), dev_rhs, &beta, dev_res);
-
-        if (status != CUSPARSE_STATUS_SUCCESS)
-           {
-            std::cout << "CUSPARSE SPMV FAILED" << std::endl;
-            fprintf(stderr, "SPMV launch failed: %s\n", cudaGetErrorString(cudaGetLastError()));
-        }
-        cudaMemcpy(&resGpu[0], dev_res, sizeof(double) * lhs.h, cudaMemcpyDeviceToHost);
-
-        cudaFree(dev_rhs);
-        cudaFree(dev_res);
-        auto stopGPU = std::chrono::high_resolution_clock::now();
-        gpuClock = (stopGPU - startGPU).count() / 1e9;
-    };
-
-    std::unique_ptr<std::thread> tc(nullptr), tg(nullptr);
-    if (shouldScheduleCPU)
-        tc = std::unique_ptr<std::thread>(new std::thread(cpuSPMV));
-    if (shouldScheduleGPU)
-        tg = std::unique_ptr<std::thread>(new std::thread(gpuSPMV));
-    if (tc)
-        tc->join();
-    if (tg)
-        tg->join();
-
-    if (lhs.gpuPromotion && lhs.gpuPromotion->total < SparseMatrix::SPMV_RETRY)
-    {
-        ++lhs.gpuPromotion->total;
-        ++(gpuClock < cpuClock ? lhs.gpuPromotion->gpu : lhs.gpuPromotion->cpu);
-        if (lhs.gpuPromotion->total >= SparseMatrix::SPMV_RETRY)
-        {
-            std::cout << (lhs.gpuPromotion->gpu > lhs.gpuPromotion->cpu ? "GPU wins in SPMV" : "CPU wins in SPMV") << std::endl;
-        }
+        std::cout << "CUSPARSE INIT FAILED" << std::endl;
     }
-    return cpuClock > 0.0 ? ans : resGpu;
+
+    status = cusparseCreateMatDescr(&descr);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    if (status != CUSPARSE_STATUS_SUCCESS)
+    {
+        std::cout << "CUSPARSE MD FAILED" << std::endl;
+    }
+
+    cusparseSetMatType(descr, CUSPARSE_MATRIX_TYPE_GENERAL);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cusparseSetMatIndexBase(descr, CUSPARSE_INDEX_BASE_ZERO);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+
+    cudaMemcpy(dev_rhs, &rhs[0], rhs.size() * sizeof(double), cudaMemcpyHostToDevice);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cudaMemset(dev_res, 0, ansSize * sizeof(double));
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+
+    double alpha = 1.0, beta = 0.0;
+    status = cusparseDcsrmv(handle, trans ? CUSPARSE_OPERATION_TRANSPOSE : CUSPARSE_OPERATION_NON_TRANSPOSE, h, w, nnz()
+#       if (__CUDA_API_VERSION == 5050)
+        ,  alpha, descr, gpuPromotion->basicPromotions[dev].dev_values.get(), gpuPromotion->basicPromotions[dev].dev_rowPointers.get(), gpuPromotion->basicPromotions[dev].dev_columns.get(), dev_rhs,  beta, dev_res);
+#else
+        , &alpha, descr, gpuPromotion->basicPromotions[dev].dev_values.get(), gpuPromotion->basicPromotions[dev].dev_rowPointers.get(), gpuPromotion->basicPromotions[dev].dev_columns.get(), dev_rhs, &beta, dev_res);
 #endif
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+
+    if (status != CUSPARSE_STATUS_SUCCESS)
+    {
+        std::cout << "CUSPARSE SPMV FAILED" << std::endl;
+        fprintf(stderr, "SPMV launch failed: %s\n", cudaGetErrorString(cudaGetLastError()));
+    }
+    cudaMemcpy(&ans[0], dev_res, sizeof(double) * ansSize, cudaMemcpyDeviceToHost);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+
+    cudaFree(dev_rhs);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cudaFree(dev_res);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    return ans;
+}
+#endif
+
+#ifdef WITH_MKL
+Vector SparseMatrix::spmv_mkl(const Vector &rhs, bool trans) const
+{
+    // Cause mkl does not support non-square matrix in spmv through basic interface
+    if (w != h)
+        return spmv_homebrew(rhs, trans);
+    int ansSize = trans ? w : h;
+    Vector ans(ansSize);
+    CORE_ASSERT_TRUE_S(rhs.size() == w + h - ansSize);
+
+    mkl_cspblas_dcsrgemv(trans ? "T" : "N", &w, &values[0], &rowPointers[0], &columns[0], &rhs[0], &ans[0]);
+    return ans;
+}
+#endif
+
+Vector SparseMatrix::trsv_homebrew(const Vector &rhs, const char* trans, bool up, int N) const
+{
+    CORE_ASSERT_TRUE_S(w == h && w == rhs.size());
+
+    Vector ans = rhs;
+    for (int i = 0; i < N; ++i)
+    {
+        auto res = dtrsv(ans, up, trans[i] == 'N');
+        ans = res;
+    }
+    return ans;
+}
+
+#ifdef WITH_MKL
+Vector SparseMatrix::trsv_mkl(const Vector &rhs, const char* trans, bool up, int N) const
+{
+    CORE_ASSERT_TRUE_S(w == h && w == rhs.size());
+
+    Vector ans[2] = {rhs, Vector(rhs.size())};
+    for (int i = 0; i < N; ++i)
+    {
+        int id = i % 2;
+        mkl_cspblas_dcsrtrsv(up ? "U" : "L", trans[i] == 'N' ? "N" : "T", "N", &h, &values[0], &rowPointers[0], &columns[0], &(ans[id][0]), &(ans[1 - id][0]));
+    }
+    return ans[N % 2];
+}
+#endif
+
+#ifdef WITH_CUSPARSE
+Vector SparseMatrix::trsv_cusparse(const Vector &rhs, const char* trans, bool up, int N, int gpuId) const
+{
+    CORE_ASSERT_TRUE_S(w == h && w == rhs.size());
+    cudaSetDevice(gpuId);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    promoteToGpu(gpuId);
+    gpuPromotion->triangularAnalysis(up, gpuId);
+
+    CORE_ASSERT_TRUE_S(gpuPromotion->basicPromotions.count(gpuId));
+    auto &basic = gpuPromotion->basicPromotions[gpuId];
+    CORE_ASSERT_TRUE_S(gpuPromotion->triangularPromotions.count(gpuId));
+    auto &trian = gpuPromotion->triangularPromotions[gpuId];
+
+    double *ans_gpu[2];
+    cudaMalloc(&(void*&)ans_gpu[0], w * sizeof(double));
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cudaMalloc(&(void*&)ans_gpu[1], w * sizeof(double));
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cudaMemcpy(ans_gpu[0], &rhs[0], w * sizeof(double), cudaMemcpyHostToDevice);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cudaMemset(ans_gpu[1], 0, w * sizeof(double));
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+
+    double alpha = 1.0;
+    for (int i = 0; i < N; ++i)
+    {
+        int id = i % 2;
+        if (trans[i] == 'N')
+            cusparseDcsrsv2_solve(trian.handle, CUSPARSE_OPERATION_NON_TRANSPOSE, w, nnz(), &alpha, trian.descr, basic.dev_values.get(), basic.dev_rowPointers.get(), basic.dev_columns.get(), trian.infoNoTrans, ans_gpu[id], ans_gpu[1 - id], trian.policy, trian.bufferNoTrans.get());
+        else
+            cusparseDcsrsv2_solve(trian.handle, CUSPARSE_OPERATION_TRANSPOSE, w, nnz(), &alpha, trian.descr, basic.dev_values.get(), basic.dev_rowPointers.get(), basic.dev_columns.get(), trian.infoTrans, ans_gpu[id], ans_gpu[1 - id], trian.policy, trian.bufferTrans.get());
+    }
+    Vector ans(w);
+    cudaMemcpy(&ans[0], ans_gpu[N % 2], w * sizeof(double), cudaMemcpyDeviceToHost);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cudaFree(ans_gpu[0]);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    cudaFree(ans_gpu[1]);
+    CUDAPromoter::TriangularPromotion::checkError(__FILE__,  __LINE__);
+    return ans;
+}
+#endif
+
+Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
+{
+    if (!reg)
+        CORE_ASSERT_TRUE_S(false);
+    return SPMVWisdom::WiseRun(lhs, rhs, false);
 }
 
 Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
 {
-
+#if 0
     CORE_ASSERT_TRUE_S(lhs.size() == rhs.h);
     Vector ans(rhs.w);
     for (int i = 0; i < rhs.w; ++i)
@@ -1021,10 +1217,17 @@ Vector corecvs::operator *(const Vector &lhs, const SparseMatrix &rhs)
     }
 
     return ans;
+#else
+    return SPMVWisdom::WiseRun(rhs, lhs, true);
+#endif
 }
 
 SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rhst)
 {
+#if 1
+    SPMMC::inner_type ref(lhs, rhst, false, false);
+    return SPMMWisdom::WiseRun(ref);
+#else
     CORE_ASSERT_TRUE_S(lhs.w == rhst.h);
 #ifndef WITH_MKL
     auto& rhs = rhst;
@@ -1099,11 +1302,17 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rh
 
     return ress;
 #endif
+#endif
 }
 
 SparseMatrix SparseMatrix::ata() const
 {
 #if 1
+    SPMMC::inner_type ref(*this, *this, true, false);
+	CORE_ASSERT_TRUE_S(this - &std::get<0>(ref) == 0);
+	CORE_ASSERT_TRUE_S(this - &std::get<1>(ref) == 0);
+    return SPMMWisdom::WiseRun(ref);
+#else
 #ifndef WITH_MKL
     return t() * (*this);
 #else
@@ -1117,65 +1326,11 @@ SparseMatrix SparseMatrix::ata() const
 
     return ress;
 #endif
-#else
-#if 0
-//    const auto& rhs = *this;
-    std::vector<double> values;
-    std::vector<int> columns, rowPointers(h + 1);
-    for (int i = 0; i < h; ++i)
-    {
-        for (int j = 0; j < h; ++j)
-        {
-            double total = 0.0;
-            int cnt = 0;
-            int lhs_l = rowPointers[i], lhs_r = rowPointers[i + 1];
-            int rhs_l = rowPointers[j], rhs_r = rowPointers[j + 1];
-            while (lhs_l < lhs_r && rhs_l < rhs_r)
-            {
-                int cl = columns[lhs_l], cr = columns[rhs_l];
-                if (cl < cr)
-                {
-                    ++lhs_l;
-                    continue;
-                }
-                if (cr < cl)
-                {
-                    ++rhs_l;
-                    continue;
-                }
-                total += values[lhs_l] * values[rhs_l];
-                lhs_l++;
-                rhs_l++;
-                cnt++;
-            }
-            if (cnt > 0 && total != 0.0)
-            {
-                values.push_back(total);
-                columns.push_back(j);
-            }
-        }
-        rowPointers[i + 1] = values.size();
-    }
-    return SparseMatrix(h, h, values, columns, rowPointers);
-#else
-    return t() * (*this);
-#endif
 #endif
 }
 
 SparseMatrix SparseMatrix::t() const
 {
-#if 0
-    std::map<std::pair<int, int>, double> map;
-    for (int i = 0; i < h; ++i)
-    {
-        for (int j = rowPointers[i]; j < rowPointers[i + 1]; ++j)
-        {
-            map[std::make_pair(columns[j], i)] = values[j];
-        }
-    }
-    return SparseMatrix(w, h, map);
-#else
     std::vector<int> tRowPointers(w + 1);
     std::vector<double> tValues(values.size());
     std::vector<int> tColumns(values.size());
@@ -1202,7 +1357,6 @@ SparseMatrix SparseMatrix::t() const
     *tRowPointers.rbegin() = (int)tValues.size();
 
     return SparseMatrix(w, h, tValues, tColumns, tRowPointers);
-#endif
 }
 
 #ifdef WITH_MKL
@@ -1883,7 +2037,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
             }
         }
     });
-//#endif
+
     auto stopDinvBt = std::chrono::high_resolution_clock::now();
     // Computing lhs/rhs
     auto startLhsRhs = std::chrono::high_resolution_clock::now();
@@ -1978,63 +2132,53 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
 
 bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef, bool explicitInv)
 {
-#if 0
-    corecvs::Vector resOld(M.h), resNew(M.h), resInv(M.h);
-    auto startOld = std::chrono::high_resolution_clock::now();
-    auto foo = LinSolveSchurComplementOld(M, Bv, diagBlocks, resOld, symmetric, posDef);
-    auto  stopOld = std::chrono::high_resolution_clock::now();
-    auto startNew = std::chrono::high_resolution_clock::now();
-    auto bar = LinSolveSchurComplementNew(M, Bv, diagBlocks, resNew, symmetric, posDef);
-    auto  stopNew = std::chrono::high_resolution_clock::now();
-    auto startInv = std::chrono::high_resolution_clock::now();
-    auto baz = LinSolveSchurComplementInv(M, Bv, diagBlocks, resInv, symmetric, posDef);
-    auto  stopInv = std::chrono::high_resolution_clock::now();
-    double time[] = { (stopOld - startOld).count() / 1e9, (stopNew - startNew).count() / 1e9, (stopInv - startInv).count() / 1e9};
-    double  err[] = {!((M*resOld) - Bv), !((M * resNew) - Bv), !((M * resInv) - Bv)};
-    std::string names[] = {"OLD", "NEW", "INV"};
-    std::cout << "\t\t\t";
-    for (int i = 0; i < 3; ++i)
-        std::cout << names[i] << "\t\t";
-    std::cout << std::endl <<  "TIMINGS: \t";
-    int mint = 0;
-    for (int i = 0; i < 3; ++i)
-    {
-        std::cout << time[i] << "\t";
-        if (time[mint] > time[i])
-            mint = i;
-    }
-    std::cout << "x" << time[0] / time[mint] << " (" << names[mint] << ")" << std::endl;
-    int mine = 0;
-    std::cout << "ERRORS: \t";
-    for (int i = 0; i < 3; ++i)
-    {
-        std::cout <<  err[i] << "\t";
-        if ( err[mine]    >  err[i] || (err[mine] == err[i] && time[i] < time[mine]))
-            mine = i;
-    }
-    std::cout << "x" <<  err[0] /  err[mine] << " (" << names[mine] << ")" << std::endl;
-    static int bestT[3] = {}, bestE[3] = {};
-    bestT[mint]++;
-    bestE[mine]++;
-    std::cout << "BESTT:\t";
-    for (int i = 0; i < 3; ++i)
-        std::cout << bestT[i] << "\t";
-    std::cout << std::endl;
-    std::cout << "BESTE:\t";
-    for (int i = 0; i < 3; ++i)
-        std::cout << bestE[i] << "\t";
-    std::cout << std::endl;
-    res = resOld;
-    return foo;
-#else
     if (explicitInv)
         return LinSolveSchurComplementInv(M, Bv, diagBlocks, res, symmetric, posDef);
     else
         return LinSolveSchurComplementNew(M, Bv, diagBlocks, res, symmetric, posDef);
-#endif
 }
 
 bool        corecvs::SparseMatrix::linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
 {
     return corecvs::SparseMatrix::LinSolveSchurComplement(*this, B, diagBlocks, res, symmetric, posDef);
 }
+
+std::ostream& corecvs::operator<<(std::ostream& os, const SparseImplementations &si)
+{
+    switch(si)
+    {
+    case HOMEBREW:
+        os << "\x1b[44mhomebrew\x1b[0m";
+        break;
+    case MKL:
+        os << "\x1b[46mintel-mkl\x1b[0m";
+        break;
+    case CUSPARSE:
+        os << "\x1b[42mnvidia-cusparse\x1b[0m";
+        break;
+    }
+    return os;
+}
+
+Characterizator<const SparseMatrix&>::characteristic_type Characterizator<const SparseMatrix&>::Characterize(const SparseMatrix &sm)
+{
+        return characteristic_type({(int)(std::log(sm.h) / std::log(2)), (int)(std::log(sm.w) / std::log(2)), (int)(std::log(sm.nnz()) / std::log(2))});
+}
+
+SPMMC::characteristic_type SPMMC::Characterize(const SPMMC::inner_type &v)
+{
+    auto &lhs = std::get<0>(v);
+    auto &rhs = std::get<1>(v);
+    auto transA = std::get<2>(v);
+    auto transB = std::get<3>(v);
+    return characteristic_type({
+        (int)(std::log(lhs.h) / std::log(2)),
+        (int)(std::log(lhs.w) / std::log(2)),
+        (int)(std::log(lhs.nnz()) / std::log(2)),
+        (int)(std::log(rhs.h) / std::log(2)),
+        (int)(std::log(rhs.w) / std::log(2)),
+        (int)(std::log(rhs.nnz()) / std::log(2)),
+        transA ? 1 : 0,
+        transB ? 1 : 0});
+}
+

@@ -80,7 +80,7 @@ RadialCorrection LMLinesDistortionSolver::solve()
        initialCenter.x(),
        initialCenter.y(),
        0.0 ,0.0,
-       vector<double>(parameters.polinomDegree()),
+       vector<double>(parameters.polynomDegree()),
        1.0,
        1.0,
        initialCenter.l2Metric(),
@@ -92,7 +92,7 @@ RadialCorrection LMLinesDistortionSolver::solve()
         correction,
         parameters.estimateCenter(),
         parameters.estimateTangent(),
-        parameters.polinomDegree(),
+        parameters.polynomDegree(),
         parameters.evenPowersOnly()
     );
 
@@ -129,7 +129,7 @@ void LMLinesDistortionSolver::computeCosts(const RadialCorrection &correction, b
         correction,
         parameters.estimateCenter(),
         parameters.estimateTangent(),
-        parameters.polinomDegree(),
+        parameters.polynomDegree(),
         parameters.evenPowersOnly()
     );
 

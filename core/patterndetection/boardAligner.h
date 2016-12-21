@@ -36,7 +36,7 @@ struct BoardMarkerDescription
     int boardId;
 
     BoardMarkerDescription() {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -59,7 +59,7 @@ struct BoardAlignerParams
     vector<BoardMarkerDescription> boardMarkers;
 
     BoardAlignerParams() {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -67,8 +67,8 @@ struct BoardAlignerParams
     void accept(VisitorType &visitor)
     {
         // default ctor: old board FIT_WIDTH_18x11_noMarkers
-        int m = asInteger(type);
-        visitor.visit(m, asInteger(AlignmentType::FIT_WIDTH), "alignmentType");
+        int m = corecvs::asInteger(type);
+        visitor.visit(m, corecvs::asInteger(AlignmentType::FIT_WIDTH), "alignmentType");
         type = static_cast<AlignmentType>(m);
 
         visitor.visit(idealWidth,  18, "idealWidth");

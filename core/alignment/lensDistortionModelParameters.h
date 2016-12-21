@@ -13,6 +13,7 @@
 #include "defaultSetter.h"
 #include "printerVisitor.h"
 #include "levenmarq.h"
+#include "matrix22.h"
 
 /*
  *  Embed includes.
@@ -34,8 +35,8 @@ namespace corecvs {
  */
 
 /**
- * \brief Lens Distortion Model Parameters 
- * 
+ * \brief Lens Distortion Model Parameters
+ *
  * \ingroup distcorrect
  * \brief This structure holds the parameters to correct the image.
  *
@@ -63,7 +64,7 @@ namespace corecvs {
  *   For Marquardt-Levenberg algorithm we will need derivatives of the function
  *
  *   for more details please read the code of getCorrectionForPoint() or read the Heikkila paper
-     
+
  **/
 class LensDistortionModelParameters : public LensDistortionModelParametersBase
 {
@@ -134,8 +135,29 @@ public:
         }
         return res + Vector2dd(cx, cy);
     }
+
+    // These functions always return jacobian/derivatives for "native" application
+    Matrix22 jacobian(double x, double y) const;
+    // du_i/dc_j
+    Matrix22  principalJacobian(double x, double y) const;
+    // du_i/dp_j
+    Matrix22 tangentialJacobian(double x, double y) const;
+    // du_i/da_j
+    Matrix   polynomialJacobian(double x, double y) const;
+
+    void solveRadial(const std::vector<Vector2dd> &src, const std::vector<Vector2dd> &dst);
+
     struct InverseFunctor : FunctionArgs
     {
+        Matrix getJacobian(const double *in, double = 2) override
+        {
+            auto m = params->jacobian(in[0], in[1]);
+            Matrix mm(2, 2);
+            for (int i = 0; i < 2; ++i)
+                for (int j = 0; j < 2; ++j)
+                    mm.a(i, j) = m.a(i, j);
+            return mm;
+        }
         void operator() (const double* in, double *out)
         {
             Vector2dd x(in[0], in[1]);
@@ -242,6 +264,7 @@ template<class VisitorType>
 
 private:
     void getRectMap(const Vector2dd &tl, const Vector2dd &dr, std::vector<Vector2dd> boundaries[4]) const;
+
 };
 
 } // namespace

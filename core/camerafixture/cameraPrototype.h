@@ -9,7 +9,6 @@ namespace corecvs {
 
 class FixtureScene;
 class CameraFixture;
-class FixtureScenePart;
 
 class CameraPrototype : public FixtureScenePart, public CameraModel
 {
@@ -48,7 +47,7 @@ public:
 
 };
 
-}
+}  // namespace corecvs
 
 
 #endif // CAMERA_PROTOTYPE_H

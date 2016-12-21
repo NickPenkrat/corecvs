@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "fixtureCamera.h"
+#include "imageKeyPoints.h"
 
 
 /* Presentation related */
@@ -37,7 +38,8 @@ class SceneFeaturePoint;
 class SceneObservation
 {
 public:
-    SceneObservation(FixtureCamera* cam = nullptr
+    SceneObservation(
+              FixtureCamera     *cam = nullptr
             , SceneFeaturePoint *sfp = nullptr
             , Vector2dd          obs = Vector2dd(0)
             , CameraFixture     *fix = nullptr)
@@ -47,7 +49,7 @@ public:
         , observation(obs)
         , accuracy(0.0)
         , observDir(0.0)
-        , isKnown(false)
+        , onDistorted(false)
     {}
 
     FixtureCamera      *camera;
@@ -55,14 +57,20 @@ public:
     SceneFeaturePoint  *featurePoint;
     Vector2dd           observation;
     Vector2dd           accuracy;
-    Vector3dd           observDir;      /* Ray to point */
-    bool                isKnown;
-    MetaContainer       meta;
-    
-    double &x() { return observation.x(); }
-    double &y() { return observation.y(); }
+    Vector3dd           observDir;                  /* Ray to point */
+    bool                onDistorted;                /* true when observation belongs to source-distorted image, def: we assume working with points on undist images */
+
+  //MetaContainer       meta;                       /* not used */
+
+    KeyPointArea    keyPointArea;
+
+    double          &x() { return observation.x(); }
+    double          &y() { return observation.y(); }
 
     std::string     getPointName();
+
+    int             ensureDistorted(bool distorted = true);
+    Vector2dd       getDistorted(bool distorted = true);
 
 private:
     FixtureCamera  *getCameraById(FixtureCamera::IdType id);
@@ -74,7 +82,9 @@ public:
         visitor.visit(observDir   , Vector3dd(0.0) , "observDir");
         visitor.visit(observation , Vector2dd(0.0) , "observation");
         visitor.visit(accuracy    , Vector2dd(0.0) , "accuracy");
-        visitor.visit(isKnown     , false          , "isKnown");
+        visitor.visit(onDistorted , false          , "onDistorted");
+
+        keyPointArea.accept<VisitorType>(visitor);
 
         FixtureCamera::IdType id = 0;
         if (camera != NULL) {
@@ -142,12 +152,14 @@ public:
     /** This is a primary position of the FeaturePoint. The one that is know by direct measurement */
     Vector3dd                   position;
     bool                        hasKnownPosition;
+
     /*
      * Here we'll store some estimation for inverse of covariance matrix
      * So for delta v we'll get v'Av = Mahlanobis distance (which has
      * chi-squared distribution with 3 dof)
      */
     Matrix33                    accuracy;
+
     // Gets p-value using covariance estimation using one-sided test
     double                      queryPValue(const corecvs::Vector3dd &q) const;
 
@@ -156,25 +168,27 @@ public:
     bool                        hasKnownReprojectedPosition;
 
     enum PointType {
-        POINT_UNKNOWN       = 0x00,
-        POINT_USER_DEFINED  = 0x01,  /**< Point that comes from a file */
-        POINT_RECONSTRUCTED = 0x02,
-        POINT_TEMPORARY     = 0x04,
-        POINT_TRIANGULATE   = 0x05,
-
-        POINT_ALL           = 0xFF
+        POINT_UNKNOWN               = 0x00,
+        POINT_USER_DEFINED          = 0x01,  /**< Point that comes from a file */
+        POINT_RECONSTRUCTED         = 0x02,
+        POINT_TEMPORARY             = 0x04,
+        POINT_TRIANGULATE           = 0x08,
+        POINT_RAW_DETECTED          = 0x10,
+        POINT_RAW_DETECTED_MATCHED  = 0x20,
+        POINT_ALL                   = 0xFF
     };
-
-    PointType type;
+    PointType                   type;
 
     static inline const char *getTypeName(const PointType &value)
     {
         switch (value)
         {
+            case POINT_UNKNOWN       : return "POINT_UNKNOWN";
             case POINT_USER_DEFINED  : return "USER_DEFINED" ;
             case POINT_RECONSTRUCTED : return "RECONSTRUCTED";
             case POINT_TEMPORARY     : return "TEMPORARY"    ;
             case POINT_TRIANGULATE   : return "TRIANGULATE"  ;
+            case POINT_RAW_DETECTED  : return "RAW_DETECTED" ;
             default                  : return "Not in range" ;
         }
     }
@@ -186,22 +200,20 @@ public:
         this->type = type;
     }
 
-    Vector3dd triangulate(bool use__ = false, uint32_t mask = ~uint32_t(0));
+    Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr);
 
 
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
-    //typedef std::map<FixtureCamera *, SceneObservation> ObservContainer;
-
 
     ObservContainer observations;
 
     std::unordered_map<WildcardablePointerPair<CameraFixture, FixtureCamera>, SceneObservation> observations__;
 
+    /* This is a presentation related block we should move it to derived class */
+    RGBColor        color;
 
-/* This is a presentation related block we should move it to derived class */
-    RGBColor color;
-/**/
+    /**/
 
     SceneFeaturePoint(FixtureScene * owner = NULL) :
         FixtureScenePart(owner),
@@ -229,11 +241,13 @@ public:
         position = matrix * position + translate;
     }
 
-    bool hasObservation(FixtureCamera *cam);
+    bool hasObservation(FixtureCamera *cam) { return getObservation(cam) != nullptr; }
+
     SceneObservation *getObservation(FixtureCamera *cam);
 
     void removeObservation(SceneObservation *);
 
+    int  ensureDistortedObservations(bool distorted = true);    // convert to the needed type of all observations
 
     /* Let it be so far like this */
     template<class VisitorType>
@@ -252,7 +266,6 @@ public:
 
         if (!visitor.isLoader())
         {
-
             /* We don't load observations here*/
 
             /* We resort it to make compare easier. We should find a way to make it more stable */
@@ -261,18 +274,17 @@ public:
                 toSort.push_back(it.first);
             }
 
-            std::sort(toSort.begin(), toSort.end(),
-                      [](const FixtureCamera *first, const FixtureCamera *second) { return first->nameId > second->nameId; }
-            );
+            std::sort(toSort.begin(), toSort.end(), [](const FixtureCamera *first, const FixtureCamera *second) {
+                return first->nameId < second->nameId;
+            });
 
             int i = 0;
             for (auto &it : toSort)
             {
                 SceneObservation &observ = observations[it];
                 char buffer[100];
-                snprintf2buf(buffer, "obsrv[%d]", i);
+                snprintf2buf(buffer, "obsrv[%d]", i++);
                 visitor.visit(observ, observ, buffer);
-                i++;
             }
         }
         else
@@ -294,6 +306,7 @@ public:
                 }
 
                 observations[observ.camera] = observ;
+                observations__[WPP(observ.cameraFixture, observ.camera)] = observ;
             }
         }
     }

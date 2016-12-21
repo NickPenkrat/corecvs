@@ -129,6 +129,9 @@ public:
         {}
 
         virtual void operator()(const double in[], double out[]);
+
+        virtual Matrix getJacobian(const double in[], double delta) override;
+        virtual Matrix getLSQHessian(const double *in, double delta = 1e-5) override;
     };
 
 };

@@ -4,6 +4,9 @@
 # output parameter: $$COREBINDIR - path to the output|used core library
 #
 
+!contains(CORECVS_INCLUDED, "core.pri") {
+CORECVS_INCLUDED +=  core.pri
+
 COREDIR=$$PWD
 
 #
@@ -41,14 +44,6 @@ CORE_SUBMODULES =       \
     camerafixture       \
     iterative
 
-with_blas {
-    CORE_SUBMODULES += reconstruction
-}
-else {
-    !build_pass: message (There is no activated BLAS! The module core/reconstruction is disabled)
-}
-
-
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
 }
@@ -82,14 +77,16 @@ CORE_INCLUDEPATH += \
 INCLUDEPATH += $$CORE_INCLUDEPATH
 DEPENDPATH  += $$CORE_INCLUDEPATH
 
-exists(../../../config.pri) {
+exists($$COREDIR/../../../config.pri) {
     COREBINDIR = $$COREDIR/../../../bin
 } else {
     message(Using local core. Global config should be at $$COREDIR/../../../config.pri)
     COREBINDIR = $$COREDIR/../bin
 }
 
-contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
+message(Corebindir is $$COREBINDIR)
+
+contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted): !contains(TARGET, topcon_core) {
     win32-msvc* {
         DEPENDPATH += $$COREDIR/xml                 # helps to able including sources by generated.pri from their dirs
     } else {
@@ -103,7 +100,7 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     CORE_TARGET_NAME = cvs_core
     CORE_TARGET_NAME = $$join(CORE_TARGET_NAME,,,$$BUILD_CFG_SFX)
 
-    LIBS = -L$$COREBINDIR -l$$CORE_TARGET_NAME $$LIBS
+    LIBS = -L$$COREBINDIR -l$$CORE_TARGET_NAME $$LIBS  
 
     win32-msvc* {
         CORE_TARGET_NAME = $$join(CORE_TARGET_NAME,,,.lib)
@@ -111,6 +108,8 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
         CORE_TARGET_NAME = $$join(CORE_TARGET_NAME,,lib,.a)
     }
     PRE_TARGETDEPS += $$COREBINDIR/$$CORE_TARGET_NAME
+
+    message(Adding core lib to the linkinglist $$LIBS and targetdeps $$PRE_TARGETDEPS)
 }
 
 # The filesystem module needs this
@@ -120,4 +119,7 @@ with_unorthodox {
     }
     DEFINES += CORE_UNSAFE_DEPS
 }
+
+} # !contains(CORECVS_INCLUDED, "core.pri")
+
 

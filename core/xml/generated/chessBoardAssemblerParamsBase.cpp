@@ -26,6 +26,9 @@ int BaseReflection<ChessBoardAssemblerParamsBase>::dummy = ChessBoardAssemblerPa
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int ChessBoardAssemblerParamsBase::staticInit()
 {
 
@@ -118,7 +121,19 @@ int ChessBoardAssemblerParamsBase::staticInit()
         );
     fields().push_back(field5);
     /*  */ 
-    IntField* field6 = new IntField
+    BoolField* field6 = new BoolField
+        (
+          ChessBoardAssemblerParamsBase::KDTREE_ID,
+          offsetof(ChessBoardAssemblerParamsBase, mKdtree),
+          false,
+          "kdtree",
+          "kdtree",
+          "Use k-d tree for greedy expansion"
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field6);
+    /*  */ 
+    IntField* field7 = new IntField
         (
           ChessBoardAssemblerParamsBase::HYPOTHESISDIMFIRST_ID,
           offsetof(ChessBoardAssemblerParamsBase, mHypothesisDimFirst),
@@ -127,9 +142,9 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "hypothesisDimFirst",
           "hypothesisDimFirst"
         );
-    fields().push_back(field6);
+    fields().push_back(field7);
     /*  */ 
-    IntField* field7 = new IntField
+    IntField* field8 = new IntField
         (
           ChessBoardAssemblerParamsBase::HYPOTHESISDIMSECOND_ID,
           offsetof(ChessBoardAssemblerParamsBase, mHypothesisDimSecond),
@@ -138,7 +153,7 @@ int ChessBoardAssemblerParamsBase::staticInit()
           "hypothesisDimSecond",
           "hypothesisDimSecond"
         );
-    fields().push_back(field7);
+    fields().push_back(field8);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Chess Board Assembler Params Base")]= &reflection;

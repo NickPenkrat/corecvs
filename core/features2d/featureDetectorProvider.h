@@ -6,11 +6,11 @@
 class FeatureDetector : public virtual AlgoBase
 {
 public:
-    void detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints);
+    void detect(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints);
     virtual ~FeatureDetector() {}
 
 protected:
-    virtual void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints) = 0;
+    virtual void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints) = 0;
 };
 
 class FeatureDetectorProviderImpl
@@ -18,6 +18,8 @@ class FeatureDetectorProviderImpl
 public:
     virtual FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "") = 0;
     virtual bool provides(const DetectorType &type) = 0;
+
+    virtual std::string name() {return "unknown"; }
 
     virtual ~FeatureDetectorProviderImpl() {}
 };
@@ -30,6 +32,9 @@ public:
 
     void add(FeatureDetectorProviderImpl *provider);
     FeatureDetector* getDetector(const DetectorType &type, const std::string &params = "");
+
+    virtual std::vector<std::string> getCaps();
+    void print();
 
 private:
     FeatureDetectorProvider();

@@ -29,13 +29,13 @@ with_opencv {
                     $$OPENCV_SRC_MODULES/ml/include             # legacy.hpp includes ml.hpp
             }
 
-            OPENCV_249_LIBS_R = -lopencv_calib3d249    -lopencv_video249   -lopencv_core249     -lopencv_highgui249   \
-                                -lopencv_features2d249 -lopencv_flann249   -lopencv_imgproc249  -lopencv_objdetect249 \
-                                -lopencv_nonfree249    -lopencv_legacy249 #-lopencv_ml249
+            OPENCV_249_LIBS_R = -lopencv_calib3d249      -lopencv_video249     -lopencv_core249      -lopencv_highgui249   \
+                                -lopencv_features2d249   -lopencv_flann249     -lopencv_imgproc249   -lopencv_objdetect249 \
+                                -lopencv_nonfree249      -lopencv_legacy249   #-lopencv_ml249
 
-            OPENCV_249_LIBS_D = -lopencv_calib3d249d    -lopencv_video249d   -lopencv_core249d    -lopencv_highgui249d   \
-                                -lopencv_features2d249d -lopencv_flann249d   -lopencv_imgproc249d -lopencv_objdetect249d \
-                                -lopencv_nonfree249d    -lopencv_legacy249d #-lopencv_ml249d
+            OPENCV_249_LIBS_D = -lopencv_calib3d249d     -lopencv_video249d    -lopencv_core249d     -lopencv_highgui249d   \
+                                -lopencv_features2d249d  -lopencv_flann249d    -lopencv_imgproc249d  -lopencv_objdetect249d \
+                                -lopencv_nonfree249d     -lopencv_legacy249d  #-lopencv_ml249d
             CONFIG(debug, debug|release) {
                 OPENCV_249_LIBS = $$OPENCV_249_LIBS_D
                 OPENCV_249_LIBS_ADD_OWN_BUILT = -L$$OPENCV_PATH/build/lib/Debug/   $$OPENCV_249_LIBS
@@ -45,6 +45,22 @@ with_opencv {
                 OPENCV_249_LIBS_ADD_OWN_BUILT = -L$$OPENCV_PATH/build/lib/Release/ $$OPENCV_249_LIBS
             }
 
+            OPENCV_2411_LIBS_R = -lopencv_calib3d2411     -lopencv_video2411    -lopencv_core2411     -lopencv_highgui2411   \
+                                 -lopencv_features2d2411  -lopencv_flann2411    -lopencv_imgproc2411  -lopencv_objdetect2411 \
+                                 -lopencv_nonfree2411     -lopencv_legacy2411  #-lopencv_ml2411
+
+            OPENCV_2411_LIBS_D = -lopencv_calib3d2411d    -lopencv_video2411d   -lopencv_core2411d    -lopencv_highgui2411d   \
+                                 -lopencv_features2d2411d -lopencv_flann2411d   -lopencv_imgproc2411d -lopencv_objdetect2411d \
+                                 -lopencv_nonfree2411d    -lopencv_legacy2411d #-lopencv_ml2411d
+            CONFIG(debug, debug|release) {
+                OPENCV_2411_LIBS = $$OPENCV_2411_LIBS_D
+                OPENCV_2411_LIBS_ADD_OWN_BUILT = -L$$OPENCV_PATH/build/lib/Debug/   $$OPENCV_2411_LIBS
+            }
+            CONFIG(release, debug|release) {
+                OPENCV_2411_LIBS = $$OPENCV_2411_LIBS_R
+                OPENCV_2411_LIBS_ADD_OWN_BUILT = -L$$OPENCV_PATH/build/lib/Release/ $$OPENCV_2411_LIBS
+            }
+            
             exists($$OPENCV_PATH/build/bin/Release/opencv_core249.dll): win32-msvc* {               # git's OpenCV tag=2.4.9 built by any own MSVC with GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/bin/Release|Debug>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
@@ -81,18 +97,12 @@ with_opencv {
             } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core2411.dll): win32-msvc2013 {   # OpenCV tag=2.4.11 built by vc12 without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
-                LIBS += -L$$OPENCV_PATH/build/x64/vc12/lib/ \
-                        -lopencv_calib3d2411    -lopencv_video2411   -lopencv_core2411    -lopencv_highgui2411   \
-                        -lopencv_features2d2411 -lopencv_flann2411   -lopencv_imgproc2411 -lopencv_objdetect2411 \
-                        -lopencv_nonfree2411 -lopencv_legacy2411 #-llibopencv_ml2411
+                LIBS += -L$$OPENCV_PATH/build/x64/vc12/lib/ $$OPENCV_2411_LIBS
                 DEFINES += WITH_OPENCV
             } else:exists($$OPENCV_PATH/build/x64/vc14/bin/opencv_core2411.dll): win32-msvc2015 {   # OpenCV tag=2.4.11 built by vc14 without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc14/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
-                LIBS += -L$$OPENCV_PATH/build/x64/vc14/lib/ \
-                        -lopencv_calib3d2411    -lopencv_video2411   -lopencv_core2411    -lopencv_highgui2411   \
-                        -lopencv_features2d2411 -lopencv_flann2411   -lopencv_imgproc2411 -lopencv_objdetect2411 \
-                        -lopencv_nonfree2411 -lopencv_legacy2411 #-llibopencv_ml2411
+                LIBS += -L$$OPENCV_PATH/build/x64/vc14/lib/ $$OPENCV_2411_LIBS
                 DEFINES += WITH_OPENCV
             } else {
                 message(Using <$$OPENCV_PATH>)

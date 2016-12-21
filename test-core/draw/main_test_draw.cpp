@@ -10,6 +10,8 @@
 
 #include <iostream>
 #include <random>
+#include <fstream>
+
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -22,6 +24,7 @@
 #include "calibrationCamera.h"
 
 #include "polygonPointIterator.h"
+#include "bufferFactory.h"
 
 using namespace corecvs;
 
@@ -779,4 +782,107 @@ TEST(Draw, testRobot)
     BMPLoader().save("robot2.bmp", buffer);
 
     delete_safe(buffer);
+}
+
+TEST(Draw, DISABLED_testPack)
+{
+    RGB24Buffer *buffer = BufferFactory::getInstance()->loadRGB24Bitmap("input.bmp");
+    if (buffer == NULL)
+        return;
+
+    SYNC_PRINT(("Loaded [%d %d]\n", buffer->h, buffer->w));
+
+    RGB24Buffer *block = new RGB24Buffer(48,48);
+    block->fillWith(*buffer);
+
+    AbstractPainter<RGB24Buffer> painter(block);
+    block->fillWith(RGBColor::White());
+
+    //painter.drawCircle(24, 24, 10, RGBColor::Blue());
+    //painter.drawCircle(24, 24,  4, RGBColor::Red());
+    //painter.drawHLine(0, 0, 47, RGBColor::Blue());
+    painter.drawFormat(0, 10, RGBColor::Yellow(), 1, "Test");
+
+    BMPLoader().save("test.bmp", block);
+
+    #define BLOCK_NUM  6
+
+    uint8_t lines[6][16 * BLOCK_NUM * 8][2];
+    for (int lineid = 0; lineid < 6; lineid++)
+    {
+        for (int pixel = 0; pixel < 16; pixel++) /* over pixels */
+        {
+            for (int blockn = 0; blockn < BLOCK_NUM; blockn++) /* over blocks */
+            {
+                uint32_t x  =  0;
+                if (pixel & 0x8) {
+                  x = (pixel & 0x07) + (blockn * 8);
+                } else {
+                  x = (blockn * 8) + 7 - (pixel & 0x07);
+                }
+
+                uint32_t y1 =  lineid + ((pixel & 0x08) ?  0 : 6);
+
+
+                uint32_t  px3 = block->element(y1     , x).toBGRInt();
+                uint32_t  px4 = block->element(y1 + 12, x).toBGRInt();
+                uint32_t  px1 = block->element(y1 + 24, x).toBGRInt();
+                uint32_t  px2 = block->element(y1 + 36, x).toBGRInt();
+
+                /*
+                uint32_t  px1 = 0xFFFFFF;
+                uint32_t  px2 = 0xFFFFFF;
+                uint32_t  px3 = 0xFFFFFF;
+                uint32_t  px4 = 0xFF00FF;
+                */
+
+
+               /* We have 4 colors now. */
+
+                for (int bitn = 0; bitn < 8; bitn++) /* over bits */
+                {
+                        uint8_t c =  ((px1 & 0x800000) >> 18) | ((px1 & 0x8000) >> 11) | ((px1 & 0x80) >> 4)   |  ((px2 & 0x800000) >> 21) | ((px2 & 0x8000) >> 14) | ((px2 & 0x80) >> 7) ;
+                        uint8_t b =  ((px3 & 0x800000) >> 18) | ((px3 & 0x8000) >> 11) | ((px3 & 0x80) >> 4)   |  ((px4 & 0x800000) >> 21) | ((px4 & 0x8000) >> 14) | ((px4 & 0x80) >> 7) ;
+                        px1 <<= 1;
+                        px2 <<= 1;
+                        px3 <<= 1;
+                        px4 <<= 1;
+
+                        lines[lineid][pixel * BLOCK_NUM * 8 + blockn * 8 + bitn][0] = c;
+                        lines[lineid][pixel * BLOCK_NUM * 8 + blockn * 8 + bitn][1] = b;
+                }
+            }
+        }
+
+    }
+
+
+    std::ofstream os;
+    os.open("out.c", std::ofstream::out);
+
+    os << "#include <avr/pgmspace.h>\n";
+    os << "\n";
+    os << "const unsigned char packed[] PROGMEM = {\n";
+
+    for (int lineid = 0; lineid < 6; lineid++)
+    {
+        for (int data = 0; data < 16 * BLOCK_NUM * 8; data++)
+        {
+            if ((data % 16) == 0) {
+                 os << "\n";
+            }
+
+            os << (( lineid == 0 && data == 0 )? "  " : ", ") <<  (uint)lines[lineid][data][0] << ", " << (uint)lines[lineid][data][1] ;
+
+        }
+        os << "/* */\n";
+    }
+
+    os << "};\n";
+
+    os.close();
+
+    delete_safe(buffer);
+    delete_safe(block);
+
 }

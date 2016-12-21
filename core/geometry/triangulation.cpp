@@ -9,9 +9,10 @@
  */
 
 #include <limits>
-#include "preciseTimer.h"
+//#include "preciseTimer.h"
 
 #include "triangulation.h"
+
 namespace Triangulation
 {
 
@@ -673,5 +674,3 @@ std::vector<Edge> vertexHullFromTriangulation(const std::vector<Edge> &edges, co
 }
 
 }
-
-

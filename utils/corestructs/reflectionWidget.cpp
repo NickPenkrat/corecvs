@@ -226,7 +226,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
     }
 
     QSpacerItem *spacer = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
-    layout->addItem(spacer, reflection->fields.size(), 0, 1, 2);
+    layout->addItem(spacer, (int)reflection->fields.size(), 0, 1, 2);
 
     if (reflection->isActionBlock()) {
         QPushButton *executeButton = new QPushButton(this);
@@ -243,7 +243,7 @@ bool ReflectionWidget::getParameters(void *param) const
 {
     DynamicObject obj(reflection, param);
 
-    for (size_t i = 0; i < reflection->fields.size(); i++)
+    for (int i = 0; i < (int)reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
         qDebug() << "Processing field:" <<  field->getSimpleName();
@@ -324,6 +324,7 @@ bool ReflectionWidget::getParameters(void *param) const
                 break;
         }
     }
+
     return true;
 }
 
@@ -406,6 +407,7 @@ bool ReflectionWidget::setParameters(void *param) const
                 break;
         }
     }
+
     return true;
 }
 

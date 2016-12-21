@@ -10,6 +10,9 @@
 
 #include <fstream>
 #include <iostream>
+#include <random>
+#include <vector>
+#include <chrono>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -22,10 +25,84 @@
 #include "convexPolyhedron.h"
 #include "mesh3d.h"
 
+#include "kdtree.h"
+
+using namespace corecvs;
 
 using corecvs::Polygon;
 using corecvs::Mesh3D;
 using corecvs::AxisAlignedBox3d;
+
+TEST(Geometry, KDTree)
+{
+    std::vector<corecvs::Vector3dd > vec;
+    std::vector<corecvs::Vector3dd*> vecP;
+
+    int N = 65536, M = 32;
+    std::uniform_real_distribution<double> runif(-1.0, 1.0);
+    std::mt19937 rng;
+    for (int i = 0; i < N; ++i)
+        vec.emplace_back(runif(rng), runif(rng), runif(rng));
+
+    for (auto& v: vec)
+        vecP.push_back(&v);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    corecvs::KDTree<corecvs::Vector3dd, 3> kdtree(vecP, 6);
+    auto stop  = std::chrono::high_resolution_clock::now();
+    std::cout << (stop - start).count() / 1e9 << "s for building K-d tree" << std::endl;
+
+    for (int i = 0; i < M; ++i)
+    {
+        corecvs::Vector3dd query(runif(rng), runif(rng), runif(rng));
+        auto res = kdtree.nearestNeighbour(query);
+        ASSERT_NE(res, nullptr);
+
+        double minDiff = std::numeric_limits<double>::max();
+        for (auto &vv: vec)
+            if (minDiff > !(vv - query))
+                minDiff = !(vv - query);
+        double gotDiff = !(*res - query);
+        ASSERT_LE(std::abs(1.0 - minDiff / gotDiff), 1e-9);
+    }
+}
+TEST(Geometry, KDTreePredicate)
+{
+    std::vector<corecvs::Vector3dd > vec;
+    std::vector<corecvs::Vector3dd*> vecP;
+    std::vector<int> used;
+
+    int N = 65536, M = 32;
+    std::uniform_real_distribution<double> runif(-1.0, 1.0);
+    std::mt19937 rng;
+    for (int i = 0; i < N; ++i)
+    {
+        vec.emplace_back(runif(rng), runif(rng), runif(rng));
+        used.push_back(runif(rng) < 0.0 ? 0 : 1);
+    }
+
+    for (auto& v: vec)
+        vecP.push_back(&v);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    corecvs::KDTree<corecvs::Vector3dd, 3> kdtree(vecP);
+    auto stop  = std::chrono::high_resolution_clock::now();
+    std::cout << (stop - start).count() / 1e9 << "s for building K-d tree" << std::endl;
+
+    for (int i = 0; i < M; ++i)
+    {
+        corecvs::Vector3dd query(runif(rng), runif(rng), runif(rng));
+        auto res = kdtree.nearestNeighbour(query, [&](Vector3dd *v) { return used[v - &vec[0]] == 0; });
+        ASSERT_NE(res, nullptr);
+
+        double minDiff = std::numeric_limits<double>::max();
+        for (auto &vv: vec)
+            if (minDiff > !(vv - query) && !used[&vv - &vec[0]])
+                minDiff = !(vv - query);
+        double gotDiff = !(*res - query);
+        ASSERT_LE(std::abs(1.0 - minDiff / gotDiff), 1e-9);
+    }
+}
 
 TEST(Geometry, testPolygonInside)
 {

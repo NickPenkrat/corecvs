@@ -107,8 +107,8 @@
   <!-- Some new stuff to galvanize old block structure -->
 
   <class name="HomorgaphyReconstructorBlockBase">
-     <field type="pointer" target="CorrespondenceList" name="in0" />
-     <field type="pointer" target="Matrix33" name="out0" />
+     <field type="pointer" target="corecvs::CorrespondenceList" name="in0" />
+     <field type="pointer" target="corecvs::Matrix33" name="out0" />
      <field type="Homography Algorithm" name="algorithm" defaultValue="4" />
   </class>
 

@@ -13,6 +13,9 @@
 #include <QItemSelectionModel>
 #include <QTransform>
 #include <QWidget>
+#include <QString>
+#include <QFileInfo>
+#include <QDir>
 
 #include "vector2d.h"
 #include "vector3d.h"
@@ -30,12 +33,12 @@ using corecvs::Matrix33;
 class Core2Qt {
 public:
 
-    static QPoint QPointFromVector2d32(const Vector2d32 &point )
+    static QPoint QPointFromVector2d32(const Vector2d32 &point)
     {
         return QPoint(point.x(), point.y());
     }
 
-    static QPointF QPointFromVector2dd(const Vector2dd &point )
+    static QPointF QPointFromVector2dd(const Vector2dd &point)
     {
         return QPointF(point.x(), point.y());
     }
@@ -53,17 +56,17 @@ public:
 class Qt2Core {
 public:
 
-    static Vector2dd Vector2ddFromQPoint(const QPoint &point )
+    static Vector2dd Vector2ddFromQPoint(const QPoint &point)
     {
         return Vector2dd(point.x(), point.y());
     }
 
-    static Vector2dd Vector2ddFromQPointF(const QPointF &point )
+    static Vector2dd Vector2ddFromQPointF(const QPointF &point)
     {
         return Vector2dd(point.x(), point.y());
     }
 
-    static Vector2d32 Vector2d32FromQPoint(const QPoint &point )
+    static Vector2d32 Vector2d32FromQPoint(const QPoint &point)
     {
         return Vector2d32(point.x(), point.y());
     }
@@ -83,7 +86,7 @@ QDebug & operator<< (QDebug & stream, const Vector3dd & vector);
 QDebug & operator<< (QDebug & stream, const Vector2d<int> & vector);
 
 
-void setValueBlocking(QDoubleSpinBox *box, double value);
+void    setValueBlocking(QDoubleSpinBox *box, double value);
 
 QString printWindowFlags(const Qt::WindowFlags &flags);
 QString printWindowState(const Qt::WindowStates &state);
@@ -92,6 +95,53 @@ QString printWidgetAttributes(QWidget *widget);
 
 QString printQImageFormat(const QImage::Format &format);
 
+/* File management support 
+ */
+namespace
+{
+
+    QString addFileExtIfNotExist(const QString& fileName, const QString& ext)
+    {
+        return fileName.endsWith(ext) ? fileName : fileName + ext;
+    }
+
+    QString getDirectory(const QString& absoluteFilePath)
+    {
+        Q_ASSERT(!absoluteFilePath.isEmpty());
+        QFileInfo info(absoluteFilePath);
+        return info.dir().absolutePath();
+    }
+
+    QString getFileName(const QString& fileName)
+    {
+        QFileInfo info(fileName);
+        return info.fileName();
+    }
+
+    QString getFileNameIfExist(const QString& fileName, const QString& relativePath)
+    {
+        std::cout << fileName.toStdString() << std::endl;
+        QFileInfo info(fileName);
+        if(info.exists())
+            return fileName;
+        std::cout << QString(relativePath + PATH_SEPARATOR + info.fileName()).toStdString() << std::endl;
+        QFileInfo infoNew(relativePath + PATH_SEPARATOR + info.fileName());
+        if(infoNew.exists())
+            return infoNew.absoluteFilePath();
+        return "";
+    }
+
+    class LastInOutDirsKeeper
+    {
+    public:
+        QString in;             // last input  dir
+        QString out;            // last output dir
+
+        void    updateIn (const QString& absoluteFilePath) { in  = getDirectory(absoluteFilePath); }
+        void    updateOut(const QString& absoluteFilePath) { out = getDirectory(absoluteFilePath); }
+    };
+
+} // namespace
 
 
 /* EOF */

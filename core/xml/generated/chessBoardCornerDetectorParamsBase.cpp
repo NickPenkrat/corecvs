@@ -26,6 +26,9 @@ int BaseReflection<ChessBoardCornerDetectorParamsBase>::dummy = ChessBoardCorner
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int ChessBoardCornerDetectorParamsBase::staticInit()
 {
 

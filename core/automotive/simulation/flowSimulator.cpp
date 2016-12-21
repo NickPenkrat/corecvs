@@ -104,7 +104,7 @@ std::vector<Vector3dd> *FlowSimulator::applyTransform(std::vector<Vector3dd> * p
 }
 
 std::vector<FloatFlowVector> *FlowSimulator::simulateFlow(
-        const PinholeCameraIntrinsics &camIntrinsics,
+        const PinholeCameraIntrinsics   &camIntrinsics,
         const ShiftRotateTransformation &cameraExtrinsics,
         const ShiftRotateTransformation &carMovement,
         double maxZ,

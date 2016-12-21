@@ -69,7 +69,8 @@ class SiftGpuFeatureDetectorProvider : public FeatureDetectorProviderImpl
 {
 public:
 	FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string& params = "");
-	bool provides(const DetectorType &type);
+    virtual bool provides(const DetectorType &type) override;
+    virtual std::string name()  override {return "SiftGpu"; }
 	~SiftGpuFeatureDetectorProvider() {}
 };
 
@@ -77,7 +78,8 @@ class SiftGpuDescriptorExtractorProvider : public DescriptorExtractorProviderImp
 {
 public:
 	DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string& params = "");
-	bool provides(const DescriptorType &type);
+    virtual bool provides(const DescriptorType &type);
+    virtual std::string name() override {return "SiftGpu";}
 	~SiftGpuDescriptorExtractorProvider() {}
 };
 

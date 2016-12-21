@@ -68,6 +68,8 @@ public:
 
     std::string                   nameId;
 
+    std::string                   relativeImageDataPath;
+
     StatusTracker *               processState = nullptr;
 
     /* This is for future, when all the heap/memory will be completed */
@@ -195,7 +197,7 @@ public:
     virtual CameraFixture      *createCameraFixture();
     virtual SceneFeaturePoint  *createFeaturePoint();
 
-    /* These methods completely purge camera from scene */
+    /* These methods completely purge objects from scene */
     virtual void deleteCamera         (FixtureCamera *camera);
     virtual void deleteCameraPrototype(CameraPrototype *cameraProtype);
     virtual void deleteCameraFixture  (CameraFixture *fixture, bool recursive = true);
@@ -242,11 +244,7 @@ public:
     size_t totalObservations() const
     {
         size_t toReturn = 0;
-        for (size_t pointId = 0; pointId < mSceneFeaturePoints.size(); pointId++)
-        {
-            const SceneFeaturePoint *point = mSceneFeaturePoints[pointId];
-            toReturn += point->observations.size();
-        }
+        for (auto point : mSceneFeaturePoints) { toReturn += point->observations.size(); }
         return toReturn;
     }
 
@@ -268,6 +266,8 @@ public:
     template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor, bool loadCameras = true, bool loadFixtures = true, bool loadPoints = true, bool loadPrototypes = true)
     {
+        visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
+
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
         typedef typename SceneType::FixtureType           RealFixtureType;

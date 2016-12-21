@@ -72,6 +72,38 @@ public:
 
 
     Matrix44(const Matrix33 &_m, const Vector3dd &_shift = Vector3dd(0,0,0));
+    static void FillWithArgs(
+            Matrix44 &m,
+            const double &a00, const double &a01, const double &a02, const double &a03,
+            const double &a10, const double &a11, const double &a12, const double &a13,
+            const double &a20, const double &a21, const double &a22, const double &a23,
+            const double &a30, const double &a31, const double &a32, const double &a33)
+    {
+#define  F(i, j) m.a(i, j) = a ## i ## j;
+#define FF(i) F(i, 0) F(i, 1) F(i, 2) F(i, 3)
+        FF(0)
+        FF(1)
+        FF(2)
+        FF(3)
+#undef FF
+#undef F
+    }
+    static void FillWithArgsT(
+            Matrix44 &m,
+            const double &a00, const double &a01, const double &a02, const double &a03,
+            const double &a10, const double &a11, const double &a12, const double &a13,
+            const double &a20, const double &a21, const double &a22, const double &a23,
+            const double &a30, const double &a31, const double &a32, const double &a33)
+    {
+#define  F(i, j) m.a(i, j) = a ## j ## i;
+#define FF(i) F(i, 0) F(i, 1) F(i, 2) F(i, 3)
+        FF(0)
+        FF(1)
+        FF(2)
+        FF(3)
+#undef FF
+#undef F
+    }
     Matrix33 topLeft33() const;
     Vector3dd translationPart() const;
 

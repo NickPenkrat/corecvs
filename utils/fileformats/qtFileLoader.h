@@ -49,6 +49,8 @@ public:
     virtual bool acceptsFile(string name);
     virtual G12Buffer * load(string name);
 
+    virtual std::string name() override { return "QTG12Loader(multitype)"; }
+
     virtual ~QTG12Loader();
 
 };
@@ -65,7 +67,25 @@ public:
 
     virtual bool acceptsFile(string name);
     virtual RGB24Buffer * load(string name);
+    virtual std::string name() override { return "QTRGB24Loader(multitype)"; }
 
     virtual ~QTRGB24Loader();
+
+};
+
+class QTRuntimeLoader : public BufferLoader<RuntimeTypeBuffer>{
+public:
+    static int registerMyself()
+    {
+        BufferFactory::getInstance()->registerLoader(new QTRuntimeLoader());   // TODO: memory leak: this loader is never destroyed!!!
+        return 0;
+    }
+
+    virtual bool acceptsFile(string name);
+    virtual RuntimeTypeBuffer * load(string name);
+    virtual std::string name() override { return "QTRuntimeLoader(multitype)"; }
+
+    virtual ~QTRuntimeLoader();
+
 
 };

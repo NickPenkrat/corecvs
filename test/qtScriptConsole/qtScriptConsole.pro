@@ -11,7 +11,6 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
 QT       += core gui
-QT       += script
 
 TARGET = qtScriptConsole
 TEMPLATE = app
@@ -21,9 +20,4 @@ include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TA
 DESTDIR  = $$ROOT_DIR/bin
 
 
-SOURCES += main.cpp\
-        mainQScriptWindow.cpp
-
-HEADERS  += mainQScriptWindow.h
-
-FORMS    += mainQScriptWindow.ui
+SOURCES += main.cpp \

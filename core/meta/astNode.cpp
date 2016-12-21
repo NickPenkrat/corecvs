@@ -1,5 +1,8 @@
 #include <iostream>
 #include <cmath>
+
+#include <sstream>
+
 #include "astNode.h"
 
 namespace corecvs {
@@ -121,6 +124,21 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
     if (op == OPERATOR_POW)
     {
         output <<  identSym.lbr;
+        output <<  "pow(";
+        output <<  identSym.lbr;
+        left()->codeGenCpp(ident + 1, identSym);
+        output << ",";
+        right()->codeGenCpp(ident + 1, identSym);
+        output <<  identSym.lbr;
+        output << ")";
+        output << identSym.lbr;
+        return;
+    }
+    if (op == OPERATOR_FUNCTION)
+    {
+        /* packing input */
+
+        output <<  identSym.lbr;
         printf("pow(");
         output <<  identSym.lbr;
         left()->codeGenCpp(ident + 1, identSym);
@@ -129,7 +147,7 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
         output <<  identSym.lbr;
         output << ")";
         output << identSym.lbr;
-
+        return;
     }
 
 }
@@ -141,7 +159,7 @@ void ASTNodeInt::extractConstPool(const std::string &poolname, std::unordered_ma
         //cout << "Checking " << val << " to constpool" << endl;
         auto it = pool.find(val);
         if (it == pool.end()) {
-            int id = pool.size();
+            int id = (int)pool.size();
             char str[1000];
             snprintf2buf(str, "%s%d", poolname.c_str(), id);
             op = OPREATOR_ID;
@@ -214,6 +232,7 @@ size_t ASTNodeInt::memoryFootprint()
         return sizeof(ASTNodeInt) + left()->memoryFootprint();
     }
 
+    return 0;
 }
 
 void ASTNodeInt::rehash()
@@ -322,7 +341,6 @@ void ASTNodeInt::getVars(std::vector<std::string> &result)
             result.push_back(name);
         }
     } else {
-        //cout << "ZZ ";
         for (ASTNodeInt *child : children)
             child->getVars(result);
     }
@@ -582,11 +600,95 @@ std::string ASTNodeFunctionPayload::getCCode()
                 );
 }
 
-ASTNodeFunctionPayload *ASTNodeFunctionPayload::derivative()
+ASTNodeFunctionPayload *ASTNodeFunctionPayload::derivative(int /*input*/)
 {
     return NULL;
 }
 
+std::vector<std::string> ASTNodeFunctionWrapper::getVars()
+{
+    std::vector<std::string> vars;
 
+    for (int i = 0; i < outputNumber(); i++)
+    {
+        ASTNodeInt *comp = components[i];
+        comp->getVars(vars);
+    }
+
+    for (size_t i = 0; i < vars.size(); i++)
+    {
+        std::string cur = vars[i];
+        vars.erase(
+            remove_if(
+                    vars.begin() + i + 1,
+                    vars.end(),
+                    [&cur](const std::string &in){ return in == cur; }
+            ),
+            vars.end()
+        );
+    }
+
+    std::sort(vars.begin(), vars.end());
+    return vars;
+}
+
+int ASTNodeFunctionWrapper::inputNumber()
+{
+    return (int)getVars().size();
+}
+
+int ASTNodeFunctionWrapper::outputNumber()
+{
+    return (int)components.size();
+}
+
+void ASTNodeFunctionWrapper::f(double in[], double out[])
+{
+    std::vector<std::string> vars = getVars();
+
+    //int ins  = (int)vars.size();
+    int outs = outputNumber();
+
+    std::map<std::string, double> binds;
+
+    for (size_t i = 0; i < vars.size(); i++)
+    {
+        binds.insert(std::pair<std::string, double>(vars[i], in[i]));
+    }
+
+    for (int i = 0; i < outs; i++)
+    {
+        ASTNodeInt *node = components[i];
+        ASTNodeInt *c = node->compute(binds);
+
+        if (c != NULL && c->op != ASTNodeInt::OPREATOR_NUM)
+        {
+            out[i] = c->val;
+        }
+    }
+}
+
+std::string ASTNodeFunctionWrapper::getCCode()
+{
+    /* We need to add here CSE, Constpool, etc.*/
+
+    std::ostringstream out;
+    for (int i = 0; i < outputNumber(); i++)
+    {
+        ASTNodeInt *node = components[i];
+        ASTRenderDec params("", "", false, out);
+
+        out << "out[" << i << "] = \n";
+        node->codeGenCpp(2, params);
+        out << ";\n";
+    }
+
+    return out.str();
+}
+
+ASTNodeFunctionPayload *ASTNodeFunctionWrapper::derivative(int)
+{
+    return NULL;
+}
 
 } //namespace corecvs

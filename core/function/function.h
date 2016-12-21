@@ -47,7 +47,7 @@ public:
 
 
     /**
-     *  Operator that computes funсtion
+     *  Operator that computes function
      *  There are several synonimical functions.
      *
      *  It is expected they all work the exactly same way
