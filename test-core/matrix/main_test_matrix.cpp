@@ -1851,12 +1851,5 @@ TEST(Matrix, invPosdefSqrt)
     std::cout << (W = CC.invPosdefSqrt().t()*CC*CC.invPosdefSqrt()) << std::endl << std::endl << B * C * D << std::endl;
     for (int i = 0; i < 3; ++i)
         for (int j = 0; j < 3; ++j)
-            ASSERT_NEAR(W.a(i, j), i == j ? 1.0 : 0.0,
-#ifdef WITH_BLAS
-                // lapack is good
-                1e-9);
-#else
-                // corecvs is not
-                1e-3);
-#endif
+            ASSERT_NEAR(W.a(i, j), i == j ? 1.0 : 0.0, 6e-16);
 }
