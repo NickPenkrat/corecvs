@@ -82,6 +82,7 @@ void EM::runKMeans()
 
             } while (!sdist.compare_exchange_strong(val, inc));
         }});
+        std::cout << sdist << std::flush;
         if (prev == sdist)
             break;
         prev = sdist;
@@ -90,7 +91,7 @@ void EM::runKMeans()
     stepM();
 }
 
-EM::EM(const Matrix &A, int N, bool smooth, int maxIter) :
+EM::EM(const Matrix &A, int N, bool smooth, int maxIter, bool randomInit) :
     N(N), M(A.h), K(A.w), smooth(smooth), A(A), maxIter(maxIter)
 {
     CORE_ASSERT_TRUE_S(M > N);
@@ -99,38 +100,100 @@ EM::EM(const Matrix &A, int N, bool smooth, int maxIter) :
     std::uniform_int_distribution<int> rint(0, N - 1);
     std::uniform_real_distribution<double> rdouble(0, 1);
 
-    std::vector<int> indicies;
-    indicies.resize(N);
-    for (int i = 0; i < N; ++i)
-        indicies[i] = i;
-    for (int i = N; i < M; ++i)
-    {
-        auto alpha = rdouble(rng);
-        alpha *= (i + 1.0);
-        if (alpha < N)
-            indicies[alpha] = i;
-    }
-    std::set<int> set(indicies.begin(), indicies.end());
-    std::shuffle(indicies.begin(), indicies.end(), rng);
-
     probabilities = Matrix(M, N);
-
-    for (int i = 0; i < M; ++i)
-        probabilities.a(i, rint(rng)) = 1.0;
-
     prior.resize(N);
     means.resize(N);
     covariances.resize(N);
     for (int i = 0; i < N; ++i)
     {
-        for (int j = 0; j < N; ++j)
-            probabilities.a(indicies[i], j) = 0.0;
-        probabilities.a(indicies[i], i)  = 1.0;
         prior[i] = 1.0 / N;
         means[i] = Vector(K);
         covariances[i] = Matrix(K, K);
     }
 
+
+    if (randomInit)
+    {
+        std::vector<int> indicies;
+        indicies.resize(N);
+        for (int i = 0; i < N; ++i)
+            indicies[i] = i;
+        for (int i = N; i < M; ++i)
+        {
+            auto alpha = rdouble(rng);
+            alpha *= (i + 1.0);
+            if (alpha < N)
+                indicies[alpha] = i;
+        }
+        std::set<int> set(indicies.begin(), indicies.end());
+        std::shuffle(indicies.begin(), indicies.end(), rng);
+
+        for (int i = 0; i < M; ++i)
+            probabilities.a(i, rint(rng)) = 1.0;
+        for (int i = 0; i < N; ++i)
+        {
+            for (int j = 0; j < N; ++j)
+               probabilities.a(indicies[i], j) = 0.0;
+            probabilities.a(indicies[i], i)  = 1.0;
+        }
+    }
+    else
+    {
+        std::vector<double> distances(M);
+        auto idrng = std::uniform_int_distribution<int>(0, M - 1);
+        int id1 = idrng(rng);
+        for (int j = 0; j < K; ++j)
+            means[0][j] = A.a(id1, j);
+        for (int cl = 1; cl < N; ++cl)
+        {
+            double sdist = 0.0;
+            for (int i = 0; i < M; ++i)
+            {
+                double dist = 0.0;
+                for (int j = 0; j < K; ++j)
+                    dist += (means[cl - 1][j] - A.a(i, j)) * (means[cl - 1][j] - A.a(i, j));
+                distances[i] = std::min(distances[i], dist);
+                sdist += distances[i];
+            }
+            double alpha = sdist * rdouble(rng);
+            double s = distances[0];
+            for (int i = 0; i < M; ++i)
+                if (s >= alpha)
+                {
+                    for (int j = 0; j < K; ++j)
+                        means[cl][j] = A.a(i, j);
+                    break;
+                }
+                else
+                    s += distances[i + 1];
+        }
+        std::atomic<double> sdist(0.0);
+        parallelable_for(0, M, [&](const corecvs::BlockedRange<int> &r){
+        for (int i = r.begin(); i != r.end(); ++i)
+        {
+            Vector vv(K);
+            for (int j = 0; j < K; ++j)
+                vv[j] = A.a(i, j);
+
+            int maxId = 0;
+            double minDist = (means[0] - vv).sumAllElementsSq();
+            for (int j = 1; j < N; ++j)
+                if ((means[j] - vv).sumAllElementsSq() < minDist)
+                {
+                    minDist = (means[j] - vv).sumAllElementsSq();
+                    maxId = j;
+                }
+            for (int j = 0; j < N; ++j)
+                probabilities.a(i, j) = (j == maxId) ? 1.0 : 0.0;
+            double val, inc;
+            do
+            {
+               val = sdist;
+               inc = val + minDist;
+
+            } while (!sdist.compare_exchange_strong(val, inc));
+        }});
+    }
     runKMeans();
     runEM();
 }

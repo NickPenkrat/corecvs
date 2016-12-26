@@ -10,7 +10,7 @@ namespace corecvs
 {
 struct EM
 {
-    EM(const Matrix &A, int N, bool smooth = true, int maxIter = 1000);
+    EM(const Matrix &A, int N, bool smooth = true, int maxIter = 1000, bool randomInit = false);
 
     double stepE();
     void stepM();
