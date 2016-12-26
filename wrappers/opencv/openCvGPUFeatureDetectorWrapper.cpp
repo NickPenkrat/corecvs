@@ -224,10 +224,18 @@ bool FindGPUDevice( bool& cudaApi )
         getOpenCLDevices( oclDevices, cv::ocl::CVCL_DEVICE_TYPE_GPU );
         if ( oclDevices.size() )
         {
-            cv::ocl::setDevice( oclDevices[ 0 ] );
-            deviceFound = initProvider = true;
-            cout << "OpeCV uses OpenCL "<< oclDevices[ 0 ]->deviceName << endl;
-            cudaDevice = cudaApi = false;
+			for (uint i = 0; i < oclDevices.size(); i++)
+			{
+				const cv::ocl::DeviceInfo* device = oclDevices[i];
+				if (device->deviceVersionMajor > 1 || device->deviceVersionMinor >= 2) // check opencl device support 1.2
+				{
+					cv::ocl::setDevice(device);
+					deviceFound = initProvider = true;
+					cudaDevice = cudaApi = false;
+					cout << "OpeCV uses OpenCL " << device->deviceName << endl;
+					break;
+				}
+			}                 
         }
 #endif
     }
