@@ -218,6 +218,7 @@ template<class VisitorType>
 
 
 typedef Vector2d<double>   Vector2dd;
+typedef Vector2d<float>    Vector2df;
 typedef Vector2d<uint32_t> Vector2du32;
 typedef Vector2d<uint16_t> Vector2du16;
 

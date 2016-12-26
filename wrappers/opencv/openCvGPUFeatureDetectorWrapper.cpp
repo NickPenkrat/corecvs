@@ -130,7 +130,7 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
         if ( detectorSURF_CUDA )
         {
             //max keypoints = min(keypointsRatio * img.size().area(), 65535)
-            detectorSURF_CUDA->keypointsRatio = ( float )K / img.size().area();
+            //detectorSURF_CUDA->keypointsRatio = ( float )K / img.size().area();
             ( *detectorSURF_CUDA )( img, mask, kps );
         }     
         else if ( detectorORB_CUDA )
@@ -144,7 +144,7 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
         cv::ocl::oclMat img( convert( image ) );
         cv::ocl::oclMat mask;
         //max keypoints = min(keypointsRatio * img.size().area(), 65535)
-        detectorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
+        //detectorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
         (*detectorSURF_OCL)( img, mask, kps );
     }
 #endif
@@ -154,6 +154,9 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     {
 		keyPoints.push_back(convert(kp));
     }
+
+	std::sort(keyPoints.begin(), keyPoints.end(), [](const KeyPoint &l, const KeyPoint &r) { return l.response > r.response; });
+	keyPoints.resize(std::min((int)keyPoints.size(), K));
 }
 
 bool FindGPUDevice( bool& cudaApi )
