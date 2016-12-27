@@ -331,7 +331,7 @@ Matrix22 LensDistortionModelParameters::tangentialJacobian(double x, double y) c
     auto dx = dxdyv[0], dy = dxdyv[1];
     auto r2 = dx * dx + dy * dy;
     auto r  = std::sqrt(r2);
-    auto drddx = dx / r, drddy = dy / r;
+    //auto drddx = dx / r, drddy = dy / r;
 
     auto dphidr = 0.0;
     auto phi = 0.0;
@@ -377,11 +377,11 @@ Matrix   LensDistortionModelParameters::polynomialJacobian(double x, double y) c
     auto dx = dxdyv[0], dy = dxdyv[1];
     auto r2 = dx * dx + dy * dy;
     auto r  = std::sqrt(r2);
-    auto drddx = dx / r, drddy = dy / r;
+    //auto drddx = dx / r, drddy = dy / r;
 
     auto rpow = 1.0;
-    Matrix dPhi(2, mKoeff.size());
-    for (int i = 0; i < mKoeff.size(); ++i)
+    Matrix dPhi(2, (int32_t)mKoeff.size());
+    for (int i = 0; i < (int)mKoeff.size(); ++i)
     {
         rpow *= r;
         dPhi.a(0, i) = dx * rpow;
@@ -412,11 +412,11 @@ void LensDistortionModelParameters::solveRadial(const std::vector<Vector2dd> &sr
 {
     CORE_ASSERT_TRUE_S(src.size() == dst.size());
     // So we will compute this stuff in normalized coordinates
-    size_t N = src.size(), M = mKoeff.size();
-    Matrix D(2*N, M + 2);
-    Vector rhs(2*N);
+    int N = (int)src.size(), M = (int)mKoeff.size();
+    Matrix D(2 * N, M + 2);
+    Vector rhs(2 * N);
     std::vector<double> powers(M);
-    for (size_t i = 0; i < N; ++i)
+    for (int i = 0; i < N; ++i)
     {
         auto ux = src[i][0], uy = src[i][1],
              vx = dst[i][0], vy = dst[i][1];
