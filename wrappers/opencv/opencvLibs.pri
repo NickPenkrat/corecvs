@@ -60,6 +60,25 @@ with_opencv {
                 OPENCV_2411_LIBS = $$OPENCV_2411_LIBS_R
                 OPENCV_2411_LIBS_ADD_OWN_BUILT = -L$$OPENCV_PATH/build/lib/Release/ $$OPENCV_2411_LIBS
             }
+
+            # Opencv 2.4.13
+
+            OPENCV_2413_LIBS_R = -lopencv_calib3d2413     -lopencv_video2413    -lopencv_core2413     -lopencv_highgui2413   \
+                                 -lopencv_features2d2413  -lopencv_flann2413    -lopencv_imgproc2413  -lopencv_objdetect2413 \
+                                 -lopencv_nonfree2413     -lopencv_legacy2413  #-lopencv_ml2413
+
+            OPENCV_2411_LIBS_D = -lopencv_calib3d2413d    -lopencv_video2413d   -lopencv_core2413d    -lopencv_highgui2413d   \
+                                 -lopencv_features2d2413d -lopencv_flann2413d   -lopencv_imgproc2413d -lopencv_objdetect2413d \
+                                 -lopencv_nonfree2413d    -lopencv_legacy2413d #-lopencv_ml2413d
+
+             CONFIG(debug, debug|release) {
+                OPENCV_2413_LIBS = $$OPENCV_2413_LIBS_D
+                OPENCV_2413_LIBS_ADD_OWN_BUILT = -L$$OPENCV_PATH/build/lib/Debug/   $$OPENCV_2413_LIBS
+            }
+            CONFIG(release, debug|release) {
+                OPENCV_2413_LIBS = $$OPENCV_2413_LIBS_R
+                OPENCV_2413_LIBS_ADD_OWN_BUILT = -L$$OPENCV_PATH/build/lib/Release/ $$OPENCV_2413_LIBS
+            }
             
             exists($$OPENCV_PATH/build/bin/Release/opencv_core249.dll): win32-msvc* {               # git's OpenCV tag=2.4.9 built by any own MSVC with GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/bin/Release|Debug>)
@@ -67,22 +86,22 @@ with_opencv {
                 LIBS        += $$OPENCV_249_LIBS_ADD_OWN_BUILT
                 DEFINES     += WITH_OPENCV
             } else:exists($$OPENCV_PATH/build/x64/vc10/bin/opencv_core249.dll): win32-msvc2010 {    # built OpenCV v.2.4.9 with msvc10 without GPU
-                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc10/bin>)
+                !build_pass:message(Using OPENCV <$$OPENCV_PATH/build/x64/vc10/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc10/lib/ $$OPENCV_249_LIBS
                 DEFINES     += WITH_OPENCV
             } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core249.dll): win32-msvc2013 {    # built OpenCV v.2.4.9 with vc12 without GPU
-                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
+                !build_pass:message(Using OPENCV <$$OPENCV_PATH/build/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc12/lib/ $$OPENCV_249_LIBS
                 DEFINES     += WITH_OPENCV
             } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core249.dll): win32-msvc2015 {    # built OpenCV v.2.4.9 with vc12 without GPU
-                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
+                !build_pass:message(Using OPENCV <$$OPENCV_PATH/build/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/build/x64/vc12/lib/ $$OPENCV_249_LIBS
                 DEFINES     += WITH_OPENCV
             } else:exists($$OPENCV_PATH/x64/vc12/bin/opencv_core249.dll): win32-msvc* {             # installed OpenCV v.2.4.9 with msvc* without GPU (our integration server)
-                !build_pass:message(Using <$$OPENCV_PATH/x64/vc12/bin>)
+                !build_pass:message(Using OPENCV <$$OPENCV_PATH/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/x64/vc12/lib/ $$OPENCV_249_LIBS
                 DEFINES     += WITH_OPENCV
@@ -95,17 +114,22 @@ with_opencv {
                         -llibopencv_nonfree249    -llibopencv_legacy249 #-llibopencv_ml249
                 DEFINES += WITH_OPENCV
             } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core2411.dll): win32-msvc2013 {   # OpenCV tag=2.4.11 built by vc12 without GPU
-                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
+                !build_pass:message(Using OPENCV <$$OPENCV_PATH/build/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS += -L$$OPENCV_PATH/build/x64/vc12/lib/ $$OPENCV_2411_LIBS
                 DEFINES += WITH_OPENCV
             } else:exists($$OPENCV_PATH/build/x64/vc14/bin/opencv_core2411.dll): win32-msvc2015 {   # OpenCV tag=2.4.11 built by vc14 without GPU
-                !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc14/bin>)
+                !build_pass:message(Using OPENCV <$$OPENCV_PATH/build/x64/vc14/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS += -L$$OPENCV_PATH/build/x64/vc14/lib/ $$OPENCV_2411_LIBS
                 DEFINES += WITH_OPENCV
+            }  else:exists($$OPENCV_PATH/build/x64/vc14/bin/opencv_core2413.dll): win32-msvc2015 {   # OpenCV tag=2.4.11 built by vc12 without GPU
+                !build_pass:message(Using OPENCV <$$OPENCV_PATH/build/x64/vc14/bin>)
+                INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
+                LIBS += -L$$OPENCV_PATH/build/x64/vc14/lib/ $$OPENCV_2413_LIBS
+                DEFINES += WITH_OPENCV
             } else {
-                message(Using <$$OPENCV_PATH>)
+                message(Requested OPENCV <$$OPENCV_PATH>)
                 message(Unsupported OpenCV version - please adapt the opencvLibs.pri for other versions)
             }
         } else {
