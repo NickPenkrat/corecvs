@@ -24,9 +24,10 @@ void corecvs::FlatPatternCalibrator::addPattern(const ObservationList &patternPo
 
 struct PlaneFitFunctor : public FunctionArgs
 {
-    PlaneFitFunctor(const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts, const Affine3DQ &initial) : FunctionArgs(6, 3 * pts.size()), initial(initial), pts(pts)
-    {
-    }
+    PlaneFitFunctor(const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts
+        , const Affine3DQ &initial)
+        : FunctionArgs(6, 3 * (int)pts.size()), initial(initial), pts(pts)
+    {}
 
     void operator()(const double *in, double *out)
     {

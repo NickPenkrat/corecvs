@@ -141,7 +141,7 @@ public:
     {
         auto rn = r / mNormalizingFocal;
         std::vector<double> coeff;
-        int n = mKoeff.size();
+        int n = (int)mKoeff.size();
         coeff.resize(n + 1);
         coeff[0] = 1.0;
         for (int i = 1; i <= n; ++i)
