@@ -51,7 +51,7 @@ void FaceDetectorOpenCV::detectFacesOpenCV(G12Buffer *input, vector<DetectedObje
     CascadeClassifier *cascade = cascades[id];
 
     IplImage *inputIpl = OpenCVTools::getCVImageFromG12Buffer(input);
-    Mat matrix(inputIpl, false);
+    CVMAT_FROM_IPLIMAGE( matrix, inputIpl, false );
 
     vector<Rect> faces;
 
