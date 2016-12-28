@@ -1,5 +1,10 @@
 #include <QTableWidgetItem>
 
+// TODO: fix this: killing or moving it below - destroys build!
+#ifdef WITH_OPENCV
+# include <opencv2/core/core.hpp>        // cv::Mat, Point2f
+#endif
+
 #include "log.h"
 #include "rgb24Buffer.h"
 //#include "curvatureFunc.h"
@@ -24,7 +29,7 @@
 //# include <opencv2/calib3d/calib3d.hpp>
 //# include "opencv2/core/core_c.h"
 //# include "OpenCVTools.h"
-//# include "openCvCheckerboardDetector.h"
+# include "openCvCheckerboardDetector.h"
 //using namespace cv;
 #endif
 
@@ -186,7 +191,7 @@ void DistortionWidget::detectCheckerboard()
     {
     case CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm::OPENCV_DETECTOR:
         {
-#ifdef WITH_OPENCV_
+#ifdef WITH_OPENCV
         G8Buffer *workChannel = mBufferInput->getChannel(params.channel());
         PaintImageWidget *canvas = mUi->widget;
 
