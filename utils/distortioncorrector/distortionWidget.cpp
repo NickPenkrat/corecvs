@@ -2,8 +2,8 @@
 
 #include "log.h"
 #include "rgb24Buffer.h"
-#include "curvatureFunc.h"
-#include "radialFunc.h"
+//#include "curvatureFunc.h"
+//#include "radialFunc.h"
 #include "qtHelper.h"
 
 #include "camerasCalibration/camerasCalibrationFunc.h"
@@ -11,23 +11,21 @@
 
 #include "g12Image.h"
 #include "displacementBuffer.h"
-#include "angleFunction.h"
-#include "anglePointsFunction.h"
+//#include "angleFunction.h"
+//#include "anglePointsFunction.h"
 #include "distortionWidget.h"
 #include "ui_distortionWidget.h"
 #include "distPointsFunction.h"
-#include "chessBoardDetector.h"
+//#include "chessBoardDetector.h"
 
 #ifdef WITH_OPENCV
-# include "opencv2/imgproc/imgproc.hpp"
-# include "opencv2/highgui/highgui.hpp"
-# include <opencv2/calib3d/calib3d.hpp>
-# include "opencv2/core/core_c.h"
-# include "OpenCVTools.h"
-# include "openCvCheckerboardDetector.h"
-
-using namespace cv;
-
+//# include "opencv2/imgproc/imgproc.hpp"
+//# include "opencv2/highgui/highgui.hpp"
+//# include <opencv2/calib3d/calib3d.hpp>
+//# include "opencv2/core/core_c.h"
+//# include "OpenCVTools.h"
+//# include "openCvCheckerboardDetector.h"
+//using namespace cv;
 #endif
 
 using corecvs::DistPointsFunction;
@@ -188,7 +186,7 @@ void DistortionWidget::detectCheckerboard()
     {
     case CheckerboardDetectionAlgorithm::CheckerboardDetectionAlgorithm::OPENCV_DETECTOR:
         {
-#ifdef WITH_OPENCV
+#ifdef WITH_OPENCV_
         G8Buffer *workChannel = mBufferInput->getChannel(params.channel());
         PaintImageWidget *canvas = mUi->widget;
 
