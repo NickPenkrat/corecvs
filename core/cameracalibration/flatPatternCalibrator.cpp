@@ -148,7 +148,7 @@ void corecvs::FlatPatternCalibrator::solveInitialDistortion(bool enforcePrincipa
     }
 
     std::vector<Vector2dd> proj, pt;
-    for (int i = 0; i < N; ++i)
+    for (size_t i = 0; i < N; i++)
     {
         auto R = Quaternion::RotationalTransformation(locationData[i].orientation[0], locationData[i].orientation[1], locationData[i].orientation[2], locationData[i].orientation[3], Quaternion::Parametrization::FULL_NORMALIZED, false);
         auto& C = locationData[i].position;

@@ -195,6 +195,12 @@ public:
         BaseRay<Ray2d, Vector2dd>(s.b - s.a, s.a)
     {}
 
+    static Ray2d FromPoints(const Vector2dd &start, const Vector2dd &end)
+    {
+        return Ray2d(end - start, start);
+    }
+
+
 };
 
 /**

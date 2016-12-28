@@ -187,6 +187,8 @@ public:
         }
         return true;
     }
+
+    Vector2dd center();
 };
 
 /**
@@ -204,18 +206,42 @@ public:
         }
     }
 
+    /* This thing checks if the point is inside of the convex poligon*/
     int  isInside(const Vector2dd &point) const;
+
+
     bool isConvex(bool *direction = NULL) const;
 
-    Vector2dd getPoint (int i) const
-    {
+    Vector2dd &getPoint (int i) {
         return operator [](i);
     }
 
+    const Vector2dd &getPoint (int i) const {
+        return operator [](i);
+    }
+
+    Vector2dd &getNextPoint(int idx)
+    {
+       return operator []((idx + 1) % size());
+    }
+
+    const Vector2dd &getNextPoint(int idx) const
+    {
+       return operator []((idx + 1) % size());
+    }
+
+
+    /** This method uses the index by module of size() **/
+    Vector2dd &getPointM(int idx)
+    {
+       return operator [](idx % size());
+    }
+
+
     Vector2dd getNormal(int i) const
     {
-        Vector2dd r1 = operator []( i              );
-        Vector2dd r2 = operator []((i + 1) % size());
+        Vector2dd r1 = getPoint(i);
+        Vector2dd r2 = getNextPoint(i);
 
         return (r2 - r1).rightNormal();
     }
@@ -229,6 +255,11 @@ public:
         toReturn.push_back(rect.llCorner());
         return toReturn;
     }
+
+    static Polygon RegularPolygon(int sides, const Vector2dd &center, double radius);
+
+    static Polygon Reverse(const Polygon &p);
+
 
     Polygon transform(const Matrix33 &transform) {
         Polygon toReturn;
@@ -258,10 +289,66 @@ public:
         return operator [](idx).y();
     }
 
+    Ray2d edgeAsRay(int idx) {
+        Vector2dd &start = getPoint(idx);
+        Vector2dd &end   = getNextPoint(idx);
+        return Ray2d::FromPoints(start, end);
+    }
+
+    /* Valid for any type of simple poligon*/
+    double signedArea();
+
+    double area() {
+        return fabs(signedArea());
+    }
 
 
     //bool clipRay(const Ray2d &ray, double &t1, double &t2);
+};
 
+
+/**
+ *  This class implements Weiler–Atherton algotithm
+ *
+ **/
+class PolygonCombiner
+{
+public:
+    Polygon pol1;
+    Polygon pol2;
+
+    enum VertexType {
+        INSIDE,
+        COMMON,
+        OUTSIDE
+    };
+
+    struct VertexData {
+        int orgId;
+        VertexType inside;
+        VertexData *other = NULL;
+    };
+
+    typedef std::vector<VertexType> ContainerType; /* This type should better be list */
+
+    ContainerType c1;
+    ContainerType c2;
+
+    void prepare(void);
+
+
+};
+
+
+class ConvexHull
+{
+public:
+    /**
+     * Most trivial and slow algorighm
+     *
+     * This methods need a lot of additional testing
+     ***/
+    static Polygon GiftWrap(const std::vector<Vector2dd> &list);
 };
 
 } //namespace corecvs

@@ -85,6 +85,7 @@ OpenCVLoaderRGB24Loader::OpenCVLoaderRGB24Loader()
 
 bool OpenCVLoaderRGB24Loader::acceptsFile(std::string name)
 {
+    CORE_UNUSED(name);
     return true;
 }
 
@@ -108,6 +109,7 @@ OpenCVLoaderRuntimeTypeBufferLoader::OpenCVLoaderRuntimeTypeBufferLoader()
 
 bool OpenCVLoaderRuntimeTypeBufferLoader::acceptsFile(std::string name)
 {
+     CORE_UNUSED(name);
      return true;
 }
 

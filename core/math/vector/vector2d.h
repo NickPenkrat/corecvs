@@ -188,6 +188,15 @@ public:
         return Vector2d<ElementType>(0.0, 0.0);
     }
 
+
+    static Vector2d<ElementType> OrtX() {
+        return Vector2d<ElementType>(1.0, 0.0);
+    }
+
+    static Vector2d<ElementType> OrtY() {
+        return Vector2d<ElementType>(0.0, 1.0);
+    }
+
 //#ifdef REFLECTION_IN_CORE
     static Reflection reflection;
     static int        dummy;
