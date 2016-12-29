@@ -546,7 +546,7 @@ with_openblas {
             exists("$$BLAS_PATH"/include/cblas.h) {
                 !build_pass: message(Using BLAS from <$$BLAS_PATH>)
                 INCLUDEPATH += $(BLAS_PATH)/include
-                LIBS        += -lcblas
+                LIBS        += -lopenblas
                 DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
                 CONFIG      += with_blas
@@ -557,7 +557,7 @@ with_openblas {
         } else {
             exists(/usr/include/cblas.h) {
                 !build_pass: message (Using System BLAS)
-                LIBS        += -lcblas -llapacke
+                LIBS        += -lopenblas -llapacke
                 DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
                 CONFIG      += with_blas
