@@ -22,6 +22,7 @@ struct SmartPtrExtractorHolder
     //cv::Ptr< cv::FastFeatureDetector>         fast;
     cv::Ptr< cv::BRISK >                        brisk;
     cv::Ptr< cv::ORB >                          orb;
+    cv::Ptr< cv::AKAZE >                        akaze;
 };
 
 OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(SmartPtrExtractorHolder *holder) : holder(holder)
@@ -37,6 +38,8 @@ OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(SmartPtrExtra
         extractor = holder->brisk.get();
     if (!extractor)
         extractor = holder->orb.get();
+    if (!extractor)
+        extractor = holder->akaze.get();
 }
 
 OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
@@ -116,8 +119,9 @@ DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(c
     SurfParams surfParams(params);
     BriskParams briskParams(params);
     OrbParams orbParams(params);
+    AkazeParams akazeParams(params);
 #ifdef WITH_OPENCV_3x
-	SmartPtrExtractorHolder* holder = new SmartPtrExtractorHolder;
+    SmartPtrExtractorHolder* holder = new SmartPtrExtractorHolder;
     if (type == "SIFT")
     {
         cv::Ptr< cv::xfeatures2d::SIFT > ptr = cv::xfeatures2d::SIFT::create(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);
@@ -146,6 +150,13 @@ DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(c
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
+    if (type == "AKAZE")
+    {
+        cv::Ptr< cv::AKAZE > ptr = cv::AKAZE::create(akazeParams.descriptorType, akazeParams.descriptorSize, akazeParams.descriptorChannels, akazeParams.threshold, akazeParams.octaves, akazeParams.octaveLayers, akazeParams.diffusivity);
+        holder->akaze = ptr;
+        return new OpenCvDescriptorExtractorWrapper(holder);
+    }
+
 #else
     SWITCH_TYPE(SIFT,
         return new OpenCvDescriptorExtractorWrapper(new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma));)
@@ -165,6 +176,7 @@ bool OpenCvDescriptorExtractorProvider::provides(const DescriptorType &type)
     SWITCH_TYPE(SURF, return true;);
     SWITCH_TYPE(BRISK, return true;);
     SWITCH_TYPE(ORB, return true;);
+    SWITCH_TYPE(AKAZE, return true;);
     return false;
 }
 

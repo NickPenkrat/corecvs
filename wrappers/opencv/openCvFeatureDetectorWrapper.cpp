@@ -16,12 +16,13 @@
 #ifdef WITH_OPENCV_3x
 struct SmartPtrDetectorHolder
 {
-	cv::Ptr< cv::xfeatures2d::SIFT >            sift;
-	cv::Ptr< cv::xfeatures2d::SURF >            surf;
-	cv::Ptr< cv::xfeatures2d::StarDetector >	star;
-	cv::Ptr< cv::FastFeatureDetector>           fast;
-	cv::Ptr< cv::BRISK >                        brisk;
+    cv::Ptr< cv::xfeatures2d::SIFT >            sift;
+    cv::Ptr< cv::xfeatures2d::SURF >            surf;
+    cv::Ptr< cv::xfeatures2d::StarDetector >	star;
+    cv::Ptr< cv::FastFeatureDetector>           fast;
+    cv::Ptr< cv::BRISK >                        brisk;
     cv::Ptr< cv::ORB >                          orb;
+    cv::Ptr< cv::AKAZE >                        akaze;
 };
 
 OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(SmartPtrDetectorHolder *holder) : holder(holder)
@@ -37,6 +38,8 @@ OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(SmartPtrDetectorHolde
         detector = holder->brisk.get();
     if (!detector)
         detector = holder->orb.get();
+    if (!detector)
+        detector = holder->akaze.get();
 }
 
 OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper()
@@ -111,6 +114,7 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
 	FastParams fastParams(params);
 	BriskParams briskParams(params);
 	OrbParams orbParams(params);
+    AkazeParams akazeParams(params);
 #ifdef WITH_OPENCV_3x
 
 	SmartPtrDetectorHolder* holder = new SmartPtrDetectorHolder;
@@ -156,6 +160,13 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
         return new OpenCvFeatureDetectorWrapper(holder);
     }
 
+    if (type == "AKAZE")
+    {
+        cv::Ptr< cv::AKAZE > ptr = cv::AKAZE::create(akazeParams.descriptorType, akazeParams.descriptorSize, akazeParams.descriptorChannels, akazeParams.threshold, akazeParams.octaves, akazeParams.octaveLayers, akazeParams.diffusivity);
+        holder->akaze = ptr;
+        return new OpenCvFeatureDetectorWrapper(holder);
+    }
+
 #else
 	SWITCH_TYPE(SIFT,
 			return new OpenCvFeatureDetectorWrapper(new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma));)
@@ -181,7 +192,8 @@ bool OpenCvFeatureDetectorProvider::provides(const DetectorType &type)
 	SWITCH_TYPE(FAST, return true;);
 	SWITCH_TYPE(BRISK, return true;);
 	SWITCH_TYPE(ORB, return true;);
-	return false;
+    SWITCH_TYPE(AKAZE, return true;);
+    return false;
 }
 
 #undef SWITCH_TYPE

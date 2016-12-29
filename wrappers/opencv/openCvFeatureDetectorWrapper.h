@@ -13,7 +13,7 @@ namespace cv {
 
 #ifdef WITH_OPENCV_3x
     struct SmartPtrDetectorHolder;
-#endif  
+#endif
 
 class OpenCvFeatureDetectorWrapper : public FeatureDetector
 {
@@ -38,7 +38,7 @@ private:
 
     cv::FeatureDetector* detector;
 #ifdef WITH_OPENCV_3x
-	SmartPtrDetectorHolder* holder;
+    SmartPtrDetectorHolder* holder;
 #endif  
 };
 
