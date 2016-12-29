@@ -200,6 +200,9 @@ public:
         return Ray2d(end - start, start);
     }
 
+    static Vector2dd intersectionPoint(const Ray2d &ray1, const Ray2d &ray2, bool *hasIntersection);
+    static Vector2dd intersection(const Ray2d &ray1, const Ray2d &ray2, double t1, double t2);
+
 
 };
 
@@ -925,6 +928,26 @@ public:
     }
 
 };
+
+Vector2dd Ray2d::intersectionPoint(const Ray2d &ray1, const Ray2d &ray2, bool *hasIntersection = NULL)
+{
+
+
+}
+
+ /**
+  *
+  *
+  *
+  *  This is basically Kramer method
+  **/
+Vector2dd Ray2d::intersection(const Ray2d &ray1, const Ray2d &ray2, double t1, double t2)
+{
+    Vector2dd dist = ray2.p - ray1.p;
+    double ortog = ray2.a & ray1.a;
+
+
+}
 
 } //namespace corecvs
 
