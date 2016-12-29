@@ -277,21 +277,24 @@ with_opencv {
         }
         CONFIG += link_pkgconfig
         PKGCONFIG += opencv
+        OPENCV_LIBS = $$system(pkg-config --libs opencv)
         system(pkg-config --atleast-version=3.0 opencv) {
             message(Detected OpenCV 3.x)
             DEFINES += WITH_OPENCV_3x
 
-            OPENCV_LIBS         = $$system(pkg-config --libs opencv)
             OPENCV_CONTRIB_LIBS = $$find(OPENCV_LIBS, opencv_xfeatures2d)
             OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_cuda)
 
             !isEmpty(OPENCV_CONTRIB_LIBS) {
                 message(Detected OpenCV contrib module)
             }
-            !isEmpty(OPENCV_GPU_LIBS) {
-                message(Detected OpenCV GPU module)
-                DEFINES += WITH_OPENCV_GPU
-            }
+        } else {
+            OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_gpu)
+        }
+
+        !isEmpty(OPENCV_GPU_LIBS) {
+            message(Detected OpenCV GPU module)
+            DEFINES += WITH_OPENCV_GPU
         }
 
        #LIBS += -lopencv_contrib -lopencv_ts -lopencv_videostab -lopencv_photo -lopencv_gpu -lopencv_ocl -lopencv_stitching -lopencv_superres
