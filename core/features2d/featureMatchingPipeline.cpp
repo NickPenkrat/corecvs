@@ -1751,6 +1751,11 @@ void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
 	}
 	else
 #endif
+    if (detectorType == "AKAZE")
+    {
+        pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, "", keypointsColor ), true );
+    }
+    else
 	{
         pipeline.add( new KeyPointDetectionStage( detectorType, maxFeatureCount, downsampleFactor, params ), true );
         pipeline.add( new DescriptorExtractionStage( descriptorType, downsampleFactor, params, keypointsColor ), true );

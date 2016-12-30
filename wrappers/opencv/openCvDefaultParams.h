@@ -211,8 +211,9 @@ struct AkazeParams
     int octaveLayers;
     int diffusivity;
 
-    AkazeParams(const std::string& params = "", int descriptorType = 5, int descriptorSize = 0, int descriptorChannels = 3,
-                float threshold = 0.001f, int octaves = 4, int octaveLayers = 4, int diffusivity = 1) :
+    AkazeParams(const std::string& params = "", int descriptorType = 5 /* MLDB */,
+                int descriptorSize = 0, int descriptorChannels = 3, float threshold = 0.001f,
+                int octaves = 4, int octaveLayers = 4, int diffusivity = 1 /* G2 */) :
         descriptorType(descriptorType), descriptorSize(descriptorSize), descriptorChannels(descriptorChannels),
         threshold(threshold), octaves(octaves), octaveLayers(octaveLayers), diffusivity(diffusivity)
     {

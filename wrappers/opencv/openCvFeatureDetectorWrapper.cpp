@@ -32,7 +32,7 @@ struct SmartPtrDetectorHolder
         cv::Ptr< cv::AKAZE >                        akaze;
     };
 
-    cv::DescriptorExtractor *get() {
+    cv::FeatureDetector *get() {
         switch (tag) {
         case SIFT:
             return sift.get();
@@ -127,9 +127,9 @@ void OpenCvFeatureDetectorWrapper::setProperty(const std::string &name, const do
 void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeyPoints)
 {
 	std::vector<cv::KeyPoint> kps;
-	cv::Mat img = convert(image);
+    cv::Mat img = convert(image);
   
-	detector->detect(img, kps);
+    detector->detect(img, kps);
 
 	keyPoints.clear();
 
@@ -167,7 +167,7 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
 	if (type == "SIFT")
 	{
 		cv::Ptr< cv::xfeatures2d::SIFT > ptr = cv::xfeatures2d::SIFT::create(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);
-        holder->sift = ptr;
+        holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
 	}
 
