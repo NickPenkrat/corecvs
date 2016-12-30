@@ -16,30 +16,76 @@
 #ifdef WITH_OPENCV_3x
 struct SmartPtrDetectorHolder
 {
-    cv::Ptr< cv::xfeatures2d::SIFT >            sift;
-    cv::Ptr< cv::xfeatures2d::SURF >            surf;
-    cv::Ptr< cv::xfeatures2d::StarDetector >	star;
-    cv::Ptr< cv::FastFeatureDetector>           fast;
-    cv::Ptr< cv::BRISK >                        brisk;
-    cv::Ptr< cv::ORB >                          orb;
-    cv::Ptr< cv::AKAZE >                        akaze;
+    SmartPtrDetectorHolder() : tag(SIFT), sift() {}
+    ~SmartPtrDetectorHolder() {}
+    enum {
+        SIFT, SURF, STAR, FAST, BRISK, ORB, AKAZE
+    } tag;
+
+    union {
+        cv::Ptr< cv::xfeatures2d::SIFT >            sift;
+        cv::Ptr< cv::xfeatures2d::SURF >            surf;
+        cv::Ptr< cv::xfeatures2d::StarDetector >	star;
+        cv::Ptr< cv::FastFeatureDetector>           fast;
+        cv::Ptr< cv::BRISK >                        brisk;
+        cv::Ptr< cv::ORB >                          orb;
+        cv::Ptr< cv::AKAZE >                        akaze;
+    };
+
+    cv::DescriptorExtractor *get() {
+        switch (tag) {
+        case SIFT:
+            return sift.get();
+        case SURF:
+            return surf.get();
+        case STAR:
+            return star.get();
+        case FAST:
+            return fast.get();
+        case BRISK:
+            return brisk.get();
+        case ORB:
+            return orb.get();
+        case AKAZE:
+            return akaze.get();
+        default:
+            return nullptr;
+        }
+    }
+
+    void set(cv::Ptr<cv::xfeatures2d::SIFT> value) {
+        tag = SIFT;
+        sift = value;
+    }
+    void set(cv::Ptr<cv::xfeatures2d::SURF> value) {
+        tag = SURF;
+        surf = value;
+    }
+    void set(cv::Ptr<cv::xfeatures2d::StarDetector> value) {
+        tag = STAR;
+        star = value;
+    }
+    void set(cv::Ptr<cv::FastFeatureDetector> value) {
+        tag = FAST;
+        fast = value;
+    }
+    void set(cv::Ptr<cv::BRISK> value) {
+        tag = BRISK;
+        brisk = value;
+    }
+    void set(cv::Ptr<cv::ORB> value) {
+        tag = ORB;
+        orb = value;
+    }
+    void set(cv::Ptr<cv::AKAZE> value) {
+        tag = AKAZE;
+        akaze = value;
+    }
 };
 
 OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(SmartPtrDetectorHolder *holder) : holder(holder)
 {
-    detector = holder->sift.get();
-    if (!detector)
-        detector = holder->surf.get();
-    if (!detector)
-        detector = holder->star.get();
-    if (!detector)
-        detector = holder->fast.get();
-    if (!detector)
-        detector = holder->brisk.get();
-    if (!detector)
-        detector = holder->orb.get();
-    if (!detector)
-        detector = holder->akaze.get();
+    detector = holder->get();
 }
 
 OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper()
@@ -128,42 +174,42 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
     if (type == "SURF")
     {
         cv::Ptr< cv::xfeatures2d::SURF > ptr = cv::xfeatures2d::SURF::create(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright);
-        holder->surf = ptr;
+        holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
     }
 
     if (type == "STAR")
     {
         cv::Ptr< cv::xfeatures2d::StarDetector > ptr = cv::xfeatures2d::StarDetector::create(starParams.maxSize, starParams.responseThreshold, starParams.lineThresholdProjected, starParams.lineThresholdBinarized, starParams.supressNonmaxSize);
-        holder->star = ptr;
+        holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
     }
 
     if (type == "FAST")
     {
         cv::Ptr< cv::FastFeatureDetector > ptr = cv::FastFeatureDetector::create(fastParams.threshold, fastParams.nonmaxSuppression);
-        holder->fast = ptr;
+        holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
     }
 
     if (type == "BRISK")
     {
         cv::Ptr< cv::BRISK > ptr = cv::BRISK::create(briskParams.thresh, briskParams.octaves, briskParams.patternScale);
-        holder->brisk = ptr;
+        holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
     }
 
     if (type == "ORB")
     {
         cv::Ptr< cv::ORB > ptr = cv::ORB::create(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize);
-        holder->orb = ptr;
+        holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
     }
 
     if (type == "AKAZE")
     {
         cv::Ptr< cv::AKAZE > ptr = cv::AKAZE::create(akazeParams.descriptorType, akazeParams.descriptorSize, akazeParams.descriptorChannels, akazeParams.threshold, akazeParams.octaves, akazeParams.octaveLayers, akazeParams.diffusivity);
-        holder->akaze = ptr;
+        holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
     }
 

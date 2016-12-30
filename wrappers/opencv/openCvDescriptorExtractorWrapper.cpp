@@ -16,30 +16,64 @@
 #ifdef WITH_OPENCV_3x
 struct SmartPtrExtractorHolder
 {
-    cv::Ptr< cv::xfeatures2d::SIFT >            sift;
-    cv::Ptr< cv::xfeatures2d::SURF >            surf;
-    //cv::Ptr< cv::xfeatures2d::StarDetector >	star;
-    //cv::Ptr< cv::FastFeatureDetector>         fast;
-    cv::Ptr< cv::BRISK >                        brisk;
-    cv::Ptr< cv::ORB >                          orb;
-    cv::Ptr< cv::AKAZE >                        akaze;
+    SmartPtrExtractorHolder() : tag(SIFT), sift() {}
+    ~SmartPtrExtractorHolder() {}
+    enum {
+        SIFT, SURF, BRISK, ORB, AKAZE
+    } tag;
+
+    union {
+        cv::Ptr< cv::xfeatures2d::SIFT >            sift;
+        cv::Ptr< cv::xfeatures2d::SURF >            surf;
+        //cv::Ptr< cv::xfeatures2d::StarDetector >	star;
+        //cv::Ptr< cv::FastFeatureDetector>         fast;
+        cv::Ptr< cv::BRISK >                        brisk;
+        cv::Ptr< cv::ORB >                          orb;
+        cv::Ptr< cv::AKAZE >                        akaze;
+    };
+
+    cv::DescriptorExtractor *get() {
+        switch (tag) {
+        case SIFT:
+            return sift.get();
+        case SURF:
+            return surf.get();
+        case BRISK:
+            return brisk.get();
+        case ORB:
+            return orb.get();
+        case AKAZE:
+            return akaze.get();
+        default:
+            return nullptr;
+        }
+    }
+
+    void set(cv::Ptr<cv::xfeatures2d::SIFT> value) {
+        tag = SIFT;
+        sift = value;
+    }
+    void set(cv::Ptr<cv::xfeatures2d::SURF> value) {
+        tag = SURF;
+        surf = value;
+    }
+    void set(cv::Ptr<cv::BRISK> value) {
+        tag = BRISK;
+        brisk = value;
+    }
+    void set(cv::Ptr<cv::ORB> value) {
+        tag = ORB;
+        orb = value;
+    }
+    void set(cv::Ptr<cv::AKAZE> value) {
+        tag = AKAZE;
+        akaze = value;
+    }
 };
 
 OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(SmartPtrExtractorHolder *holder) : holder(holder)
 {
-    extractor = holder->sift.get();
-    if (!extractor)
-        extractor = holder->surf.get();
-    //if (!extractor)
-    //    extractor = holder->star.get();
-    //if (!extractor)
-    //    extractor = holder->fast.get();
-    if (!extractor)
-        extractor = holder->brisk.get();
-    if (!extractor)
-        extractor = holder->orb.get();
-    if (!extractor)
-        extractor = holder->akaze.get();
+    extractor = holder->get();
 }
 
 OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
@@ -125,35 +159,35 @@ DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(c
     if (type == "SIFT")
     {
         cv::Ptr< cv::xfeatures2d::SIFT > ptr = cv::xfeatures2d::SIFT::create(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);
-        holder->sift = ptr;
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
     if (type == "SURF")
     {
         cv::Ptr< cv::xfeatures2d::SURF > ptr = cv::xfeatures2d::SURF::create(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright);
-        holder->surf = ptr;
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
     if (type == "BRISK")
     {
         cv::Ptr< cv::BRISK > ptr = cv::BRISK::create(briskParams.thresh, briskParams.octaves, briskParams.patternScale);
-        holder->brisk = ptr;
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
     if (type == "ORB")
     {
         cv::Ptr< cv::ORB > ptr = cv::ORB::create(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize);
-        holder->orb = ptr;
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
     if (type == "AKAZE")
     {
         cv::Ptr< cv::AKAZE > ptr = cv::AKAZE::create(akazeParams.descriptorType, akazeParams.descriptorSize, akazeParams.descriptorChannels, akazeParams.threshold, akazeParams.octaves, akazeParams.octaveLayers, akazeParams.diffusivity);
-        holder->akaze = ptr;
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
