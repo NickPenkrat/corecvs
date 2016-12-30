@@ -1,10 +1,4 @@
-// TODO: fix this: killing or moving it below - destroys build!
-#ifdef WITH_OPENCV
-# include <opencv2/core/core.hpp>        // cv::Mat, Point2f
-#endif
-
 #include "distortionWidget.h"
-
 #include "log.h"
 #include "qtHelper.h"
 #include "camerasCalibration/camerasCalibrationFunc.h"
