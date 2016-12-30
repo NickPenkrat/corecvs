@@ -139,6 +139,12 @@ void RGB24Buffer::drawCrosshare1 (int x, int y, RGBColor color)
     this->drawSprite(x, y, color, d, 8);
 }
 
+void RGB24Buffer::drawCrosshare1 (const Vector2dd &point, RGBColor color)
+{
+    int d[8][2] = {{1,1},{2,2},{-1,-1},{-2,-2},{-1,1},{-2,2},{1,-1},{2,-2}};
+    this->drawSprite(fround(point.x()), fround(point.y()), color, d, 8);
+}
+
 /**  Draws a marker at the point having the form of
  *  <pre>
  *   # #
@@ -169,6 +175,12 @@ void RGB24Buffer::drawCrosshare3 (int x, int y, RGBColor color)
 {
     int d[8][2] = {{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0},{-1,1},{0,1}};
     this->drawSprite(x, y, color, d, 8);
+}
+
+void RGB24Buffer::drawCrosshare3 (const Vector2dd &point, RGBColor color)
+{
+    int d[8][2] = {{1,1},{1,0},{1,-1},{0,-1},{-1,-1},{-1,0},{-1,1},{0,1}};
+    this->drawSprite(fround(point.x()), fround(point.y()), color, d, 8);
 }
 
 

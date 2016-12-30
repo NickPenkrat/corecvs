@@ -271,7 +271,7 @@ void BitcodeBoardDetector::drawMarkerData(RGB24Buffer &buffer)
 Polygon BitcodeBoardDetector::getRectImage(int j, int i, Matrix33 transform)
 {
     double delta = parameters.bitcodeParams.bitcodeConfidence();
-    return Polygon::FromRectagle(Rectangled::SquareFromCenter(Vector2dd(j + 0.5, i + 0.5), delta)).transform(transform);
+    return Polygon::FromRectagle(Rectangled::SquareFromCenter(Vector2dd(j + 0.5, i + 0.5), delta)).transformed(transform);
 }
 
 BitcodeBoardDetector::MarkerData BitcodeBoardDetector::detectMarker(Matrix33 homography, Matrix33 translation)

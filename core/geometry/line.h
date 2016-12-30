@@ -80,6 +80,16 @@ public:
         return p + a * t;
     }
 
+    VectorType getStart() const
+    {
+        return p;
+    }
+
+    VectorType getEnd() const
+    {
+        return getPoint(1.0);
+    }
+
     VectorType projectOnRay(const VectorType &q)
     {
         return getPoint((q - p) & a.normalised());
@@ -200,8 +210,12 @@ public:
         return Ray2d(end - start, start);
     }
 
+
+    static bool hasIntersection(const Ray2d &ray1, const Ray2d &ray2);
+
+
     static Vector2dd intersectionPoint(const Ray2d &ray1, const Ray2d &ray2, bool *hasIntersection);
-    static Vector2dd intersection(const Ray2d &ray1, const Ray2d &ray2, double t1, double t2);
+    static Vector2dd intersection(const Ray2d &ray1, const Ray2d &ray2, double &t1, double &t2);
 
 
 };
@@ -495,11 +509,6 @@ private:
  *  denotes a plane that pass throw the 0 point.
  *
  *
- *
- *
- *
- *
- *
  **/
 
 class Line2d : public Vector3dd
@@ -533,10 +542,10 @@ public:
      **/
     Line2d(const Ray2d &ray)
     {
-       (*this) = fromRay(ray);
+       (*this) = FromRay(ray);
     }
 
-    static Line2d fromRay(const Ray2d &ray)
+    static Line2d FromRay(const Ray2d &ray)
     {
        Vector2dd a = ray.a;
        Vector2dd p = ray.p;
@@ -546,7 +555,7 @@ public:
 
     static Line2d fromSegment(const Segment2d &segment)
     {
-        return fromRay(Ray2d(segment));
+        return FromRay(Ray2d(segment));
     }
 
     Vector2dd normal(void) const
@@ -626,6 +635,16 @@ public:
     double pointWeight(const Vector2dd & point) const
     {
         return (normal() & point) + last();
+    }
+
+    /**
+     *   Returns -1, 0, 1 depending on the size on which point lies relative to the line
+     **/
+    int side(const Vector2dd & point)
+    {
+        double weight = pointWeight(point);
+        if (weight == 0) return 0;
+        return weight > 0 ? 1 : -1;
     }
 
     /**
@@ -929,24 +948,60 @@ public:
 
 };
 
-Vector2dd Ray2d::intersectionPoint(const Ray2d &ray1, const Ray2d &ray2, bool *hasIntersection = NULL)
+inline bool Ray2d::hasIntersection(const Ray2d &ray1, const Ray2d &ray2)
 {
+    Line2d l1 = Line2d::FromRay(ray1);
+    Line2d l2 = Line2d::FromRay(ray2);
 
+    int flag01 = l1.side(ray2.getStart());
+    int flag02 = l1.side(ray2.getEnd());
 
+    int flag11 = l2.side(ray1.getStart());
+    int flag12 = l2.side(ray1.getEnd());
+
+    return (flag01 != flag02) && (flag11 != flag12);
+}
+
+inline Vector2dd Ray2d::intersectionPoint(const Ray2d &ray1, const Ray2d &ray2, bool *hasIntersection = NULL)
+{
+    double t1, t2;
+    Vector2dd v  = intersection(ray1, ray2, t1, t2);
+
+    if (hasIntersection != NULL)
+    {
+        *hasIntersection = (t1 != std::numeric_limits<double>::infinity());
+    }
+
+    return v;
 }
 
  /**
-  *
-  *
-  *
   *  This is basically Kramer method
+  *
+  * \f[
+  *  a_{1x} * t_1 - a_{2x} * t_2 = p_{1x} - p_{2x};
+  *  a_{1y} * t_1 - a_{2y} * t_2 = p_{1y} - p_{2y};
+  * \f]
+  *
+  * however, because dist has geometric meaning as the parallelogram area
+  * we can easily find geomtic interpertation
+  *
+  *
   **/
-Vector2dd Ray2d::intersection(const Ray2d &ray1, const Ray2d &ray2, double t1, double t2)
+inline Vector2dd Ray2d::intersection(const Ray2d &ray1, const Ray2d &ray2, double &t1, double &t2)
 {
     Vector2dd dist = ray2.p - ray1.p;
-    double ortog = ray2.a & ray1.a;
 
+    double ortog = ray2.a & ray1.a.leftNormal(); /*  This is det of main matrix */
+    if (ortog == 0) {
+        t1 = std::numeric_limits<double>::infinity();
+        t2 = std::numeric_limits<double>::infinity();
+    }
 
+    t2 = -(dist & ray1.a.leftNormal()) / ortog;
+    t1 = -(dist & ray2.a.leftNormal()) / ortog;
+
+    return ray1.getPoint(t1);
 }
 
 } //namespace corecvs

@@ -206,8 +206,20 @@ public:
         }
     }
 
-    /* This thing checks if the point is inside of the convex poligon*/
+    /**
+     * This thing checks if the point is inside of the convex poligon
+     *
+     * \attention convex only
+     **/
+    int  isInsideConvex(const Vector2dd &point) const;
+
+
+    /**
+     *  Winding number is the number of loops polygon makes around the point
+     **/
+    int windingNumber( const Vector2dd &point ) const;
     int  isInside(const Vector2dd &point) const;
+
 
 
     bool isConvex(bool *direction = NULL) const;
@@ -228,6 +240,11 @@ public:
     const Vector2dd &getNextPoint(int idx) const
     {
        return operator []((idx + 1) % size());
+    }
+
+    /** **/
+    Ray2d getRay(int i)  const {
+        return Ray2d::FromPoints(getPoint(i), getNextPoint(i));
     }
 
 
@@ -256,19 +273,24 @@ public:
         return toReturn;
     }
 
-    static Polygon RegularPolygon(int sides, const Vector2dd &center, double radius);
+    static Polygon RegularPolygon(int sides, const Vector2dd &center, double radius, double startAngleRad = 0.0);
 
     static Polygon Reverse(const Polygon &p);
 
 
-    Polygon transform(const Matrix33 &transform) {
+    Polygon transformed(const Matrix33 &transform) const {
         Polygon toReturn;
         toReturn.reserve(size());
         for (Vector2dd p: *this ) {
             toReturn.push_back(transform * p);
         }
         return toReturn;
+    }
 
+    void transform(const Matrix33 &transform) {
+        for (Vector2dd &p: *this ) {
+            p = transform * p;
+        }
     }
 
     /* non const versions */
@@ -307,6 +329,11 @@ public:
 };
 
 
+
+
+
+class RGB24Buffer;
+
 /**
  *  This class implements Weiler–Atherton algotithm
  *
@@ -314,8 +341,7 @@ public:
 class PolygonCombiner
 {
 public:
-    Polygon pol1;
-    Polygon pol2;
+    Polygon pol[2]; /* We actually don't need to copy poligon, but for sake of simplicity we reverse them to positive orientation*/
 
     enum VertexType {
         INSIDE,
@@ -324,17 +350,34 @@ public:
     };
 
     struct VertexData {
-        int orgId;
+        size_t orgId;
+        Vector2dd pos;     /* We don't need this, just a cache*/
         VertexType inside;
-        VertexData *other = NULL;
+        double t;
+        size_t other;
+
+        VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t other = 0) :
+           orgId(orgId),
+           pos(pos),
+           inside(inside),
+           t(t),
+           other(other)
+        {}
     };
 
-    typedef std::vector<VertexType> ContainerType; /* This type should better be list */
+    typedef std::vector<VertexData> ContainerType; /* This type should better be list */
 
-    ContainerType c1;
-    ContainerType c2;
+    ContainerType c[2];
+
+    int intersectionNumber;
+    std::vector<std::pair<int, int>> intersections;
 
     void prepare(void);
+    void drawDebug(RGB24Buffer *buffer);
+
+    Polygon intersection();
+    Polygon combination();
+    Polygon difference();
 
 
 };

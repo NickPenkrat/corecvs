@@ -324,7 +324,31 @@ uint8_t HardcodeFont::symbols_glyphs[] = {
      0x00,
      0x00,
      0x00,
-     0x04
+     0x04,
+    /*
+    *    **
+    *    *
+    *    *
+    *    *
+    *    **
+    **/
+     0x06,
+     0x04,
+     0x04,
+     0x04,
+     0x06,
+    /*
+    *   **
+    *    *
+    *    *
+    *    *
+    *   **
+    **/
+     0x0C,
+     0x04,
+     0x04,
+     0x04,
+     0x0C
 };
 
 uint8_t HardcodeFont::alpha_glyphs[] = {

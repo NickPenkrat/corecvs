@@ -11,20 +11,23 @@
 #include "mathUtils.h"
 #include "global.h"
 
+#include "rgb24Buffer.h"
+#include "abstractPainter.h"
+
 namespace corecvs {
 
 /**
  *
  * Check if point is inside the polygon
  **/
-int Polygon::isInside(const Vector2dd &a) const
+int Polygon::isInsideConvex(const Vector2dd &a) const
 {
     double oldsign = 0;
     int len = (int)size();
     for (int i = 0; i < len; i++)
     {
-        const Vector2dd &curr = operator [](i);
-        const Vector2dd &next = operator []((i + 1) % len);
+        const Vector2dd &curr = getPoint(i);
+        const Vector2dd &next = getNextPoint(i);
         const Vector2dd normal = (next - curr).rightNormal();
         Vector2dd diff = a - curr;
         double sign = diff & normal;
@@ -35,6 +38,43 @@ int Polygon::isInside(const Vector2dd &a) const
         oldsign = sign;
     }
     return true;
+}
+
+/**
+ *  Using idea from  http://geomalgorithms.com/a03-_inclusion.html
+ **/
+int Polygon::windingNumber(const Vector2dd &point) const
+{
+    int    windingNumber = 0;
+
+    for (size_t i = 0; i < size(); i++) {
+        Vector2dd cur  = getPoint(i);
+        Vector2dd next = getNextPoint(i);
+        Vector2dd dir  = next - cur;
+
+        bool startsNotAbove = (cur.y() <= point.y());
+        bool startsAbove    = !startsNotAbove;
+
+        bool endsAbove      = (next.y() > point.y());
+        bool endsNotAbove   = !endsAbove;
+
+
+        if (startsNotAbove && endsAbove) { // Crossing up
+            if ( dir.parallelogramOrientedAreaTo(point - next) > 0)
+                 windingNumber++;
+        }
+
+        if (startsAbove && endsNotAbove)  { // Crossing down
+            if ( dir.parallelogramOrientedAreaTo(point - next) < 0)
+                 windingNumber--;
+        }
+    }
+    return windingNumber;
+}
+
+int  Polygon::isInside(const Vector2dd &point) const
+{
+    return windingNumber(point) != 0;
 }
 
 bool Polygon::isConvex(bool *direction) const
@@ -61,7 +101,7 @@ bool Polygon::isConvex(bool *direction) const
     return true;
 }
 
-Polygon Polygon::RegularPolygon(int sides, const Vector2dd &center, double radius) {
+Polygon Polygon::RegularPolygon(int sides, const Vector2dd &center, double radius, double startAngleRad) {
     Polygon toReturn;
     toReturn.reserve(sides);
 
@@ -69,7 +109,7 @@ Polygon Polygon::RegularPolygon(int sides, const Vector2dd &center, double radiu
 
     for (int i = 0; i < sides; i++)
     {
-        toReturn.push_back(center + Vector2dd::FromPolar(step * i, radius));
+        toReturn.push_back(center + Vector2dd::FromPolar(step * i + startAngleRad, radius));
     }
     return toReturn;
 }
@@ -107,19 +147,187 @@ double Polygon::signedArea()
 }
 
 void PolygonCombiner::prepare()
-{
-    c1.clear();
-    c2.clear();
+{        
+    intersectionNumber = 0;
+    intersections.clear();
+    c[0].clear();
+    c[1].clear();
 
-    /*for (Vector2dd p : pol1) {
-        inside1.push_back((pol2.isInside(p));
+    for (int p = 0; p < 2; p++)
+    {
+        if (pol[p].signedArea() > 0) pol[p] = Polygon::Reverse(pol[p]);
     }
 
-    for (Vector2dd p : pol2) {
-        inside2.push_back((pol1.isInside(p));
-    }*/
+    for (int p = 0; p < 2; p++)
+    {
+        for (size_t i = 0; i < pol[p].size(); i++) {
+            Vector2dd point = pol[p][i];
+            VertexData vd = {i, point, (pol[1-p].isInside(point) ? INSIDE : OUTSIDE), 0};
+            c[p].push_back(vd);
+        }
+    }
+
+    for (size_t i = 0; i < pol[0].size(); i++)
+    {
+        for (size_t j = 0; j < pol[1].size(); j++)
+        {
+            Ray2d r1 = pol[0].getRay(i);
+            Ray2d r2 = pol[1].getRay(j);
+            /* Could make a fastcheck here before any divisions */
+
+            double t1 = 0;
+            double t2 = 0;
+            Vector2dd x = Ray2d::intersection(r1, r2, t1, t2);
+            if ((t1 == std::numeric_limits<double>::infinity()) ||
+                (t1 < 0 || t1 >= 1.0) ||
+                (t2 < 0 || t2 >= 1.0))
+            {
+                continue;
+            }
+
+            VertexData vd1(i, x, COMMON, t1, intersectionNumber);
+            c[0].push_back(vd1);
+
+            VertexData vd2(j, x, COMMON, t2,  intersectionNumber);
+            c[1].push_back(vd2);
+
+            intersectionNumber++;
+
+        }
+    }
+
+    auto comparator = [](VertexData &vd1, VertexData &vd2)
+    {
+            if (vd1.orgId == vd2.orgId)
+                return vd1.t < vd2.t;
+            return vd1.orgId < vd2.orgId;
+    };
+
+    std::sort(c[0].begin(), c[0].end(), comparator); // TODO: First array can be created presorted
+    std::sort(c[1].begin(), c[1].end(), comparator);
+
+    intersections.resize(intersectionNumber);
+    for (size_t i = 0; i < c[0].size(); i++)
+    {
+        if (c[0][i].inside == COMMON)
+            intersections[c[0][i].other].first = i;
+    }
+    for (size_t i = 0; i < c[1].size(); i++)
+    {
+        if (c[1][i].inside == COMMON)
+            intersections[c[1][i].other].second = i;
+    }
+    for (size_t i = 0; i < intersections.size(); i++)
+    {
+        c[0][intersections[i].first ].other = intersections[i].second;
+        c[1][intersections[i].second].other = intersections[i].first;
+    }
+}
+
+void PolygonCombiner::drawDebug(RGB24Buffer *buffer)
+{
+    AbstractPainter<RGB24Buffer> painter(buffer);
+
+    painter.drawPolygon(pol[0], RGBColor::Yellow());
+    painter.drawPolygon(pol[1], RGBColor::Cyan  ());
+
+    for (int p = 0; p < 2; p++)
+    {
+        for (size_t i = 0; i < c[p].size(); i++)
+        {
+            VertexData &v = c[p][i];
+            Vector2dd pos = v.pos;
+            if (v.inside == INSIDE)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Red());
+            if (v.inside == OUTSIDE)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Green());
+            if (v.inside == COMMON)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Blue());
+
+            painter.drawFormat(pos.x(), pos.y() + p * 10, RGBColor::White(), 1, "%c%d (%0.2lf) [%d]", p == 0 ? 'A' : 'B', i, v.t, v.other);
+        }
+    }
 
 
+}
+
+Polygon PolygonCombiner::intersection()
+{
+    Polygon result;
+    if (intersectionNumber == 0) /* There are no contur intersection */
+    {
+        /* First poligon is inside the second one */
+        if (!c[0].empty() && c[0].front().inside)
+            return Polygon(pol[0]);
+
+        /* second poligon is inside the first one */
+        if (!c[1].empty() && c[1].front().inside)
+            return Polygon(pol[1]);
+
+        return result;
+    }
+
+    std::pair<int, int> &fst = intersections[0];
+
+    int currentId = fst.first;
+    int currentChain = 0;
+
+    cout << "Exit condition 0: "  << fst.first << " 1:" << fst.second << endl;
+
+    int limit = 0;
+    while (limit ++ < 100) {
+        VertexData v = c[currentChain][currentId];
+        result.push_back(v.pos);
+        cout << "Adding vertex c:" << currentChain << " id" << currentId << " point:" << v.orgId << " " << c[currentChain][v.orgId].pos << endl;
+
+        if (v.inside == INSIDE)
+        {
+            /* Moving inside the outer polygon */
+            currentId = (currentId + 1) % c[currentChain].size();
+            continue;
+        }
+        if (v.inside == OUTSIDE)
+        {
+            cout << "Internal Error" << endl;
+            break;
+        }
+
+        if (v.inside == COMMON)
+        {
+            int otherChain = 1 - currentChain;
+            int nextCurrent = (currentId  + 1) % c[currentChain].size();
+            int nextOther   = (v.other    + 1) % c[otherChain  ].size();
+
+            VertexData &candidate1 = c[currentChain][nextCurrent];
+            VertexData &candidate2 = c[otherChain  ][nextOther];
+
+            cout << "  Branching (" << currentChain << " " << nextCurrent << ")  (" << otherChain << " " << nextOther << ")" << endl;
+
+            if ((currentId == 0) && (nextCurrent == fst.first))
+                break;
+            if ((currentId == 1) && (nextCurrent == fst.second))
+                break;
+
+            if (candidate1.inside != OUTSIDE) {
+                cout << "choice1" << endl;
+                currentId = nextCurrent;
+            } else {
+                cout << "choice2" << endl;
+                currentChain = otherChain;
+                currentId    = nextOther;
+            }
+        }
+    }
+    return result;
+}
+
+Polygon PolygonCombiner::combination()
+{
+
+}
+
+Polygon PolygonCombiner::difference()
+{
 
 }
 
