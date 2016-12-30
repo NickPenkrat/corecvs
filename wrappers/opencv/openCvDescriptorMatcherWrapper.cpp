@@ -85,7 +85,9 @@ DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const D
         SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_L2)););
         SWITCH_TYPE(SURF, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_L2)););
         SWITCH_TYPE(ORB, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING)););
-        SWITCH_TYPE(BRISK, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING));););
+        SWITCH_TYPE(BRISK, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING));)
+        SWITCH_TYPE(AKAZE, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING)););
+                ;);
 
     CORE_ASSERT_FAIL_P(("OpenCvDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcherWrapper", type.c_str(), matcher.c_str()));
     return 0;
@@ -102,7 +104,9 @@ bool OpenCvDescriptorMatcherProvider::provides(const DescriptorType &type, const
         SWITCH_TYPE(SIFT, return true;);
         SWITCH_TYPE(SURF, return true;);
         SWITCH_TYPE(BRISK, return true;);
-        SWITCH_TYPE(ORB, return true;););
+        SWITCH_TYPE(ORB, return true;)
+        SWITCH_TYPE(AKAZE, return true;)
+                ;);
     return false;
 }
 
