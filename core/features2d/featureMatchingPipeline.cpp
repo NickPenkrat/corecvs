@@ -37,7 +37,7 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
 
 std::string getFilename(const std::string &imgName)
 {
-    int pos = ( int )imgName.find_last_of( PATH_SEPARATOR[ 0 ] );
+    int pos = (int)imgName.find_last_of(PATH_SEPARATOR[0]);
     std::string res = imgName.substr(pos,imgName.size() - pos);
     return res;
 }
@@ -545,15 +545,7 @@ void MatchingStage::run(FeatureMatchingPipeline *pipeline)
     MatchPlan &matchPlan = pipeline->matchPlan;
     RawMatches &rawMatches = pipeline->rawMatches;
 
-	try
-	{
-		CORE_ASSERT_TRUE_S(matchPlan.plan.size());
-	}
-	catch (AssertException)
-	{
-
-	}
-    
+    CORE_ASSERT_TRUE_S(matchPlan.plan.size());
     rawMatches.matches.clear();
     rawMatches.matches.resize(matchPlan.plan.size());
 

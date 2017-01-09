@@ -553,6 +553,37 @@ void Matrix::svd (Matrix33 *A, Vector3dd *W, Matrix33 *V)
     *V = (Matrix33)mV;
 }
 
+Matrix Matrix::invPosdefSqrt(const Matrix* preTransform) const
+{
+    CORE_ASSERT_TRUE_S(h == w);
+    CORE_ASSERT_TRUE_S(!preTransform || (preTransform->h == preTransform->w && preTransform->h == h));
+#ifndef WITH_BLAS
+    Matrix U(w, w), W(1, h), V(*this);
+    DiagonalMatrix d(h);
+    Matrix::jacobi(&V, &d, &U, 0);
+    for (int i = 0; i < h; ++i)
+        W.a(0, i) = d.a(i, i);
+#else
+    Matrix A(*this);
+    int lwork, liwork, m;
+    std::unique_ptr<int[]> isuppz(new int[2*h]);
+    Matrix W(1, h), U(h, h);
+    double vl = 0.0, vu = 0.0, abstol = -1.0;
+    int il = 1, iu = h;
+    LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', h, &A.a(0, 0), A.stride, vl, vu, il, iu, abstol, &m, &W.a(0,0), &U.a(0, 0), U.stride, isuppz.get());
+    CORE_ASSERT_TRUE_S(m == h);
+#endif
+    for (int i = 0; i < h; ++i)
+    {
+        auto sqrt = std::sqrt(W.a(0, i));
+        for (int j = 0; j < w; ++j)
+        {
+            U.a(j, i) /= sqrt;
+        }
+    }
+    return preTransform ? U ** preTransform : U;
+}
+
 /**
  * \brief Solves the linear equation.
  *

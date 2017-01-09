@@ -22,6 +22,114 @@ void corecvs::FlatPatternCalibrator::addPattern(const ObservationList &patternPo
     }
 }
 
+struct PlaneFitFunctor : public FunctionArgs
+{
+    PlaneFitFunctor(const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts
+        , const Affine3DQ &initial)
+        : FunctionArgs(6, 3 * (int)pts.size()), initial(initial), pts(pts)
+    {}
+
+    void operator()(const double *in, double *out)
+    {
+        double qx = in[0], qy = in[1], qz = in[2],
+               tx = in[3], ty = in[4], tz = in[5];
+        auto R = corecvs::Quaternion::RotationalTransformation(qx, qy, qz, 0.0, corecvs::Quaternion::Parametrization::NON_EXCESSIVE, false);
+        R.a(0, 3) = tx;
+        R.a(1, 3) = ty;
+        R.a(2, 3) = tz;
+        int argout = 0;
+        for (auto& pt: pts)
+        {
+            auto diff = pt.second - (R * (initial * pt.first));
+            for (int i = 0; i < 3; ++i)
+                out[argout++] = diff[i];
+        }
+
+        diff.rotor[0] = qx;
+        diff.rotor[1] = qy;
+        diff.rotor[2] = qz;
+        diff.rotor[3] = 1.0;
+        diff.rotor.normalise();
+        diff.shift = corecvs::Vector3dd(tx, ty, tz);
+    }
+
+    Affine3DQ initial;
+    Affine3DQ diff;
+    const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts;
+};
+
+
+corecvs::Affine3DQ corecvs::FlatPatternCalibrator::TrafoToPlane(const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts)
+{
+    int N = pts.size();
+    corecvs::Matrix A(N, 3), B(N, 3);
+    for (int i = 0; i < N; ++i)
+    {
+        A.a(i, 0) = pts[i].second[0];
+        A.a(i, 1) = pts[i].second[1];
+        A.a(i, 2) = 1.0;
+        CORE_ASSERT_TRUE_S(pts[i].second[2] == 0.0);
+        for (int j = 0; j < 3; ++j)
+            B.a(i, j) = pts[i].first[j];
+    }
+#ifdef WITH_BLAS
+    corecvs::Matrix res_(3, 3);
+    LAPACKE_dgels(LAPACK_ROW_MAJOR, 'N', N, 3, 3, &A.a(0, 0), A.stride, &B.a(0, 0), B.stride);
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            res_.a(j, i) = B.a(i, j);
+#else
+    auto ata = A.ata();
+    auto ab  = A.t() * B;
+    // corecvs does not have multiple rhs linsolve,
+    // but linsolve without blas is stupid like shit,
+    // so no bad things happen there
+    auto res_ = (ata.inv() * ab).t();
+#endif
+    corecvs::Matrix33 res;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            res.a(i, j) = res_.a(i, j);
+
+    for (auto& vv: pts)
+    {
+        auto tgt = vv.first;
+        auto frm = vv.second;
+        frm[2] = 1.0;
+        std::cout << tgt - res * frm << std::endl;
+    }
+    corecvs::Vector3dd r1(res.a(0, 0), res.a(1, 0), res.a(2, 0)),
+                       r2(res.a(0, 1), res.a(1, 1), res.a(2, 1)),
+                        t(res.a(0, 2), res.a(1, 2), res.a(2, 2));
+    std::cout << res << std::endl;
+
+    r1 = r1.normalised();
+    r2 = (r2 - r1 * (r1 & r2)).normalised();
+    auto r3 = r1 ^ r2;
+
+    corecvs::Matrix33 rotor(r1[0], r2[0], r3[0],
+                            r1[1], r2[1], r3[1],
+                            r1[2], r2[2], r3[2]);
+    std::cout << rotor << rotor.det() << std::endl;
+
+    for (auto& vv: pts)
+    {
+        auto tgt = vv.first;
+        auto frm = vv.second;
+        std::cout << tgt - (rotor * frm + t) << std::endl;
+    }
+    auto q1 = corecvs::Affine3DQ(corecvs::Quaternion::FromMatrix(rotor), t).inverted();
+    corecvs::LevenbergMarquardt lm;
+    PlaneFitFunctor pff(pts, q1);
+    lm.f = &pff;
+    std::vector<double> inputs(6), outputs(pts.size() * 3);
+    lm.traceProgress = false;
+    auto r1es = lm.fit(inputs, outputs);
+    pff(&r1es[0], &outputs[0]);
+    auto q2 = pff.diff * q1;
+    return q2;
+}
+
 void corecvs::FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LMiterations)
 {
     std::cout << "SOLVING FPC" << std::endl;

@@ -13,6 +13,7 @@
 #include "defaultSetter.h"
 #include "printerVisitor.h"
 #include "levenmarq.h"
+#include "polynomialSolver.h"
 #include "matrix22.h"
 
 /*
@@ -134,6 +135,51 @@ public:
             res += Vector2dd(mShiftX, mShiftY);
         }
         return res + Vector2dd(cx, cy);
+    }
+
+    bool check(const double r)
+    {
+        auto rn = r / mNormalizingFocal;
+        std::vector<double> coeff;
+        int n = (int)mKoeff.size();
+        coeff.resize(n + 1);
+        coeff[0] = 1.0;
+        for (int i = 1; i <= n; ++i)
+            coeff[i] = (i + 1) * mKoeff[i - 1];
+        Polynomial p(coeff);
+        std::vector<double> roots;
+        PolynomialSolver::solve(p, roots);
+        std::cout << "LDMP roots: ";
+        for (auto& r: roots)
+        {
+            if (r > 0.0)
+                std::cout << r * mNormalizingFocal << " ";
+            if (r > 0.0 && r < rn)
+                return false;
+        }
+        return (radialScaleNormalized(rn / 2.0) > 0) ^ (radialScaleNormalized(rn) < 0);
+    }
+    bool check(const Vector2dd &tl, const Vector2dd &br)
+    {
+        double rlimit = 0;
+        Vector2dd vv[] = {tl, br};
+        Vector2dd center(mPrincipalX, mPrincipalY);
+        Vector2dd shift(mShiftX, mShiftY);
+        for (int i = 0; i < 4; ++i)
+        {
+            Vector2dd v(vv[i / 2][0], vv[i % 2][1]);
+            if (mMapForward)
+            {
+                v -= shift;
+                v *= 1.0 / mScale;
+            }
+            v -= center;
+            v[0] *= mAspect;
+            double r = v[0] * v[0] + v[1] * v[1];
+            if (r > rlimit)
+                rlimit = r;
+        }
+        return check(std::sqrt(rlimit));
     }
 
     // These functions always return jacobian/derivatives for "native" application
