@@ -303,6 +303,7 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
     combiner.pol[0] = p1;
     combiner.pol[1] = p2;
 
+    cout << combiner << endl;
     combiner.prepare();
     cout << combiner << endl;
     combiner.validateState();

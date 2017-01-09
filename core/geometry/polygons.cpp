@@ -173,7 +173,7 @@ void PolygonCombiner::prepare()
         {
             Ray2d r1 = pol[0].getRay(i);
             Ray2d r2 = pol[1].getRay(j);
-            /* Could make a fastcheck here before any divisions */
+            /* Could make a fast check here before any divisions */
 
             double t1 = 0;
             double t2 = 0;
