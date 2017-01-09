@@ -349,17 +349,35 @@ public:
         OUTSIDE
     };
 
+    static std::string getName(const VertexType type)
+    {
+        switch (type) {
+        case INSIDE:
+            return "inside";
+            break;
+        case OUTSIDE:
+            return "outside";
+            break;
+        case COMMON:
+            return "common";
+            break;
+        default:
+            break;
+        }
+        return "";
+    }
+
     struct VertexData {
         size_t orgId;
         Vector2dd pos;     /* We don't need this, just a cache*/
-        VertexType inside;
+        VertexType flag;
         double t;
         size_t other;
 
         VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t other = 0) :
            orgId(orgId),
            pos(pos),
-           inside(inside),
+           flag(inside),
            t(t),
            other(other)
         {}
@@ -372,12 +390,43 @@ public:
     int intersectionNumber;
     std::vector<std::pair<int, int>> intersections;
 
+    /* Method that initialise internal data structures of the PoligonCombiner*/
     void prepare(void);
+
+    /* */
+    bool validateState(void);
     void drawDebug(RGB24Buffer *buffer);
 
     Polygon intersection();
     Polygon combination();
     Polygon difference();
+
+    PolygonCombiner(){}
+    PolygonCombiner(Polygon &p1, Polygon &p2)
+    {
+         pol[0] = p1;
+         pol[1] = p2;
+    }
+
+    friend std::ostream & operator <<(std::ostream &out, const PolygonCombiner &combiner)
+    {
+        out << "A: [" << std::endl;
+        for (size_t i = 0; i < combiner.c[0].size(); i++)
+        {
+            const VertexData &vd = combiner.c[0][i];
+            out << " " << i << ":  (" << vd.pos << " " << getName(vd.flag) << " " << vd.t << " " << vd.other << ") " << std::endl;
+        }
+        out << "]" << std::endl;
+        out << "B: [" << std::endl;
+        for (size_t i = 0; i < combiner.c[1].size(); i++)
+        {
+            const VertexData &vd = combiner.c[1][i];
+            out << " " << i << ":  (" << vd.pos << " " << getName(vd.flag) << " " << vd.t << " " << vd.other << ") " << std::endl;
+        }
+        out << "]" << std::endl;
+
+        return out;
+    }
 
 
 };

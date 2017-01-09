@@ -210,6 +210,10 @@ public:
         return Ray2d(end - start, start);
     }
 
+    static Ray2d FromPointAndDirection(const Vector2dd &point, const Vector2dd &direction)
+    {
+        return Ray2d(direction, point);
+    }
 
     static bool hasIntersection(const Ray2d &ray1, const Ray2d &ray2);
 
@@ -990,17 +994,28 @@ inline Vector2dd Ray2d::intersectionPoint(const Ray2d &ray1, const Ray2d &ray2, 
   **/
 inline Vector2dd Ray2d::intersection(const Ray2d &ray1, const Ray2d &ray2, double &t1, double &t2)
 {
+/*    SYNC_PRINT(("Ray2d::intersection((%lf %lf -> %lf %lf), (%lf %lf -> %lf %lf)): called\n",
+        ray1.a.x(), ray1.a.y(),
+        ray1.p.x(), ray1.p.y(),
+
+        ray2.a.x(), ray2.a.y(),
+        ray2.p.x(), ray2.p.y()
+    ));*/
+
     Vector2dd dist = ray2.p - ray1.p;
 
     double ortog = ray2.a & ray1.a.leftNormal(); /*  This is det of main matrix */
     if (ortog == 0) {
         t1 = std::numeric_limits<double>::infinity();
         t2 = std::numeric_limits<double>::infinity();
+//        SYNC_PRINT(("Ray2d::intersection(): no intersection\n"));
+        return Vector2dd(0, 0);
     }
 
     t2 = -(dist & ray1.a.leftNormal()) / ortog;
     t1 = -(dist & ray2.a.leftNormal()) / ortog;
 
+//    SYNC_PRINT(("Ray2d::intersection(): t1=%lf t2=%lf\n", t1, t2 ));
     return ray1.getPoint(t1);
 }
 
