@@ -94,7 +94,7 @@ QString printSelectionModel(const QItemSelectionModel::SelectionFlags &flag);
 QString printWidgetAttributes(QWidget *widget);
 
 QString printQImageFormat(const QImage::Format &format);
-
+QString printModelItemRole(int role);
 /* File management support 
  */
 namespace
