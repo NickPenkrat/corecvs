@@ -20,6 +20,7 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.h \
 		$$OPENCV_WRAPPER_DIR/openCvCheckerboardDetector.h \
                 $$OPENCV_WRAPPER_DIR/openCvImageRemapper.h \
+                $$OPENCV_WRAPPER_DIR/openCvDetectAndExtractWrapper.h \
 
     contains(DEFINES, WITH_OPENCV_GPU) { 
         HEADERS += \      
@@ -42,6 +43,7 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvCheckerboardDetector.cpp \
                 $$OPENCV_WRAPPER_DIR/openCvImageRemapper.cpp \
+                $$OPENCV_WRAPPER_DIR/openCvDetectAndExtractWrapper.cpp \
 
     contains(DEFINES, WITH_OPENCV_GPU) { 
         SOURCES += \      
