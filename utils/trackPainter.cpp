@@ -5,8 +5,6 @@
 #include "bufferReaderProvider.h"
 #include "abstractPainter.h"
 
-#include <QFile>
-
 using namespace cvs;
 
 static std::string changeExtension(const std::string &imgName, const std::string &desiredExt)

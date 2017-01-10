@@ -1136,6 +1136,7 @@ Vector SparseMatrix::trsv_homebrew(const Vector &rhs, const char* trans, bool up
     return ans;
 }
 
+#ifdef WITH_MKL
 Vector SparseMatrix::trsv_mkl(const Vector &rhs, const char* trans, bool up, int N) const
 {
     CORE_ASSERT_TRUE_S(w == h && w == rhs.size());
@@ -1148,6 +1149,7 @@ Vector SparseMatrix::trsv_mkl(const Vector &rhs, const char* trans, bool up, int
     }
     return ans[N % 2];
 }
+#endif
 
 #ifdef WITH_CUSPARSE
 Vector SparseMatrix::trsv_cusparse(const Vector &rhs, const char* trans, bool up, int N, int gpuId) const

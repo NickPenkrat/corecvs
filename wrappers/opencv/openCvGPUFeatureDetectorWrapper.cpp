@@ -36,8 +36,36 @@ using namespace cv::ocl;
 
 struct SmartPtrHolder
 {
-    cv::Ptr< cv::cuda::ORB >          orb;
-    cv::Ptr< cv::xfeatures2d::SURF >  surf;
+    SmartPtrHolder() : tag(SIFT), sift() {}
+    ~SmartPtrHolder() {}
+    enum {
+        ORB, SURF
+    } tag;
+
+    union {
+        cv::Ptr< cv::cuda::ORB >          orb;
+        cv::Ptr< cv::xfeatures2d::SURF >  surf;
+    };
+
+    cv::DescriptorExtractor *get() {
+        switch (tag) {
+        case ORB:
+            return orb.get();
+        case SURF:
+            return surf.get();
+        default:
+            return nullptr;
+        }
+    }
+
+    void set(cv::Ptr<cv::cuda::ORB> value) {
+        tag = ORB;
+        orb = value;
+    }
+    void set(cv::Ptr<cv::xfeatures2d::SURF> value) {
+        tag = SURF;
+        surf = value;
+    }
 };
 
 OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper(cv::cuda::SURF_CUDA *detector) : detectorSURF_CUDA(detector),
@@ -108,16 +136,17 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     }
     else if ( holder )
     {
-        if ( holder->surf.get() ) // openCL implementation
+        auto detector = holder->get();
+        if ( holder->tag == SmartPtrHolder::SURF ) // openCL implementation
         {
             cv::UMat img;
-            holder->surf->detect( img, kps );
+            detector->detect( img, kps );
         }
 
-        if ( holder->orb.get() ) // openCL implementation
+        if ( holder->tag == SmartPtrHolder::ORB ) // openCL implementation
         {
             cv::cuda::GpuMat img( convert( image ) );
-            holder->orb->detect( img, kps );
+            detector->detect( img, kps );
         }           
     }
 
@@ -279,7 +308,7 @@ FeatureDetector* OpenCvGPUFeatureDetectorProvider::getFeatureDetector( const Det
         else
         {
             cv::Ptr< cv::xfeatures2d::SURF > ptr = cv::xfeatures2d::SURF::create(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright);
-            holder->surf = ptr;
+            holder->set(ptr);
             return new OpenCvGPUFeatureDetectorWrapper(holder);
         }
     }
@@ -289,7 +318,7 @@ FeatureDetector* OpenCvGPUFeatureDetectorProvider::getFeatureDetector( const Det
         if (cudaApi)
         {
             cv::Ptr< cv::cuda::ORB > ptr = cv::cuda::ORB::create(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize);
-            holder->orb = ptr;
+            holder->set(ptr);
             return new OpenCvGPUFeatureDetectorWrapper(holder);
         }
     }
