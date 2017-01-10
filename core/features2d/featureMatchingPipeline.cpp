@@ -1735,14 +1735,18 @@ void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
 	const std::string &params,
     bool keypointsColor )
 {
-#ifndef WITH_OPENCV_3x
+
 	if (std::string::npos != detectorType.find("_GPU") &&
 		std::string::npos != descriptorType.find("_GPU"))
 	{
         pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, "", keypointsColor ), true );
 	}
-	else
-#endif
+	else if ( detectorType == "AKAZE" && descriptorType == "AKAZE" )
+    //else if ( detectorType == descriptorType )
+    {
+        pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, "", keypointsColor ), true );
+    }
+    else
 	{
         pipeline.add( new KeyPointDetectionStage( detectorType, maxFeatureCount, downsampleFactor, params ), true );
         pipeline.add( new DescriptorExtractionStage( descriptorType, downsampleFactor, params, keypointsColor ), true );
