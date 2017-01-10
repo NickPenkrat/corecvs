@@ -1,5 +1,5 @@
-#include "openCvImageRemapper.h"
 #include "opencv2/imgproc.hpp"
+#include "openCvImageRemapper.h"
 
 void convertRGB(const corecvs::RGB24Buffer& buffer, cv::Mat& mat)
 {
