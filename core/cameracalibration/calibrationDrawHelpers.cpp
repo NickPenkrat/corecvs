@@ -1,4 +1,4 @@
-#include "calibrationHelpers.h"
+#include "calibrationDrawHelpers.h"
 #include "mesh3d.h"
 #include "calibrationCamera.h"
 #include "fixtureScene.h"
@@ -8,7 +8,7 @@
 
 using namespace corecvs;
 
-RGBColor CalibrationHelpers::palette[] =
+RGBColor CalibrationDrawHelpers::palette[] =
 {
     RGBColor(0x762a83u),
     RGBColor(0xaf8dc3u),
@@ -18,7 +18,12 @@ RGBColor CalibrationHelpers::palette[] =
     RGBColor(0x1b7837u)
 };
 
-void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double scale)
+void CalibrationDrawHelpers::setParameters(const CalibrationDrawHelpersParameters &params)
+{
+    *static_cast<CalibrationDrawHelpersParameters *>(this) = params;
+}
+
+void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double scale)
 {
     double w = cam.intrinsics.w();
     double h = cam.intrinsics.h();
@@ -59,7 +64,7 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
      //   cout << v1 << " " << v2 << endl;
     }
 
-    if (printNames)
+    if (printNames())
     {
         AbstractPainter<Mesh3D> p(&mesh);
             mesh.mulTransform(Matrix44::Shift(cam.extrinsics.position));
@@ -73,7 +78,7 @@ void CalibrationHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double
     //mesh.addLine(ppv, qc * (invK * center) + cc);
 }
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
+void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
 {
 //    SYNC_PRINT(("CalibrationHelpers::drawPly():called\n"));
 
@@ -85,7 +90,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
 
     int colorId = 0;
 
-    if (drawFixtureCams)
+    if (drawFixtureCams())
     {
         for (size_t cam = 0; cam < ps.cameras.size(); cam++)
         {
@@ -107,7 +112,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
     mesh.currentColor = corecvs::RGBColor::Blue();
     mesh.addLine(ps.location * ori, ps.location * zps);
 
-    if (printNames)
+    if (printNames())
     {
         AbstractPainter<Mesh3D> p(&mesh);
         mesh.mulTransform(Matrix44::Shift(ps.location.shift) * Matrix44::Scale(scale / 22.0));
@@ -118,7 +123,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double s
 }
 
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
+void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
 {
     mesh.currentColor = RGBColor(~0u);
     for (const PointObservation& pt: list)
@@ -127,18 +132,18 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
     }
 }
 
-void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scale)
+void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scale)
 {
     mesh.setColor(fp.color);
     if (!fp.hasKnownPosition)
         fp.position = fp.reprojectedPosition;
-    if (!largePoints) {
+    if (!largePoints()) {
         mesh.addPoint(fp.position);
     } else {
         mesh.addIcoSphere(fp.position, scale / 100.0, 2);
     }
 
-    if (printNames) {
+    if (printNames()) {
         AbstractPainter<Mesh3D> p(&mesh);
         mesh.mulTransform(Matrix44::Shift(fp.position) * Matrix44::Scale(scale / 22.0));
         mesh.setColor(RGBColor::Blue());
@@ -146,7 +151,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
         mesh.popTransform();
     }
 
-    if (drawObservations) {
+    if (drawObservations()) {
         for (auto it = fp.observations.begin(); it != fp.observations.end(); ++it)
         {
             FixtureCamera *cam = it->first;
@@ -167,7 +172,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
             Vector3dd p3 = rayDir.getPoint(scale);
             mesh.addLine(rayDir.p, p3);*/
 
-            if (!largePoints) {
+            if (!largePoints()) {
                 mesh.addPoint(p2);
             } else {
                 mesh.addIcoSphere(p2, scale / 100.0, 2);
@@ -176,7 +181,7 @@ void CalibrationHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scal
     }
 }
 
-void CalibrationHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, double scale)
+void CalibrationDrawHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, double scale)
 {
     for (FixtureCamera *cam: scene.orphanCameras())
     {
