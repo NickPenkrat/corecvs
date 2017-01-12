@@ -13,6 +13,8 @@
 #   include <opencv2/nonfree/features2d.hpp>       // cv::SURF, cv::SIFT
 #endif
 
+using namespace corecvs;
+
 #ifdef WITH_OPENCV_3x
 struct SmartPtrHolder
 {

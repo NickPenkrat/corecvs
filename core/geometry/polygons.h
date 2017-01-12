@@ -394,10 +394,10 @@ public:
     void prepare(void);
 
     /* */
-    bool validateState(void);
-    void drawDebug(RGB24Buffer *buffer);
+    bool validateState(void) const;
+    void drawDebug(RGB24Buffer *buffer) const;
 
-    Polygon intersection();
+    Polygon intersection() const;
     Polygon combination();
     Polygon difference();
 

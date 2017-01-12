@@ -223,7 +223,7 @@ void PolygonCombiner::prepare()
     }
 }
 
-bool PolygonCombiner::validateState()
+bool PolygonCombiner::validateState() const
 {
     bool ok = true;
     for (int p = 0; p < 2; p++)
@@ -231,8 +231,9 @@ bool PolygonCombiner::validateState()
         size_t start = -1;
         size_t oldId = -1;
 
-        VertexData &vc = c[p][0];
         int skipped = 0;
+
+        VertexData vc = c[p][0];
 
         for (size_t i = 0; i < c[p].size(); i++)
         {
@@ -256,7 +257,7 @@ bool PolygonCombiner::validateState()
         {
             int num = (i + start) % c[p].size();
 
-           VertexData &vn = c[p][num];
+           const VertexData &vn = c[p][num];
            if (vn.flag == COMMON)
            {
                 skipped++;
@@ -303,7 +304,7 @@ bool PolygonCombiner::validateState()
     return ok;
 }
 
-void PolygonCombiner::drawDebug(RGB24Buffer *buffer)
+void PolygonCombiner::drawDebug(RGB24Buffer *buffer) const
 {
     AbstractPainter<RGB24Buffer> painter(buffer);
 
@@ -314,7 +315,7 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer)
     {
         for (size_t i = 0; i < c[p].size(); i++)
         {
-            VertexData &v = c[p][i];
+            const VertexData &v = c[p][i];
             Vector2dd pos = v.pos;
 
             if (v.flag == INSIDE)
@@ -332,7 +333,7 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer)
 
 }
 
-Polygon PolygonCombiner::intersection()
+Polygon PolygonCombiner::intersection() const
 {
     Polygon result;
     if (intersectionNumber == 0) /* There are no contur intersection */
@@ -348,7 +349,7 @@ Polygon PolygonCombiner::intersection()
         return result;
     }
 
-    std::pair<int, int> &fst = intersections[0];
+    const std::pair<int, int> &fst = intersections[0];
 
     int currentId = fst.first;
     int currentChain = 0;
@@ -383,8 +384,8 @@ Polygon PolygonCombiner::intersection()
             int nextCurrent = (currentId  + 1) % c[currentChain].size();
             int nextOther   = (v.other    + 1) % c[otherChain  ].size();
 
-            VertexData &candidate1 = c[currentChain][nextCurrent];
-            VertexData &candidate2 = c[otherChain  ][nextOther];
+            const VertexData &candidate1 = c[currentChain][nextCurrent];
+            const VertexData &candidate2 = c[otherChain  ][nextOther];
 
             printf("Branching (%c%d) (%c%d)\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
 
