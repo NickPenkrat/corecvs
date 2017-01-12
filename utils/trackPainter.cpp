@@ -52,7 +52,7 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             auto name = p;
 			std::stringstream ss;
 			auto filedir = dir == "" ? getFiledir(name) : dir;
-			auto outputName = removeExtension(getFilename(name)) + "_" + suffix + ".png";
+			auto outputName = removeExtension(getFilename(name)) + "_" + suffix + ".jpg";
 			ss << filedir << outputName;
 
             auto nameNew = ss.str();
@@ -93,7 +93,7 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
 //                & nameB= imgB.second;
             std::stringstream ss;
 			auto filedir = dir == "" ? getFiledir(imgA) : dir;
-			auto outputName = removeExtension(getFilename(imgA)) + " " + removeExtension(getFilename(imgB)) + " " + suffix + ".png";
+			auto outputName = removeExtension(getFilename(imgA)) + " " + removeExtension(getFilename(imgB)) + " " + suffix + ".jpg";
 			ss << filedir << outputName;
 
             auto srcA = BufferReaderProvider::readRgb(imgA),
