@@ -1640,10 +1640,16 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
     corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]), rhs;
     corecvs::Matrix lhs;
 
+#ifdef WITH_TBB
     tbb::task_group g;
     g.run([&]() { rhs = a - BDinv * b; });
     g.run([&]() { lhs = (corecvs::Matrix)A - (corecvs::Matrix)(BDinv * C); });
     g.wait();
+#else
+    rhs = a - BDinv * b;
+    lhs = (corecvs::Matrix)A - (corecvs::Matrix)(BDinv * C);
+
+#endif
     std::cout << "Fillin: A=" << A.fillin() << ", BDinv*C: " << (BDinv*C).fillin() << ", lhs: " << (corecvs::SparseMatrix(lhs)).fillin() << std::endl;
     auto stopLhsRhs = std::chrono::high_resolution_clock::now();
 
@@ -1854,10 +1860,15 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
     corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]), rhs;
     corecvs::Matrix lhs;
 
+#ifdef WITH_TBB
     tbb::task_group g;
     g.run([&]() { rhs = a - b * DinvtBt; });
     g.run([&]() { lhs = (corecvs::Matrix)A - (corecvs::Matrix)(C.t() * DinvtBt).t(); });
     g.wait();
+#else
+    rhs = a - b * DinvtBt;
+    lhs = (corecvs::Matrix)A - (corecvs::Matrix)(C.t() * DinvtBt).t();
+#endif
     auto stopLhsRhs = std::chrono::high_resolution_clock::now();
 
     auto startX = std::chrono::high_resolution_clock::now();

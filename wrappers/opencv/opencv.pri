@@ -20,6 +20,14 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.h \
 		$$OPENCV_WRAPPER_DIR/openCvCheckerboardDetector.h
 
+    contains(DEFINES, WITH_OPENCV_GPU) { 
+        HEADERS += \      
+                $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorExtractorWrapper.h \
+                $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorMatcherWrapper.h \
+                $$OPENCV_WRAPPER_DIR/openCvGPUFeatureDetectorWrapper.h \
+
+    }
+
     SOURCES += \
 		$$OPENCV_WRAPPER_DIR/openCvFeatureDetectorWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/featureDetectorCV.cpp \
@@ -30,7 +38,15 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/openCvKeyPointsWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvDescriptorExtractorWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.cpp \
-		$$OPENCV_WRAPPER_DIR/openCvCheckerboardDetector.cpp
+		$$OPENCV_WRAPPER_DIR/openCvCheckerboardDetector.cpp \
+
+    contains(DEFINES, WITH_OPENCV_GPU) { 
+        SOURCES += \      
+                $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorExtractorWrapper.cpp \
+                $$OPENCV_WRAPPER_DIR/openCvGPUDescriptorMatcherWrapper.cpp \
+                $$OPENCV_WRAPPER_DIR/openCvGPUFeatureDetectorWrapper.cpp \
+
+    }
 
     # Face Detection
     #

@@ -37,7 +37,7 @@ std::string changeExtension(const std::string &imgName, const std::string &desir
 
 std::string getFilename(const std::string &imgName)
 {
-    int pos = imgName.find_last_of(PATH_SEPARATOR[0]);
+    int pos = (int)imgName.find_last_of(PATH_SEPARATOR[0]);
     std::string res = imgName.substr(pos,imgName.size() - pos);
     return res;
 }

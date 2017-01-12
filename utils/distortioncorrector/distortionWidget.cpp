@@ -1,37 +1,19 @@
-#include <QTableWidgetItem>
-
+#include "distortionWidget.h"
 #include "log.h"
-#include "rgb24Buffer.h"
-#include "curvatureFunc.h"
-#include "radialFunc.h"
 #include "qtHelper.h"
-
 #include "camerasCalibration/camerasCalibrationFunc.h"
 #include "lmDistortionSolver.h"
-
 #include "g12Image.h"
 #include "displacementBuffer.h"
-#include "angleFunction.h"
-#include "anglePointsFunction.h"
-#include "distortionWidget.h"
 #include "ui_distortionWidget.h"
 #include "distPointsFunction.h"
-#include "chessBoardDetector.h"
+//#include "chessBoardDetector.h"
 
 #ifdef WITH_OPENCV
-# include "opencv2/imgproc/imgproc.hpp"
-# include "opencv2/highgui/highgui.hpp"
-# include <opencv2/calib3d/calib3d.hpp>
-# include "opencv2/core/core_c.h"
-# include "OpenCVTools.h"
 # include "openCvCheckerboardDetector.h"
-
-using namespace cv;
-
 #endif
 
 using corecvs::DistPointsFunction;
-
 
 const double EPSILON = 0.0005;
 
@@ -148,10 +130,9 @@ void DistortionWidget::clearParameters()
 /**
  *  Using corner detector as a helper
  **/
-
 void DistortionWidget::detectCorners()
 {
-    if(mBufferInput == NULL) {
+    if (mBufferInput == NULL) {
         return;
     }
 
