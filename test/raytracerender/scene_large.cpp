@@ -45,7 +45,7 @@ void raytrace_scene_large( void )
 
       SDFRenderable object1;
       object1.F = [](Vector3dd v) {
-          double step = 200;
+          //double step = 200;
           Vector3dd c1 = Vector3dd(50,-15, 150.0);
           Vector3dd c2 = Vector3dd(50, 15, 150.0);
 
@@ -54,8 +54,6 @@ void raytrace_scene_large( void )
 
           return -1 / ((-1 / d1) + (-1 / d2));
       };
-
-
 
       object.name = "Sphere1";
       object.color = RGBColor::Red().toDouble();
@@ -98,9 +96,7 @@ bool addLevel(const Matrix44 &transform, RaytraceableUnion &output, int depth, d
 
     static std::uniform_real_distribution<double> heightL(0.9, 1.1);
 
-
-
-    if (depth > limit  || width <= 0)
+    if (depth > limit || width <= 0)
         return true;
 
     RaytraceableCylinder *object = new RaytraceableCylinder;
@@ -138,6 +134,7 @@ bool addLevel(const Matrix44 &transform, RaytraceableUnion &output, int depth, d
     addLevel(atTop * Matrix44::RotationY( degToRad(angle)), output, depth + 1, height * 0.7, width * 0.7);
     */
 
+    return true;
 }
 
 void raytrace_scene_tree( void )

@@ -1,4 +1,6 @@
-#include "global.h"
+#include "chessBoardDetector.h"
+#include "chessBoardCornerDetector.h"
+#include "chessBoardAssembler.h"
 
 #include <vector>
 #include <cassert>
@@ -8,10 +10,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
-#include "chessBoardDetector.h"
-#include "chessBoardCornerDetector.h"
-#include "chessBoardAssembler.h"
 
 void usage()
 {

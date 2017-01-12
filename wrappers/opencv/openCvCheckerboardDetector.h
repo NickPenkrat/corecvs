@@ -7,18 +7,23 @@
 #include "boardAligner.h"
 #include "checkerboardDetectionParameters.h"
 
-#include <opencv2/core/core.hpp>        // cv::Mat, Point2f
+#include <opencv2/core/core.hpp>        // Point2f
 
 
-class OpenCvCheckerboardDetector : public PatternDetector, protected CheckerboardDetectionParameters, protected BoardAligner
+class OpenCvCheckerboardDetector : public PatternDetector
+                                 , protected CheckerboardDetectionParameters
+                                 , protected BoardAligner
 {
 public:
-    OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params = CheckerboardDetectionParameters(), BoardAlignerParams boardAlignerParams = BoardAlignerParams());
+    OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params = CheckerboardDetectionParameters()
+        , BoardAlignerParams boardAlignerParams = BoardAlignerParams());
 
     virtual bool detectPattern(corecvs::G8Buffer &buffer);
+
     using PatternDetector::getPointData;
 
     virtual void getPointData(corecvs::ObservationList &observations);
+
 private:
     bool detectChessBoardOpenCv(corecvs::G8Buffer &buffer);
     void assignPointCoordinates(corecvs::G8Buffer &buffer);
