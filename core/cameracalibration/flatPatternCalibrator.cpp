@@ -1,5 +1,4 @@
 #include "flatPatternCalibrator.h"
-#include "tbb/tbb.h"
 
 corecvs::FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const LineDistortionEstimatorParameters distortionEstimatorParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), intrinsics(lockParams), lockParams(lockParams), distortionEstimationParams(distortionEstimatorParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
@@ -61,7 +60,7 @@ struct PlaneFitFunctor : public FunctionArgs
 
 corecvs::Affine3DQ corecvs::FlatPatternCalibrator::TrafoToPlane(const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts)
 {
-    int N = pts.size();
+    int N = (int)pts.size();
     corecvs::Matrix A(N, 3), B(N, 3);
     for (int i = 0; i < N; ++i)
     {
@@ -284,9 +283,9 @@ Matrix corecvs::FlatPatternCalibrator::getJacobian()
     Matrix J(getOutputNum(), getInputNum());
     int idx = 0;
 
-    auto f = intrinsics.focal[0], fx = intrinsics.focal[0], fy = intrinsics.focal[1];
-    auto cx= intrinsics.principal[0], cy = intrinsics.principal[1];
-    auto skew = intrinsics.skew;
+//    auto f = intrinsics.focal[0], fx = intrinsics.focal[0], fy = intrinsics.focal[1];
+//    auto cx= intrinsics.principal[0], cy = intrinsics.principal[1];
+//    auto skew = intrinsics.skew;
 
     bool distorting = !!(constraints & CameraConstraints::UNLOCK_DISTORTION);
     for (size_t i = 0; i < N; ++i)
@@ -413,7 +412,7 @@ Matrix corecvs::FlatPatternCalibrator::getJacobian()
             }
 
             // now we optimize 6-dof position
-            int pos_argin = argin + i * 7;
+            int pos_argin = argin + (int)i * 7;
             auto dqx = K * Rqx * TX,
                  dqy = K * Rqy * TX,
                  dqz = K * Rqz * TX,
@@ -452,7 +451,7 @@ Matrix corecvs::FlatPatternCalibrator::getJacobian()
                     degIncrement = 2;
 
 
-                int distortion_argin = argin + N * 7;
+                int distortion_argin = argin + (int)N * 7;
                 for (int k = degStart; k < polyDeg; k += degIncrement)
                 {
                     for (int j = 0; j < 2; ++j)

@@ -2,8 +2,6 @@
 #include "openCvKeyPointsWrapper.h"
 #include "OpenCVTools.h"
 
-#include "global.h"
-
 #include <exception>
 #include <sstream>
 

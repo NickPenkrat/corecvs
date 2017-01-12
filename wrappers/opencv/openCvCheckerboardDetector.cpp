@@ -13,10 +13,11 @@
 #pragma warning (disable:4482)
 #endif
 
-OpenCvCheckerboardDetector::OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params, BoardAlignerParams boardAlignerParams)
-    : CheckerboardDetectionParameters(params), BoardAligner(boardAlignerParams)
-{
-}
+OpenCvCheckerboardDetector::OpenCvCheckerboardDetector(const CheckerboardDetectionParameters &params
+    , BoardAlignerParams boardAlignerParams)
+    : CheckerboardDetectionParameters(params)
+    , BoardAligner(boardAlignerParams)
+{}
 
 bool OpenCvCheckerboardDetector::detectPattern(corecvs::G8Buffer &buffer)
 {
@@ -84,4 +85,3 @@ void OpenCvCheckerboardDetector::getPointData(corecvs::ObservationList &observat
 {
     observations = result;
 }
-
