@@ -270,6 +270,9 @@ with_opencv {
             }
         } else {
             #OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_gpu)
+            OPENCV_LIBS = -lopencv_calib3d    -lopencv_video   -lopencv_core    -lopencv_highgui   \
+                -lopencv_features2d -lopencv_flann   -lopencv_imgproc -lopencv_objdetect \
+                -lopencv_nonfree    -lopencv_legacy #-llibopencv_ml
         }
 
         !isEmpty(OPENCV_GPU_LIBS) {
