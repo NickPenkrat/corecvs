@@ -269,7 +269,7 @@ with_opencv {
                 message(Detected OpenCV contrib module)
             }
         } else {
-            OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_gpu)
+            #OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_gpu)
         }
 
         !isEmpty(OPENCV_GPU_LIBS) {
