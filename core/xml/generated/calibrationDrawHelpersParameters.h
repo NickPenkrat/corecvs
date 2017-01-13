@@ -40,6 +40,9 @@ class CalibrationDrawHelpersParameters : public BaseReflection<CalibrationDrawHe
 public:
     enum FieldId {
         PRINTNAMES_ID,
+        BILLBOARDNAMES_ID,
+        PREFER_REPROJECTED_ID,
+        FORCE_KNOWN_ID,
         PRIVATECOLOR_ID,
         LARGEPOINTS_ID,
         DRAWFIXTURECAMS_ID,
@@ -55,6 +58,24 @@ public:
      * printNames 
      */
     bool mPrintNames;
+
+    /** 
+     * \brief billboardNames 
+     * billboardNames 
+     */
+    bool mBillboardNames;
+
+    /** 
+     * \brief Prefer Reprojected 
+     * Prefer Reprojected 
+     */
+    bool mPreferReprojected;
+
+    /** 
+     * \brief Force Known 
+     * Force Known 
+     */
+    bool mForceKnown;
 
     /** 
      * \brief privateColor 
@@ -99,6 +120,21 @@ public:
         return mPrintNames;
     }
 
+    bool billboardNames() const
+    {
+        return mBillboardNames;
+    }
+
+    bool preferReprojected() const
+    {
+        return mPreferReprojected;
+    }
+
+    bool forceKnown() const
+    {
+        return mForceKnown;
+    }
+
     bool privateColor() const
     {
         return mPrivateColor;
@@ -128,6 +164,21 @@ public:
     void setPrintNames(bool printNames)
     {
         mPrintNames = printNames;
+    }
+
+    void setBillboardNames(bool billboardNames)
+    {
+        mBillboardNames = billboardNames;
+    }
+
+    void setPreferReprojected(bool preferReprojected)
+    {
+        mPreferReprojected = preferReprojected;
+    }
+
+    void setForceKnown(bool forceKnown)
+    {
+        mForceKnown = forceKnown;
     }
 
     void setPrivateColor(bool privateColor)
@@ -161,6 +212,9 @@ template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit(mPrintNames,                static_cast<const BoolField *>    (fields()[PRINTNAMES_ID]));
+        visitor.visit(mBillboardNames,            static_cast<const BoolField *>    (fields()[BILLBOARDNAMES_ID]));
+        visitor.visit(mPreferReprojected,         static_cast<const BoolField *>    (fields()[PREFER_REPROJECTED_ID]));
+        visitor.visit(mForceKnown,                static_cast<const BoolField *>    (fields()[FORCE_KNOWN_ID]));
         visitor.visit(mPrivateColor,              static_cast<const BoolField *>    (fields()[PRIVATECOLOR_ID]));
         visitor.visit(mLargePoints,               static_cast<const BoolField *>    (fields()[LARGEPOINTS_ID]));
         visitor.visit(mDrawFixtureCams,           static_cast<const BoolField *>    (fields()[DRAWFIXTURECAMS_ID]));
@@ -176,6 +230,9 @@ template<class VisitorType>
 
     CalibrationDrawHelpersParameters(
           bool printNames
+        , bool billboardNames
+        , bool preferReprojected
+        , bool forceKnown
         , bool privateColor
         , bool largePoints
         , bool drawFixtureCams
@@ -184,6 +241,9 @@ template<class VisitorType>
     )
     {
         mPrintNames = printNames;
+        mBillboardNames = billboardNames;
+        mPreferReprojected = preferReprojected;
+        mForceKnown = forceKnown;
         mPrivateColor = privateColor;
         mLargePoints = largePoints;
         mDrawFixtureCams = drawFixtureCams;

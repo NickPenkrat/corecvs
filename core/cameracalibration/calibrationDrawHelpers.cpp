@@ -135,17 +135,17 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
 void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scale)
 {
     mesh.setColor(fp.color);
-    if (!fp.hasKnownPosition)
-        fp.position = fp.reprojectedPosition;
+    Vector3dd pos = fp.getDrawPosition(preferReprojected(), forceKnown());
+
     if (!largePoints()) {
-        mesh.addPoint(fp.position);
+        mesh.addPoint(pos);
     } else {
-        mesh.addIcoSphere(fp.position, scale / 100.0, 2);
+        mesh.addIcoSphere(pos, scale / 100.0, 2);
     }
 
     if (printNames()) {
         AbstractPainter<Mesh3D> p(&mesh);
-        mesh.mulTransform(Matrix44::Shift(fp.position) * Matrix44::Scale(scale / 22.0));
+        mesh.mulTransform(Matrix44::Shift(pos) * Matrix44::Scale(scale / 22.0));
         mesh.setColor(RGBColor::Blue());
         p.drawFormatVector(1.0, 1.0, 0, 1.0, "%s", fp.name.c_str());
         mesh.popTransform();
