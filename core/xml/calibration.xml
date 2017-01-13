@@ -18,7 +18,7 @@
     <field type="bool"      name="printNames"     defaultValue="false" />
     <field type="bool"      name="billboardNames" defaultValue="true" />
 
-    <field type="bool"      name="Prefer Reprojected" defaultValue="false" />
+    <field type="bool"      name="Prefer Reprojected" defaultValue="true" />
     <field type="bool"      name="Force Known"        defaultValue="true" />
 
 

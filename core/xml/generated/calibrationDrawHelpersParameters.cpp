@@ -67,7 +67,7 @@ int CalibrationDrawHelpersParameters::staticInit()
         (
           CalibrationDrawHelpersParameters::PREFER_REPROJECTED_ID,
           offsetof(CalibrationDrawHelpersParameters, mPreferReprojected),
-          false,
+          true,
           "Prefer Reprojected",
           "Prefer Reprojected",
           "Prefer Reprojected"
