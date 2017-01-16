@@ -88,6 +88,7 @@ SOURCES += \
     meta/main_test_meta.cpp \
     function/main_test_function.cpp \
     deform/test_deform.cpp \
+    kde/main_test_kde.cpp \
     camerafixture/main_test_camerafixture.cpp \
 	renderer/main_test_renderer.cpp \
 	raytrace/main_test_raytrace.cpp \

@@ -1,5 +1,6 @@
 HEADERS += \
     math/eulerAngles.h \
+    math/kde.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
     math/matrix/matrix33.h \
@@ -82,6 +83,7 @@ SOURCES += \
     math/matrix/similarityReconstructor.cpp \
 #    math/matrix/matrixspeed.cpp
     math/extensiveCoding.cpp \
+    math/kde.cpp \
     math/wisdom.cpp
 
 
