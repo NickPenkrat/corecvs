@@ -60,7 +60,8 @@ HEADERS += \
     math/matrix/similarityReconstructor.h \
     math/sse/doublexT4.h \
     math/extensiveCoding.h \
-    math/wisdom.h
+    math/wisdom.h \
+    math/em.h
 
 SOURCES += \
     math/matrix/matrix.cpp \
@@ -84,7 +85,8 @@ SOURCES += \
 #    math/matrix/matrixspeed.cpp
     math/extensiveCoding.cpp \
     math/kde.cpp \
-    math/wisdom.cpp
+    math/wisdom.cpp \
+    math/em.cpp
 
 
 contains(DEFINES, "WITH_FFTW") {

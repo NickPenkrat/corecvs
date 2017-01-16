@@ -1,5 +1,4 @@
 #include "flatPatternCalibrator.h"
-#include "tbb/tbb.h"
 
 corecvs::FlatPatternCalibrator::FlatPatternCalibrator(const CameraConstraints constraints, const PinholeCameraIntrinsics lockParams, const LineDistortionEstimatorParameters distortionEstimatorParams, const double lockFactor) : factor(lockFactor), K(0), N(0), absoluteConic(6), intrinsics(lockParams), lockParams(lockParams), distortionEstimationParams(distortionEstimatorParams), constraints(constraints), forceZeroSkew(!!(constraints & CameraConstraints::ZERO_SKEW))
 {
@@ -20,6 +19,114 @@ void corecvs::FlatPatternCalibrator::addPattern(const ObservationList &patternPo
         CORE_ASSERT_TRUE_S(!std::isnan(pp.point[1]));
         CORE_ASSERT_TRUE_S(!std::isnan(pp.point[2]));
     }
+}
+
+struct PlaneFitFunctor : public FunctionArgs
+{
+    PlaneFitFunctor(const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts
+        , const Affine3DQ &initial)
+        : FunctionArgs(6, 3 * (int)pts.size()), initial(initial), pts(pts)
+    {}
+
+    void operator()(const double *in, double *out)
+    {
+        double qx = in[0], qy = in[1], qz = in[2],
+               tx = in[3], ty = in[4], tz = in[5];
+        auto R = corecvs::Quaternion::RotationalTransformation(qx, qy, qz, 0.0, corecvs::Quaternion::Parametrization::NON_EXCESSIVE, false);
+        R.a(0, 3) = tx;
+        R.a(1, 3) = ty;
+        R.a(2, 3) = tz;
+        int argout = 0;
+        for (auto& pt: pts)
+        {
+            auto diff = pt.second - (R * (initial * pt.first));
+            for (int i = 0; i < 3; ++i)
+                out[argout++] = diff[i];
+        }
+
+        diff.rotor[0] = qx;
+        diff.rotor[1] = qy;
+        diff.rotor[2] = qz;
+        diff.rotor[3] = 1.0;
+        diff.rotor.normalise();
+        diff.shift = corecvs::Vector3dd(tx, ty, tz);
+    }
+
+    Affine3DQ initial;
+    Affine3DQ diff;
+    const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts;
+};
+
+
+corecvs::Affine3DQ corecvs::FlatPatternCalibrator::TrafoToPlane(const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &pts)
+{
+    int N = (int)pts.size();
+    corecvs::Matrix A(N, 3), B(N, 3);
+    for (int i = 0; i < N; ++i)
+    {
+        A.a(i, 0) = pts[i].second[0];
+        A.a(i, 1) = pts[i].second[1];
+        A.a(i, 2) = 1.0;
+        CORE_ASSERT_TRUE_S(pts[i].second[2] == 0.0);
+        for (int j = 0; j < 3; ++j)
+            B.a(i, j) = pts[i].first[j];
+    }
+#ifdef WITH_BLAS
+    corecvs::Matrix res_(3, 3);
+    LAPACKE_dgels(LAPACK_ROW_MAJOR, 'N', N, 3, 3, &A.a(0, 0), A.stride, &B.a(0, 0), B.stride);
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            res_.a(j, i) = B.a(i, j);
+#else
+    auto ata = A.ata();
+    auto ab  = A.t() * B;
+    // corecvs does not have multiple rhs linsolve,
+    // but linsolve without blas is stupid like shit,
+    // so no bad things happen there
+    auto res_ = (ata.inv() * ab).t();
+#endif
+    corecvs::Matrix33 res;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            res.a(i, j) = res_.a(i, j);
+
+    for (auto& vv: pts)
+    {
+        auto tgt = vv.first;
+        auto frm = vv.second;
+        frm[2] = 1.0;
+        std::cout << tgt - res * frm << std::endl;
+    }
+    corecvs::Vector3dd r1(res.a(0, 0), res.a(1, 0), res.a(2, 0)),
+                       r2(res.a(0, 1), res.a(1, 1), res.a(2, 1)),
+                        t(res.a(0, 2), res.a(1, 2), res.a(2, 2));
+    std::cout << res << std::endl;
+
+    r1 = r1.normalised();
+    r2 = (r2 - r1 * (r1 & r2)).normalised();
+    auto r3 = r1 ^ r2;
+
+    corecvs::Matrix33 rotor(r1[0], r2[0], r3[0],
+                            r1[1], r2[1], r3[1],
+                            r1[2], r2[2], r3[2]);
+    std::cout << rotor << rotor.det() << std::endl;
+
+    for (auto& vv: pts)
+    {
+        auto tgt = vv.first;
+        auto frm = vv.second;
+        std::cout << tgt - (rotor * frm + t) << std::endl;
+    }
+    auto q1 = corecvs::Affine3DQ(corecvs::Quaternion::FromMatrix(rotor), t).inverted();
+    corecvs::LevenbergMarquardt lm;
+    PlaneFitFunctor pff(pts, q1);
+    lm.f = &pff;
+    std::vector<double> inputs(6), outputs(pts.size() * 3);
+    lm.traceProgress = false;
+    auto r1es = lm.fit(inputs, outputs);
+    pff(&r1es[0], &outputs[0]);
+    auto q2 = pff.diff * q1;
+    return q2;
 }
 
 void corecvs::FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LMiterations)
@@ -176,9 +283,9 @@ Matrix corecvs::FlatPatternCalibrator::getJacobian()
     Matrix J(getOutputNum(), getInputNum());
     int idx = 0;
 
-    auto f = intrinsics.focal[0], fx = intrinsics.focal[0], fy = intrinsics.focal[1];
-    auto cx= intrinsics.principal[0], cy = intrinsics.principal[1];
-    auto skew = intrinsics.skew;
+//    auto f = intrinsics.focal[0], fx = intrinsics.focal[0], fy = intrinsics.focal[1];
+//    auto cx= intrinsics.principal[0], cy = intrinsics.principal[1];
+//    auto skew = intrinsics.skew;
 
     bool distorting = !!(constraints & CameraConstraints::UNLOCK_DISTORTION);
     for (size_t i = 0; i < N; ++i)
@@ -305,7 +412,7 @@ Matrix corecvs::FlatPatternCalibrator::getJacobian()
             }
 
             // now we optimize 6-dof position
-            int pos_argin = argin + i * 7;
+            int pos_argin = argin + (int)i * 7;
             auto dqx = K * Rqx * TX,
                  dqy = K * Rqy * TX,
                  dqz = K * Rqz * TX,
@@ -344,7 +451,7 @@ Matrix corecvs::FlatPatternCalibrator::getJacobian()
                     degIncrement = 2;
 
 
-                int distortion_argin = argin + N * 7;
+                int distortion_argin = argin + (int)N * 7;
                 for (int k = degStart; k < polyDeg; k += degIncrement)
                 {
                     for (int j = 0; j < 2; ++j)

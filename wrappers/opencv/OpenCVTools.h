@@ -5,13 +5,16 @@
  * \date Apr 6, 2011
  * \author alexander
  */
-#pragma once
+#ifndef OPENCV_TOOLS_H
+#define OPENCV_TOOLS_H
 
 #define __XMLDocument_FWD_DEFINED__  // to omit conflict "msxml.h:3376: using typedef-name 'XMLDocument' after 'class'"
 
-#include <opencv2/core/types_c.h> // CvSize, IplImage
-#include <opencv2/core/core.hpp> // CvSize, IplImage
+#ifndef WITH_OPENCV_3x
+#   include <opencv2/core/types_c.h> // CvSize, IplImage
+#endif
 
+#include <opencv2/core/core.hpp> // CvSize, IplImage
 
 #include "global.h"
 
@@ -22,6 +25,12 @@
 using corecvs::G12Buffer;
 using corecvs::G8Buffer;
 using corecvs::RGB24Buffer;
+
+#ifdef WITH_OPENCV_3x
+#   define CVMAT_FROM_IPLIMAGE( cvmat, iplimage, copydata ) cv::Mat cvmat = cv::cvarrToMat( iplimage, copydata )
+#else
+#   define CVMAT_FROM_IPLIMAGE( cvmat, iplimage, copydata ) cv::Mat cvmat( iplimage, copydata )
+#endif
 
 class OpenCVTools
 {
@@ -39,14 +48,13 @@ template<typename OtherStruct>
     {
         return cvSize(other.x(), other.y());
     }
-
 };
 
 class CV2Core {
 public:
-
     static Vector2dd Vector2ddFromPoint2f(cv::Point2f &input) {
         return Vector2dd(input.x, input.y);
     }
-
 };
+
+#endif // OPENCV_TOOLS_H

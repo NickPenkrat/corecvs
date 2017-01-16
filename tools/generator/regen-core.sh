@@ -232,6 +232,10 @@ enums+=" bitcodeBoardOrientation"
 classes+=" lensDistortionModelParametersBase"
 classes+=" homorgaphyReconstructorBlockBase"
 
+# We will try to use reflectionWidget
+classes+=" calibrationDrawHelpersParameters"
+
+
 full_ui_classes+=" checkerboardDetectionParameters"
 full_ui_classes+=" lineDistortionEstimatorParameters"
 full_ui_classes+=" distortionApplicationParameters"

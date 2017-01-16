@@ -66,3 +66,6 @@ win32-msvc* {
     QMAKE_CFLAGS   += /fp:strict
     QMAKE_CXXFLAGS += /fp:strict
 }
+
+DISTFILES += \
+    xml/calibration.xml

@@ -25,6 +25,7 @@
 #include "function.h"
 #include "minresQLP.h"
 #include "pcg.h"
+#include "em.h"
 
 using namespace corecvs;
 
@@ -338,7 +339,7 @@ TEST(SparseMatrix, IncompleteCholesky)
     SparseMatrix sm(Matrix(4, 4, a));
     auto resNaive = NaiveIncompleteCholesky(sm);
     auto res      = sm.incompleteCholseky();
-	std::cout << res.second << std::endl;
+    std::cout << res.second << std::endl;
     ASSERT_EQ(resNaive.first, res.first);
     ASSERT_TRUE(resNaive.first);
     ASSERT_LE(Matrix(resNaive.second - res.second).frobeniusNorm() , 1e-9);
@@ -448,10 +449,10 @@ TEST(Iterative, MinresQLPPreconditioned)
     auto b = M * xx;
     auto P = M.incompleteCholseky();
     if (!P.first)
-	{
-    	std::cout << "NAH: ICP0 failed" << std::endl;
-    	ASSERT_TRUE(false);
-	}
+    {
+        std::cout << "NAH: ICP0 failed" << std::endl;
+        ASSERT_TRUE(false);
+    }
     corecvs::Vector x;
     MinresQLP<SparseMatrix>::Solve(M, [&](const Vector &x) { return P.second.dtrsv_un(P.second.dtrsv_ut(x)); }, b, x);
     ASSERT_LE(!(M*x-b)/!b, 1e-9);
@@ -1723,4 +1724,132 @@ TEST(SparseMatrix, denseCols4)
     ASSERT_EQ(rowIdx.size(), 1);
     ASSERT_EQ(rowIdx[0], 1);
     ASSERT_EQ(D.a(0, 0), 5.0);
+}
+
+TEST(EM, EM)
+{
+    std::mt19937 rng(SEED);
+    std::uniform_real_distribution<double> runif(0, 1);
+    std::normal_distribution<double> rnorm;
+    const int NDIM = 3;
+
+    double CC1[NDIM * NDIM] = {
+       -0.4, 0.9, 1.2,
+        0.1, 0.2,-0.1,
+        0.5,-0.5, 0.5
+    };
+    double CC2[NDIM * NDIM] = {
+        1.2, -0.8, 0.3,
+        1.0,  0.0,-1.2,
+        0.4, -0.1, 0.1
+    };
+
+    corecvs::Matrix M1(NDIM, NDIM, CC1), M2(NDIM, NDIM, CC2);
+    auto cov1 = M1 * M1.t(), cov2 = M2 * M2.t();
+
+    corecvs::Vector m1(NDIM), m2(NDIM);
+    m1[0] = 10.0, m1[1] = 10.0, m1[2] = 10.0;
+    m2[0] =  0.0, m2[1] = -1.0, m2[2] = -2.0;
+
+    double p1 = 0.25, p2 = 0.75;
+
+    const int NCASES = 10000;
+    corecvs::Matrix A(NCASES, NDIM);
+    corecvs::Matrix A1(NCASES, NDIM);
+    corecvs::Matrix A2(NCASES, NDIM);
+
+    int n1 = 0, n2 = 0;
+    corecvs::Vector nm1(NDIM), nm2(NDIM);
+    for (int i = 0; i < NDIM; ++i)
+        nm1[i] = nm2[i] = 0;
+
+    for (int i = 0; i < NCASES; ++i)
+    {
+        corecvs::Vector vv(NDIM);
+        int dir = 0;
+        for (int j = 0; j < NDIM; ++j)
+            vv[j] = rnorm(rng);
+        if (runif(rng) < 0.25)
+            vv = (M1 * vv) + m1;
+        else
+        {
+            vv = (M2 * vv) + m2;
+            dir = 1;
+        }
+        for (int j = 0; j < NDIM; ++j)
+        {
+            A.a(i, j) = vv[j];
+            if (dir == 0)
+                A1.a(n1, j) = vv[j];
+            else
+                A2.a(n2, j) = vv[j];
+        }
+        (dir == 0 ? n1 : n2)++;
+        (dir == 0 ? nm1 : nm2) += vv;
+    }
+    A1.h = n1;
+    A2.h = n2;
+    nm1 /= n1;
+    nm2 /= n2;
+
+    for (int i = 0; i < n1; ++i)
+        for (int j = 0; j < NDIM; ++j)
+            A1.a(i, j) -= nm1[j];
+    for (int i = 0; i < n2; ++i)
+        for (int j = 0; j < NDIM; ++j)
+            A2.a(i, j) -= nm2[j];
+
+
+
+    EM em(A, 2, true);
+    std::cout << "Expected covs: " << cov1 << std::endl << cov2 << std::endl << std::endl;
+    std::cout << "EMP1: " << A1.ata() / n1 << std::endl << A2.ata() / n2 << std::endl << double(n1) / (n1 + n2) << ":" << double(n2)/(n1 + n2) << std::endl;
+    std::cout << "MNS: " << nm1 << " " << nm2 << std::endl;
+    std::cout << em << std::endl;
+    double prob1 = double(n1) / (n1 + n2), prob2 = double(n2) / (n1 + n2);
+    Matrix cv1 = A1.ata() * (1.0 / n1), cv2 = A2.ata() * (1.0 / n2);
+    Vector mean1 = nm1, mean2 = nm2;
+    if ((prob1 < prob2) ^ (em.prior[0] < em.prior[1]))
+    {
+        std::swap(cv1, cv2);
+        std::swap(prob1, prob2);
+        std::swap(mean1, mean2);
+    }
+    ASSERT_NEAR(em.prior[0], prob1, 1e-3);
+    ASSERT_NEAR(em.prior[1], prob2, 1e-3);
+    ASSERT_NEAR((cv1 - em.covariances[0]).frobeniusNorm(), 0.0, 1e-3);
+    ASSERT_NEAR((cv2 - em.covariances[1]).frobeniusNorm(), 0.0, 1e-3);
+    ASSERT_NEAR(!(mean1 - em.means[0]), 0.0, 1e-3);
+    ASSERT_NEAR(!(mean2 - em.means[1]), 0.0, 1e-3);
+}
+
+
+TEST(Matrix, invPosdefSqrt)
+{
+    double a[]= {
+        9, 0, 0,
+        0, 8, 0,
+        0, 0, 7
+    };
+    double b[]= {
+        std::cos(0.123), std::sin(0.123), 0.0,
+       -std::sin(0.123), std::cos(0.123), 0.0,
+                    0.0,             0.0, 1.0
+    };
+    double c[]= {
+       1.0,              0.0,             0.0,
+       0.0,  std::cos(0.456), std::sin(0.456),
+       0.0, -std::sin(0.456), std::cos(0.456)
+    };
+    double d[]= {
+        std::cos(0.789),  0.0,std::sin(0.789),
+                    0.0,  1.0,            0.0,
+       -std::sin(0.789),  0.0,std::cos(0.789)
+    };
+    corecvs::Matrix A(3, 3, a), B(3, 3, b), C(3, 3, c), D(3, 3, d), W;
+    auto CC = D * C * B * A * B.t() * C.t() * D.t();
+    std::cout << (W = CC.invPosdefSqrt().t()*CC*CC.invPosdefSqrt()) << std::endl << std::endl << B * C * D << std::endl;
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            ASSERT_NEAR(W.a(i, j), i == j ? 1.0 : 0.0, 6e-16);
 }
