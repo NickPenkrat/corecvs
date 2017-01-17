@@ -1,7 +1,7 @@
 #include "opencv2/imgproc.hpp"
 #include "openCvImageRemapper.h"
 
-void convertRGB(const corecvs::RGB24Buffer& buffer, cv::Mat& mat)
+static void convertRGB(const corecvs::RGB24Buffer& buffer, cv::Mat& mat)
 {
 	const int height = buffer.getH();
 	const int width = buffer.getW();
@@ -10,11 +10,11 @@ void convertRGB(const corecvs::RGB24Buffer& buffer, cv::Mat& mat)
 	for (int j = 0; j < height; j++)
 	{
 		for (int i = 0; i < width; i++)
-			mat.at<corecvs::RGBColor>(i, j) = buffer.element(j, i);
+			*mat.ptr<uint>(j, i) = buffer.element(j, i).color();		
 	}
 }
 
-void convertRGB(const cv::Mat& mat, corecvs::RGB24Buffer& buffer)
+static void convertRGB(const cv::Mat& mat, corecvs::RGB24Buffer& buffer)
 {
 	const int height = mat.rows;
 	const int width = mat.cols;
@@ -23,25 +23,43 @@ void convertRGB(const cv::Mat& mat, corecvs::RGB24Buffer& buffer)
 	for (int j = 0; j < height; j++)
 	{
 		for (int i = 0; i < width; i++)
-			buffer.element(j, i) = mat.at<corecvs::RGBColor>(i, j);
+			buffer.element(j, i).color() = *mat.ptr<uint>(j, i);
 	}
 }
 
-void convertMap(corecvs::DisplacementBuffer &transform, cv::Mat& mat)
+static void convertMap(corecvs::DisplacementBuffer &transform, cv::Mat& mat)
 {
 	const int height = transform.getH();
 	const int width = transform.getW();
+
+	float minimumX = 100.0f;
+	float minimumY = 100.0f;
+
+	float maximumX = -100.0f;
+	float maximumY = -100.0f;
 
 	mat = cv::Mat(height, width, CV_32FC2);
 	for (int j = 0; j < height; j++)
 	{
 		for (int i = 0; i < width; i++)
 		{
-			corecvs::Vector2dd elementd = transform.element(j, i);
-			corecvs::Vector2df elementf(elementd.x(), elementd.y());
-			mat.at<corecvs::Vector2df>(i, j) = elementf;
+			corecvs::Vector2dd elementd = transform.map(j, i);
+			float x = elementd.x();
+			minimumX = std::min(x, minimumX);
+			maximumX = std::max(x, maximumX);
+			float y = elementd.y();
+			minimumY = std::min(y, minimumY);
+			maximumY = std::max(y, maximumY);
+			corecvs::Vector2df elementf(x, y);
+			*mat.ptr<corecvs::Vector2df>(j, i) = elementf;
 		}	
 	}
+
+	cout << endl << "LIMITS" << endl;
+	cout << minimumX << endl;
+	cout << minimumY << endl;
+	cout << maximumX << endl;
+	cout << maximumY << endl;
 }
 
 void remap(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform)
