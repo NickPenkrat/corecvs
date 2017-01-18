@@ -26,6 +26,9 @@ int BaseReflection<CalibrationDrawHelpersParameters>::dummy = CalibrationDrawHel
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int CalibrationDrawHelpersParameters::staticInit()
 {
 

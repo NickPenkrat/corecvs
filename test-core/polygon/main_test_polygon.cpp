@@ -21,7 +21,7 @@
 #include "calibrationCamera.h"
 #include "raytraceRenderer.h"
 #include "raytraceObjects.h"
-#include "calibrationHelpers.h"
+#include "calibrationDrawHelpers.h"
 
 
 using namespace std;
@@ -437,7 +437,7 @@ TEST(polygon, CameraView)
 
     Mesh3D mesh;
     mesh.switchColor(true);
-    CalibrationHelpers drawer;
+    CalibrationDrawHelpers drawer;
 
     mesh.setColor(RGBColor::Red());
     drawer.drawCamera(mesh, cam1, 3.0);

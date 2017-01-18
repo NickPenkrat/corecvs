@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -35,7 +35,7 @@ namespace corecvs {
  * \brief Calibration Draw Helpers Parameters 
  * Calibration Draw Helpers Parameters 
  **/
-class CalibrationDrawHelpersParameters : public BaseReflection<CalibrationDrawHelpersParameters>
+class CalibrationDrawHelpersParameters : public corecvs::BaseReflection<CalibrationDrawHelpersParameters>
 {
 public:
     enum FieldId {
@@ -211,20 +211,20 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mPrintNames,                static_cast<const BoolField *>    (fields()[PRINTNAMES_ID]));
-        visitor.visit(mBillboardNames,            static_cast<const BoolField *>    (fields()[BILLBOARDNAMES_ID]));
-        visitor.visit(mPreferReprojected,         static_cast<const BoolField *>    (fields()[PREFER_REPROJECTED_ID]));
-        visitor.visit(mForceKnown,                static_cast<const BoolField *>    (fields()[FORCE_KNOWN_ID]));
-        visitor.visit(mPrivateColor,              static_cast<const BoolField *>    (fields()[PRIVATECOLOR_ID]));
-        visitor.visit(mLargePoints,               static_cast<const BoolField *>    (fields()[LARGEPOINTS_ID]));
-        visitor.visit(mDrawFixtureCams,           static_cast<const BoolField *>    (fields()[DRAWFIXTURECAMS_ID]));
-        visitor.visit(mDrawObservations,          static_cast<const BoolField *>    (fields()[DRAWOBSERVATIONS_ID]));
-        visitor.visit(mDrawRays,                  static_cast<const BoolField *>    (fields()[DRAWRAYS_ID]));
+        visitor.visit(mPrintNames,                static_cast<const corecvs::BoolField *>(fields()[PRINTNAMES_ID]));
+        visitor.visit(mBillboardNames,            static_cast<const corecvs::BoolField *>(fields()[BILLBOARDNAMES_ID]));
+        visitor.visit(mPreferReprojected,         static_cast<const corecvs::BoolField *>(fields()[PREFER_REPROJECTED_ID]));
+        visitor.visit(mForceKnown,                static_cast<const corecvs::BoolField *>(fields()[FORCE_KNOWN_ID]));
+        visitor.visit(mPrivateColor,              static_cast<const corecvs::BoolField *>(fields()[PRIVATECOLOR_ID]));
+        visitor.visit(mLargePoints,               static_cast<const corecvs::BoolField *>(fields()[LARGEPOINTS_ID]));
+        visitor.visit(mDrawFixtureCams,           static_cast<const corecvs::BoolField *>(fields()[DRAWFIXTURECAMS_ID]));
+        visitor.visit(mDrawObservations,          static_cast<const corecvs::BoolField *>(fields()[DRAWOBSERVATIONS_ID]));
+        visitor.visit(mDrawRays,                  static_cast<const corecvs::BoolField *>(fields()[DRAWRAYS_ID]));
     }
 
     CalibrationDrawHelpersParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -251,16 +251,16 @@ template<class VisitorType>
         mDrawRays = drawRays;
     }
 
-    friend ostream& operator << (ostream &out, CalibrationDrawHelpersParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, CalibrationDrawHelpersParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //CALIBRATION_DRAW_HELPERS_PARAMETERS_H_
