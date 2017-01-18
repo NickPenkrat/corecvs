@@ -1,6 +1,9 @@
 #include "opencv2/imgproc.hpp"
 #include "openCvImageRemapper.h"
 
+namespace corecvs
+{
+
 static void convertRGB(const corecvs::RGB24Buffer& buffer, cv::Mat& mat)
 {
 	const int height = buffer.getH();
@@ -27,48 +30,78 @@ static void convertRGB(const cv::Mat& mat, corecvs::RGB24Buffer& buffer)
 	}
 }
 
-static void convertMap(corecvs::DisplacementBuffer &transform, cv::Mat& mat)
+static void convertDisplacementBuffer( const corecvs::DisplacementBuffer &transform, cv::Mat& map )
 {
-	const int height = transform.getH();
-	const int width = transform.getW();
+    const int height = transform.getH();
+    const int width = transform.getW();
 
-	float minimumX = 100.0f;
-	float minimumY = 100.0f;
-
-	float maximumX = -100.0f;
-	float maximumY = -100.0f;
-
-	mat = cv::Mat(height, width, CV_32FC2);
-	for (int j = 0; j < height; j++)
-	{
-		for (int i = 0; i < width; i++)
-		{
-			corecvs::Vector2dd elementd = transform.map(j, i);
-			float x = elementd.x();
-			minimumX = std::min(x, minimumX);
-			maximumX = std::max(x, maximumX);
-			float y = elementd.y();
-			minimumY = std::min(y, minimumY);
-			maximumY = std::max(y, maximumY);
-			corecvs::Vector2df elementf(x, y);
-			*mat.ptr<corecvs::Vector2df>(j, i) = elementf;
-		}	
-	}
-
-	cout << endl << "LIMITS" << endl;
-	cout << minimumX << endl;
-	cout << minimumY << endl;
-	cout << maximumX << endl;
-	cout << maximumY << endl;
+    map = cv::Mat( height, width, CV_32FC2 );
+    for ( int j = 0; j < height; j++ )
+    {
+        for ( int i = 0; i < width; i++ )
+        {
+            corecvs::Vector2dd elementd = transform.map( j, i );
+            corecvs::Vector2df elementf( elementd.x(), elementd.y() );
+            *map.ptr<corecvs::Vector2df>( j, i ) = elementf;
+        }
+    }
 }
 
-void remap(corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, corecvs::DisplacementBuffer &transform)
+void convert( const corecvs::DisplacementBuffer &transform, cv::Mat &map0, cv::Mat &map1 )
+{
+    cv::Mat map;
+    convertDisplacementBuffer( transform, map );
+    cv::convertMaps( map, cv::Mat(), map0, map1, CV_16SC2, true );
+}
+
+void remap( corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, const corecvs::DisplacementBuffer &transform )
 {
 	cv::Mat input, output;
-	cv::Mat map;
+    cv::Mat map, map0, map1;
 
 	convertRGB(src, input);
-	convertMap(transform, map);
-	cv::remap(input, output, map, cv::Mat(), cv::INTER_LINEAR, cv::BORDER_CONSTANT, cv::Scalar());
+    convertDisplacementBuffer( transform, map );
+    cv::convertMaps( map, cv::Mat(), map0, map1, CV_16SC2, true );
+    cv::remap( input, output, map0, map1, cv::INTER_NEAREST );
 	convertRGB(output, dst);
 }
+
+template< typename T >
+void convertT( const corecvs::DisplacementBuffer &transform, T &map0, T &map1 )
+{
+    cv::Mat map;
+    convertDisplacementBuffer( transform, map );
+    cv::convertMaps( map, cv::Mat(), map0, map1, CV_32FC1, true );
+}
+
+#   ifdef WITH_OPENCV_GPU
+#       ifdef WITH_OPENCV_3x
+// cuda version
+void convert( const corecvs::DisplacementBuffer &transform, cv::cuda::GpuMat &map0, cv::cuda::GpuMat &map1 )
+{
+    convertT( transform, map0, map1 );
+}
+
+// openCL version
+void convert( const corecvs::DisplacementBuffer &transform, cv::UMat &map0, cv::UMat &map1 )
+{
+    convertT( transform, map0, map1 );
+}
+
+#       else
+// cuda version
+void convert( const corecvs::DisplacementBuffer &transform, cv::gpu::GpuMat &map0, cv::gpu::GpuMat &map1 )
+{
+    convertT( transform, map0, map1 );
+}
+
+// openCL version
+void convert( const corecvs::DisplacementBuffer &transform, cv::ocl::oclMat &map0, cv::ocl::oclMat &map1 )
+{
+    convertT( transform, map0, map1 );
+}
+
+#       endif
+#   endif
+
+};

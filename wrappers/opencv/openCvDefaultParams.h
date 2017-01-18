@@ -15,11 +15,18 @@ namespace
         {
             if (curr.size() == 0 && params[i] == ' ')
                 continue;
-            if (params[i] == ' ' && !curr.size())
+            if ( params[ i ] == ' ' && !curr.size() )
             {
                 fields.push_back(curr);
                 curr.resize(0);
             }
+            if ( params[ i ] == ';' )
+            {
+                fields.push_back( curr );
+                curr.resize( 0 );
+                i++;
+            }
+
             curr = curr + params[i];
         }
         if (curr.size())

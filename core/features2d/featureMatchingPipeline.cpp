@@ -190,9 +190,13 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
     CORE_UNUSED(_filename);
 }
 
-KeyPointDetectionStage::KeyPointDetectionStage( DetectorType type, int maxFeatureCount, int downsampleFactor, const std::string &params ) : detectorType( type ), downsampleFactor( downsampleFactor ), params( params ), maxFeatureCount( maxFeatureCount )
+KeyPointDetectionStage::KeyPointDetectionStage( DetectorType type, int maxFeatureCount, int downsampleFactor, const std::string &params ) : 
+    detectorType( type ),
+    downsampleFactor( downsampleFactor ),
+    params( params ), 
+    maxFeatureCount( maxFeatureCount )
 {
-    FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
+    FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector( detectorType, params );
 	parallelable = detector ? detector->isParallelable() : false;
     delete detector;
 }
@@ -336,7 +340,7 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
 DescriptorExtractionStage::DescriptorExtractionStage( DescriptorType type, int downsampleFactor, const std::string &params, bool keypointsColor ) : descriptorType( type ), downsampleFactor( downsampleFactor ), params( params ), keypointsColor( keypointsColor )
 {
-    DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType);
+    DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType, params);
 	parallelable = extractor ? extractor->isParallelable() : false;
     delete extractor;
 }
@@ -1715,7 +1719,7 @@ void addDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline, DetectorTy
          std::string::npos != descriptorType.find( "_GPU" ) &&
          std::string::npos != matcherType   .find( "_GPU" ) )
 	{
-        pipeline.add( new DetectExtractAndMatchStage( detectorType, descriptorType, matcherType, maxFeatureCount, downsampleFactor, responsesPerPoint, "" ), true );
+        pipeline.add( new DetectExtractAndMatchStage( detectorType, descriptorType, matcherType, maxFeatureCount, downsampleFactor, responsesPerPoint, params ), true );
 	}
 	else
 #endif
@@ -1739,12 +1743,12 @@ void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
 	if (std::string::npos != detectorType.find("_GPU") &&
 		std::string::npos != descriptorType.find("_GPU"))
 	{
-        pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, "", keypointsColor ), true );
+        pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, params, keypointsColor ), true );
 	}
 	else if ( detectorType == "AKAZE" && descriptorType == "AKAZE" )
     //else if ( detectorType == descriptorType )
     {
-        pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, "", keypointsColor ), true );
+        pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, params, keypointsColor ), true );
     }
     else
 	{
