@@ -178,8 +178,17 @@ void PolygonCombiner::prepare()
             double t1 = 0;
             double t2 = 0;
             Vector2dd x = Ray2d::intersection(r1, r2, t1, t2);
-            if ((t1 == std::numeric_limits<double>::infinity()) ||
-                (t1 < 0 || t1 >= 1.0) ||
+
+            if (t1 == std::numeric_limits<double>::infinity())
+            {
+                /**
+                 * Sides are parallel. We assume nothing is to be done so far.
+                 **/
+                continue;
+            }
+
+
+            if ((t1 < 0 || t1 >= 1.0) ||
                 (t2 < 0 || t2 >= 1.0))
             {
                 continue;

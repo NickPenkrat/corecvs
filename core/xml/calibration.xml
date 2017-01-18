@@ -1,0 +1,34 @@
+<poco version="5.0">
+  <include name="parameters.xml"/>
+
+
+  <class name="Calibration Draw Helpers Parameters">
+
+   <!--
+       bool    printNames;
+       bool    privateColor;
+       bool    largePoints;
+
+       /* */
+       bool    drawFixtureCams;
+       bool    drawObservations;
+       bool    drawRays;
+
+   -->
+    <field type="bool"      name="printNames"     defaultValue="false" />
+    <field type="bool"      name="billboardNames" defaultValue="true" />
+
+    <field type="bool"      name="Prefer Reprojected" defaultValue="true" />
+    <field type="bool"      name="Force Known"        defaultValue="true" />
+
+
+    <field type="bool"      name="privateColor"  defaultValue="false" />
+    <field type="bool"      name="largePoints"   defaultValue="true" />
+
+
+    <field type="bool"      name="drawFixtureCams"   defaultValue="true" />
+    <field type="bool"      name="drawObservations"  defaultValue="false" />
+    <field type="bool"      name="drawRays"          defaultValue="true" />
+  </class>
+
+</poco>

@@ -200,6 +200,8 @@ public:
         this->type = type;
     }
 
+    Vector3dd getDrawPosition(bool preferReprojected = false, bool forceKnown = false);
+
     Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr);
 
 

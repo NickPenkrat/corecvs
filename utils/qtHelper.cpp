@@ -294,3 +294,50 @@ QString printQImageFormat(const QImage::Format &format)
 
     return text;
 }
+
+QString printModelItemRole(int role)
+{
+    QString text;
+
+#define PAIR(X) { Qt::X, #X }
+
+    struct RoleName {
+        int role;
+        const char *name;
+    };
+
+    RoleName roles[] =
+    {
+        PAIR(DisplayRole),
+        PAIR(DecorationRole),
+        PAIR(EditRole),
+        PAIR(ToolTipRole),
+        PAIR(StatusTipRole),
+        PAIR(WhatsThisRole),
+        PAIR(SizeHintRole),
+
+        PAIR(FontRole),
+        PAIR(TextAlignmentRole),
+        PAIR(BackgroundRole),
+        PAIR(BackgroundColorRole),
+        PAIR(ForegroundRole),
+        PAIR(TextColorRole),
+        PAIR(CheckStateRole),
+        PAIR(InitialSortOrderRole),
+
+        PAIR(UserRole)
+
+    };
+#undef PAIR
+
+    for (size_t i = 0; i < CORE_COUNT_OF(roles); i++)
+    {
+        if (role == roles[i].role) {
+            text += roles[i].name;
+            text += " ";
+        }
+    }
+
+    return text;
+
+}
