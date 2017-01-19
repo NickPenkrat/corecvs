@@ -8,6 +8,7 @@
  * \ingroup autotest  
  */
 
+#include <random>
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -453,7 +454,7 @@ TEST(polygon, CameraView)
 
     Polygon p1, p2;
 
-    for (int i = 0; i < in.size(); i++)
+    for (size_t i = 0; i < in.size(); i++)
     {
         Ray3d ray1 = cam1.rayFromPixel(in[i]).normalised();
         RayIntersection r1;
