@@ -398,8 +398,8 @@ public:
     void drawDebug(RGB24Buffer *buffer) const;
 
     Polygon intersection() const;
-    Polygon combination();
-    Polygon difference();
+    Polygon combination() const;   /**< Not yet implemented */
+    Polygon difference() const;    /**< Not yet implemented */
 
     PolygonCombiner(){}
     PolygonCombiner(Polygon &p1, Polygon &p2)

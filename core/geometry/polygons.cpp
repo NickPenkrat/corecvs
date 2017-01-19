@@ -188,8 +188,8 @@ void PolygonCombiner::prepare()
             }
 
 
-            if ((t1 < 0 || t1 >= 1.0) ||
-                (t2 < 0 || t2 >= 1.0))
+            if ((t1 < 0 || t1 > 1.0) ||
+                (t2 < 0 || t2 > 1.0))
             {
                 continue;
             }
@@ -416,14 +416,16 @@ Polygon PolygonCombiner::intersection() const
     return result;
 }
 
-Polygon PolygonCombiner::combination()
+Polygon PolygonCombiner::combination() const
 {
-
+    SYNC_PRINT(("PolygonCombiner::combination(): Not yet implemented\n"));
+    return Polygon();
 }
 
-Polygon PolygonCombiner::difference()
+Polygon PolygonCombiner::difference() const
 {
-
+    SYNC_PRINT(("PolygonCombiner::difference(): Not yet implemented\n"));
+    return Polygon();
 }
 
 Vector2dd PointPath::center()
