@@ -28,6 +28,8 @@
 using namespace std;
 using namespace corecvs;
 
+using corecvs::Polygon;
+
 TEST(polygon, testArea1)
 {
     cout << "Starting test <polygon>" << endl;
@@ -377,7 +379,7 @@ TEST(polygon, noIntersection)
     CORE_ASSERT_TRUE_P(p3.size() == 0, ("There should be no intersection. But we have polygon of size %d\n", (int)p3.size()));
 }
 
-TEST(polygon, intersectionTouch)
+TEST(polygon, DISABLED_intersectionTouch)
 {
     Polygon  p2 = Polygon::FromRectagle(Rectangled(Vector2dd( 10, 10), Vector2dd( 100, 100)));
     Polygon  p1 = Polygon::FromRectagle(Rectangled(Vector2dd(110,110), Vector2dd(290,290)));
