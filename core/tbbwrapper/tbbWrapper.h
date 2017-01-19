@@ -6,18 +6,22 @@
  *
  * This class allows system to work transparently with or without TBB
  *
- *
- * \date Apr 24, 2011
- * \author alexander
- * \author ivarfolomeev
- */
+ **/
 
 #include <cstddef>
 
 #ifdef WITH_TBB
+/*
+ * This jump around is beacause tbb indirectly includes windows.h
+   This is a fail. TBB needs to be abolished
+*/
+#define Polygon Polygon_
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
+#include <tbb/reader_writer_lock.h>
+#undef Polygon
+
 using namespace tbb;
 #endif
 
