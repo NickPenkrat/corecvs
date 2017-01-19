@@ -110,7 +110,8 @@ HEADERS += \
     3d/sceneShaded.h \
     corestructs/reflectionWidget.h \
     3d/shadedSceneControlWidget.h \
-    scripting/coreToScript.h
+    scripting/coreToScript.h \
+    3d/billboardCaption3DScene.h
 
 SOURCES += \
     frames.cpp \
@@ -191,7 +192,8 @@ SOURCES += \
     uis/histogramDepthDialog.cpp \
     3d/sceneShaded.cpp \
     corestructs/reflectionWidget.cpp \
-    3d/shadedSceneControlWidget.cpp
+    3d/shadedSceneControlWidget.cpp \
+    3d/billboardCaption3DScene.cpp
 
 
 FORMS += \

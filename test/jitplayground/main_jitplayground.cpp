@@ -7,7 +7,7 @@
 #include <random>
 
 #include "fixtureScene.h"
-#include "calibrationHelpers.h"
+#include "calibrationDrawHelpers.h"
 #include "mesh3d.h"
 
 #include "reprojectionCostFunction.h"
