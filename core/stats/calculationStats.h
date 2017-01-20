@@ -200,7 +200,7 @@ public:
     {
         if (stats == NULL)
             return;
-        stats->leaveContext(stats);
+        stats->leaveContext();
     }
 
     static void startInterval(Statistics *stats)
