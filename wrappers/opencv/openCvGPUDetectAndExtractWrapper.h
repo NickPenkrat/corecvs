@@ -31,7 +31,7 @@ public:
 	bool  isParallelable() { return false; }
 
 protected:
-    void detectAndExtractImpl( RuntimeTypeBuffer &image, std::vector<::KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints );
+    void detectAndExtractImpl( RuntimeTypeBuffer &image, std::vector<::KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache );
 
 private:
     OpenCvGPUDetectAndExtractWrapper( const OpenCvGPUDetectAndExtractWrapper& );

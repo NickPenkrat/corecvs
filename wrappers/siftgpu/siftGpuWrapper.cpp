@@ -74,12 +74,12 @@ SiftGpu::SiftGpu(double filterWidthFactor,
     }
 }
 
-void SiftGpu::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors)
+void SiftGpu::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, void*)
 {
     (*this)(image, keyPoints, descriptors, true, true);
 }
 
-void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int)
+void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int, void*)
 {
     RuntimeTypeBuffer buffer;
     (*this)(image, keyPoints,buffer);

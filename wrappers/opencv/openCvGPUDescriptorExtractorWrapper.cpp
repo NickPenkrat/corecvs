@@ -37,9 +37,22 @@ OpenCvGPUDescriptorExtractorWrapper::~OpenCvGPUDescriptorExtractorWrapper()
     delete extractorSURF_OCL;
 }
 
+struct OpenCLRemapCache
+{
+	oclMat mat0;
+	oclMat mat1;
+};
+
+struct CudaRemapCache
+{
+	GpuMat mat0;
+	GpuMat mat1;
+};
+
 void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     , std::vector<KeyPoint> &keyPoints
-    , RuntimeTypeBuffer &descriptors)
+    , RuntimeTypeBuffer &descriptors
+	, void* pRemapCache)
 {
     std::vector<cv::KeyPoint> kps;
     FOREACH(const KeyPoint& kp, keyPoints)
@@ -50,6 +63,14 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     if ( extractorSURF_CUDA || extractorORB_CUDA )
     {    
         GpuMat cudaImage( img );
+		if (pRemapCache)
+		{
+			GpuMat remapped;
+			CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+			cv::gpu::remap(cudaImage, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+			cudaImage = remapped;
+		}
+
         GpuMat cudaDescriptors;
         if ( extractorSURF_CUDA )
         {
@@ -67,6 +88,14 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     else if ( extractorSURF_OCL )
     {
         oclMat oclImage( img );
+		if (pRemapCache)
+		{
+			oclMat remapped;
+			OpenCLRemapCache* p = (OpenCLRemapCache*)(pRemapCache);
+			cv::ocl::remap(oclImage, remapped, p->mat0, p->mat1, cv::INTER_NEAREST, cv::BORDER_CONSTANT);
+			oclImage = remapped;
+		}
+
         oclMat oclDescriptors;
         //extractorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
         ( *extractorSURF_OCL )( oclImage, oclMat(), kps, oclDescriptors, true );

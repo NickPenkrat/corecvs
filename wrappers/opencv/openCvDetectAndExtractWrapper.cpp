@@ -6,12 +6,19 @@
 #include "global.h"
 
 #include <opencv2/features2d/features2d.hpp>       // cv::FeatureDetector
+#include <opencv2/imgproc.hpp>
 #ifdef WITH_OPENCV_3x
 #   include <opencv2/xfeatures2d/nonfree.hpp>      // cv::xfeatures2d::SURF, cv::xfeatures2d::SIFT
 #   include <opencv2/xfeatures2d.hpp>				// cv::xfeatures2d::STAR
 #else
 #   include <opencv2/nonfree/features2d.hpp>       // cv::SURF, cv::SIFT
 #endif
+
+struct CvRemapCache
+{
+	cv::Mat mat0;
+	cv::Mat mat1;
+};
 
 struct DetectorHolder
 {
@@ -152,11 +159,19 @@ void OpenCvDetectAndExtractWrapper::setProperty(const std::string &name, const d
     CORE_UNUSED(value);
 }
 
-void OpenCvDetectAndExtractWrapper::detectAndExtractImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints )
+void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache)
 {
     std::vector<cv::KeyPoint> kps;
     cv::Mat cv_descriptors;
     cv::Mat img = convert(image);
+	
+	if (pRemapCache)
+	{
+		cv::Mat remapped;
+		CvRemapCache* p = (CvRemapCache*)(pRemapCache);
+		cv::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+		img = remapped;
+	}
 
 #ifdef WITH_OPENCV_3x
     holder->get()->detectAndCompute(img, cv::Mat(), kps, cv_descriptors);

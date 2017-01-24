@@ -18,7 +18,7 @@ public:
     bool isParallelable() { return true; }
 
 protected:
-    void detectAndExtractImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints );
+    void detectAndExtractImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache );
 
 private:
     OpenCvDetectAndExtractWrapper(const OpenCvDetectAndExtractWrapper &wrapper);

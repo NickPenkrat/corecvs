@@ -5,6 +5,7 @@
 #include "global.h"
 
 #include <opencv2/features2d/features2d.hpp>    // cv::DescriptorExtractor
+#include <opencv2/imgproc.hpp>					// cv::remap
 
 #ifdef WITH_OPENCV_3x
 #   include <opencv2/xfeatures2d/nonfree.hpp>      // cv::xfeatures2d::SURF, cv::xfeatures2d::SIFT
@@ -96,9 +97,16 @@ OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
 
 #endif
 
+struct CvRemapCache
+{
+	cv::Mat mat0;
+	cv::Mat mat1;
+};
+
 void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
     , std::vector<KeyPoint> &keyPoints
-    , RuntimeTypeBuffer &descriptors)
+    , RuntimeTypeBuffer &descriptors
+	, void* pRemapCache )
 {
     std::vector<cv::KeyPoint> kps;
     FOREACH(const KeyPoint& kp, keyPoints)
@@ -106,6 +114,13 @@ void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
         kps.push_back(convert(kp));
     }
     cv::Mat img = convert(image), desc;
+	if (pRemapCache)
+	{
+		cv::Mat remapped;
+		CvRemapCache* p = (CvRemapCache*)(pRemapCache);
+		cv::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+		img = remapped;
+	}
 
     extractor->compute(img, kps, desc);
 
