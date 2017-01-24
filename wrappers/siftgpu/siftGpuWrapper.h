@@ -3,6 +3,7 @@
 
 #include "global.h"
 
+#include "runtimeTypeBuffer.h"
 #include "imageKeyPoints.h"
 #include "descriptorExtractorProvider.h"
 #include "featureDetectorProvider.h"
@@ -37,12 +38,12 @@ public:
     }
     bool isParallelable() { return false; }
 
-	void operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
+    void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
 
-	void operator()(RuntimeTypeBuffer &img, std::vector<KeyPoint> &keypoints, RuntimeTypeBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
+    void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint> &keypoints, corecvs::RuntimeTypeBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
 protected:
-	void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, void*);
-	void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int, void*);
+    void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors, void*);
+    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int, void*);
 
 	static SiftGPU::SiftKeypoint convert(const KeyPoint &k);
 	static KeyPoint convert(const SiftGPU::SiftKeypoint &k);
@@ -69,7 +70,8 @@ class SiftGpuFeatureDetectorProvider : public FeatureDetectorProviderImpl
 {
 public:
 	FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string& params = "");
-	bool provides(const DetectorType &type);
+    virtual bool provides(const DetectorType &type) override;
+    virtual std::string name()  override {return "SiftGpu"; }
 	~SiftGpuFeatureDetectorProvider() {}
 };
 
@@ -77,7 +79,8 @@ class SiftGpuDescriptorExtractorProvider : public DescriptorExtractorProviderImp
 {
 public:
 	DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string& params = "");
-	bool provides(const DescriptorType &type);
+    virtual bool provides(const DescriptorType &type);
+    virtual std::string name() override {return "SiftGpu";}
 	~SiftGpuDescriptorExtractorProvider() {}
 };
 

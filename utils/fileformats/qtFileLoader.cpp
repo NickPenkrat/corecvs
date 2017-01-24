@@ -168,3 +168,41 @@ QTRGB24Loader::~QTRGB24Loader()
 {
     // TODO Auto-generated destructor stub
 }
+
+bool QTRuntimeLoader::acceptsFile(std::string name)
+{
+    return true;
+}
+
+RuntimeTypeBuffer *QTRuntimeLoader::load(std::string name)
+{
+    QString qtName = QString::fromStdString(name);
+    QImage image(qtName);
+
+    if (image.isNull())
+        return NULL;
+
+    RuntimeTypeBuffer *result = new RuntimeTypeBuffer(image.height(), image.width());
+
+    /**
+     * TODO: Make this faster using .bits() method.
+     * So far don't want to mess with possible image formats
+     *
+     */
+    for (int i = 0; i < image.height(); i++)
+    {
+        for (int j = 0; j < image.width(); j++)
+        {
+            QRgb pixel = image.pixel(j,i);
+            result->at<uint8_t>(i,j) = qGray(pixel);
+        }
+    }
+
+    return result;
+
+}
+
+QTRuntimeLoader::~QTRuntimeLoader()
+{
+
+}

@@ -26,6 +26,9 @@ int BaseReflection<HeadSearchParameters>::dummy = HeadSearchParameters::staticIn
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int HeadSearchParameters::staticInit()
 {
 

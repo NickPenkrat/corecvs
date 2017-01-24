@@ -26,6 +26,9 @@ int BaseReflection<BinarizeParameters>::dummy = BinarizeParameters::staticInit()
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int BinarizeParameters::staticInit()
 {
 

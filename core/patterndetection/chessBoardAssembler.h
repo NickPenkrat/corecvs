@@ -117,7 +117,7 @@ protected: //private:
     BoardAligner                        *aligner = nullptr;
     DpImage                             *buffer  = nullptr;
 
-    std::unique_ptr<KDTree<OrientedCorner, 2>> kd;
+    std::unique_ptr<corecvs::KDTree<OrientedCorner, 2>> kd;
 #ifdef WITH_TBB
     tbb::mutex                          mutex;
 #endif

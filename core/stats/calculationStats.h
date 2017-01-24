@@ -117,10 +117,19 @@ public:
 
     std::deque<State> mStack;
 
+
+    /**
+     * Checking this for NULL is ABSOLUTLY discouraged! This violates the standard and should be avoided
+     *
+     * \attention Any call on a NULL pointer is undefined behavior!
+     *
+     * Use static wrappers instead.
+     *
+     **/
     Statistics* enterContext(const string& prefix)
     {
-        if (this == nullptr)
-            return nullptr;
+        /*if (this == nullptr)
+            return nullptr;*/
         mStack.emplace_back(State(mPrefix, mHelperTimer));
         mPrefix = mPrefix + prefix;
         return this;
@@ -128,8 +137,8 @@ public:
 
     void leaveContext()
     {
-        if (this == nullptr)
-            return;
+        /*if (this == nullptr)
+            return;*/
         State state = mStack.back();
         mStack.pop_back();
         mPrefix      = state.mPrefix;
@@ -141,34 +150,91 @@ public:
     string                  mPrefix;
     PreciseTimer            mHelperTimer;
 
+
     void startInterval()
     {
-        if (this == nullptr)
-            return;
+        /*if (this == nullptr)
+            return;*/
         mHelperTimer = PreciseTimer::currentTime();
     }
 
     void endInterval(const string &str)
     {
-        if (this == nullptr)
-            return;
+        /*if (this == nullptr)
+            return;*/
         setTime(str, mHelperTimer.usecsToNow());
     }
 
     void resetInterval(const string &str)
-    {
+    {        
         endInterval(str);
         startInterval();
     }
 
     void setTime(const string &str, uint64_t delay)
     {
+        /*if (this == nullptr)
+            return;*/
         mValues[mPrefix + str] = SingleStat(delay);
     }
 
     void setValue(const string &str, uint64_t value)
     {
+        /*if (this == nullptr)
+            return;*/
         mValues[mPrefix + str] = SingleStat(value, SingleStat::UNSIGNED);
+    }
+
+    /**
+     * Static calls that check for NULL
+     **/
+
+    static Statistics* enterContext(Statistics *stats, const string& prefix)
+    {
+        if (stats == NULL)
+            return NULL;
+        return stats->enterContext(prefix);
+    }
+
+    static void leaveContext(Statistics *stats)
+    {
+        if (stats == NULL)
+            return;
+        stats->leaveContext();
+    }
+
+    static void startInterval(Statistics *stats)
+    {
+        if (stats == nullptr)
+            return;
+        stats->startInterval();
+    }
+
+    static void endInterval(Statistics *stats, const string &str)
+    {
+        if (stats == nullptr)
+            return;
+        stats->endInterval(str);
+    }
+
+    static void resetInterval(Statistics *stats, const string &str)
+    {
+        endInterval(stats, str);
+        startInterval(stats);
+    }
+
+    static void setTime(Statistics *stats, const string &str, uint64_t delay)
+    {
+        if (stats == nullptr)
+            return;
+        stats->setTime(str, delay);
+    }
+
+    static void setValue(Statistics *stats, const string &str, uint64_t value)
+    {
+        if (stats == nullptr)
+            return;
+        stats->setValue(str, value);
     }
 };
 

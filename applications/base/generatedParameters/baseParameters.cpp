@@ -26,6 +26,9 @@ int BaseReflection<BaseParameters>::dummy = BaseParameters::staticInit();
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int BaseParameters::staticInit()
 {
 

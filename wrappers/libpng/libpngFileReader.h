@@ -25,9 +25,9 @@ public:
         return 0;
     }
 
-    virtual bool acceptsFile(string name) override;
-    virtual RGB24Buffer * load(string name) override;
-    virtual bool save(string name, RGB24Buffer *buffer);
+    virtual bool acceptsFile(corecvs::string name) override;
+    virtual corecvs::RGB24Buffer * load(string name) override;
+    virtual bool save(corecvs::string name, corecvs::RGB24Buffer *buffer);
 
 };
 

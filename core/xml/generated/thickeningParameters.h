@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -35,7 +35,7 @@ namespace corecvs {
  * \brief Thickening Parameters 
  * Thickening Parameters 
  **/
-class ThickeningParameters : public BaseReflection<ThickeningParameters>
+class ThickeningParameters : public corecvs::BaseReflection<ThickeningParameters>
 {
 public:
     enum FieldId {
@@ -75,12 +75,12 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mPower,                     static_cast<const IntField *>     (fields()[POWER_ID]));
+        visitor.visit(mPower,                     static_cast<const corecvs::IntField *>(fields()[POWER_ID]));
     }
 
     ThickeningParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -91,16 +91,16 @@ template<class VisitorType>
         mPower = power;
     }
 
-    friend ostream& operator << (ostream &out, ThickeningParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, ThickeningParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //THICKENING_PARAMETERS_H_

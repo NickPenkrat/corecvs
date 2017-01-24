@@ -14,11 +14,11 @@ using namespace corecvs;
 
 void corecvs::SparseMatrix::checkCorrectness() const
 {
-    CORE_ASSERT_TRUE_S(h + 1 == rowPointers.size());
+    CORE_ASSERT_TRUE_S(h + 1 == (int)rowPointers.size());
     CORE_ASSERT_TRUE_S(rowPointers.size());
-    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == columns.size());
-    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == values.size());
-    for (int i = 0; i + 1 < rowPointers.size(); ++i)
+    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == (int)columns.size());
+    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == (int)values.size());
+    for (size_t i = 0; i + 1 < rowPointers.size(); ++i)
         CORE_ASSERT_TRUE_S(rowPointers[i] <= rowPointers[i + 1]);
     for (int i = 0; i < h; ++i)
         for (int j = rowPointers[i]; j + 1 < rowPointers[i + 1]; ++j)
@@ -78,7 +78,7 @@ std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky(bool all
 
     SparseMatrix A(*this);
     int N = h;
-    int n = N;
+    //int n = N;
     for (int k = 0; k < N; ++k)
     {
         int i_k_k = getIndex(k, k);

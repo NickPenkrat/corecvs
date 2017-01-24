@@ -9,6 +9,10 @@ using corecvs::Matrix33;
 using corecvs::Vector3dd;
 using corecvs::Vector2dd;
 using corecvs::HomographyReconstructor;
+using corecvs::TriangleSpanIterator;
+using corecvs::Triangle2dd;
+using corecvs::HLineSpanInt;
+using corecvs::AbstractPainter;
 
 
 BoardAligner::BoardAligner(BoardAlignerParams params) : BoardAlignerParams(params), generator(FillGenerator(params))

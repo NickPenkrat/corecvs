@@ -18,6 +18,7 @@
 #include "global.h"
 #include "fixedVector.h"
 #include "int64x2.h"
+#include "int64x4.h"
 
 namespace corecvs {
 

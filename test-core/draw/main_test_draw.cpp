@@ -369,7 +369,7 @@ TEST(Draw, testSpanDrawTriangle1)
 
 
     BMPLoader().save("trianglemany.bmp", buffer);
-    BMPLoader().save("triangleAmany.bmp", buffer);
+    BMPLoader().save("triangleAmany.bmp", bufferA);
     delete_safe(bufferA);
     delete_safe(buffer);
 

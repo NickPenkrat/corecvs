@@ -78,7 +78,7 @@ win32 {
 
 # It's moved to global options above
 win32 {
-   CONFIG += with_siftgpu      # activate SiftGPU wrapper that enables using of siftgpu.dll
+#   CONFIG += with_siftgpu      # activate SiftGPU wrapper that enables using of siftgpu.dll
 
     CONFIG += with_opencv
    #CONFIG += with_hardware     # win32: is disabled for a while
@@ -87,10 +87,10 @@ win32 {
 } else:!odroid {
    CONFIG += with_opencv
   #CONFIG += with_avcodec
-   CONFIG += with_libjpeg
-   CONFIG += with_libpng
+ #  CONFIG += with_libjpeg
+ #  CONFIG += with_libpng
    CONFIG += with_openglext
-   CONFIG += with_siftgpu      # activate SiftGPU wrapper that enables using of siftgpu.so
+#   CONFIG += with_siftgpu      # activate SiftGPU wrapper that enables using of siftgpu.so
 
   #CONFIG += with_hardware     # enabled only for some linux PCs for debugging
   #CONFIG += with_opencl       # Linux: opened for analysis on different GPUs (only nVidia) and CPUs

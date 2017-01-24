@@ -26,6 +26,9 @@ int BaseReflection<BackgroundFilterParameters>::dummy = BackgroundFilterParamete
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int BackgroundFilterParameters::staticInit()
 {
 

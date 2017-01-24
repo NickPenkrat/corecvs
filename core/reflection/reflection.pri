@@ -7,6 +7,7 @@ SOURCES += \
     reflection/commandLineSetter.cpp \
     reflection/reflection.cpp \
     reflection/extendedVisitor.cpp \
+    $$PWD/commandLineGetter.cpp
     
     
 HEADERS += \
@@ -18,3 +19,4 @@ HEADERS += \
     reflection/deserializerVisitor.h \
     reflection/commandLineSetter.h \
     reflection/extendedVisitor.h \
+    $$PWD/commandLineGetter.h

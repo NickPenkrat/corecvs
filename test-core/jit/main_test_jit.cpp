@@ -21,7 +21,7 @@
 
 #include "global.h"
 
-
+using namespace corecvs;
 using namespace std;
 
 void asmF(double *in, double *out)

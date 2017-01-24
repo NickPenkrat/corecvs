@@ -30,7 +30,7 @@ public:
     void   setProperty(const std::string &name, const double &value);
 
 protected:
-	void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nMax, void* pRemapCache);
+    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nMax, void* pRemapCache);
 
 private:
     OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper&);
@@ -51,7 +51,8 @@ class OpenCvFeatureDetectorProvider : public FeatureDetectorProviderImpl
 {
 public:
     FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "");
-    bool provides(const DetectorType &type);
+    virtual bool provides(const DetectorType &type) override;
+    virtual std::string name()  override {return "OpenCv"; }
 
     ~OpenCvFeatureDetectorProvider() {}
 };

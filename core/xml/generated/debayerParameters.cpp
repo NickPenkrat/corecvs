@@ -26,6 +26,9 @@ int BaseReflection<DebayerParameters>::dummy = DebayerParameters::staticInit();
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int DebayerParameters::staticInit()
 {
 

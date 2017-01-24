@@ -26,6 +26,9 @@ int BaseReflection<Draw3dParameters>::dummy = Draw3dParameters::staticInit();
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int Draw3dParameters::staticInit()
 {
 

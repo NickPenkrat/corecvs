@@ -29,7 +29,7 @@ public:
     double getProperty(const std::string &name) const;
 
 protected:
-	void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors, void* pRemapCache);
+    void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descripors, void* pRemapCache);
 
 private:
     OpenCvDescriptorExtractorWrapper(const OpenCvDescriptorExtractorWrapper &wrapper);
@@ -37,7 +37,7 @@ private:
     cv::DescriptorExtractor *extractor;
 
 #ifdef WITH_OPENCV_3x
-    SmartPtrExtractorHolder* holder;
+    SmartPtrHolder* holder;
 #endif
 };
 
@@ -50,7 +50,9 @@ class OpenCvDescriptorExtractorProvider : public DescriptorExtractorProviderImpl
 {
 public:
     DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
-    bool provides(const DescriptorType &type);
+    virtual bool provides(const DescriptorType &type) override;
+    virtual std::string name() override {return "OpenCV";}
 
     ~OpenCvDescriptorExtractorProvider() {}
+
 };

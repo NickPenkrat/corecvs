@@ -26,6 +26,9 @@ int BaseReflection<BitcodeBoardParamsBase>::dummy = BitcodeBoardParamsBase::stat
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int BitcodeBoardParamsBase::staticInit()
 {
 

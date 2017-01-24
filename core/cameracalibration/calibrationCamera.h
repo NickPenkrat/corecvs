@@ -93,6 +93,15 @@ struct PinholeCameraIntrinsics : public CameraProjection
 
     PinholeCameraIntrinsics(Vector2dd resolution, double hfov);
 
+    PinholeCameraIntrinsics(Vector2dd resolution, Vector2dd principal, double focal, double skew = 0.0) :
+        focal(focal, focal),
+        principal(principal),
+        skew(skew),
+        size(resolution),
+        distortedSize(resolution)
+    {
+    }
+
 
     /**
      * This actually doesn't differ from matrix multiplication, just is a little bit more lightweight

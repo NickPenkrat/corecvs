@@ -4,9 +4,7 @@
 #include <string>
 #include <ostream>
 
-#ifdef WITH_TBB
-#include <tbb/reader_writer_lock.h>
-#endif
+#include "tbbWrapper.h"
 
 #include "global.h"
 

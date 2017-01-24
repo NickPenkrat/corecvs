@@ -12,12 +12,7 @@
 #ifndef _MSC_VER
 # include <sys/time.h>
 #endif
-#ifdef WIN32
-# include <windows.h>       // GetCurrentThreadId
-#else
-# include <unistd.h>
-# include <sys/syscall.h>
-#endif
+
 
 #include <fstream>
 #include <vector>
@@ -110,6 +105,7 @@ public:
         , LEVEL_LAST                          /**< Last enum value for iterating */
     };
 
+    static int getCurrentThreadId();
     static const char *level_names[];
 
     Log(const LogLevel maxLocalLevel = LEVEL_ERROR);
@@ -184,11 +180,8 @@ public:
             message.get()->mOriginFileName     = originFileName;
             message.get()->mOriginFunctionName = originFunctionName;
             message.get()->mOriginLineNumber   = originLineNumber;
-#ifdef WIN32
-            message.get()->mThreadId = (int)GetCurrentThreadId();
-#else
-            message.get()->mThreadId = syscall(SYS_gettid);
-#endif
+            message.get()->mThreadId = Log::getCurrentThreadId();
+
             time(&message.get()->mTime);
         }
 

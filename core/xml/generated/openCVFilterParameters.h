@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -36,7 +36,7 @@ namespace corecvs {
  * \brief OpenCV Filter Parameters 
  * OpenCV Filter Parameters 
  **/
-class OpenCVFilterParameters : public BaseReflection<OpenCVFilterParameters>
+class OpenCVFilterParameters : public corecvs::BaseReflection<OpenCVFilterParameters>
 {
 public:
     enum FieldId {
@@ -110,14 +110,14 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit((int &)mOpenCVFilter,       static_cast<const EnumField *>    (fields()[OPENCVFILTER_ID]));
-        visitor.visit(mParam1,                    static_cast<const IntField *>     (fields()[PARAM1_ID]));
-        visitor.visit(mParam2,                    static_cast<const IntField *>     (fields()[PARAM2_ID]));
+        visitor.visit((int &)mOpenCVFilter,       static_cast<const corecvs::EnumField *>(fields()[OPENCVFILTER_ID]));
+        visitor.visit(mParam1,                    static_cast<const corecvs::IntField *>(fields()[PARAM1_ID]));
+        visitor.visit(mParam2,                    static_cast<const corecvs::IntField *>(fields()[PARAM2_ID]));
     }
 
     OpenCVFilterParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -132,16 +132,16 @@ template<class VisitorType>
         mParam2 = param2;
     }
 
-    friend ostream& operator << (ostream &out, OpenCVFilterParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, OpenCVFilterParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //OPENCV_FILTER_PARAMETERS_H_

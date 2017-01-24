@@ -6,13 +6,13 @@
 namespace corecvs {
 
 TwoViewOptimalTriangulor::TwoViewOptimalTriangulor(bool L2, const Matrix44 &P1, const Vector2dd &v1, const Matrix44 &P2, const Vector2dd &v2)
-    : L2(L2), P1(P1), v1(v1), P2(P2), v2(v2)
+    : P1(P1), P2(P2), v1(v1), v2(v2), L2(L2)
 {
     F0 = CameraModel::Fundamental(P1, P2);
 }
 
 TwoViewOptimalTriangulor::TwoViewOptimalTriangulor(bool L2, const CameraModel &l, const Vector2dd &v1, const CameraModel &r, const Vector2dd &v2)
-    : L2(L2), P1(l.getCameraMatrix()), v1(v1), P2(r.getCameraMatrix()), v2(v2)
+    : P1(l.getCameraMatrix()), P2(r.getCameraMatrix()), v1(v1), v2(v2), L2(L2)
 {
     F0 = l.fundamentalTo(r);
 }
@@ -151,7 +151,7 @@ double TwoViewOptimalTriangulor::solveTL2()
         , 6*a2*b2 - 2*a2*d2*f12 + 2*a2*d2*f22 + 8*a*b*c*d*f22 + 2*b2*c2*f12 + 2*b2*c2*f22 + 6*c2*d2*f24, -a2*c*d + 4*a*b3 + a*b*c2 - 2*a*b*d2*f12 + 4*a*b*d2*f22 + 2*b2*c*d*f12 + 4*b2*c*d*f22 + 4*c*d3*f24
         , -a2*d2 + b4 + b2*c2 + 2*b2*d2*f22 + d4*f24, -a*b*d2 + b2*c*d
     };
-    for (int i = 0; i * 2 < cc.size(); ++i)
+    for (size_t i = 0; i * 2 < cc.size(); ++i)
         std::swap(cc[i], cc[cc.size() - i - 1]);
 
     auto f = [&](double t)

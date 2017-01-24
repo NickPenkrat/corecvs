@@ -86,6 +86,8 @@ OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
 
 #else // !WITH_OPENCV_3x
 
+using namespace corecvs;
+
 OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *extractor)
     : extractor(extractor)
 {}

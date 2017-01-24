@@ -220,6 +220,8 @@ public:
     tbb::spin_mutex mutex;
 #endif
 
+    static void printCaps();
+
 private:
     struct tic_data
     {
@@ -236,5 +238,6 @@ private:
 	std::vector<std::pair<bool, std::string> >  loadParams;
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 
-    StatusTracker*                               processState = nullptr;
+    corecvs::StatusTracker*         processState = nullptr;
+
 };

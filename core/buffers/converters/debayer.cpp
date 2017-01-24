@@ -2,6 +2,8 @@
 #include "labConverter.h"
 #include "math/fftw/fftwWrapper.h"
 
+namespace corecvs {
+
 using std::pow;
 using std::max;
 using std::min;
@@ -996,3 +998,5 @@ void Debayer::fromRgb(RGB48Buffer *inRgb)
         }
     }
 }
+
+} //namespace corecvs

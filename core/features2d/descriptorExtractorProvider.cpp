@@ -12,18 +12,30 @@ DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const D
             return (*p)->getDescriptorExtractor(type, params);
         }
     }
-
-	//try 
-	{
-		CORE_ASSERT_FAIL_P(("DescriptorExtractorProvider::getDescriptorExtractor(%s): no providers", type.c_str()));
-	}
-	//catch (AssertException)
-	{
-	
-	}
-
+    CORE_ASSERT_FAIL_P(("DescriptorExtractorProvider::getDescriptorExtractor(%s): no providers", type.c_str()));
     return 0;
 }
+
+std::vector<std::string> DescriptorExtractorProvider::getCaps()
+{
+    std::vector<std::string> result;
+    for (std::vector<DescriptorExtractorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
+    {
+        result.push_back((*p)->name());
+    }
+    return result;
+}
+
+
+void DescriptorExtractorProvider::print()
+{
+    cout << "DescriptorExtractorProvider has " << providers.size() << " providers" << std::endl;
+    for (std::vector<DescriptorExtractorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
+    {
+        cout << "  " << (*p)->name() << std::endl;
+    }
+}
+
 
 void DescriptorExtractorProvider::add(DescriptorExtractorProviderImpl *provider)
 {
@@ -49,7 +61,7 @@ DescriptorExtractorProvider::DescriptorExtractorProvider()
 {
 }
 
-void DescriptorExtractor::compute(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &buffer, void* pRemapCache)
+void DescriptorExtractor::compute(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &buffer, void* pRemapCache)
 {
 	computeImpl(image, keyPoints, buffer, pRemapCache);
 }

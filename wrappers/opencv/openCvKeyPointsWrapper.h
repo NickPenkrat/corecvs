@@ -13,8 +13,8 @@ cv::DMatch convert(const RawMatch &rm);
 
 RawMatch convert(const cv::DMatch &dm);
 
-cv::Mat convert(const RuntimeTypeBuffer &buffer);
+cv::Mat convert(const corecvs::RuntimeTypeBuffer &buffer);
 
-RuntimeTypeBuffer convert(const cv::Mat &mat);
+corecvs::RuntimeTypeBuffer convert(const cv::Mat &mat);
 
 #endif
