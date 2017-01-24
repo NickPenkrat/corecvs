@@ -24,8 +24,8 @@ OpenCvGPUDescriptorMatcherWrapper::~OpenCvGPUDescriptorMatcherWrapper()
     delete matcherBF_OCL;
 }
 
-void OpenCvGPUDescriptorMatcherWrapper::knnMatchImpl( RuntimeTypeBuffer &query
-    , RuntimeTypeBuffer &train
+void OpenCvGPUDescriptorMatcherWrapper::knnMatchImpl(corecvs::RuntimeTypeBuffer &query
+	, corecvs::RuntimeTypeBuffer &train
     , std::vector<std::vector<RawMatch> > &matches
     , size_t K)
 {

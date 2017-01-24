@@ -199,7 +199,7 @@ void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
 class FeatureMatchingPipeline
 {
 public:
-	FeatureMatchingPipeline(const std::vector<std::string> &filenames, const std::vector<void*> &remapCaches, StatusTracker* processState = nullptr);
+	FeatureMatchingPipeline(const std::vector<std::string> &filenames, const std::vector<void*> &remapCaches, corecvs::StatusTracker* processState = nullptr);
 	~FeatureMatchingPipeline();
 
     void run();

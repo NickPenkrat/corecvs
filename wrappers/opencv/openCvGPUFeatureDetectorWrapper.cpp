@@ -136,9 +136,9 @@ struct CudaRemapCache
 	GpuMat mat1;
 };
 
-void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int K, void* pRemapCache )
+void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int K, void* pRemapCache)
 {
-    if ( image.getType() != BufferType::U8 || !image.isValid() )
+	if (image.getType() != corecvs::BufferType::U8 || !image.isValid())
     {
         std::cerr << __LINE__ << "Invalid image type" << std::endl;
     }

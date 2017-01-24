@@ -159,7 +159,7 @@ void OpenCvDetectAndExtractWrapper::setProperty(const std::string &name, const d
     CORE_UNUSED(value);
 }
 
-void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache)
+void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache)
 {
     std::vector<cv::KeyPoint> kps;
     cv::Mat cv_descriptors;

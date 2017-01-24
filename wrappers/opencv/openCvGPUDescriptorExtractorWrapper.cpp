@@ -49,9 +49,9 @@ struct CudaRemapCache
 	GpuMat mat1;
 };
 
-void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
+void OpenCvGPUDescriptorExtractorWrapper::computeImpl(corecvs::RuntimeTypeBuffer &image
     , std::vector<KeyPoint> &keyPoints
-    , RuntimeTypeBuffer &descriptors
+	, corecvs::RuntimeTypeBuffer &descriptors
 	, void* pRemapCache)
 {
     std::vector<cv::KeyPoint> kps;

@@ -14,6 +14,7 @@
 #include "bufferReaderProvider.h"
 #include "vsfmIo.h"
 #include "tbbWrapper.h"
+#include "BufferFactory.h"
 
 static const char* KEYPOINT_EXTENSION   = "keypoints";
 static const char* DESCRIPTOR_EXTENSION = "descriptors";
@@ -42,7 +43,7 @@ std::string getFilename(const std::string &imgName)
     return res;
 }
 
-FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames, const std::vector<void*> &remapCaches, StatusTracker* processState)
+FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames, const std::vector<void*> &remapCaches, corecvs::StatusTracker* processState)
 {
     this->processState = processState;
     images.reserve(filenames.size());
@@ -64,11 +65,11 @@ FeatureMatchingPipeline::~FeatureMatchingPipeline()
 
 void FeatureMatchingPipeline::run()
 {
-	StatusTracker::Reset(processState, "Detecting", pipeline.size());
+	corecvs::StatusTracker::Reset(processState, "Detecting", pipeline.size());
 
     for (size_t id = 0; id < pipeline.size(); ++id)
     {
-        auto boo = StatusTracker::CreateAutoTrackerCalculationObject(processState);
+		auto boo = corecvs::StatusTracker::CreateAutoTrackerCalculationObject(processState);
         auto sParams = saveParams[id];
         auto lParams = loadParams[id];
         auto ps = pipeline[id];
@@ -123,7 +124,7 @@ public:
 
             ss1 << image.filename << ", ";
 
-            std::unique_ptr<RuntimeTypeBuffer> img(BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
+			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
 			img->downsample( downsampleFactor );
             detector->detect((*img.get()), image.keyPoints.keyPoints, maxFeatureCount, image.remapCache);
 
@@ -192,6 +193,7 @@ KeyPointDetectionStage::KeyPointDetectionStage( DetectorType type, int maxFeatur
     detectorType( type ),
     downsampleFactor( downsampleFactor ),
     params( params ), 
+	maxFeatureCount(maxFeatureCount)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();
@@ -260,21 +262,20 @@ public:
 
             ss1 << image.filename << ", ";
 
-            std::unique_ptr<RuntimeTypeBuffer> img      (BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
+			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
             img->downsample( downsampleFactor );
 
 			if (extractor)
-            	extractor->compute(*img.get(), image.keyPoints.keyPoints, image.descriptors.mat);
+            	extractor->compute(*img.get(), image.keyPoints.keyPoints, image.descriptors.mat, image.remapCache);
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
             if ( downsampleFactor == 1 && keypointsColor )
             {
-				std::unique_ptr<corecvs::RGB24Buffer      > bufferRGB(BufferFactory::getInstance()->loadRGB24Bitmap(image.filename));
-                RGB24Buffer bufferRGB = reader->readRgb( image.filename );
+				std::unique_ptr<corecvs::RGB24Buffer      > bufferRGB(corecvs::BufferFactory::getInstance()->loadRGB24Bitmap(image.filename));
                 for ( auto& kp : image.keyPoints.keyPoints )
                 {
-                    RGB24Buffer::RGBEx32 mean( RGBColor::Black() );
+					corecvs::RGB24Buffer::RGBEx32 mean(corecvs::RGBColor::Black());
                     int cnt = 0;
                     int x = kp.position.x();
                     int y = kp.position.y();
@@ -287,7 +288,7 @@ public:
                             continue;
 
                         auto color = bufferRGB->element(yy, xx);
-                        mean += RGB24Buffer::RGBEx32(color);
+						mean += corecvs::RGB24Buffer::RGBEx32(color);
                         cnt++;
                     }
                 mean /= cnt;
@@ -480,8 +481,8 @@ public:
             size_t J = matchPlan.plan[s].trainImg;
             MatchPlanEntry &query = matchPlan.plan[s];
 
-            RuntimeTypeBuffer qb(images[I].descriptors.mat);
-            RuntimeTypeBuffer tb(images[J].descriptors.mat);
+            corecvs::RuntimeTypeBuffer qb(images[I].descriptors.mat);
+            corecvs::RuntimeTypeBuffer tb(images[J].descriptors.mat);
 
 #if 0
             for (size_t j = 0; j < query.queryFeatures.size(); ++j)
@@ -627,8 +628,8 @@ public:
 
                 CORE_ASSERT_TRUE_S(Is < N && Js < N);
 
-                RuntimeTypeBuffer qb(images[Is].descriptors.mat);
-                RuntimeTypeBuffer tb(images[Js].descriptors.mat);
+                corecvs::RuntimeTypeBuffer qb(images[Is].descriptors.mat);
+                corecvs::RuntimeTypeBuffer tb(images[Js].descriptors.mat);
 
                 for (size_t j = 0; j < query.queryFeatures.size(); ++j)
                 {
@@ -1544,12 +1545,12 @@ public:
         {
             Image& image = pipeline->images[ i ];
             image.keyPoints.keyPoints.clear();
-            image.descriptors.mat = RuntimeTypeBuffer();
+			image.descriptors.mat = corecvs::RuntimeTypeBuffer();
 
             ss1 << image.filename << ",\n";
 
             std::unique_ptr<BufferReader> reader( BufferReaderProvider::getInstance().getBufferReader( image.filename ) );
-            RuntimeTypeBuffer img = reader->read( image.filename );
+			corecvs::RuntimeTypeBuffer img = reader->read(image.filename);
             img.downsample( downsampleFactor );
    
             if ( detector.get() )
@@ -1564,7 +1565,7 @@ public:
                 corecvs::RGB24Buffer bufferRGB = reader->readRgb( image.filename );
                 for ( auto& kp : image.keyPoints.keyPoints )
                 {
-                    RGB24Buffer::RGBEx32 mean( RGBColor::Black() );
+					corecvs::RGB24Buffer::RGBEx32 mean(corecvs::RGBColor::Black());
                     int cnt = 0;
                     int x = kp.position.x();
                     int y = kp.position.y();
@@ -1577,7 +1578,7 @@ public:
                                 continue;
 
                             auto color = bufferRGB.element( yy, xx );
-                            mean += RGB24Buffer::RGBEx32( color );
+							mean += corecvs::RGB24Buffer::RGBEx32(color);
                             cnt++;
                         }
                     mean /= cnt;
@@ -1692,7 +1693,7 @@ void DetectExtractAndMatchStage::run(FeatureMatchingPipeline *pipeline)
 	}
 
 	for (uint i = 0; i < numImages; i++)
-		std::cerr << pipeline->images[i].filename << "\t\t\t " << pipeline->images[i].keyPoints.keyPoints.size() << " keypoints " << endl;
+		std::cerr << pipeline->images[i].filename << "\t\t\t " << pipeline->images[i].keyPoints.keyPoints.size() << " keypoints " << std::endl;
 
 	ss1 << "Detect " << detectorType << " and match " << matcherType;
     pipeline->toc( ss1.str(), "");

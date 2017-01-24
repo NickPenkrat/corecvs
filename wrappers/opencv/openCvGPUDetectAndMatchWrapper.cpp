@@ -43,7 +43,7 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
 		image.keyPoints.keyPoints.clear();
 
 		std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
-		RuntimeTypeBuffer img = reader->read(image.filename);
+		corecvs::RuntimeTypeBuffer img = reader->read(image.filename);
         
         if ( detectorSURF_OCL )
         {
