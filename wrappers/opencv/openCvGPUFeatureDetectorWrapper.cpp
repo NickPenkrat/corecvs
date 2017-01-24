@@ -119,7 +119,24 @@ void OpenCvGPUFeatureDetectorWrapper::setProperty( const std::string &name, cons
     CORE_UNUSED( value );
 }
 
-void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int K )
+struct OpenCLRemapCache
+{
+#ifdef WITH_OPENCV_3x
+	UMat mat0;
+	UMat mat1;
+#else
+	oclMat mat0;
+	oclMat mat1;
+#endif
+};
+
+struct CudaRemapCache
+{
+	GpuMat mat0;
+	GpuMat mat1;
+};
+
+void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int K, void* pRemapCache )
 {
     if ( image.getType() != BufferType::U8 || !image.isValid() )
     {
@@ -131,6 +148,13 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     if (detectorSURF_CUDA)
     {
         cv::cuda::GpuMat img( convert( image ) );
+		if (pRemapCache)
+		{
+			GpuMat remapped;
+			CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+			cv::cuda::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+			img = remapped;
+		}
         cv::cuda::GpuMat mask;
         ( *detectorSURF_CUDA )( img, mask, kps );  
     }
@@ -139,13 +163,27 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
         auto detector = holder->get();
         if ( holder->tag == SmartPtrHolder::SURF ) // openCL implementation
         {
-            cv::UMat img;
+			cv::UMat img( convert( image ) );
+			if (pRemapCache)
+			{
+				UMat remapped;
+				OpenCLRemapCache* p = (OpenCLRemapCache*)(pRemapCache);
+				cv::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+				img = remapped;
+			}
             detector->detect( img, kps );
         }
 
-        if ( holder->tag == SmartPtrHolder::ORB ) // openCL implementation
+        if ( holder->tag == SmartPtrHolder::ORB ) // CUDA implementation
         {
             cv::cuda::GpuMat img( convert( image ) );
+			if (pRemapCache)
+			{
+				GpuMat remapped;
+				CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+				cv::cuda::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+				img = remapped;
+			}
             detector->detect( img, kps );
         }           
     }
@@ -154,6 +192,14 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     if ( detectorSURF_CUDA || detectorORB_CUDA )
     {
         cv::gpu::GpuMat img( convert( image ) );
+		if (pRemapCache)
+		{
+			GpuMat remapped;
+			CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+			cv::gpu::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+			img = remapped;
+		}
+
         cv::gpu::GpuMat mask;
 
         if ( detectorSURF_CUDA )
@@ -171,6 +217,14 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     else if ( detectorSURF_OCL )
     {
         cv::ocl::oclMat img( convert( image ) );
+		if (pRemapCache)
+		{
+			oclMat remapped;
+			OpenCLRemapCache* p = (OpenCLRemapCache*)(pRemapCache);
+			cv::ocl::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST, cv::BORDER_CONSTANT);
+			img = remapped;
+		}
+
         cv::ocl::oclMat mask;
         //max keypoints = min(keypointsRatio * img.size().area(), 65535)
         //detectorSURF_OCL->keypointsRatio = ( float )K / img.size().area();

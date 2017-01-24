@@ -19,7 +19,19 @@ using namespace cv::gpu;
 using namespace cv::ocl;
 using namespace cv;
 
-void OpenCvGPUDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &image, std::vector<::KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints)
+struct OpenCLRemapCache
+{
+	oclMat mat0;
+	oclMat mat1;
+};
+
+struct CudaRemapCache
+{
+	GpuMat mat0;
+	GpuMat mat1;
+};
+
+void OpenCvGPUDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &image, std::vector<::KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache)
 {
 	if (image.getType() != BufferType::U8 || !image.isValid())
 	{
@@ -31,6 +43,14 @@ void OpenCvGPUDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &i
 	if (detectorSURF_CUDA || detectorORB_CUDA)
 	{
 		GpuMat img(convert(image));
+		if (pRemapCache)
+		{
+			GpuMat remapped;
+			CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+			cv::gpu::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+			img = remapped;
+		}
+
 		GpuMat cudaDescriptors;
 		GpuMat mask;
 		if (detectorSURF_CUDA)
@@ -50,6 +70,14 @@ void OpenCvGPUDetectAndExtractWrapper::detectAndExtractImpl(RuntimeTypeBuffer &i
 	else if (detectorSURF_OCL)
 	{
 		oclMat img(convert(image));
+		if (pRemapCache)
+		{
+			oclMat remapped;
+			OpenCLRemapCache* p = (OpenCLRemapCache*)(pRemapCache);
+			cv::ocl::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST, cv::BORDER_CONSTANT);
+			img = remapped;
+		}
+
 		oclMat mask;
 		oclMat oclDescriptors;
 		//max keypoints = min(keypointsRatio * img.size().area(), 65535)

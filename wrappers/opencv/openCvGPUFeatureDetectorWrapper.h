@@ -45,7 +45,7 @@ public:
     bool  isParallelable() { return false; }
 
 protected:
-    void detectImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints );
+	void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints, void* pRemapCache);
 
 private:
     OpenCvGPUFeatureDetectorWrapper( const OpenCvGPUFeatureDetectorWrapper& );

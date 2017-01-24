@@ -29,7 +29,7 @@ public:
     double getProperty(const std::string &name) const;
 
 protected:
-    void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors);
+	void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors, void* pRemapCache);
 
 private:
     OpenCvDescriptorExtractorWrapper(const OpenCvDescriptorExtractorWrapper &wrapper);

@@ -28,7 +28,7 @@ public:
     bool isParallelable() { return false; }
 
 protected:
-    void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors);
+	void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors, void* pRemapCache);
 
 private:
     OpenCvGPUDescriptorExtractorWrapper( const OpenCvGPUDescriptorExtractorWrapper &wrapper );

@@ -9,11 +9,11 @@
 class DetectAndExtract : public AlgoBase
 {
 public:
-    void detectAndExtract( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints );
+	void detectAndExtract(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache);
     virtual ~DetectAndExtract() {}
 
 protected:
-    virtual void detectAndExtractImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints ) = 0;
+    virtual void detectAndExtractImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache ) = 0;
 };
 
 class DetectAndExtractProviderImpl

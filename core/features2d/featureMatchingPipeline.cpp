@@ -42,13 +42,14 @@ std::string getFilename(const std::string &imgName)
     return res;
 }
 
-FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames, StatusTracker* processState)
+FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames, const std::vector<void*> &remapCaches, StatusTracker* processState)
 {
     this->processState = processState;
     images.reserve(filenames.size());
+	bool useCache = remapCaches.size() == filenames.size();
     for (size_t i = 0; i < filenames.size(); ++i)
     {
-        images.push_back(Image(i,filenames[i]));
+		images.push_back(Image(i, filenames[i], useCache ? remapCaches[i] : 0));
     }
 }
 
@@ -127,7 +128,7 @@ public:
             img.downsample( downsampleFactor );
 
 			if (detector.get())
-				detector->detect(img, image.keyPoints.keyPoints, maxFeatureCount);
+				detector->detect(img, image.keyPoints.keyPoints, maxFeatureCount, image.remapCache);
 
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
@@ -268,7 +269,7 @@ public:
             img.downsample( downsampleFactor );
 
 			if (extractor)
-				extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat);
+				extractor->compute(img, image.keyPoints.keyPoints, image.descriptors.mat, image.remapCache);
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
@@ -1556,7 +1557,7 @@ public:
             img.downsample( downsampleFactor );
    
             if ( detector.get() )
-                detector->detectAndExtract( img, image.keyPoints.keyPoints, image.descriptors.mat, maxFeatureCount );
+				detector->detectAndExtract(img, image.keyPoints.keyPoints, image.descriptors.mat, maxFeatureCount, image.remapCache);
 
             kpt += image.keyPoints.keyPoints.size();
             image.descriptors.type = descriptorType;

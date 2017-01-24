@@ -16,9 +16,9 @@ DetectAndExtract* DetectAndExtractProvider::getDetector( const DetectorType &det
 	return 0;
 }
 
-void DetectAndExtract::detectAndExtract( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints )
+void DetectAndExtract::detectAndExtract(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache)
 {
-    detectAndExtractImpl( image, keyPoints, descriptors, nMaxKeypoints );
+	detectAndExtractImpl(image, keyPoints, descriptors, nMaxKeypoints, pRemapCache);
 }
 
 DetectAndExtractProvider::~DetectAndExtractProvider()
