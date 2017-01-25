@@ -14,7 +14,7 @@
 #include "bufferReaderProvider.h"
 #include "vsfmIo.h"
 #include "tbbWrapper.h"
-#include "BufferFactory.h"
+#include "bufferFactory.h"
 
 static const char* KEYPOINT_EXTENSION   = "keypoints";
 static const char* DESCRIPTOR_EXTENSION = "descriptors";
