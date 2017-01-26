@@ -7,6 +7,10 @@
 #include "opencv2/core.hpp"
 #   if defined( WITH_OPENCV_GPU ) && !defined( WITH_OPENCV_3x )
 #       include <opencv2/ocl/ocl.hpp>
+#       include <opencv2/gpu/gpu.hpp>
+#   endif
+#   if defined( WITH_OPENCV_GPU ) && defined( WITH_OPENCV_3x )
+#       include <opencv2/cuda/cuda.hpp>
 #   endif
 #endif
 
