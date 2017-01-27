@@ -39,12 +39,16 @@ OpenCvGPUDescriptorExtractorWrapper::~OpenCvGPUDescriptorExtractorWrapper()
 
 struct OpenCLRemapCache
 {
+    cv::Mat unused0;
+    cv::Mat unused1;
 	oclMat mat0;
 	oclMat mat1;
 };
 
 struct CudaRemapCache
 {
+    cv::Mat unused0;
+    cv::Mat unused1;
 	GpuMat mat0;
 	GpuMat mat1;
 };

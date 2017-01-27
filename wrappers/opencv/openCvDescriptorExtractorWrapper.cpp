@@ -5,7 +5,7 @@
 #include "global.h"
 
 #include <opencv2/features2d/features2d.hpp>    // cv::DescriptorExtractor
-#include <opencv2/imgproc.hpp>					// cv::remap
+#include <opencv2/imgproc/imgproc.hpp>			// cv::remap
 
 #ifdef WITH_OPENCV_3x
 #   include <opencv2/xfeatures2d/nonfree.hpp>      // cv::xfeatures2d::SURF, cv::xfeatures2d::SIFT

@@ -44,6 +44,7 @@ public:
     OpenCvGPUDescriptorExtractorProvider( bool cudaApi );
     DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
     bool provides(const DescriptorType &type);
+    virtual std::string name() override { return "OpenCv GPU"; }
 
     ~OpenCvGPUDescriptorExtractorProvider() {}
 

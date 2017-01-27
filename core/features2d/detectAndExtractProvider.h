@@ -21,6 +21,7 @@ class DetectAndExtractProviderImpl
 public:
     virtual DetectAndExtract* getDetector( const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params = "" ) = 0;
     virtual bool provides( const DetectorType &detectorType, const DescriptorType &descriptorType ) = 0;
+    virtual std::string name() { return "unknown"; }
 
     virtual ~DetectAndExtractProviderImpl() {}
 };

@@ -59,6 +59,7 @@ public:
 
     DetectAndExtract* getDetector( const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params = "" );
 	bool provides(const DetectorType &detectorType, const DescriptorType &descriptorType);
+    virtual std::string name()  override { return "OpenCv GPU"; }
 
 private:
 	bool               cudaApi; // opencv module to use : cuda or opencl

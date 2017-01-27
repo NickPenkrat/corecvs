@@ -21,12 +21,16 @@ using namespace cv;
 
 struct OpenCLRemapCache
 {
+    Mat unused0;
+    Mat unused1;
 	oclMat mat0;
 	oclMat mat1;
 };
 
 struct CudaRemapCache
 {
+    Mat unused0;
+    Mat unused1;
 	GpuMat mat0;
 	GpuMat mat1;
 };

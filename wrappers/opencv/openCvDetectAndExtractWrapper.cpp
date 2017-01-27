@@ -6,7 +6,7 @@
 #include "global.h"
 
 #include <opencv2/features2d/features2d.hpp>       // cv::FeatureDetector
-#include <opencv2/imgproc.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 #ifdef WITH_OPENCV_3x
 #   include <opencv2/xfeatures2d/nonfree.hpp>      // cv::xfeatures2d::SURF, cv::xfeatures2d::SIFT
 #   include <opencv2/xfeatures2d.hpp>				// cv::xfeatures2d::STAR

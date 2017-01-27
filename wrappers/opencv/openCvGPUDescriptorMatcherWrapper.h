@@ -42,6 +42,7 @@ public:
 
     DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher, const std::string &params = "");
     bool provides(const DescriptorType &descriptor, const MatcherType &matcher);
+    virtual std::string name() override { return "OpenCv GPU"; }
 
     ~OpenCvGPUDescriptorMatcherProvider() {}
 

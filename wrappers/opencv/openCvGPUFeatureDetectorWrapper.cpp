@@ -121,6 +121,8 @@ void OpenCvGPUFeatureDetectorWrapper::setProperty( const std::string &name, cons
 
 struct OpenCLRemapCache
 {
+    cv::Mat unused0;
+    cv::Mat unused1;
 #ifdef WITH_OPENCV_3x
 	UMat mat0;
 	UMat mat1;
@@ -132,6 +134,8 @@ struct OpenCLRemapCache
 
 struct CudaRemapCache
 {
+    cv::Mat unused0;
+    cv::Mat unused1;
 	GpuMat mat0;
 	GpuMat mat1;
 };
