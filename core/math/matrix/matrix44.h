@@ -77,33 +77,15 @@ public:
             const double &a00, const double &a01, const double &a02, const double &a03,
             const double &a10, const double &a11, const double &a12, const double &a13,
             const double &a20, const double &a21, const double &a22, const double &a23,
-            const double &a30, const double &a31, const double &a32, const double &a33)
-    {
-#define  F(i, j) m.a(i, j) = a ## i ## j;
-#define FF(i) F(i, 0) F(i, 1) F(i, 2) F(i, 3)
-        FF(0)
-        FF(1)
-        FF(2)
-        FF(3)
-#undef FF
-#undef F
-    }
+            const double &a30, const double &a31, const double &a32, const double &a33);
+
     static void FillWithArgsT(
             Matrix44 &m,
             const double &a00, const double &a01, const double &a02, const double &a03,
             const double &a10, const double &a11, const double &a12, const double &a13,
             const double &a20, const double &a21, const double &a22, const double &a23,
-            const double &a30, const double &a31, const double &a32, const double &a33)
-    {
-#define  F(i, j) m.a(i, j) = a ## j ## i;
-#define FF(i) F(i, 0) F(i, 1) F(i, 2) F(i, 3)
-        FF(0)
-        FF(1)
-        FF(2)
-        FF(3)
-#undef FF
-#undef F
-    }
+            const double &a30, const double &a31, const double &a32, const double &a33);
+
     Matrix33 topLeft33() const;
     Vector3dd translationPart() const;
 
@@ -193,9 +175,29 @@ public:
             }
        }
        return in;
-   }
+    }
 
-    /* Matrix Operations interface */
+    /**
+     * Visitor. So far lazy version
+     **/
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            const char *names[] = {"a00", "a01", "a02", "a03",
+                                   "a10", "a11", "a12", "a13",
+                                   "a20", "a21", "a22", "a23",
+                                   "a30", "a31", "a32", "a33"};
+
+            for (int i = 0; i < LENGTH; i++) {
+                visitor.visit(element[i], 0.0, names[i]);
+            }
+        }
+
+
+    /**
+     * Matrix Operations interface
+     **/
+
     double &atm(int i, int j) {
         return a(i, j);
     }
@@ -257,6 +259,39 @@ inline Matrix44::Matrix44(const Matrix33 &_matrix, const Vector3dd &_shift)
     a(3,1)  = 0;
     a(3,2)  = 0;
     a(3,3)  = 1;
+}
+
+inline void Matrix44::FillWithArgs(Matrix44 &m,
+                    const double &a00, const double &a01, const double &a02, const double &a03,
+                    const double &a10, const double &a11, const double &a12, const double &a13,
+                    const double &a20, const double &a21, const double &a22, const double &a23,
+                    const double &a30, const double &a31, const double &a32, const double &a33)
+{
+    #define  F(i, j) m.a(i, j) = a ## i ## j;
+    #define FF(i) F(i, 0) F(i, 1) F(i, 2) F(i, 3)
+         FF(0)
+         FF(1)
+         FF(2)
+         FF(3)
+    #undef FF
+    #undef F
+}
+
+inline void Matrix44::FillWithArgsT(
+        Matrix44 &m,
+        const double &a00, const double &a01, const double &a02, const double &a03,
+        const double &a10, const double &a11, const double &a12, const double &a13,
+        const double &a20, const double &a21, const double &a22, const double &a23,
+        const double &a30, const double &a31, const double &a32, const double &a33)
+{
+    #define  F(i, j) m.a(i, j) = a ## j ## i;
+    #define FF(i) F(i, 0) F(i, 1) F(i, 2) F(i, 3)
+        FF(0)
+        FF(1)
+        FF(2)
+        FF(3)
+    #undef FF
+    #undef F
 }
 
 inline Matrix33 Matrix44::topLeft33() const

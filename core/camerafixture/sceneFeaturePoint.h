@@ -202,6 +202,13 @@ public:
 
     Vector3dd getDrawPosition(bool preferReprojected = false, bool forceKnown = false);
 
+    /**
+     * This method triandulates a point based on it's observations
+     *
+     * \param use__ - should we use observations from observations or observations__
+     * \param mask - to select observations to use
+     *
+     **/
     Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr);
 
 

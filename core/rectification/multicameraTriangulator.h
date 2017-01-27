@@ -134,6 +134,15 @@ public:
         virtual Matrix getLSQHessian(const double *in, double delta = 1e-5) override;
     };
 
+
+    /* Ability to serialise and restore state */
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+           visitor.visit(P , "matrices");
+           visitor.visit(xy, "xy"      );
+        }
+
 };
 
 } // namespace corecvs

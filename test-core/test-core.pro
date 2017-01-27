@@ -99,3 +99,4 @@ SOURCES += \
     jit/main_test_jit.cpp \
     matrixoperations/main_test_matrixoperations.cpp \
     polygon/main_test_polygon.cpp \
+    multicamera/main_test_multicamera.cpp \
