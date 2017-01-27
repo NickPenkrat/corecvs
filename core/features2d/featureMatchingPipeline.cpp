@@ -126,7 +126,7 @@ public:
 
 			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
 			img->downsample( downsampleFactor );
-            detector->detect((*img.get()), image.keyPoints.keyPoints, maxFeatureCount, image.remapCache);
+            detector->detect( ( *img.get() ), image.keyPoints.keyPoints, maxFeatureCount, downsampleFactor == 1 ? image.remapCache : 0 );
 
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
@@ -266,7 +266,7 @@ public:
             img->downsample( downsampleFactor );
 
 			if (extractor)
-            	extractor->compute(*img.get(), image.keyPoints.keyPoints, image.descriptors.mat, image.remapCache);
+                extractor->compute( *img.get(), image.keyPoints.keyPoints, image.descriptors.mat, downsampleFactor == 1 ? image.remapCache : 0 );
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
@@ -1554,7 +1554,7 @@ public:
             img.downsample( downsampleFactor );
    
             if ( detector.get() )
-				detector->detectAndExtract(img, image.keyPoints.keyPoints, image.descriptors.mat, maxFeatureCount, image.remapCache);
+                detector->detectAndExtract( img, image.keyPoints.keyPoints, image.descriptors.mat, maxFeatureCount, downsampleFactor == 1 ? image.remapCache : 0 );
 
             kpt += image.keyPoints.keyPoints.size();
             image.descriptors.type = descriptorType;
