@@ -14,6 +14,7 @@
 #include "global.h"
 #include "multicameraTriangulator.h"
 #include "propertyListVisitor.h"
+#include "mesh3d.h"
 
 using namespace std;
 using namespace corecvs;
@@ -74,3 +75,20 @@ TEST(multicamera, test702)
      cout << "Covariance at result :\n" << covInv2 << endl;
 
 }
+
+TEST(multicamera, test702draw)
+{
+    MulticameraTriangulator M;
+    PropertyListReaderVisitor reader("data/dumpBUILD11_LEFT.txt");
+    M.accept<PropertyListReaderVisitor>(reader);
+
+    Mesh3D mesh;
+    for (int i = 0; i < M.P.size(); i++)
+    {
+        Matrix44  P  = M.P [i];
+        Vector2dd xy = M.xy[i];
+
+    }
+
+}
+

@@ -97,8 +97,8 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
     connect(mUi.loadMeshPushButton, SIGNAL(released()), this, SLOT(loadMesh()));
     connect(mUi.addFramePushButton, SIGNAL(released()), this, SLOT(addCoordinateFrame()));
 
-    addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()));
-    addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()));
+    addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()), false);
+    addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()), false);
 
 #if 0
     {
