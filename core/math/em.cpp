@@ -270,7 +270,7 @@ double EM::stepE()
         {
             std::cout << "." << std::flush;
             std::random_device rd;
-            int id = std::uniform_int_distribution<int>(0, M - 1)(rd);
+            int id = std::uniform_int_distribution<int>(0, N - 1)(rd);
             probabilities.a(i, id) = 1;
             sum = 1.0;
         }
