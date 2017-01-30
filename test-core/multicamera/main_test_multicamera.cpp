@@ -8,12 +8,14 @@
  * \ingroup autotest  
  */
 
+#include <vector>
 #include <iostream>
 #include "gtest/gtest.h"
 
 #include "global.h"
 #include "multicameraTriangulator.h"
 #include "propertyListVisitor.h"
+
 #include "mesh3d.h"
 
 using namespace std;
@@ -73,6 +75,73 @@ TEST(multicamera, test702)
 
      cout << "Covariance at initail:\n" << covInv1 << endl;
      cout << "Covariance at result :\n" << covInv2 << endl;
+
+     /* Attempt to remove cameras one by one */
+     cout << "Attempt to remove cameras one by one " << endl;
+     for (int skip = 0; skip < M.getSize(); skip++)
+     {
+         cout << "Skipping " << skip << " measurement" << endl;
+         vector<bool> mask(M.getSize(), true);
+         mask[skip] = false;
+         for (int i = 0; i < mask.size(); i++)
+         {
+             cout << (mask[i] ? "X" : "O");
+         }
+         cout << endl;
+
+         MulticameraTriangulator M1 = M.subset(mask);
+         cout << "We have " << M1.getSize() << " measuremets" << endl;
+
+
+         Vector3dd initial = M1.triangulate(&ok);
+         if (!ok) {
+             SYNC_PRINT(("SceneFeaturePoint::triangulate(): initail guess unable to obtain\n"));
+         }
+         Vector3dd res = M1.triangulateLM(initial, &ok);
+         if (!ok) {
+             SYNC_PRINT(("SceneFeaturePoint::triangulate(): LM guess unable to obtain\n"));
+         }
+         cout << "   Initial:" << initial << endl;
+         cout << "   Result :" << res << endl;
+     }
+
+
+     /* Attempt to take pairs of cameras */
+     cout << "Attempt to take pairs of cameras" << endl;
+
+     for (int skip1 = 0; skip1 < M.getSize(); skip1++)
+     {
+
+         for (int skip2 = skip1 + 1; skip2 < M.getSize(); skip2++)
+         {
+             cout << "Selecting " << skip1 << " and " << skip2 << " measurement" << endl;
+             vector<bool> mask(M.getSize(), false);
+             mask[skip1] = true;
+             mask[skip2] = true;
+
+             for (int i = 0; i < mask.size(); i++)
+             {
+                 cout << (mask[i] ? "X" : "O");
+             }
+             cout << endl;
+
+             MulticameraTriangulator M1 = M.subset(mask);
+             cout << "We have " << M1.getSize() << " measuremets" << endl;
+
+
+             Vector3dd initial = M1.triangulate(&ok);
+             if (!ok) {
+                 SYNC_PRINT(("SceneFeaturePoint::triangulate(): initail guess unable to obtain\n"));
+             }
+             Vector3dd res = M1.triangulateLM(initial, &ok);
+             if (!ok) {
+                 SYNC_PRINT(("SceneFeaturePoint::triangulate(): LM guess unable to obtain\n"));
+             }
+             cout << "   Initial:" << initial << endl;
+             cout << "   Result :" << res << endl;
+
+         }
+    }
 
 }
 

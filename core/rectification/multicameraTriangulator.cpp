@@ -205,6 +205,18 @@ double MulticameraTriangulator::reprojError(const corecvs::Vector3dd &input)
     return approx.getRadiusAround0();
 }
 
+MulticameraTriangulator MulticameraTriangulator::subset(const std::vector<bool> &mask)
+{
+    MulticameraTriangulator toReturn;
+    size_t len = std::min(P.size(), mask.size());
+    for (size_t i = 0; i < len; i++)
+    {
+        if (mask[i])
+            toReturn.addCamera(P[i], xy[i]);
+    }
+    return toReturn;
+}
+
 void MulticameraTriangulator::CostFunction::operator()(const double in[], double out[])
 {
     Vector3dd input(in[0], in[1], in[2]);
@@ -299,7 +311,7 @@ Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * 
     LMfit.f = &F;
     LMfit.maxIterations = 1000;
     LMfit.traceProgress = false;
-    LMfit.trace = true;
+    LMfit.trace = false;
 
     vector<double> guess(3);
     guess[0] = initialGuess.x();

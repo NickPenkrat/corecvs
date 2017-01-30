@@ -534,3 +534,8 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
 
 }
 
+SceneShaded::~SceneShaded()
+{
+    delete_safe(mMesh);
+}
+

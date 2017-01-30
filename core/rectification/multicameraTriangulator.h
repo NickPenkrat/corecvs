@@ -143,6 +143,19 @@ public:
            visitor.visit(xy, "xy"      );
         }
 
+   /**
+    * Get numeber of measurements
+    **/
+   int getSize()
+   {
+       return P.size();
+   }
+
+   /**
+    * Returns a trinagulator with the state holding a subset of the current one
+    **/
+   MulticameraTriangulator subset(const std::vector<bool> &mask);
+
 };
 
 } // namespace corecvs

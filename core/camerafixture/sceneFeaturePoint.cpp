@@ -36,7 +36,7 @@ int SceneObservation::ensureDistorted(bool distorted)
     return true;
 }
 
-Vector2dd SceneObservation::getDistorted(bool distorted)
+Vector2dd SceneObservation::getDistorted(bool distorted) const
 {
     if (distorted) {
         return  onDistorted ? observation : camera->distortion.mapForward(observation);  // undist => dist

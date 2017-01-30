@@ -33,12 +33,14 @@
 
 /**
  * \brief Calibration Draw Helpers Parameters 
- * Calibration Draw Helpers Parameters 
+ * We have two OpenGL backends to draw. Old is without shaders, new is with shaders 
  **/
 class CalibrationDrawHelpersParameters : public corecvs::BaseReflection<CalibrationDrawHelpersParameters>
 {
 public:
     enum FieldId {
+        USE_OLD_BACKEND_ID,
+        SCALE_FOR_CAMERAS_ID,
         PRINTNAMES_ID,
         BILLBOARDNAMES_ID,
         PREFER_REPROJECTED_ID,
@@ -47,11 +49,25 @@ public:
         LARGEPOINTS_ID,
         DRAWFIXTURECAMS_ID,
         DRAWOBSERVATIONS_ID,
+        DRAWTRUELINES_ID,
+        PROJECTION_RAY_LENGTH_ID,
         DRAWRAYS_ID,
         CALIBRATION_DRAW_HELPERS_PARAMETERS_FIELD_ID_NUM
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief Use Old Backend 
+     * We have two OpenGL backends to draw. Old is without shaders, new is with shaders 
+     */
+    bool mUseOldBackend;
+
+    /** 
+     * \brief Scale For Cameras 
+     * Scale For Cameras 
+     */
+    double mScaleForCameras;
 
     /** 
      * \brief printNames 
@@ -102,6 +118,18 @@ public:
     bool mDrawObservations;
 
     /** 
+     * \brief drawTrueLines 
+     * drawTrueLines 
+     */
+    bool mDrawTrueLines;
+
+    /** 
+     * \brief Projection Ray Length 
+     * Projection Ray Length 
+     */
+    double mProjectionRayLength;
+
+    /** 
      * \brief drawRays 
      * drawRays 
      */
@@ -115,6 +143,16 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    bool useOldBackend() const
+    {
+        return mUseOldBackend;
+    }
+
+    double scaleForCameras() const
+    {
+        return mScaleForCameras;
+    }
+
     bool printNames() const
     {
         return mPrintNames;
@@ -155,12 +193,32 @@ public:
         return mDrawObservations;
     }
 
+    bool drawTrueLines() const
+    {
+        return mDrawTrueLines;
+    }
+
+    double projectionRayLength() const
+    {
+        return mProjectionRayLength;
+    }
+
     bool drawRays() const
     {
         return mDrawRays;
     }
 
     /* Section with setters */
+    void setUseOldBackend(bool useOldBackend)
+    {
+        mUseOldBackend = useOldBackend;
+    }
+
+    void setScaleForCameras(double scaleForCameras)
+    {
+        mScaleForCameras = scaleForCameras;
+    }
+
     void setPrintNames(bool printNames)
     {
         mPrintNames = printNames;
@@ -201,6 +259,16 @@ public:
         mDrawObservations = drawObservations;
     }
 
+    void setDrawTrueLines(bool drawTrueLines)
+    {
+        mDrawTrueLines = drawTrueLines;
+    }
+
+    void setProjectionRayLength(double projectionRayLength)
+    {
+        mProjectionRayLength = projectionRayLength;
+    }
+
     void setDrawRays(bool drawRays)
     {
         mDrawRays = drawRays;
@@ -211,6 +279,8 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mUseOldBackend,             static_cast<const corecvs::BoolField *>(fields()[USE_OLD_BACKEND_ID]));
+        visitor.visit(mScaleForCameras,           static_cast<const corecvs::DoubleField *>(fields()[SCALE_FOR_CAMERAS_ID]));
         visitor.visit(mPrintNames,                static_cast<const corecvs::BoolField *>(fields()[PRINTNAMES_ID]));
         visitor.visit(mBillboardNames,            static_cast<const corecvs::BoolField *>(fields()[BILLBOARDNAMES_ID]));
         visitor.visit(mPreferReprojected,         static_cast<const corecvs::BoolField *>(fields()[PREFER_REPROJECTED_ID]));
@@ -219,6 +289,8 @@ template<class VisitorType>
         visitor.visit(mLargePoints,               static_cast<const corecvs::BoolField *>(fields()[LARGEPOINTS_ID]));
         visitor.visit(mDrawFixtureCams,           static_cast<const corecvs::BoolField *>(fields()[DRAWFIXTURECAMS_ID]));
         visitor.visit(mDrawObservations,          static_cast<const corecvs::BoolField *>(fields()[DRAWOBSERVATIONS_ID]));
+        visitor.visit(mDrawTrueLines,             static_cast<const corecvs::BoolField *>(fields()[DRAWTRUELINES_ID]));
+        visitor.visit(mProjectionRayLength,       static_cast<const corecvs::DoubleField *>(fields()[PROJECTION_RAY_LENGTH_ID]));
         visitor.visit(mDrawRays,                  static_cast<const corecvs::BoolField *>(fields()[DRAWRAYS_ID]));
     }
 
@@ -229,7 +301,9 @@ template<class VisitorType>
     }
 
     CalibrationDrawHelpersParameters(
-          bool printNames
+          bool useOldBackend
+        , double scaleForCameras
+        , bool printNames
         , bool billboardNames
         , bool preferReprojected
         , bool forceKnown
@@ -237,9 +311,13 @@ template<class VisitorType>
         , bool largePoints
         , bool drawFixtureCams
         , bool drawObservations
+        , bool drawTrueLines
+        , double projectionRayLength
         , bool drawRays
     )
     {
+        mUseOldBackend = useOldBackend;
+        mScaleForCameras = scaleForCameras;
         mPrintNames = printNames;
         mBillboardNames = billboardNames;
         mPreferReprojected = preferReprojected;
@@ -248,6 +326,8 @@ template<class VisitorType>
         mLargePoints = largePoints;
         mDrawFixtureCams = drawFixtureCams;
         mDrawObservations = drawObservations;
+        mDrawTrueLines = drawTrueLines;
+        mProjectionRayLength = projectionRayLength;
         mDrawRays = drawRays;
     }
 

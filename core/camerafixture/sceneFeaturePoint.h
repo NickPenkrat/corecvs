@@ -70,7 +70,7 @@ public:
     std::string     getPointName();
 
     int             ensureDistorted(bool distorted = true);
-    Vector2dd       getDistorted(bool distorted = true);
+    Vector2dd       getDistorted(bool distorted = true) const;
 
 private:
     FixtureCamera  *getCameraById(FixtureCamera::IdType id);
