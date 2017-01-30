@@ -12,18 +12,6 @@
 #include "kde.h"
 #include "vector2d.h"
 
-std::vector<corecvs::Vector2dd> testData2{
-    {1, 1},
-    {3, 3},
-    {1, 2},
-    {2, 1},
-    {2, 3},
-    {3, 2},
-    {1, 3},
-    {3, 1}
-};
-
-
 std::vector<corecvs::Vector2dd> testData{
     {2397.5, 2287.11},
     {2452.63,2284.65},
@@ -58,27 +46,16 @@ std::vector<double> split(const std::string &s, char delim) {
     return elems;
 }
 
-TEST(KDE, testKDE2)
+TEST(KDE, testKDE)
 {
     std::cout << "Start" << std::endl;
     corecvs::kde* kde = new corecvs::kde;
 
-//    for(auto& d: testData2){
-//        kde->addData(d[0],d[1]);
-//    }
-
-    std::ifstream file("q:\\test.data");
-    std::string line;
-    while(std::getline(file, line)){
-        std::vector<double> data = split(line,',');
-        std::cout << data[0] << "\t" << data[1] << std::endl;
-        kde->addData(data);
+    for(auto& d: testData){
+        kde->addData(d[0],d[1]);
     }
-    file.close();
 
-//    kde->calcPDF(5184, 3456);
     kde->calcPDF(100,100);
 
     delete kde;
 }
-
