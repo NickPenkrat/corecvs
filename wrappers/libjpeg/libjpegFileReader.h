@@ -7,8 +7,8 @@
 
 class LibjpegFileReader : public corecvs::BufferLoader<corecvs::RGB24Buffer>
 {
-    static string prefix1;
-    static string prefix2;
+    static std::string prefix1;
+    static std::string prefix2;
 public:
     static int registerMyself()
     {
@@ -16,8 +16,8 @@ public:
         return 0;
     }
 
-    virtual bool acceptsFile(string name) override;
-    virtual corecvs::RGB24Buffer *load(string name) override;
+    virtual bool acceptsFile(std::string name) override;
+    virtual corecvs::RGB24Buffer *load(std::string name) override;
 
     LibjpegFileReader();
     virtual ~LibjpegFileReader();

@@ -5,6 +5,7 @@
 #include "global.h"
 
 #include <opencv2/features2d/features2d.hpp>    // cv::DescriptorExtractor
+#include <opencv2/imgproc/imgproc.hpp>			// cv::remap
 
 #ifdef WITH_OPENCV_3x
 #   include <opencv2/xfeatures2d/nonfree.hpp>      // cv::xfeatures2d::SURF, cv::xfeatures2d::SIFT
@@ -14,29 +15,68 @@
 #endif
 
 #ifdef WITH_OPENCV_3x
-struct SmartPtrHolder
+struct SmartPtrExtractorHolder
 {
-    cv::Ptr< cv::xfeatures2d::SIFT >            sift;
-    cv::Ptr< cv::xfeatures2d::SURF >            surf;
-    //cv::Ptr< cv::xfeatures2d::StarDetector >	star;
-    //cv::Ptr< cv::FastFeatureDetector>         fast;
-    cv::Ptr< cv::BRISK >                        brisk;
-    cv::Ptr< cv::ORB >                          orb;
+    SmartPtrExtractorHolder() : tag(SIFT), sift() {}
+    ~SmartPtrExtractorHolder() {}
+    enum {
+        SIFT, SURF, BRISK, ORB, AKAZE
+    } tag;
+
+#if 0
+    union {
+#else
+    struct {
+#endif
+        cv::Ptr< cv::xfeatures2d::SIFT >            sift;
+        cv::Ptr< cv::xfeatures2d::SURF >            surf;
+        cv::Ptr< cv::BRISK >                        brisk;
+        cv::Ptr< cv::ORB >                          orb;
+        cv::Ptr< cv::AKAZE >                        akaze;
+    };
+
+    cv::DescriptorExtractor *get() {
+        switch (tag) {
+        case SIFT:
+            return sift.get();
+        case SURF:
+            return surf.get();
+        case BRISK:
+            return brisk.get();
+        case ORB:
+            return orb.get();
+        case AKAZE:
+            return akaze.get();
+        default:
+            return nullptr;
+        }
+    }
+
+    void set(cv::Ptr<cv::xfeatures2d::SIFT> value) {
+        tag = SIFT;
+        sift = value;
+    }
+    void set(cv::Ptr<cv::xfeatures2d::SURF> value) {
+        tag = SURF;
+        surf = value;
+    }
+    void set(cv::Ptr<cv::BRISK> value) {
+        tag = BRISK;
+        brisk = value;
+    }
+    void set(cv::Ptr<cv::ORB> value) {
+        tag = ORB;
+        orb = value;
+    }
+    void set(cv::Ptr<cv::AKAZE> value) {
+        tag = AKAZE;
+        akaze = value;
+    }
 };
 
-OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(SmartPtrHolder *holder) : holder(holder)
+OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(SmartPtrExtractorHolder *holder) : holder(holder)
 {
-    extractor = holder->sift.get();
-    if (!extractor)
-        extractor = holder->surf.get();
-    //if (!extractor)
-    //    extractor = holder->star.get();
-    //if (!extractor)
-    //    extractor = holder->fast.get();
-    if (!extractor)
-        extractor = holder->brisk.get();
-    if (!extractor)
-        extractor = holder->orb.get();
+    extractor = holder->get();
 }
 
 OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
@@ -45,6 +85,8 @@ OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
 }
 
 #else // !WITH_OPENCV_3x
+
+using namespace corecvs;
 
 OpenCvDescriptorExtractorWrapper::OpenCvDescriptorExtractorWrapper(cv::DescriptorExtractor *extractor)
     : extractor(extractor)
@@ -57,9 +99,16 @@ OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
 
 #endif
 
+struct CvRemapCache
+{
+	cv::Mat mat0;
+	cv::Mat mat1;
+};
+
 void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
     , std::vector<KeyPoint> &keyPoints
-    , RuntimeTypeBuffer &descriptors)
+    , RuntimeTypeBuffer &descriptors
+	, void* pRemapCache )
 {
     std::vector<cv::KeyPoint> kps;
     FOREACH(const KeyPoint& kp, keyPoints)
@@ -67,6 +116,13 @@ void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
         kps.push_back(convert(kp));
     }
     cv::Mat img = convert(image), desc;
+	if (pRemapCache)
+	{
+		cv::Mat remapped;
+		CvRemapCache* p = (CvRemapCache*)(pRemapCache);
+		cv::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+		img = remapped;
+	}
 
     extractor->compute(img, kps, desc);
 
@@ -116,33 +172,41 @@ DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(c
     SurfParams surfParams(params);
     BriskParams briskParams(params);
     OrbParams orbParams(params);
+    AkazeParams akazeParams(params);
 #ifdef WITH_OPENCV_3x
-    SmartPtrHolder* holder = new SmartPtrHolder;
+    SmartPtrExtractorHolder* holder = new SmartPtrExtractorHolder;
     if (type == "SIFT")
     {
         cv::Ptr< cv::xfeatures2d::SIFT > ptr = cv::xfeatures2d::SIFT::create(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);
-        holder->sift = ptr;
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
     if (type == "SURF")
     {
         cv::Ptr< cv::xfeatures2d::SURF > ptr = cv::xfeatures2d::SURF::create(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright);
-        holder->surf = ptr;
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
     if (type == "BRISK")
     {
         cv::Ptr< cv::BRISK > ptr = cv::BRISK::create(briskParams.thresh, briskParams.octaves, briskParams.patternScale);
-        holder->brisk = ptr;
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
     if (type == "ORB")
     {
         cv::Ptr< cv::ORB > ptr = cv::ORB::create(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize);
-        holder->orb = ptr;
+        holder->set(ptr);
+        return new OpenCvDescriptorExtractorWrapper(holder);
+    }
+
+    if (type == "AKAZE")
+    {
+        cv::Ptr< cv::AKAZE > ptr = cv::AKAZE::create(akazeParams.descriptorType, akazeParams.descriptorSize, akazeParams.descriptorChannels, akazeParams.threshold, akazeParams.octaves, akazeParams.octaveLayers, akazeParams.diffusivity);
+        holder->set(ptr);
         return new OpenCvDescriptorExtractorWrapper(holder);
     }
 
@@ -165,6 +229,9 @@ bool OpenCvDescriptorExtractorProvider::provides(const DescriptorType &type)
     SWITCH_TYPE(SURF, return true;);
     SWITCH_TYPE(BRISK, return true;);
     SWITCH_TYPE(ORB, return true;);
+#ifdef WITH_OPENCV_3x
+    SWITCH_TYPE(AKAZE, return true;);
+#endif
     return false;
 }
 

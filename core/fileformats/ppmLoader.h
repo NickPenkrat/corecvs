@@ -96,6 +96,8 @@ public:
     {
         return PPMLoader::loadG12(name);
     }
+
+    virtual std::string name() override { return "PPMLoaderG12"; }
 };
 
 class PPMLoaderRGB24 : public BufferLoader<RGB24Buffer>, public PPMLoader
@@ -113,6 +115,8 @@ public:
         delete_safe(buffer);
         return result;
     }
+
+    virtual std::string name() override { return "PPMLoaderRGB24"; }
 };
 
 } //namespace corecvs

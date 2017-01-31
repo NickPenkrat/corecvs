@@ -85,6 +85,8 @@ public:
     {
         return BMPLoaderBase::loadG12(name);
     }
+
+    virtual std::string name() override { return "BMPLoaderG12"; }
 };
 
 class BMPLoaderRGB24 : public BufferLoader<RGB24Buffer>, public BMPLoaderBase
@@ -99,6 +101,8 @@ public:
     {
         return BMPLoaderBase::loadRGB(name);
     }
+
+    virtual std::string name() override { return "BMPLoaderRGB24"; }
 };
 
 } //namespace corecvs

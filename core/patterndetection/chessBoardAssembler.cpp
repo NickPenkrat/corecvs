@@ -6,6 +6,7 @@
 #include <queue>
 
 using corecvs::Vector2dd;
+using corecvs::Statistics;
 
 ChessBoardAssembler::ChessBoardAssembler(ChessBoardAssemblerParams params) : ChessBoardAssemblerParams(params)
 {
@@ -36,10 +37,11 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
         std::vector<OrientedCorner*> ptrs;
         for (auto& c: corners)
             ptrs.push_back(&c);
-        kd = std::unique_ptr<KDTree<OrientedCorner, 2>>(new KDTree<OrientedCorner, 2>(ptrs));
+        kd = std::unique_ptr<corecvs::KDTree<OrientedCorner, 2>>(new corecvs::KDTree<OrientedCorner, 2>(ptrs));
     }
 
     stats->startInterval();
+    Statistics::startInterval(stats);
 
     boards = corecvs::parallelable_reduce(0, N, bs,
         std::vector<RectangularGridPattern>(),
@@ -65,7 +67,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
             return res;
         });
 
-    stats->resetInterval("Board Expander");
+    Statistics::resetInterval(stats, "Board Expander");
 
     boards_.clear();
     std::sort(boards.begin(), boards.end(), [](const RectangularGridPattern &a, const RectangularGridPattern &b) { return a.score < b.score; });
@@ -83,7 +85,7 @@ void ChessBoardAssembler::assembleBoards(std::vector<OrientedCorner> &corners_, 
         boards_.emplace_back(std::move(board));
     }
 
-    stats->resetInterval("Board Outputing");
+    Statistics::resetInterval(stats, "Board Outputing");
 }
 
 bool ChessBoardAssembler::acceptBoard(const RectangularGridPattern &board)
@@ -490,7 +492,7 @@ bool ChessBoardAssembler::BoardExpander::assignNearest(std::vector<corecvs::Vect
         CORE_ASSERT_TRUE_S(assembler->kd);
         auto& tree = *assembler->kd;
 
-        for (int i = 0; i < prediction.size(); ++i)
+        for (size_t i = 0; i < prediction.size(); ++i)
         {
             auto res = tree.nearestNeighbour(OrientedCorner(prediction[i]), [&](OrientedCorner* v) { return usedCorners[v - &corners[0]] == 0; });
             if (!res)

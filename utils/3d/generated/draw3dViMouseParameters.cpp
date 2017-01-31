@@ -26,6 +26,9 @@ int BaseReflection<Draw3dViMouseParameters>::dummy = Draw3dViMouseParameters::st
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int Draw3dViMouseParameters::staticInit()
 {
 

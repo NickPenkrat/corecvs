@@ -26,6 +26,9 @@ int BaseReflection<OutputFilterParameters>::dummy = OutputFilterParameters::stat
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int OutputFilterParameters::staticInit()
 {
 

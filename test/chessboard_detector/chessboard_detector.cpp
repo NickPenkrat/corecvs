@@ -11,6 +11,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
+
+using namespace corecvs;
+
 void usage()
 {
     std::cout << "test_chessboard_detector image [W H]\n"

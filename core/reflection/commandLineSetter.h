@@ -22,9 +22,10 @@ public:
 
     vector<string> mArgs;
 
-    CommandLineSetter() {
-        mArgPrefix = "--";
-        mArgSeparator = "=";
+    CommandLineSetter() :
+        mArgPrefix("--"),
+        mArgSeparator("=")
+    {
     }
 
     CommandLineSetter(const vector<string> &args) :

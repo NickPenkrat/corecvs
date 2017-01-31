@@ -188,6 +188,15 @@ public:
         return Vector2d<ElementType>(0.0, 0.0);
     }
 
+
+    static Vector2d<ElementType> OrtX() {
+        return Vector2d<ElementType>(1.0, 0.0);
+    }
+
+    static Vector2d<ElementType> OrtY() {
+        return Vector2d<ElementType>(0.0, 1.0);
+    }
+
 //#ifdef REFLECTION_IN_CORE
     static Reflection reflection;
     static int        dummy;
@@ -218,6 +227,7 @@ template<class VisitorType>
 
 
 typedef Vector2d<double>   Vector2dd;
+typedef Vector2d<float>    Vector2df;
 typedef Vector2d<uint32_t> Vector2du32;
 typedef Vector2d<uint16_t> Vector2du16;
 

@@ -26,6 +26,9 @@ int BaseReflection<HomorgaphyReconstructorBlockBase>::dummy = HomorgaphyReconstr
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int HomorgaphyReconstructorBlockBase::staticInit()
 {
 
@@ -47,7 +50,7 @@ int HomorgaphyReconstructorBlockBase::staticInit()
           "in0",
           "in0",
           "in0",
-          "CorrespondenceList"
+          "corecvs::CorrespondenceList"
         );
     fields().push_back(field0);
     /*  */ 
@@ -59,7 +62,7 @@ int HomorgaphyReconstructorBlockBase::staticInit()
           "out0",
           "out0",
           "out0",
-          "Matrix33"
+          "corecvs::Matrix33"
         );
     fields().push_back(field1);
     /*  */ 

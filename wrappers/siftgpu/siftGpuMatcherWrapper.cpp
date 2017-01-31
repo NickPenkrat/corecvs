@@ -77,7 +77,7 @@ SiftGpuMatcher::SiftGpuMatcher(const SiftGpuMatcher &matcher)
     CORE_UNUSED(matcher);
 }
 
-void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeTypeBuffer &trainDescriptors, std::vector<std::vector<RawMatch> >& matches, size_t K)
+void SiftGpuMatcher::knnMatchImpl( corecvs::RuntimeTypeBuffer &queryDescriptors, corecvs::RuntimeTypeBuffer &trainDescriptors, std::vector<std::vector<RawMatch> >& matches, size_t K)
 {
     if(!queryDescriptors.isValid() || !trainDescriptors.isValid())
     {
@@ -86,7 +86,7 @@ void SiftGpuMatcher::knnMatchImpl( RuntimeTypeBuffer &queryDescriptors, RuntimeT
     }
 
     CORE_ASSERT_TRUE_S(queryDescriptors.getType() == trainDescriptors.getType());
-    CORE_ASSERT_TRUE_S(queryDescriptors.getType() == BufferType::F32);
+    CORE_ASSERT_TRUE_S(queryDescriptors.getType() == corecvs::BufferType::F32);
 
     matches.resize(queryDescriptors.getRows());
 
@@ -143,7 +143,15 @@ DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const 
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return new SiftGpuMatcher;););
 
-    CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcher", type.c_str(), matcher.c_str()));
+	try
+	{
+		CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcher", type.c_str(), matcher.c_str()));
+	}
+	catch (AssertException)
+	{
+
+	}
+
     return 0;
 }
 
@@ -152,7 +160,16 @@ bool SiftGpuDescriptorMatcherProvider::provides(const DescriptorType &type, cons
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return true;););
 
-    CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::provides(%s, %s): no provider", type.c_str(), matcher.c_str()));
+	try
+	{
+		CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::provides(%s, %s): no provider", type.c_str(), matcher.c_str()));
+	}
+	catch (AssertException)
+	{
+
+	}
+
+	return false; 
 }
 
 #undef SWITCH_TYPE

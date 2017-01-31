@@ -26,6 +26,9 @@ int BaseReflection<SobelParameters>::dummy = SobelParameters::staticInit();
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int SobelParameters::staticInit()
 {
 

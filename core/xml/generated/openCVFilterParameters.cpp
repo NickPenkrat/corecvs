@@ -26,6 +26,9 @@ int BaseReflection<OpenCVFilterParameters>::dummy = OpenCVFilterParameters::stat
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int OpenCVFilterParameters::staticInit()
 {
 

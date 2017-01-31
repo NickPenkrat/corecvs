@@ -79,7 +79,7 @@ public:
     }
     V* nearestNeighbour(const V& ref)
     {
-        return nearestNeighbour(ref, [](V* q) { return true; });
+        return nearestNeighbour(ref, [](V* /*q*/) { return true; });
     }
 private:
     template <typename P>
@@ -137,7 +137,7 @@ private:
                     });
 #endif
                     int validRef = 0;
-                    for (int j = 1; j < references[i].size(); ++j)
+                    for (size_t j = 1; j < references[i].size(); j++)
                         if (cmp(references[i][validRef], references[i][j], i) != 0)
                             references[i][++validRef] = references[i][j];
                     references[i].resize(validRef + 1);

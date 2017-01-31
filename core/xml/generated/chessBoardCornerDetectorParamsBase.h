@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -35,7 +35,7 @@ namespace corecvs {
  * \brief Chess Board Corner Detector Params Base 
  * Chess Board Corner Detector Params Base 
  **/
-class ChessBoardCornerDetectorParamsBase : public BaseReflection<ChessBoardCornerDetectorParamsBase>
+class ChessBoardCornerDetectorParamsBase : public corecvs::BaseReflection<ChessBoardCornerDetectorParamsBase>
 {
 public:
     enum FieldId {
@@ -381,30 +381,30 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mProduceDebug,              static_cast<const BoolField *>    (fields()[PRODUCEDEBUG_ID]));
-        visitor.visit(mFloatSpeedup,              static_cast<const BoolField *>    (fields()[FLOATSPEEDUP_ID]));
-        visitor.visit(mNormalizePercentile,       static_cast<const DoubleField *>  (fields()[NORMALIZEPERCENTILE_ID]));
-        visitor.visit(mSectorSizeDeg,             static_cast<const DoubleField *>  (fields()[SECTORSIZEDEG_ID]));
-        visitor.visit(mHistogramBins,             static_cast<const IntField *>     (fields()[HISTOGRAMBINS_ID]));
-        visitor.visit(mMinAngleDeg,               static_cast<const DoubleField *>  (fields()[MINANGLEDEG_ID]));
-        visitor.visit(mNeighborhood,              static_cast<const IntField *>     (fields()[NEIGHBORHOOD_ID]));
-        visitor.visit(mGradThreshold,             static_cast<const DoubleField *>  (fields()[GRADTHRESHOLD_ID]));
-        visitor.visit(mOrientationInlierThreshold, static_cast<const DoubleField *>  (fields()[ORIENTATIONINLIERTHRESHOLD_ID]));
-        visitor.visit(mInlierDistanceThreshold,   static_cast<const DoubleField *>  (fields()[INLIERDISTANCETHRESHOLD_ID]));
-        visitor.visit(mUpdateThreshold,           static_cast<const DoubleField *>  (fields()[UPDATETHRESHOLD_ID]));
-        visitor.visit(mScoreThreshold,            static_cast<const DoubleField *>  (fields()[SCORETHRESHOLD_ID]));
-        visitor.visit(mNRounds,                   static_cast<const IntField *>     (fields()[NROUNDS_ID]));
-        visitor.visit(mMeanshiftBandwidth,        static_cast<const DoubleField *>  (fields()[MEANSHIFTBANDWIDTH_ID]));
-        visitor.visit(mNmsLocality,               static_cast<const IntField *>     (fields()[NMSLOCALITY_ID]));
-        visitor.visit(mNmsThreshold,              static_cast<const DoubleField *>  (fields()[NMSTHRESHOLD_ID]));
-        visitor.visit(mPatternRadius,             static_cast<const DoubleVectorField *>(fields()[PATTERNRADIUS_ID]));
-        visitor.visit(mPatternStartAngleDeg,      static_cast<const DoubleVectorField *>(fields()[PATTERNSTARTANGLEDEG_ID]));
-        visitor.visit(mCornerScores,              static_cast<const DoubleVectorField *>(fields()[CORNERSCORES_ID]));
+        visitor.visit(mProduceDebug,              static_cast<const corecvs::BoolField *>(fields()[PRODUCEDEBUG_ID]));
+        visitor.visit(mFloatSpeedup,              static_cast<const corecvs::BoolField *>(fields()[FLOATSPEEDUP_ID]));
+        visitor.visit(mNormalizePercentile,       static_cast<const corecvs::DoubleField *>(fields()[NORMALIZEPERCENTILE_ID]));
+        visitor.visit(mSectorSizeDeg,             static_cast<const corecvs::DoubleField *>(fields()[SECTORSIZEDEG_ID]));
+        visitor.visit(mHistogramBins,             static_cast<const corecvs::IntField *>(fields()[HISTOGRAMBINS_ID]));
+        visitor.visit(mMinAngleDeg,               static_cast<const corecvs::DoubleField *>(fields()[MINANGLEDEG_ID]));
+        visitor.visit(mNeighborhood,              static_cast<const corecvs::IntField *>(fields()[NEIGHBORHOOD_ID]));
+        visitor.visit(mGradThreshold,             static_cast<const corecvs::DoubleField *>(fields()[GRADTHRESHOLD_ID]));
+        visitor.visit(mOrientationInlierThreshold, static_cast<const corecvs::DoubleField *>(fields()[ORIENTATIONINLIERTHRESHOLD_ID]));
+        visitor.visit(mInlierDistanceThreshold,   static_cast<const corecvs::DoubleField *>(fields()[INLIERDISTANCETHRESHOLD_ID]));
+        visitor.visit(mUpdateThreshold,           static_cast<const corecvs::DoubleField *>(fields()[UPDATETHRESHOLD_ID]));
+        visitor.visit(mScoreThreshold,            static_cast<const corecvs::DoubleField *>(fields()[SCORETHRESHOLD_ID]));
+        visitor.visit(mNRounds,                   static_cast<const corecvs::IntField *>(fields()[NROUNDS_ID]));
+        visitor.visit(mMeanshiftBandwidth,        static_cast<const corecvs::DoubleField *>(fields()[MEANSHIFTBANDWIDTH_ID]));
+        visitor.visit(mNmsLocality,               static_cast<const corecvs::IntField *>(fields()[NMSLOCALITY_ID]));
+        visitor.visit(mNmsThreshold,              static_cast<const corecvs::DoubleField *>(fields()[NMSTHRESHOLD_ID]));
+        visitor.visit(mPatternRadius,             static_cast<const corecvs::DoubleVectorField *>(fields()[PATTERNRADIUS_ID]));
+        visitor.visit(mPatternStartAngleDeg,      static_cast<const corecvs::DoubleVectorField *>(fields()[PATTERNSTARTANGLEDEG_ID]));
+        visitor.visit(mCornerScores,              static_cast<const corecvs::DoubleVectorField *>(fields()[CORNERSCORES_ID]));
     }
 
     ChessBoardCornerDetectorParamsBase()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -451,16 +451,16 @@ template<class VisitorType>
         mCornerScores = cornerScores;
     }
 
-    friend ostream& operator << (ostream &out, ChessBoardCornerDetectorParamsBase &toSave)
+    friend std::ostream& operator << (std::ostream &out, ChessBoardCornerDetectorParamsBase &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //CHESS_BOARD_CORNER_DETECTOR_PARAMS_BASE_H_

@@ -26,6 +26,9 @@ int BaseReflection<CannyParameters>::dummy = CannyParameters::staticInit();
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int CannyParameters::staticInit()
 {
 

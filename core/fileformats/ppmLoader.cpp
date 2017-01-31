@@ -14,6 +14,8 @@
 
 #include "ppmLoader.h"
 
+namespace corecvs {
+
 string PPMLoader::prefix1(".pgm");
 string PPMLoader::prefix2(".ppm");
 
@@ -671,3 +673,5 @@ done:
     deletearr_safe(charImage);
     return result;
 }
+
+} //namespace corecvs

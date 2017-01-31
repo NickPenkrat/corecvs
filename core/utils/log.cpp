@@ -1,5 +1,12 @@
 #include <iostream>
 
+#ifdef WIN32
+# include <windows.h>       // GetCurrentThreadId
+#else
+# include <unistd.h>
+# include <sys/syscall.h>
+#endif
+
 #include "log.h"
 #include "commandLineSetter.h"
 #include "tbbWrapper.h"
@@ -37,6 +44,15 @@ void Log::message(Message &message)
     {
         el->drain(message);
     }
+}
+
+int Log::getCurrentThreadId()
+{
+#ifdef WIN32
+            return (int)GetCurrentThreadId();
+#else
+            return syscall(SYS_gettid);
+#endif
 }
 
 Log::Log(const LogLevel /*maxLocalLevel*/)

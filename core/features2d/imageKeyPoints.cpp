@@ -94,11 +94,11 @@ std::ostream& operator<<(std::ostream &os, const ImageDescriptors &b)
 	return os;
 }
 
-Image::Image(const size_t &id) : id(id)
+Image::Image(const size_t &id) : id(id), remapCache(0)
 {
 }
 
-Image::Image(const size_t &id, const std::string& filename) : id(id), filename(filename)
+Image::Image(const size_t &id, const std::string& filename, void* remapCache) : id(id), filename(filename), remapCache(remapCache)
 {
 }
 

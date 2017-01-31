@@ -187,6 +187,8 @@ public:
         }
         return true;
     }
+
+    Vector2dd center();
 };
 
 /**
@@ -204,18 +206,59 @@ public:
         }
     }
 
+    /**
+     * This thing checks if the point is inside of the convex poligon
+     *
+     * \attention convex only
+     **/
+    int  isInsideConvex(const Vector2dd &point) const;
+
+
+    /**
+     *  Winding number is the number of loops polygon makes around the point
+     **/
+    int windingNumber( const Vector2dd &point ) const;
     int  isInside(const Vector2dd &point) const;
+
+
+
     bool isConvex(bool *direction = NULL) const;
 
-    Vector2dd getPoint (int i) const
-    {
+    Vector2dd &getPoint (int i) {
         return operator [](i);
     }
 
+    const Vector2dd &getPoint (int i) const {
+        return operator [](i);
+    }
+
+    Vector2dd &getNextPoint(int idx)
+    {
+       return operator []((idx + 1) % size());
+    }
+
+    const Vector2dd &getNextPoint(int idx) const
+    {
+       return operator []((idx + 1) % size());
+    }
+
+    /** **/
+    Ray2d getRay(int i)  const {
+        return Ray2d::FromPoints(getPoint(i), getNextPoint(i));
+    }
+
+
+    /** This method uses the index by module of size() **/
+    Vector2dd &getPointM(int idx)
+    {
+       return operator [](idx % size());
+    }
+
+
     Vector2dd getNormal(int i) const
     {
-        Vector2dd r1 = operator []( i              );
-        Vector2dd r2 = operator []((i + 1) % size());
+        Vector2dd r1 = getPoint(i);
+        Vector2dd r2 = getNextPoint(i);
 
         return (r2 - r1).rightNormal();
     }
@@ -230,14 +273,24 @@ public:
         return toReturn;
     }
 
-    Polygon transform(const Matrix33 &transform) {
+    static Polygon RegularPolygon(int sides, const Vector2dd &center, double radius, double startAngleRad = 0.0);
+
+    static Polygon Reverse(const Polygon &p);
+
+
+    Polygon transformed(const Matrix33 &transform) const {
         Polygon toReturn;
         toReturn.reserve(size());
         for (Vector2dd p: *this ) {
             toReturn.push_back(transform * p);
         }
         return toReturn;
+    }
 
+    void transform(const Matrix33 &transform) {
+        for (Vector2dd &p: *this ) {
+            p = transform * p;
+        }
     }
 
     /* non const versions */
@@ -258,10 +311,136 @@ public:
         return operator [](idx).y();
     }
 
+    Ray2d edgeAsRay(int idx) {
+        Vector2dd &start = getPoint(idx);
+        Vector2dd &end   = getNextPoint(idx);
+        return Ray2d::FromPoints(start, end);
+    }
+
+    /* Valid for any type of simple poligon*/
+    double signedArea();
+
+    double area() {
+        return fabs(signedArea());
+    }
 
 
     //bool clipRay(const Ray2d &ray, double &t1, double &t2);
+};
 
+
+
+
+
+class RGB24Buffer;
+
+/**
+ *  This class implements Weiler–Atherton algotithm
+ *
+ **/
+class PolygonCombiner
+{
+public:
+    Polygon pol[2]; /* We actually don't need to copy poligon, but for sake of simplicity we reverse them to positive orientation*/
+
+    enum VertexType {
+        INSIDE,
+        COMMON,
+        OUTSIDE
+    };
+
+    static std::string getName(const VertexType type)
+    {
+        switch (type) {
+        case INSIDE:
+            return "inside";
+            break;
+        case OUTSIDE:
+            return "outside";
+            break;
+        case COMMON:
+            return "common";
+            break;
+        default:
+            break;
+        }
+        return "";
+    }
+
+    struct VertexData {
+        size_t orgId;
+        Vector2dd pos;     /* We don't need this, just a cache*/
+        VertexType flag;
+        double t;
+        size_t other;
+
+        VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t other = 0) :
+           orgId(orgId),
+           pos(pos),
+           flag(inside),
+           t(t),
+           other(other)
+        {}
+    };
+
+    typedef std::vector<VertexData> ContainerType; /* This type should better be list */
+
+    ContainerType c[2];
+
+    int intersectionNumber;
+    std::vector<std::pair<int, int>> intersections;
+
+    /* Method that initialise internal data structures of the PoligonCombiner*/
+    void prepare(void);
+
+    /* */
+    bool validateState(void) const;
+    void drawDebug(RGB24Buffer *buffer) const;
+
+    Polygon intersection() const;
+    Polygon combination() const;   /**< Not yet implemented */
+    Polygon difference() const;    /**< Not yet implemented */
+
+    PolygonCombiner(){}
+    PolygonCombiner(Polygon &p1, Polygon &p2)
+    {
+         pol[0] = p1;
+         pol[1] = p2;
+    }
+
+    friend std::ostream & operator <<(std::ostream &out, const PolygonCombiner &combiner)
+    {
+        out << "A: [" << std::endl;
+        for (size_t i = 0; i < combiner.c[0].size(); i++)
+        {
+            const VertexData &vd = combiner.c[0][i];
+            out << " " << i << ":  (" << vd.pos << " " << getName(vd.flag) << " " << vd.t << " " << vd.other << ") " << std::endl;
+        }
+        out << "]" << std::endl;
+        out << "B: [" << std::endl;
+        for (size_t i = 0; i < combiner.c[1].size(); i++)
+        {
+            const VertexData &vd = combiner.c[1][i];
+            out << " " << i << ":  (" << vd.pos << " " << getName(vd.flag) << " " << vd.t << " " << vd.other << ") " << std::endl;
+        }
+        out << "]" << std::endl;
+
+        return out;
+    }
+
+
+};
+
+
+class ConvexHull
+{
+public:
+    /**
+     * Most trivial and slow algorighm
+     *
+     * This methods need a lot of additional testing
+     ***/
+    static Polygon GiftWrap(const std::vector<Vector2dd> &list);
 };
 
 } //namespace corecvs

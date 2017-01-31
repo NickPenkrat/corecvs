@@ -45,7 +45,7 @@ public:
     bool  isParallelable() { return false; }
 
 protected:
-    void detectImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints );
+	void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints, void* pRemapCache);
 
 private:
     OpenCvGPUFeatureDetectorWrapper( const OpenCvGPUFeatureDetectorWrapper& );
@@ -76,6 +76,7 @@ public:
 
     FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "");
     bool provides(const DetectorType &type);
+    virtual std::string name() override { return "OpenCv GPU"; }
 
 private:
     bool               cudaApi; // opencv module to use : cuda or opencl

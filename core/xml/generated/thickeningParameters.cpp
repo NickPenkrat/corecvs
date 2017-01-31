@@ -26,6 +26,9 @@ int BaseReflection<ThickeningParameters>::dummy = ThickeningParameters::staticIn
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int ThickeningParameters::staticInit()
 {
 

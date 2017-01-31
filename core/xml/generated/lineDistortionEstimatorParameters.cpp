@@ -26,6 +26,9 @@ int BaseReflection<LineDistortionEstimatorParameters>::dummy = LineDistortionEst
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int LineDistortionEstimatorParameters::staticInit()
 {
 

@@ -14,6 +14,7 @@
 #include "g12Buffer.h"
 #include "rgb24Buffer.h"
 #include "bufferLoader.h"
+#include "runtimeTypeBuffer.h"
 #include "countedPtr.h"
 
 namespace corecvs {
@@ -30,6 +31,8 @@ public:
      */
     static BufferFactory* getInstance();
 
+    static void printCaps();
+
     /**
      * Public function to add own buffer loader, i.e. QtFileLoader
      **/
@@ -45,6 +48,12 @@ public:
         return true;
     }
 
+    bool registerLoader(BufferLoader<RuntimeTypeBuffer> * loader)
+    {
+        mLoadersRuntime.push_back(loader);
+        return true;
+    }
+
     /** Main function to get a 12-bits buffer from the file with the given path name
      */
     virtual G12Buffer* loadG12Bitmap(string name);
@@ -55,6 +64,7 @@ public:
     virtual RGB24Buffer* loadRGB24Bitmap(string name);
 
 
+    virtual RuntimeTypeBuffer* loadRuntimeTypeBitmap(string name);
 
     /** Main function to get a 16-bits buffer from the file with the given path name
      */
@@ -73,6 +83,13 @@ private:
      */
     vector<BufferLoader<G12Buffer>   *> mLoadersG12;
     vector<BufferLoader<RGB24Buffer> *> mLoadersRGB24;
+    vector<BufferLoader<RuntimeTypeBuffer> *> mLoadersRuntime;
+
+    vector<BufferSaver<RuntimeTypeBuffer> *> mSaversRuntime;
+    vector<BufferSaver<RGB24Buffer> *> mSaversRGB24;
+
+
+
 };
 
 } //namespace corecvs

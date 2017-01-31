@@ -11,6 +11,8 @@
 
 #include <GL/glew.h>        // GL_LUMINANCE, ...
 
+using namespace corecvs;
+
 SiftGpu::SiftGpu(double filterWidthFactor,
         double orientationFactor,
         double descriptorGridSize,
@@ -74,12 +76,12 @@ SiftGpu::SiftGpu(double filterWidthFactor,
     }
 }
 
-void SiftGpu::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors)
+void SiftGpu::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, void*)
 {
     (*this)(image, keyPoints, descriptors, true, true);
 }
 
-void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int)
+void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int, void*)
 {
     RuntimeTypeBuffer buffer;
     (*this)(image, keyPoints,buffer);

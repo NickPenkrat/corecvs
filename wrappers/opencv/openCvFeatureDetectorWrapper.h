@@ -12,14 +12,14 @@ namespace cv {
 }
 
 #ifdef WITH_OPENCV_3x
-    struct SmartPtrHolder;
-#endif  
+    struct SmartPtrDetectorHolder;
+#endif
 
 class OpenCvFeatureDetectorWrapper : public FeatureDetector
 {
 public:
 #ifdef WITH_OPENCV_3x
-    OpenCvFeatureDetectorWrapper(SmartPtrHolder *holder);
+	OpenCvFeatureDetectorWrapper(SmartPtrDetectorHolder *holder);
 #else
     OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector);  
 #endif  
@@ -30,7 +30,7 @@ public:
     void   setProperty(const std::string &name, const double &value);
 
 protected:
-    void detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nMax);
+    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nMax, void* pRemapCache);
 
 private:
     OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper&);
@@ -38,7 +38,7 @@ private:
 
     cv::FeatureDetector* detector;
 #ifdef WITH_OPENCV_3x
-	SmartPtrHolder* holder;
+    SmartPtrDetectorHolder* holder;
 #endif  
 };
 
@@ -51,7 +51,8 @@ class OpenCvFeatureDetectorProvider : public FeatureDetectorProviderImpl
 {
 public:
     FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "");
-    bool provides(const DetectorType &type);
+    virtual bool provides(const DetectorType &type) override;
+    virtual std::string name()  override {return "OpenCv"; }
 
     ~OpenCvFeatureDetectorProvider() {}
 };

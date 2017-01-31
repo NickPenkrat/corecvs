@@ -52,7 +52,7 @@ struct KeyPoint : public KeyPointArea
 	friend std::ostream& operator<<(std::ostream& os, const KeyPoint &kp);
 	friend std::istream& operator>>(std::istream& is, KeyPoint &kp);
 
-    Vector2dd position;
+    corecvs::Vector2dd position;
 
     inline double &x()
     {
@@ -90,7 +90,7 @@ struct ImageKeyPoints
 
 struct ImageDescriptors
 {
-	RuntimeTypeBuffer mat;
+    corecvs::RuntimeTypeBuffer mat;
 	DescriptorType    type;
 
 	void load(std::istream &is);
@@ -108,7 +108,8 @@ struct Image
 
 	size_t           id;
 	std::string      filename;
+	void*		 remapCache;
 
 	Image(const size_t &id);
-	Image(const size_t &id, const std::string &filename);
+	Image(const size_t &id, const std::string &filename, void* remapCache = 0);
 };

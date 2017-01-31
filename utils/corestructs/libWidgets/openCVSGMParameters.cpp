@@ -26,6 +26,9 @@ int BaseReflection<OpenCVSGMParameters>::dummy = OpenCVSGMParameters::staticInit
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int OpenCVSGMParameters::staticInit()
 {
 

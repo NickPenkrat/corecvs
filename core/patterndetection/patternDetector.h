@@ -34,7 +34,7 @@ public:
 
     virtual void setStatistics(corecvs::Statistics * /*stats*/ = NULL) {}
 
-    virtual size_t detectPatterns(corecvs::RGB24Buffer &buffer, std::vector<ObservationList> &patterns);
+    virtual size_t detectPatterns(corecvs::RGB24Buffer &buffer, std::vector<corecvs::ObservationList> &patterns);
 };
 
 #endif

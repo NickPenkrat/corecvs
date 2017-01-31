@@ -26,6 +26,9 @@ int BaseReflection<Draw3dCameraParameters>::dummy = Draw3dCameraParameters::stat
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int Draw3dCameraParameters::staticInit()
 {
 

@@ -1,5 +1,7 @@
 #include "openCvKeyPointsWrapper.h"
 
+using namespace corecvs;
+
 cv::KeyPoint convert(const KeyPoint &kp)
 {
     return cv::KeyPoint(kp.position.x(), kp.position.y(), kp.size, kp.angle, kp.response, kp.octave);

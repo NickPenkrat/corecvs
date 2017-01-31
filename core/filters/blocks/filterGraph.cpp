@@ -149,9 +149,9 @@ void FilterGraph::execute()
             block->inputPins[j]->setPin(block->inputPins[j]->takeFrom);
         }
 
-        stats->startInterval();
+        Statistics::startInterval(stats);
             block->operator ()();
-        stats->endInterval(block->getFullName());
+        Statistics::endInterval(stats, block->getFullName());
     } // for
 
     for (unsigned int i = 0; i < blocks.size(); i++)

@@ -77,6 +77,12 @@ public:
         if (theChar == '.')
             char_ptr = HardcodeFont::symbols_glyphs + HardcodeFont::GLYPH_HEIGHT * 14;
 
+        if (theChar == '[')
+            char_ptr = HardcodeFont::symbols_glyphs + HardcodeFont::GLYPH_HEIGHT * 15;
+        if (theChar == ']')
+            char_ptr = HardcodeFont::symbols_glyphs + HardcodeFont::GLYPH_HEIGHT * 16;
+
+
         if (char_ptr == NULL)
             char_ptr = HardcodeFont::symbols_glyphs + HardcodeFont::GLYPH_HEIGHT * 10;
 

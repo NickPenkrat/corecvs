@@ -5,6 +5,8 @@
 
 #include <ostream>
 
+using namespace corecvs;
+
 ChessboardDetector::ChessboardDetector(
         CheckerboardDetectionParameters params,
         BoardAlignerParams alignerParams,
@@ -84,28 +86,28 @@ bool ChessboardDetector::detectPattern(corecvs::RGB24Buffer &buffer)
 
 bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards)
 {
-    stats->startInterval();
+    Statistics::startInterval(stats);
 
     corners.clear();
     bestPattern = RectangularGridPattern();
 
     std::string prefix;
-    detector.setStatistics(stats->enterContext("Corners ->"));
+    detector.setStatistics(stats->enterContext(stats, "Corners ->"));
 
     detector.detectCorners(buffer, corners);
 
-    stats->leaveContext();
-    stats->resetInterval("Corners");
+    Statistics::leaveContext(stats);
+    Statistics::resetInterval(stats, "Corners");
 
-    assembler.setStatistics(stats->enterContext("Assembler ->"));
+    assembler.setStatistics(stats->enterContext(stats, "Assembler ->"));
 
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();
     sharedGenerator->flushCache();
     BoardAligner aligner(activeAlignerParams, sharedGenerator);
     assembler.assembleBoards(corners, boards, &aligner, &buffer);
 
-    stats->leaveContext();
-    stats->resetInterval("Assemble");
+    Statistics::leaveContext(stats);
+    Statistics::resetInterval(stats, "Assemble");
 
     return boards.size() != 0;
 }
@@ -118,13 +120,13 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
     corners.clear();
     bestPattern = RectangularGridPattern();
 
-    stats->startInterval();
+    Statistics::startInterval(stats);
     detector.setStatistics(stats->enterContext("Corners->"));
 
     detector.detectCorners(buffer, corners);
 
-    stats->leaveContext();
-    stats->resetInterval("Corners");
+    Statistics::leaveContext(stats);
+    Statistics::resetInterval(stats, "Corners");
 
     std::vector<std::vector<std::vector<corecvs::Vector2dd>>> boards;
 
@@ -135,8 +137,8 @@ bool ChessboardDetector::detectPattern(DpImage &buffer)
 
     assembler.assembleBoards(corners, boards, &activeAligner, &buffer);
 
-    stats->leaveContext();
-    stats->resetInterval("Assemble");
+    Statistics::leaveContext(stats);
+    Statistics::resetInterval(stats, "Assemble");
 
     if (boards.empty())
         return false;
@@ -326,7 +328,7 @@ bool ChessboardDetector::classify(DpImage &img, CirclePatternGenerator &gen, cor
         std::cout << std::endl;
     }
 
-    stats->resetInterval("Filling result");
+    Statistics::resetInterval(stats, "Filling result");
     return true;
 }
 

@@ -250,6 +250,8 @@ Matrix MulticameraTriangulator::CostFunction::getJacobian(const double in[], dou
 
 Matrix MulticameraTriangulator::CostFunction::getLSQHessian(const double *in, double delta)
 {
+    CORE_UNUSED(delta);
+
     Matrix H(3, 3);
     Vector3dd input(in[0], in[1], in[2]);
     auto &T = mTriangulator;

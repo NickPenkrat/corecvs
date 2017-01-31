@@ -2,6 +2,11 @@
 #include "homographyReconstructor.h"
 #include "mathUtils.h"
 
+using corecvs::Vector3dd;
+using corecvs::Vector2dd;
+using corecvs::Matrix33;
+
+
 CirclePatternGenerator::CirclePatternGenerator(CirclePatternGeneratorParams params) : CirclePatternGeneratorParams(params)
 {
 }
@@ -63,13 +68,13 @@ void CirclePatternGenerator::addToken(int token, double r, const std::vector<cor
 
 inline int convert(double d)
 {
-    return roundSign(d);
+    return corecvs::roundSign(d);
 }
 
 void CirclePatternGenerator::createFlip(DpImage &source, DpImage &destination, int rotation, bool flip)
 {
     destination = DpImage(patternSize, patternSize);
-    corecvs::Matrix33 tform = getFlipMatrix(rotation, flip);
+    Matrix33 tform = getFlipMatrix(rotation, flip);
 
     corecvs::Vector3dd dx(1.0, 0.0, 1.0), dy(0.0, 1.0, 1.0);
     corecvs::Vector3dd dxc = tform * dx, dyc = tform * dy, oc = tform * corecvs::Vector3dd(0.0, 0.0, 1.0);
@@ -99,7 +104,7 @@ void CirclePatternGenerator::createFlip(DpImage &source, DpImage &destination, i
     }
 }
 
-int CirclePatternGenerator::getBestToken(DpImage &query, double &score, corecvs::Matrix33 &orientation) const
+int CirclePatternGenerator::getBestToken(DpImage &query, double &score, Matrix33 &orientation) const
 {
     double s = 0.0, ssq = 0.0;
     CORE_ASSERT_TRUE_S(query.w == patternSize && query.h == patternSize);
@@ -147,7 +152,7 @@ void CirclePatternGenerator::flushCache()
     cache.clear();
 }
 
-void CirclePatternGenerator::putCache(const std::array<Vector2dd, 4> &k, const std::tuple<double, corecvs::Matrix33, corecvs::Matrix33, int> &v) const
+void CirclePatternGenerator::putCache(const std::array<Vector2dd, 4> &k, const std::tuple<double, Matrix33, Matrix33, int> &v) const
 {
 #ifdef WITH_TBB
     tbb::reader_writer_lock::scoped_lock writelock(rw_lock);
@@ -155,7 +160,7 @@ void CirclePatternGenerator::putCache(const std::array<Vector2dd, 4> &k, const s
     cache[k] = v;
 }
 
-bool CirclePatternGenerator::inCache(const std::array<Vector2dd, 4> &k, double &score, corecvs::Matrix33 &orientation, corecvs::Matrix33 &homography, int &token) const
+bool CirclePatternGenerator::inCache(const std::array<Vector2dd, 4> &k, double &score, Matrix33 &orientation, Matrix33 &homography, int &token) const
 {
 #ifdef WITH_TBB
     tbb::reader_writer_lock::scoped_lock_read readlock(rw_lock);
@@ -170,7 +175,7 @@ bool CirclePatternGenerator::inCache(const std::array<Vector2dd, 4> &k, double &
     return true;
 }
 
-int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<corecvs::Vector2dd, 4> &cell, double &score, corecvs::Matrix33 &orientation, corecvs::Matrix33 &homography) const
+int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<corecvs::Vector2dd, 4> &cell, double &score, Matrix33 &orientation, Matrix33 &homography) const
 {
     int token;
     if (inCache(cell, score, orientation, homography, token))
@@ -184,7 +189,7 @@ int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<
     c2i.addPoint2PointConstraint(corecvs::Vector2dd(0.0, 1.0), C);
     c2i.addPoint2PointConstraint(corecvs::Vector2dd(1.0, 1.0), D);
 
-    corecvs::Matrix33 AA, BB;
+    Matrix33 AA, BB;
     c2i.normalisePoints(AA, BB);
 
     homography = c2i.getBestHomographyLSE();
@@ -196,7 +201,7 @@ int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<
     {
         for (int x = 0; x < patternSize; ++x)
         {
-            corecvs::Vector3dd pt = homography * Vector3dd(x * (1.0 / patternSize), y * (1.0 / patternSize), 1.0);
+            Vector3dd pt = homography * Vector3dd(x * (1.0 / patternSize), y * (1.0 / patternSize), 1.0);
             pt = pt * (1.0 / pt[2]);
             int xx = (int)pt[0], yy = (int)pt[1];
             if (xx >= 0 && xx < image.w && yy >= 0 && yy < image.h)
@@ -212,19 +217,19 @@ int CirclePatternGenerator::getBestToken(const DpImage &image, const std::array<
     return token;
 }
 
-corecvs::Matrix33 CirclePatternGenerator::getFlipMatrix(int rotation, bool flip) const
+Matrix33 CirclePatternGenerator::getFlipMatrix(int rotation, bool flip) const
 {
     // flip = transpose
     // rotation = 0..3 * pi/2 => all matrix entries should be integer
     
-    corecvs::Matrix33 flipMatrix = flip ? corecvs::Matrix33(0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0) : corecvs::Matrix33(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+    Matrix33 flipMatrix = flip ? Matrix33(0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0) : Matrix33(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0);
     double phi = M_PI / 2.0 * rotation;
-    corecvs::Matrix33 rotationMatrix = corecvs::Matrix33(cos(phi), -sin(phi), 0.0, sin(phi), cos(phi), 0.0, 0.0, 0.0, 1.0);
-    corecvs::Matrix33 shiftMatrix = corecvs::Matrix33(1.0, 0.0, -0.5, 0.0, 1.0, -0.5, 0.0, 0.0, 1.0);
-    corecvs::Matrix33 unShiftMatrix = corecvs::Matrix33(1.0, 0.0, 0.5, 0.0, 1.0, 0.5, 0.0, 0.0, 1.0);
+    Matrix33 rotationMatrix = Matrix33(cos(phi), -sin(phi), 0.0, sin(phi), cos(phi), 0.0, 0.0, 0.0, 1.0);
+    Matrix33 shiftMatrix = Matrix33(1.0, 0.0, -0.5, 0.0, 1.0, -0.5, 0.0, 0.0, 1.0);
+    Matrix33 unShiftMatrix = Matrix33(1.0, 0.0, 0.5, 0.0, 1.0, 0.5, 0.0, 0.0, 1.0);
     
-    corecvs::Matrix33 res = unShiftMatrix * rotationMatrix * shiftMatrix * flipMatrix;
-    corecvs::Matrix33 ss = res;
+    Matrix33 res = unShiftMatrix * rotationMatrix * shiftMatrix * flipMatrix;
+    Matrix33 ss = res;
     for (int i = 0; i < 3; ++i)
     {
         for (int j = 0; j < 3; ++j)

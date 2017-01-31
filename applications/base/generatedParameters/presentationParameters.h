@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -38,7 +38,7 @@ namespace corecvs {
  * \brief Presentation parameters 
  * These parameters control the view of the output (and some of them also affect processing so be sure to backup if you plan to change them) 
  **/
-class PresentationParameters : public BaseReflection<PresentationParameters>
+class PresentationParameters : public corecvs::BaseReflection<PresentationParameters>
 {
 public:
     enum FieldId {
@@ -231,21 +231,21 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit((int &)mOutput,             static_cast<const EnumField *>    (fields()[OUTPUT_ID]));
-        visitor.visit((int &)mStereo,             static_cast<const EnumField *>    (fields()[STEREO_ID]));
-        visitor.visit((int &)mFlow,               static_cast<const EnumField *>    (fields()[FLOW_ID]));
-        visitor.visit(mShowClusters,              static_cast<const BoolField *>    (fields()[SHOWCLUSTERS_ID]));
-        visitor.visit(mShowHistogram,             static_cast<const BoolField *>    (fields()[SHOWHISTOGRAM_ID]));
-        visitor.visit(mAutoUpdateHistogram,       static_cast<const BoolField *>    (fields()[AUTO_UPDATE_HISTOGRAM_ID]));
-        visitor.visit(mShowAreaOfInterest,        static_cast<const BoolField *>    (fields()[SHOWAREAOFINTEREST_ID]));
-        visitor.visit(mProduce3D,                 static_cast<const BoolField *>    (fields()[PRODUCE3D_ID]));
-        visitor.visit(mProduce6D,                 static_cast<const BoolField *>    (fields()[PRODUCE6D_ID]));
-        visitor.visit(mDump3D,                    static_cast<const BoolField *>    (fields()[DUMP3D_ID]));
+        visitor.visit((int &)mOutput,             static_cast<const corecvs::EnumField *>(fields()[OUTPUT_ID]));
+        visitor.visit((int &)mStereo,             static_cast<const corecvs::EnumField *>(fields()[STEREO_ID]));
+        visitor.visit((int &)mFlow,               static_cast<const corecvs::EnumField *>(fields()[FLOW_ID]));
+        visitor.visit(mShowClusters,              static_cast<const corecvs::BoolField *>(fields()[SHOWCLUSTERS_ID]));
+        visitor.visit(mShowHistogram,             static_cast<const corecvs::BoolField *>(fields()[SHOWHISTOGRAM_ID]));
+        visitor.visit(mAutoUpdateHistogram,       static_cast<const corecvs::BoolField *>(fields()[AUTO_UPDATE_HISTOGRAM_ID]));
+        visitor.visit(mShowAreaOfInterest,        static_cast<const corecvs::BoolField *>(fields()[SHOWAREAOFINTEREST_ID]));
+        visitor.visit(mProduce3D,                 static_cast<const corecvs::BoolField *>(fields()[PRODUCE3D_ID]));
+        visitor.visit(mProduce6D,                 static_cast<const corecvs::BoolField *>(fields()[PRODUCE6D_ID]));
+        visitor.visit(mDump3D,                    static_cast<const corecvs::BoolField *>(fields()[DUMP3D_ID]));
     }
 
     PresentationParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -274,16 +274,16 @@ template<class VisitorType>
         mDump3D = dump3D;
     }
 
-    friend ostream& operator << (ostream &out, PresentationParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, PresentationParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //PRESENTATION_PARAMETERS_H_

@@ -64,6 +64,8 @@ public:
 
     virtual bool acceptsFile(string name);
     virtual G12Buffer * load(string name);
+    virtual std::string name() override { return "RAWLoader"; }
+
 };
 
 } //namespace corecvs

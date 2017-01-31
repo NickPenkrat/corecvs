@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-using namespace corecvs;
+// using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-namespace corecvs {
-}
+// namespace corecvs {
+// }
 /*
  *  Additional includes for enum section.
  */
@@ -36,7 +36,7 @@ namespace corecvs {
  * \brief Line Distortion Estimator Parameters 
  * Line Distortion Estimator Parameters 
  **/
-class LineDistortionEstimatorParameters : public BaseReflection<LineDistortionEstimatorParameters>
+class LineDistortionEstimatorParameters : public corecvs::BaseReflection<LineDistortionEstimatorParameters>
 {
 public:
     enum FieldId {
@@ -178,18 +178,18 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit((int &)mCostAlgorithm,      static_cast<const EnumField *>    (fields()[COST_ALGORITHM_ID]));
-        visitor.visit(mIterationNumber,           static_cast<const IntField *>     (fields()[ITERATION_NUMBER_ID]));
-        visitor.visit(mPolynomDegree,             static_cast<const IntField *>     (fields()[POLYNOM_DEGREE_ID]));
-        visitor.visit(mSimpleJacobian,            static_cast<const BoolField *>    (fields()[SIMPLE_JACOBIAN_ID]));
-        visitor.visit(mEvenPowersOnly,            static_cast<const BoolField *>    (fields()[EVEN_POWERS_ONLY_ID]));
-        visitor.visit(mEstimateTangent,           static_cast<const BoolField *>    (fields()[ESTIMATE_TANGENT_ID]));
-        visitor.visit(mEstimateCenter,            static_cast<const BoolField *>    (fields()[ESTIMATE_CENTER_ID]));
+        visitor.visit((int &)mCostAlgorithm,      static_cast<const corecvs::EnumField *>(fields()[COST_ALGORITHM_ID]));
+        visitor.visit(mIterationNumber,           static_cast<const corecvs::IntField *>(fields()[ITERATION_NUMBER_ID]));
+        visitor.visit(mPolynomDegree,             static_cast<const corecvs::IntField *>(fields()[POLYNOM_DEGREE_ID]));
+        visitor.visit(mSimpleJacobian,            static_cast<const corecvs::BoolField *>(fields()[SIMPLE_JACOBIAN_ID]));
+        visitor.visit(mEvenPowersOnly,            static_cast<const corecvs::BoolField *>(fields()[EVEN_POWERS_ONLY_ID]));
+        visitor.visit(mEstimateTangent,           static_cast<const corecvs::BoolField *>(fields()[ESTIMATE_TANGENT_ID]));
+        visitor.visit(mEstimateCenter,            static_cast<const corecvs::BoolField *>(fields()[ESTIMATE_CENTER_ID]));
     }
 
     LineDistortionEstimatorParameters()
     {
-        DefaultSetter setter;
+        corecvs::DefaultSetter setter;
         accept(setter);
     }
 
@@ -212,16 +212,16 @@ template<class VisitorType>
         mEstimateCenter = estimateCenter;
     }
 
-    friend ostream& operator << (ostream &out, LineDistortionEstimatorParameters &toSave)
+    friend std::ostream& operator << (std::ostream &out, LineDistortionEstimatorParameters &toSave)
     {
-        PrinterVisitor printer(out);
-        toSave.accept<PrinterVisitor>(printer);
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        cout << *this;
+        std::cout << *this;
     }
 };
 #endif  //LINE_DISTORTION_ESTIMATOR_PARAMETERS_H_
