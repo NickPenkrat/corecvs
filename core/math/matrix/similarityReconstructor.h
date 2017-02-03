@@ -51,6 +51,11 @@ public:
      **/
     Matrix44 toMatrix() const;
 
+    /**
+     *    Transform
+     **/
+    Vector3dd transform(const Vector3dd &point) const;
+
     friend ostream & operator << (ostream &out, const Similarity &reconstructor);
 
     enum {
@@ -76,7 +81,7 @@ public:
     {}
 
     Similarity getInterpolated(double t);
-
+    Similarity inverted();
 
     /* Get simple params*/
     double getScale();
@@ -84,6 +89,52 @@ public:
 
     Vector3dd getShift();
     Matrix33 getRotation();
+
+    /* Some nice visitor */
+template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(shiftL, "ShiftL");
+        visitor.visit(shiftR, "ShiftR");
+
+        visitor.visit(scaleL, 1.0, "ScaleL");
+        visitor.visit(scaleR, 1.0, "ScaleR");
+
+        visitor.visit(rotation, "rotation");
+    }
+
+    friend std::ostream& operator << (std::ostream &out, Similarity &toSave)
+    {
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
+        return out;
+    }
+
+    void print ()
+    {
+        std::cout << *this;
+    }
+
+    /**
+     * This is an exact syntactic comparison
+     * Even if the action are acting the same way this would only return true if data structures are per-field equal
+     **/
+    bool operator == (const Similarity &other)
+    {
+        if (scaleL != other.scaleL)
+            return false;
+        if (scaleR != other.scaleR)
+            return false;
+        if (shiftL != other.shiftL)
+            return false;
+        if (shiftR != other.shiftR)
+            return false;
+        if (rotation != other.rotation)
+            return false;
+
+        return true;
+    }
+
 };
 
 typedef PrimitiveCorrespondence<Vector3dd, Vector3dd> Correspondence3D;

@@ -58,7 +58,7 @@ int CalibrationDrawHelpersParameters::staticInit()
         (
           CalibrationDrawHelpersParameters::SCALE_FOR_CAMERAS_ID,
           offsetof(CalibrationDrawHelpersParameters, mScaleForCameras),
-          0.1,
+          1,
           "Scale For Cameras",
           "Scale For Cameras",
           "Scale For Cameras",

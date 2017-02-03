@@ -20,6 +20,7 @@
 #include "frames.h"
 #include "coordinateFrame.h"
 #include "treeSceneController.h"
+#include "calibrationCamera.h"
 
 #include "textLabelWidget.h"
 #include "calculationStats.h"
@@ -43,7 +44,7 @@ public:
     const static double START_Z;
 
 
-    CloudViewDialog(QWidget *parent = 0);
+    CloudViewDialog(QWidget *parent = 0, QString name = QString());
     ~CloudViewDialog();
 
 public slots:
@@ -125,6 +126,9 @@ public:
     QSharedPointer<RectificationResult> mRectificationResult;
     QSharedPointer<QImage>              mCameraImage[Frames::MAX_INPUTS_NUMBER];
 
+    /**
+     * mCamera stores "sort of" modelview matrix
+     ***/
     Matrix44                            mCamera;
     double                              mCameraZoom;
 
@@ -134,6 +138,9 @@ public:
     void setNewScenePointer (QSharedPointer<Scene3D> scene, int sceneId = MAIN_SCENE);
     void setNewRectificationResult (QSharedPointer<RectificationResult> rectificationResult);
     void setNewCameraImage (QSharedPointer<QImage> texture, int cameraId = Frames::RIGHT_FRAME);
+
+
+    void setCamera(const CameraModel &model);
 
     enum SubScene {
         SUBSCENE_PLANE,
@@ -149,8 +156,12 @@ public:
         PINHOLE_AT_0,
         RIGHT_CAMERA,
         LEFT_CAMERA,
-        FACE_CAMERA
+        FACE_CAMERA,
+        USER_CAMERA
     };
+
+
+    const QGLContext *getAreaContext();
 
     /* OpenGL textures */
 public:

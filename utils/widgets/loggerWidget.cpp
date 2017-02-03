@@ -28,7 +28,7 @@ LoggerWidget::LoggerWidget(QWidget *parent)
 	mLevelIcons   = new QIcon *      [Log::LEVEL_LAST];
 	mLevelFilters = new QPushButton *[Log::LEVEL_LAST];
 
-    QGridLayout *gridLayout = new QGridLayout(this);
+    QGridLayout *gridLayout = new QGridLayout(ui.filterGroupBox);
     ui.filterGroupBox->setLayout(gridLayout);
     gridLayout->setContentsMargins(3,3,3,3);
 

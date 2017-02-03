@@ -18,6 +18,8 @@
 #include "vector3d.h"
 #include "similarityReconstructor.h"
 #include "mesh3d.h"
+#include "propertyList.h"
+#include "propertyListVisitor.h"
 
 using namespace corecvs;
 
@@ -255,4 +257,79 @@ TEST(Similarity, testConverstions)
     Vector3dd test = sim.shiftL + Vector3dd(sim.scaleL);
 
     cout << ((sim.toMatrix() * test) - sim.shiftR - Vector3dd(sim.scaleR)) << endl;
+}
+
+
+TEST(Similarity, testTransform)
+{
+    Similarity sim;
+    sim.shiftL = Vector3dd(0.236471, -0.0143253, -0.399441);
+    sim.scaleL = 0.148925;
+    sim.shiftR = Vector3dd(-716.4, 421.6, 0);
+    sim.scaleR = 2641.6;
+    Quaternion Q(0.0914267, -0.686214, 0.716433, -0.0864643);
+
+    {
+        Vector3dd v1(1,2,3);
+
+        Vector3dd r1 = sim.toMatrix() * v1;
+        Vector3dd r2 = sim.transform(v1);
+
+        cout << r1 << endl;
+        cout << r2 << endl;
+        CORE_ASSERT_TRUE(r1.notTooFar(r2, 1e-9), " Non consitent transformation1");
+    }
+
+    {
+        Vector3dd v1(-7,20,31);
+        CORE_ASSERT_TRUE((sim.toMatrix() * v1).notTooFar(sim.transform(v1), 1e-9), " Non consitent transformation2");
+    }
+
+}
+
+TEST(Similarity, testInversion)
+{
+    Similarity sim;
+    sim.shiftL = Vector3dd(0.236471, -0.0143253, -0.399441);
+    sim.scaleL = 0.148925;
+    sim.shiftR = Vector3dd(-716.4, 421.6, 0);
+    sim.scaleR = 2641.6;
+    Quaternion Q(0.0914267, -0.686214, 0.716433, -0.0864643);
+
+
+    Similarity inv = sim.inverted();
+
+    Matrix44 M1 = sim.toMatrix();
+    Matrix44 M2 = inv.toMatrix().inverted();
+
+    CORE_ASSERT_TRUE(M1.notTooFar(M2, 1e-9), "Similarity inversion has failed");
+}
+
+TEST(Similarity, testSimilarityVisitor)
+{
+    Similarity input;
+    input.rotation = Quaternion::Rotation(Vector3dd(1.0,2.0,3.0), degToRad(60));
+    input.scaleL = 10;
+    input.scaleR = 11;
+
+    input.shiftL = Vector3dd( 4.0,  5.0, -1.0);
+    input.shiftR = Vector3dd(-7.0, -9.0,  1.0);
+
+    PropertyList list;
+    PropertyListWriterVisitor writerVisitor(&list);
+
+    input.accept<PropertyListWriterVisitor>(writerVisitor);
+    list.save(cout);
+
+    PropertyListReaderVisitor readerVisitor(&list);
+
+    Similarity output;
+    output.accept<PropertyListReaderVisitor>(readerVisitor);
+
+    cout << "Input:" << endl;
+    input.print();
+    cout << "Output" << endl;
+    output.print();
+
+    CORE_ASSERT_TRUE_P( input == output, ("Fail to store and load"));
 }

@@ -100,3 +100,4 @@ SOURCES += \
     matrixoperations/main_test_matrixoperations.cpp \
     polygon/main_test_polygon.cpp \
     multicamera/main_test_multicamera.cpp \
+    imagequality/main_test_imagequality.cpp \

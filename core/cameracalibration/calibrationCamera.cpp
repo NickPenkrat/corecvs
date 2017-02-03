@@ -110,10 +110,11 @@ Matrix44 PinholeCameraIntrinsics::RayDiffNormalizerDiff(const double &ux, const 
     auto N = ux2 + uy2 + uz2;
     auto N2 = std::sqrt(N);
     auto N32 = N * N2, N21 = 1.0 / N2;
-    return corecvs::Matrix44   (-ux2/N32+N21,    -uxuy/N32,    -uxuz/N32, 0.0,
-                                   -uxuy/N32, -uy2/N32+N21,    -uyuz/N32, 0.0,
-                                   -uxuz/N32,    -uyuz/N32, -uz2/N32+N21, 0.0,
-                                         0.0,          0.0,          0.0, 0.0);
+    return Matrix44   (
+            -ux2/N32+N21,    -uxuy/N32,    -uxuz/N32, 0.0,
+               -uxuy/N32, -uy2/N32+N21,    -uyuz/N32, 0.0,
+               -uxuz/N32,    -uyuz/N32, -uz2/N32+N21, 0.0,
+                     0.0,          0.0,          0.0, 0.0);
 }
 
 Matrix33 CameraModel::Fundamental(const Matrix44 &L, const Matrix44 &R)
@@ -303,6 +304,63 @@ Matrix44 CameraModel::getCameraMatrix() const
 Vector3dd CameraModel::getCameraTVector() const
 {
     return extrinsics.orientation * (-extrinsics.position);
+}
+
+Matrix44 CameraModel::getFrustrumMatrix(double zNear, double zFar) const
+{
+    /*
+    double zDepth = zNear - zFar;
+    Matrix44 matrix (
+        f / aspect, 0 ,             0          ,            0            ,
+        0         , f ,             0          ,            0            ,
+        0         , 0 , (zFar + zNear) / zDepth, 2 *zFar * zNear / zDepth,
+        0         , 0 ,            -1          ,            0
+    );
+
+    */
+
+    if (zNear == -1) {
+        zNear = 0.001;
+    }
+
+    if (zFar == -1) {
+        zFar = 1000;
+    }
+
+    double zDepth       = zNear - zFar;
+    Vector2dd focal     = intrinsics.focal;
+    Vector2dd principal = intrinsics.principal;
+    Vector2dd size      = intrinsics.size;
+
+    double skew = intrinsics.skew;
+
+    Matrix44 KF =  Matrix44 (
+        focal.x(),   skew   ,          0.0           ,    /*principal.x()*/ 0,
+           0.0   , focal.y(),          0.0           ,    /*principal.y()*/ 0,
+           0.0   ,    0.0   , (zFar + zNear) / zDepth, 2 * zFar * zNear / zDepth,
+           0.0   ,    0.0   ,         -1.0           ,        0.0
+    );
+
+    Matrix44 D = /*Matrix44::Shift(0.5, 0.5, 0.0) **/ Matrix44::Diagonal(2.0 / size.x(), 2.0 / size.y(), 1.0, 1.0);
+
+    Matrix44 T = Matrix44(getRotationMatrix()) * Matrix44::Shift(-extrinsics.position);
+    cout << "Position Matrix:" << endl;
+    cout <<  T;
+
+    cout << "K Matrix:" << endl;
+    cout <<  KF;
+
+    cout << "D Matrix:" << endl;
+    cout <<  D;
+
+    Matrix44 toReturn = D * KF * T;
+
+    cout << "Result Matrix:" << endl;
+    cout <<  toReturn;
+
+    return  toReturn;
+
+
 }
 
 ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &p3)

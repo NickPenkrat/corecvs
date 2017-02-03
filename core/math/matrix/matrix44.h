@@ -59,7 +59,8 @@ public:
     {
         for (int i = 0; i < H; i++)
             a(i,i) = d;
-    }
+    }    
+
 
     Matrix44(const FixedVector<double, 16> &data) : BaseClass(data)
     { }
@@ -85,6 +86,16 @@ public:
             const double &a10, const double &a11, const double &a12, const double &a13,
             const double &a20, const double &a21, const double &a22, const double &a23,
             const double &a30, const double &a31, const double &a32, const double &a33);
+
+    static Matrix44 Diagonal(double d0, double d1, double d2, double d3)
+    {
+        Matrix44 toReturn(0);
+        toReturn.a(0,0) = d0;
+        toReturn.a(1,1) = d1;
+        toReturn.a(2,2) = d2;
+        toReturn.a(3,3) = d3;
+        return toReturn;
+    }
 
     Matrix33 topLeft33() const;
     Vector3dd translationPart() const;

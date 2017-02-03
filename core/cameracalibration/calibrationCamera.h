@@ -379,6 +379,12 @@ public:
     Matrix44            getCameraMatrix() const;
     Vector3dd           getCameraTVector() const;
 
+    /**
+     * This matrix variant also has non-trivial Z output in the style used in OpenGL
+     * This method also returns the matrix that is projecting to 0..1 interval, instead of this->size()
+     **/
+    Matrix44            getFrustrumMatrix(double zNear = -1, double zFar = -1) const;
+
     ConvexPolyhedron    getViewport(const Vector2dd &p1, const Vector2dd &p2);
 
 
