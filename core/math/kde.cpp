@@ -151,6 +151,7 @@ std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCoun
             index++;
             double norm = (def[index] - min)/(max-min);
             if(norm < passLevel) underPass++;
+            def[index] = norm;
             std::cout << ( int )(norm < passLevel)<< "\t" ;
         }
         std::cout << std::endl;

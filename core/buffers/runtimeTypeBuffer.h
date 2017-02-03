@@ -178,6 +178,8 @@ public:
         return type;
     }
 
+    void downsample( int factor );
+
     void load(std::istream &is);
     void save(std::ostream &os) const;
     void load(const std::string &filename);

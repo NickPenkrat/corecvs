@@ -37,9 +37,26 @@ OpenCvGPUDescriptorExtractorWrapper::~OpenCvGPUDescriptorExtractorWrapper()
     delete extractorSURF_OCL;
 }
 
-void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
+struct OpenCLRemapCache
+{
+    cv::Mat unused0;
+    cv::Mat unused1;
+	oclMat mat0;
+	oclMat mat1;
+};
+
+struct CudaRemapCache
+{
+    cv::Mat unused0;
+    cv::Mat unused1;
+	GpuMat mat0;
+	GpuMat mat1;
+};
+
+void OpenCvGPUDescriptorExtractorWrapper::computeImpl(corecvs::RuntimeTypeBuffer &image
     , std::vector<KeyPoint> &keyPoints
-    , RuntimeTypeBuffer &descriptors)
+	, corecvs::RuntimeTypeBuffer &descriptors
+	, void* pRemapCache)
 {
     std::vector<cv::KeyPoint> kps;
     FOREACH(const KeyPoint& kp, keyPoints)
@@ -50,6 +67,14 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     if ( extractorSURF_CUDA || extractorORB_CUDA )
     {    
         GpuMat cudaImage( img );
+		if (pRemapCache)
+		{
+			GpuMat remapped;
+			CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+			cv::gpu::remap(cudaImage, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+			cudaImage = remapped;
+		}
+
         GpuMat cudaDescriptors;
         if ( extractorSURF_CUDA )
         {
@@ -67,6 +92,14 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl( RuntimeTypeBuffer &image
     else if ( extractorSURF_OCL )
     {
         oclMat oclImage( img );
+		if (pRemapCache)
+		{
+			oclMat remapped;
+			OpenCLRemapCache* p = (OpenCLRemapCache*)(pRemapCache);
+			cv::ocl::remap(oclImage, remapped, p->mat0, p->mat1, cv::INTER_NEAREST, cv::BORDER_CONSTANT);
+			oclImage = remapped;
+		}
+
         oclMat oclDescriptors;
         //extractorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
         ( *extractorSURF_OCL )( oclImage, oclMat(), kps, oclDescriptors, true );
@@ -119,8 +152,10 @@ DescriptorExtractor* OpenCvGPUDescriptorExtractorProvider::getDescriptorExtracto
     {
         SWITCH_TYPE( SURF_GPU,
             return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::SURF_GPU( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ) ); )
-        SWITCH_TYPE( ORB_GPU,
-            return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::ORB_GPU( orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize ) ); )
+        
+		// does not work
+		//SWITCH_TYPE( ORB_GPU,
+        //    return new OpenCvGPUDescriptorExtractorWrapper( new cv::gpu::ORB_GPU( orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize ) ); )
     }
     else
         SWITCH_TYPE( SURF_GPU,
@@ -132,7 +167,6 @@ DescriptorExtractor* OpenCvGPUDescriptorExtractorProvider::getDescriptorExtracto
 bool OpenCvGPUDescriptorExtractorProvider::provides( const DescriptorType &type )
 {
     SWITCH_TYPE(SURF_GPU, return true;);
-    SWITCH_TYPE(ORB_GPU,  return true;);
     return false;
 }
 

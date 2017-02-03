@@ -36,8 +36,36 @@ using namespace cv::ocl;
 
 struct SmartPtrHolder
 {
-    cv::Ptr< cv::cuda::ORB >          orb;
-    cv::Ptr< cv::xfeatures2d::SURF >  surf;
+    SmartPtrHolder() : tag(SIFT), sift() {}
+    ~SmartPtrHolder() {}
+    enum {
+        ORB, SURF
+    } tag;
+
+    union {
+        cv::Ptr< cv::cuda::ORB >          orb;
+        cv::Ptr< cv::xfeatures2d::SURF >  surf;
+    };
+
+    cv::DescriptorExtractor *get() {
+        switch (tag) {
+        case ORB:
+            return orb.get();
+        case SURF:
+            return surf.get();
+        default:
+            return nullptr;
+        }
+    }
+
+    void set(cv::Ptr<cv::cuda::ORB> value) {
+        tag = ORB;
+        orb = value;
+    }
+    void set(cv::Ptr<cv::xfeatures2d::SURF> value) {
+        tag = SURF;
+        surf = value;
+    }
 };
 
 OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper(cv::cuda::SURF_CUDA *detector) : detectorSURF_CUDA(detector),
@@ -91,9 +119,30 @@ void OpenCvGPUFeatureDetectorWrapper::setProperty( const std::string &name, cons
     CORE_UNUSED( value );
 }
 
-void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int K )
+struct OpenCLRemapCache
 {
-    if ( image.getType() != BufferType::U8 || !image.isValid() )
+    cv::Mat unused0;
+    cv::Mat unused1;
+#ifdef WITH_OPENCV_3x
+	UMat mat0;
+	UMat mat1;
+#else
+	oclMat mat0;
+	oclMat mat1;
+#endif
+};
+
+struct CudaRemapCache
+{
+    cv::Mat unused0;
+    cv::Mat unused1;
+	GpuMat mat0;
+	GpuMat mat1;
+};
+
+void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int K, void* pRemapCache)
+{
+	if (image.getType() != corecvs::BufferType::U8 || !image.isValid())
     {
         std::cerr << __LINE__ << "Invalid image type" << std::endl;
     }
@@ -103,21 +152,43 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     if (detectorSURF_CUDA)
     {
         cv::cuda::GpuMat img( convert( image ) );
+		if (pRemapCache)
+		{
+			GpuMat remapped;
+			CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+			cv::cuda::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+			img = remapped;
+		}
         cv::cuda::GpuMat mask;
         ( *detectorSURF_CUDA )( img, mask, kps );  
     }
     else if ( holder )
     {
-        if ( holder->surf.get() ) // openCL implementation
+        auto detector = holder->get();
+        if ( holder->tag == SmartPtrHolder::SURF ) // openCL implementation
         {
-            cv::UMat img;
-            holder->surf->detect( img, kps );
+			cv::UMat img( convert( image ) );
+			if (pRemapCache)
+			{
+				UMat remapped;
+				OpenCLRemapCache* p = (OpenCLRemapCache*)(pRemapCache);
+				cv::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+				img = remapped;
+			}
+            detector->detect( img, kps );
         }
 
-        if ( holder->orb.get() ) // openCL implementation
+        if ( holder->tag == SmartPtrHolder::ORB ) // CUDA implementation
         {
             cv::cuda::GpuMat img( convert( image ) );
-            holder->orb->detect( img, kps );
+			if (pRemapCache)
+			{
+				GpuMat remapped;
+				CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+				cv::cuda::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+				img = remapped;
+			}
+            detector->detect( img, kps );
         }           
     }
 
@@ -125,12 +196,20 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     if ( detectorSURF_CUDA || detectorORB_CUDA )
     {
         cv::gpu::GpuMat img( convert( image ) );
+		if (pRemapCache)
+		{
+			GpuMat remapped;
+			CudaRemapCache* p = (CudaRemapCache*)(pRemapCache);
+			cv::gpu::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+			img = remapped;
+		}
+
         cv::gpu::GpuMat mask;
 
         if ( detectorSURF_CUDA )
         {
             //max keypoints = min(keypointsRatio * img.size().area(), 65535)
-            detectorSURF_CUDA->keypointsRatio = ( float )K / img.size().area();
+            //detectorSURF_CUDA->keypointsRatio = ( float )K / img.size().area();
             ( *detectorSURF_CUDA )( img, mask, kps );
         }     
         else if ( detectorORB_CUDA )
@@ -142,11 +221,18 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     else if ( detectorSURF_OCL )
     {
         cv::ocl::oclMat img( convert( image ) );
+		if (pRemapCache)
+		{
+			oclMat remapped;
+			OpenCLRemapCache* p = (OpenCLRemapCache*)(pRemapCache);
+			cv::ocl::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST, cv::BORDER_CONSTANT);
+			img = remapped;
+		}
+
         cv::ocl::oclMat mask;
         //max keypoints = min(keypointsRatio * img.size().area(), 65535)
-        detectorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
+        //detectorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
         (*detectorSURF_OCL)( img, mask, kps );
-
     }
 #endif
 
@@ -155,6 +241,9 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl( RuntimeTypeBuffer &image, std:
     {
 		keyPoints.push_back(convert(kp));
     }
+
+	std::sort(keyPoints.begin(), keyPoints.end(), [](const KeyPoint &l, const KeyPoint &r) { return l.response > r.response; });
+	keyPoints.resize(std::min((int)keyPoints.size(), K));
 }
 
 bool FindGPUDevice( bool& cudaApi )
@@ -225,10 +314,18 @@ bool FindGPUDevice( bool& cudaApi )
         getOpenCLDevices( oclDevices, cv::ocl::CVCL_DEVICE_TYPE_GPU );
         if ( oclDevices.size() )
         {
-            cv::ocl::setDevice( oclDevices[ 0 ] );
-            deviceFound = initProvider = true;
-            cout << "OpeCV uses OpenCL "<< oclDevices[ 0 ]->deviceName << endl;
-            cudaDevice = cudaApi = false;
+			for (uint i = 0; i < oclDevices.size(); i++)
+			{
+				const cv::ocl::DeviceInfo* device = oclDevices[i];
+				if (device->deviceVersionMajor > 1 || device->deviceVersionMinor >= 2) // check opencl device support 1.2
+				{
+					cv::ocl::setDevice(device);
+					deviceFound = initProvider = true;
+					cudaDevice = cudaApi = false;
+					cout << "OpeCV uses OpenCL " << device->deviceName << endl;
+					break;
+				}
+			}                 
         }
 #endif
     }
@@ -269,7 +366,7 @@ FeatureDetector* OpenCvGPUFeatureDetectorProvider::getFeatureDetector( const Det
         else
         {
             cv::Ptr< cv::xfeatures2d::SURF > ptr = cv::xfeatures2d::SURF::create(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright);
-            holder->surf = ptr;
+            holder->set(ptr);
             return new OpenCvGPUFeatureDetectorWrapper(holder);
         }
     }
@@ -279,7 +376,7 @@ FeatureDetector* OpenCvGPUFeatureDetectorProvider::getFeatureDetector( const Det
         if (cudaApi)
         {
             cv::Ptr< cv::cuda::ORB > ptr = cv::cuda::ORB::create(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize);
-            holder->orb = ptr;
+            holder->set(ptr);
             return new OpenCvGPUFeatureDetectorWrapper(holder);
         }
     }

@@ -108,7 +108,8 @@ struct Image
 
 	size_t           id;
 	std::string      filename;
+	void*		 remapCache;
 
 	Image(const size_t &id);
-	Image(const size_t &id, const std::string &filename);
+	Image(const size_t &id, const std::string &filename, void* remapCache = 0);
 };

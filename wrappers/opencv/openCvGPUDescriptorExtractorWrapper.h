@@ -28,7 +28,7 @@ public:
     bool isParallelable() { return false; }
 
 protected:
-    void computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descripors);
+	void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descripors, void* pRemapCache);
 
 private:
     OpenCvGPUDescriptorExtractorWrapper( const OpenCvGPUDescriptorExtractorWrapper &wrapper );
@@ -44,6 +44,7 @@ public:
     OpenCvGPUDescriptorExtractorProvider( bool cudaApi );
     DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
     bool provides(const DescriptorType &type);
+    virtual std::string name() override { return "OpenCv GPU"; }
 
     ~OpenCvGPUDescriptorExtractorProvider() {}
 

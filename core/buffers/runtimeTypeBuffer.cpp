@@ -12,6 +12,133 @@ void corecvs::RuntimeTypeBuffer::save(std::ostream &os) const
     os << (*this);
 }
 
+template< typename T, typename U >
+T average( const T* data, const size_t rowStep, const int cols, const int rows )
+{
+    U sum = 0;
+    for ( int j = 0; j < rows; j++, data += rowStep )
+    {
+        for ( int i = 0; i < cols; i++ )
+            sum += data[ i ];
+    }
+
+    return ( T )( sum / ( cols * rows ) );
+}
+
+template< typename T, typename U, int factor >
+T average( const T* data, const size_t rowStep )
+{
+    U sum = 0;
+    for ( int j = 0; j < factor; j++, data += rowStep )
+    {
+        for ( int i = 0; i < factor; i++ )
+            sum += data[ i ];
+    }
+
+    return ( T )( sum / ( factor * factor ) );
+}
+
+template< typename T, typename U, int factor >
+void convert( T* newData, const T* data, const size_t newCols, const size_t newRows, const size_t cols, const size_t rows )
+{
+    int remCols = cols % factor;
+    int remRows = rows % factor;
+
+    if ( !remCols )
+        remCols = factor;
+
+    if ( !remRows )
+        remRows = factor;
+
+    const size_t newRowStep = cols * factor;
+    for ( size_t j = 0; j < newRows - 1; j++, newData += newCols, data += newRowStep )
+    {
+        size_t i = 0;
+        // all elements in a row, except the last
+        for ( ; i < newCols - 1; i++ )
+            newData[ i ] = average< T, U, factor >( data + i * factor, cols );
+
+        // last element in each row
+        newData[ i ] = average< T, U >( data + i * factor, cols, remCols, factor );
+    }
+
+    // elements in last row
+    size_t i = 0;
+    for ( ; i < newCols - 1; i++, data += factor )
+        newData[ i ] = average< T, U >( data, cols, factor, remRows );
+    
+    // last element in last row
+    newData[ i ] = average< T, U >( data, cols, remCols, remRows );
+}
+
+void corecvs::RuntimeTypeBuffer::downsample( int factor )
+{
+    switch ( factor )
+    {
+    case 1:
+        return;
+    case 2:
+    case 4:
+    case 8:
+        break;
+    default:
+        CORE_ASSERT_FAIL_P( ( "RuntimeTypeBuffer::downsample(%d): unsupported factor, must be 1, 2, 4 or 8", factor ) );
+        return;
+    }
+
+    size_t newCols = cols / factor;
+    size_t newRows = rows / factor;
+    
+    if ( !newCols )
+        newCols = 1;
+
+    if ( !newRows )
+        newRows = 1;
+
+    if ( type == corecvs::BufferType::U8 )
+    {
+        uint8_t* newData = ( uint8_t* )malloc( sizeof( uint8_t ) * newCols * newRows );
+        switch ( factor )
+        {
+        case 2:
+            convert< uint8_t, uint, 2 >( newData, data, newCols, newRows, cols, rows );
+            break;
+        case 4:
+            convert< uint8_t, uint, 4 >( newData, data, newCols, newRows, cols, rows );
+            break;
+        case 8:
+            convert< uint8_t, uint, 8 >( newData, data, newCols, newRows, cols, rows );
+            break;
+        }
+
+        free( data );
+        data = newData;
+    }
+
+    if ( type == corecvs::BufferType::F32 )
+    {
+        float* newData = ( float* )malloc( sizeof( float ) * newCols * newRows );
+        switch ( factor )
+        {
+        case 2:
+            convert< float, float, 2 >( newData, ( float* )data, newCols, newRows, cols, rows );
+            break;
+        case 4:
+            convert< float, float, 4 >( newData, ( float* )data, newCols, newRows, cols, rows );
+            break;
+        case 8:
+            convert< float, float, 8 >( newData, ( float* )data, newCols, newRows, cols, rows );
+            break;
+        }
+
+        free( data );
+        data = ( uint8_t* )newData;
+    }
+
+    cols = newCols;
+    rows = newRows;  
+}
+
 std::istream& operator>>(std::istream &is, corecvs::RuntimeTypeBuffer &b)
 {
     size_t R, C;
