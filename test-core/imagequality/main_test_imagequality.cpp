@@ -29,7 +29,7 @@ using namespace std;
 
 
 
-TEST(imagequality, testimagequality)
+TEST(imagequality, DISABLED_testimagequality)
 {
     cout << "Starting test <imagequality>" << endl;
     std::string filename = "data/calib-object.bmp";
