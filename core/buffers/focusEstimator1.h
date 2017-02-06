@@ -16,19 +16,6 @@ namespace corecvs {
 class FocusEstimator1
 {
 public:
-    /*
-    struct Result {
-        int score;       ///< result for the chosen rectangular ROI
-        int fullScore;   ///< result for the full image
-
-        bool boardProcessed = false;
-        double bnoise;    ///< amount of noise on black parts of the board (per pixel)
-        double wnoise;    ///< amount of noise on white parts of the board (per pixel)
-
-        double sharpness;  ///< sharpness per pixel
-    };*/
-
-public:
     FocusEstimator1();
 
 

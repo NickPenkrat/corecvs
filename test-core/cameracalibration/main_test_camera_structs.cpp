@@ -216,7 +216,7 @@ TEST(CalibrationStructsTest, testFrustrumMatrix)
     model.intrinsics = PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(60));
     model.setLocation(Affine3DQ());
 
-    Matrix44 mF = model.getFrustrumMatrix(1.0, 1000.0);
+    Matrix44 mF = model.intrinsics.getFrustumMatrix(1.0, 1000.0);
     cout << "Frustrum Matrix" << endl;
     cout << mF;
 

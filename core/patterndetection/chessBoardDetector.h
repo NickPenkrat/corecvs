@@ -82,6 +82,7 @@ private:
 
 public:
     bool    detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
+    BoardCornersType getBestBoard();
 
 private:
     /* Some statistics */

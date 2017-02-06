@@ -267,7 +267,7 @@ void CloudViewDialog::childWheelEvent ( QWheelEvent * event )
 
 void CloudViewDialog::resetCameraPos()
 {
-    if (mUi.cameraTypeBox->currentIndex() >= ORTHO_TOP && mUi.cameraTypeBox->currentIndex() <= ORTHO_FRONT)
+    if (isOrtho((CameraType)mUi.cameraTypeBox->currentIndex()))
     {
         mUi.frustumFarBox->setValue(99999999);
     } else {
@@ -478,9 +478,29 @@ void CloudViewDialog::setCamera(const CameraModel &model)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    OpenGLTools::glMultMatrixMatrix44(model.getFrustrumMatrix());
+    OpenGLTools::glMultMatrixMatrix44(model.intrinsics.getFrustumMatrix());
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    mCamera = model.getPositionMatrix();
+
+    mUi.widget->updateGL();
+}
+
+void CloudViewDialog::lookAt(const Vector3dd &point)
+{
+    Vector3dd camCoords(0.0, 0.0, 2.0);
+    Vector3dd world =  mCamera.inverted() * camCoords;
+    cout << " CloudViewDialog::lookAt (" << point << ")" << endl;
+    cout << "   camera coord:" << camCoords << endl;
+    cout << "    world coord:" << world << endl;
+    cout << "   oldCamera   :"  << endl;
+    cout << mCamera << endl;
+    mCamera = mCamera * Matrix44::Shift(- point + world);
+
+    cout << "   newCamera   :" << endl;
+    cout << mCamera << endl;
+
+    cout << "  selfcheck    :" << mCamera * point << endl;
 
 
     mUi.widget->updateGL();

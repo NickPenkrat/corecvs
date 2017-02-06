@@ -141,6 +141,8 @@ public:
 
 
     void setCamera(const CameraModel &model);
+    void lookAt   (const Vector3dd   &point);
+
 
     enum SubScene {
         SUBSCENE_PLANE,
@@ -157,8 +159,19 @@ public:
         RIGHT_CAMERA,
         LEFT_CAMERA,
         FACE_CAMERA,
-        USER_CAMERA
+        USER_CAMERA,
+        USER_ORTHO_CAMERA
     };
+
+
+    bool isOrtho(CameraType type)
+    {
+        if (type == ORTHO_TOP || type == ORTHO_LEFT || type == ORTHO_FRONT || type == USER_ORTHO_CAMERA)
+        {
+            return true;
+        }
+        return false;
+    }
 
 
     const QGLContext *getAreaContext();
@@ -167,7 +180,6 @@ public:
 public:
     TreeSceneController* addSubObject (QString name, QSharedPointer<Scene3D> scene, bool visible = true);
     void addMesh(QString name, Mesh3D *mesh);
-
 private:
     GLuint                      mCameraTexture[Frames::MAX_INPUTS_NUMBER];
 

@@ -86,6 +86,41 @@ int FocusEstimationParameters::staticInit()
     field2->widgetHint=BaseField::CHECK_BOX;
     fields().push_back(field2);
     /*  */ 
+    BoolField* field3 = new BoolField
+        (
+          FocusEstimationParameters::COMPUTE_NOISE_ID,
+          offsetof(FocusEstimationParameters, mComputeNoise),
+          false,
+          "Compute Noise",
+          "Compute Noise",
+          "Compute Noise"
+        );
+    field3->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
+        (
+          FocusEstimationParameters::COMPUTE_OLD_STATS_ID,
+          offsetof(FocusEstimationParameters, mComputeOldStats),
+          false,
+          "Compute Old Stats",
+          "Compute Old Stats",
+          "Compute Old Stats"
+        );
+    field4->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field4);
+    /*  */ 
+    IntField* field5 = new IntField
+        (
+          FocusEstimationParameters::EDGE_THRESHOLD_ID,
+          offsetof(FocusEstimationParameters, mEdgeThreshold),
+          0,
+          "edge Threshold",
+          "edge Threshold",
+          "edge Threshold"
+        );
+    fields().push_back(field5);
+    /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Focus Estimation Parameters")]= &reflection;
    return 0;

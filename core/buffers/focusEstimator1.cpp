@@ -47,7 +47,8 @@ void FocusEstimator1::operator ()()
     {
         SYNC_PRINT(("FocusEstimator1::operator ()(): There is no input\n"));
         return;
-    }
+    }    
+    Statistics::enterContext(mStats, "FocusEstimator1");
 
     if (mParams.produceDebug())
     {
@@ -60,34 +61,31 @@ void FocusEstimator1::operator ()()
     EllipticalApproximation1d approxCenterW;
     EllipticalApproximation1d approxCenterB;
 
+    EllipticalApproximation1d approxSharpness;
 
     Statistics::startInterval(mStats);
 
-    FocusEstimator::Result res = FocusEstimator::calc(mCurrent, mROI.left(), mROI.top(), mROI.right(), mROI.bottom());
-    mResult.setScore   (res.fullScore);
-    mResult.setScoreROI(res.score);
+    if ( mParams.computeOldStats())
+    {
+        FocusEstimator::Result res = FocusEstimator::calc(mCurrent, mROI.left(), mROI.top(), mROI.right(), mROI.bottom());
+        mResult.setScore   (res.fullScore);
+        mResult.setScoreROI(res.score);
+    }
 
     Statistics::resetInterval(mStats, "Old Style Score");
 
 
     if (!mBoards.empty())
     {
+        mResult.setBoardProcessed(true);
+        double pixelSize = numeric_limits<double>::max();
+        //double pixelSizeW = numeric_limits<double>::max();
+
         for (size_t b = 0; b < mBoards.size(); b++)
         {
             BoardCornersType &board = mBoards[b];
             cout << "Board "  << board.size() << " " << board.front().size() << endl;
 
-            if (mDebug != NULL)
-            {
-                for (size_t i = 0; i < board.size(); i++ )
-                {
-                    for (size_t j = 0; j < board[i].size(); j++ )
-                    {
-                        //input->draw(board[i][j], RGBColor::Blue());
-                        painter.drawCircle(board[i][j], 10.0, RGBColor::Blue());
-                    }
-                }
-            }
 
             for (size_t i = 0; i < board.size() - 1; i++ )
             {
@@ -100,12 +98,19 @@ void FocusEstimator1::operator ()()
                     Vector2dd v1 = board[i + 1][j    ] - board[i][j];
                     Vector2dd v2 = board[i    ][j + 1] - board[i][j];
 
-                    Polygon junction;
                     double jc = mParams.junctionCoef();
-                    junction.push_back(p - v1 * jc - v2 * jc);
-                    junction.push_back(p + v1 * jc - v2 * jc);
-                    junction.push_back(p + v1 * jc + v2 * jc);
-                    junction.push_back(p - v1 * jc + v2 * jc);
+
+                    Polygon junction;
+                    Vector2dd v1j = v1 * jc;
+                    Vector2dd v2j = v2 * jc;
+
+                    junction.push_back(p - v1j - v2j);
+                    junction.push_back(p + v1j - v2j);
+                    junction.push_back(p + v1j + v2j);
+                    junction.push_back(p - v1j + v2j);
+
+                    double pixelCurSize = std::min(v1j.l2Metric(), v2j.l2Metric());
+                    pixelSize = std::min(pixelCurSize, pixelSize);
 
                     Polygon center;
                     double scenter  = (1.0 - mParams.centerCoef()) / 2;
@@ -146,16 +151,72 @@ void FocusEstimator1::operator ()()
             }
 
 
-        }
-    }
+            /*if (mDebug != NULL)
+            {
+                for (size_t i = 0; i < board.size(); i++ )
+                {
+                    for (size_t j = 0; j < board[i].size(); j++ )
+                    {
+                        //input->draw(board[i][j], RGBColor::Blue());
+                        painter.drawCircle(board[i][j], pixelSize, RGBColor::Blue());
+                    }
+                }
+            }*/
+
+            if (mDebug != NULL)
+            {
+                cout << "pixelSize is :" << pixelSize << endl;
+            }
+
+            for (size_t i = 0; i < board.size(); i++ )
+            {
+                for (size_t j = 0; j < board[i].size(); j++ )
+                {
+                    Circle2d workArea(board[i][j].x(), board[i][j].y(), pixelSize);
+
+                    if (mDebug != NULL)
+                    {
+                        cout << "Processing cross:" << i << " " << j << " " << workArea << endl;
+                        // painter.drawCircle(board[i][j], pixelSize, RGBColor::Blue());
+                    }
+
+                    CircleSpanIterator inner(workArea);
+                    while (inner.hasValue())
+                    {
+                       // cout << "!\n";
+                        HLineSpanInt span = inner.getSpan();
+                        if (span.y() < 1 || span.y() + 1 >= mCurrent->h)
+                            continue;
+
+                        for (int s1 = std::max(span.x1, 1); s1 < std::min(span.x2, mCurrent->w - 1); s1++ )
+                        {
+                            if (mDebug != NULL) {
+                                mDebug->element(span.y(), s1) = RGBColor::Cyan();
+                            }
+                            //cout << "#";
+
+                            double sobelH = mCurrent->element(span.y()    , s1 - 1).yd() - mCurrent->element(span.y()    , s1 + 1).yd();
+                            double sobelV = mCurrent->element(span.y() - 1, s1    ).yd() - mCurrent->element(span.y() + 1, s1    ).yd();
+
+                            double edgeScore = sobelH * sobelH + sobelV * sobelV;
+                            if (edgeScore > mParams.edgeThreshold()) {
+                                approxSharpness.addPoint(edgeScore);
+                            }
+                        }
+                        inner.step();
+                    }
+                }
+            }
+
+        } // Cycle over boards
+    } // If Boards
 
     mResult.setBnoise(approxCenterB.getRadius());
     mResult.setWnoise(approxCenterW.getRadius());
+    mResult.setSharpness(approxSharpness.getMean());
 
-
-    Statistics::endInterval(mStats, "Computing Stats");
-
-
+    Statistics::endInterval(mStats, "Overall computation");
+    Statistics::leaveContext(mStats);
 
 }
 

@@ -42,6 +42,9 @@ public:
         JUNCTIONCOEF_ID,
         CENTER_COEF_ID,
         PRODUCE_DEBUG_ID,
+        COMPUTE_NOISE_ID,
+        COMPUTE_OLD_STATS_ID,
+        EDGE_THRESHOLD_ID,
         FOCUS_ESTIMATION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -64,6 +67,24 @@ public:
      * Produce Debug 
      */
     bool mProduceDebug;
+
+    /** 
+     * \brief Compute Noise 
+     * Compute Noise 
+     */
+    bool mComputeNoise;
+
+    /** 
+     * \brief Compute Old Stats 
+     * Compute Old Stats 
+     */
+    bool mComputeOldStats;
+
+    /** 
+     * \brief edge Threshold 
+     * edge Threshold 
+     */
+    int mEdgeThreshold;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -88,6 +109,21 @@ public:
         return mProduceDebug;
     }
 
+    bool computeNoise() const
+    {
+        return mComputeNoise;
+    }
+
+    bool computeOldStats() const
+    {
+        return mComputeOldStats;
+    }
+
+    int edgeThreshold() const
+    {
+        return mEdgeThreshold;
+    }
+
     /* Section with setters */
     void setJunctionCoef(double junctionCoef)
     {
@@ -104,6 +140,21 @@ public:
         mProduceDebug = produceDebug;
     }
 
+    void setComputeNoise(bool computeNoise)
+    {
+        mComputeNoise = computeNoise;
+    }
+
+    void setComputeOldStats(bool computeOldStats)
+    {
+        mComputeOldStats = computeOldStats;
+    }
+
+    void setEdgeThreshold(int edgeThreshold)
+    {
+        mEdgeThreshold = edgeThreshold;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -112,6 +163,9 @@ template<class VisitorType>
         visitor.visit(mJunctionCoef,              static_cast<const corecvs::DoubleField *>(fields()[JUNCTIONCOEF_ID]));
         visitor.visit(mCenterCoef,                static_cast<const corecvs::DoubleField *>(fields()[CENTER_COEF_ID]));
         visitor.visit(mProduceDebug,              static_cast<const corecvs::BoolField *>(fields()[PRODUCE_DEBUG_ID]));
+        visitor.visit(mComputeNoise,              static_cast<const corecvs::BoolField *>(fields()[COMPUTE_NOISE_ID]));
+        visitor.visit(mComputeOldStats,           static_cast<const corecvs::BoolField *>(fields()[COMPUTE_OLD_STATS_ID]));
+        visitor.visit(mEdgeThreshold,             static_cast<const corecvs::IntField *>(fields()[EDGE_THRESHOLD_ID]));
     }
 
     FocusEstimationParameters()
@@ -124,11 +178,17 @@ template<class VisitorType>
           double junctionCoef
         , double centerCoef
         , bool produceDebug
+        , bool computeNoise
+        , bool computeOldStats
+        , int edgeThreshold
     )
     {
         mJunctionCoef = junctionCoef;
         mCenterCoef = centerCoef;
         mProduceDebug = produceDebug;
+        mComputeNoise = computeNoise;
+        mComputeOldStats = computeOldStats;
+        mEdgeThreshold = edgeThreshold;
     }
 
     friend std::ostream& operator << (std::ostream &out, FocusEstimationParameters &toSave)

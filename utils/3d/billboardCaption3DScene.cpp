@@ -43,6 +43,10 @@ void BillboardCaption3DScene::drawMyself(CloudViewDialog *dialog)
         QString text = QString::fromStdString(caption.second);
         Vector3dd labelPos = glMatrix * caption.first;
 
+        if ((!dialog->isOrtho((CloudViewDialog::CameraType)dialog->mUi.cameraTypeBox->currentIndex())) && (labelPos.z() < 0)) {
+            continue;
+        }
+
         glPushMatrix();
             glTranslated(labelPos[0] * width / 2.0, labelPos[1] * height / 2.0, 0.0);
             glScaled(size, -size, size);
