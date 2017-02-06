@@ -3,6 +3,7 @@
 
 #include "matrix44.h"
 #include "projectionModels.h"
+#include "mathUtils.h"
 
 namespace corecvs {
 
