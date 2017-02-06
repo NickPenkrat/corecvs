@@ -3,6 +3,7 @@
 
 #include "matrix44.h"
 #include "projectionModels.h"
+#include "mathUtils.h"
 
 namespace corecvs {
 
@@ -80,7 +81,7 @@ struct PinholeCameraIntrinsics : public CameraProjection
     }
     double angleError(const Vector3dd &p, const Vector2dd &pp)
     {
-        return reverse(pp).normalised().angleTo(p.normalised()) * 180.0 / M_PI;
+        return radToDeg(reverse(pp).normalised().angleTo(p.normalised()));
     }
     Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp)
     {
