@@ -89,9 +89,9 @@ void FocusEstimator1::operator ()()
             cout << "Board "  << boardH << " " << boardW << endl;
 
 
-            for (size_t i = 0; i < board.size() - 1; i++ )
+            for (int i = 0; i < (int)board.size() - 1; i++ )
             {
-                for (size_t j = 0; j < board[i].size() - 1; j++ )
+                for (int j = 0; j < (int)board[i].size() - 1; j++ )
                 {
                     bool isWhite = !((i + j) % 2);
 
