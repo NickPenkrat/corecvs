@@ -146,7 +146,9 @@ RGB24Buffer* QTRGB24Loader::load(string name)
     QString qtName = QString::fromStdString(name);
     QImage image(qtName);
 
-    if (image.isNull()) {
+    if (image.isNull())
+    {
+        SYNC_PRINT(("QTRGB24Loader::load(%s): failed!\n", name.c_str()));
         return NULL;
     }
 
