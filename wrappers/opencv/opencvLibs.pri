@@ -218,6 +218,11 @@ with_opencv {
                         -llibopencv_features2d249 -llibopencv_flann249   -llibopencv_imgproc249  -llibopencv_objdetect249 \
                         -llibopencv_nonfree249    -llibopencv_legacy249 #-llibopencv_ml249
                 DEFINES += WITH_OPENCV
+            } else:equals(QMAKE_TARGET.arch, "x86") {
+                !build_pass:message(Using <$$OPENCV_PATH/build/x86/vc12/bin>)
+                INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
+                LIBS += -L$$OPENCV_PATH/build/x86/vc12/lib/ $$OPENCV_2411_LIBS
+                DEFINES += WITH_OPENCV
             } else:exists($$OPENCV_PATH/build/x64/vc12/bin/opencv_core2411.dll): win32-msvc2013 {   # OpenCV tag=2.4.11 built by vc12 without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build/x64/vc12/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
