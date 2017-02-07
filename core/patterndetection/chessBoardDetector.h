@@ -80,8 +80,11 @@ private:
     ChessBoardAssembler                     assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
+public:
     bool    detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
+    BoardCornersType getBestBoard();
 
+private:
     /* Some statistics */
     Statistics  *stats = nullptr;
 

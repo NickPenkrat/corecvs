@@ -112,6 +112,11 @@ bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<Bo
     return boards.size() != 0;
 }
 
+BoardCornersType ChessboardDetector::getBestBoard()
+{
+    return aligner->bestBoard;
+}
+
 bool ChessboardDetector::detectPattern(DpImage &buffer)
 {
     BoardAlignerParams activeAlignerParams = aligner->getAlignerParams();

@@ -23,7 +23,7 @@ using namespace corecvs;
 
 class LevenbergTest : FunctionArgs {
 public:
-    LevenbergTest() : FunctionArgs(2,10) {};
+    LevenbergTest() : FunctionArgs(2,10) {}
 
     virtual void operator()(const double in[], double out[])
     {

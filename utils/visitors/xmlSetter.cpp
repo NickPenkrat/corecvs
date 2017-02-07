@@ -12,7 +12,7 @@ XmlSetter::XmlSetter(const QString &fileName) :
     mFileName = fileName;
     /*QFile file(mFileName);
     if (!file.open(QFile::ReadWrite)) {
-        qDebug() << "Can't open file <" << fileName << ">" << endl;
+        qDebug() << "XmlSetter::XmlSetter(): Can't open file <" << fileName << ">" << endl;
         return;
     }
 
@@ -27,7 +27,7 @@ XmlSetter::~XmlSetter()
 
     QFile file(mFileName);
     if (!file.open(QFile::WriteOnly)) {
-        qDebug() << "Can't open file <" << mFileName << ">" << endl;
+        qDebug() << "XmlSetter::XmlSetter(): Can't open file <" << mFileName << ">" << endl;
         return;
     }
 

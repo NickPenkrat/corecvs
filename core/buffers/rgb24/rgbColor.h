@@ -493,6 +493,16 @@ public:
         return RGBColor(r, g, b);
     }
 
+    /**
+     *    This function is slow. Use for debugging and fancy effects only.
+     **/
+    void blendWith(const RGBColor &second, double alpha = 0.5)
+    {
+        r() = (uint8_t)lerp<double>(r(), second.r(), alpha);
+        g() = (uint8_t)lerp<double>(g(), second.g(), alpha);
+        b() = (uint8_t)lerp<double>(b(), second.b(), alpha);
+    }
+
     static RGBColor diff(const RGBColor &first, const RGBColor &second)
     {
         int16_t r = (int16_t)first.r() - (int16_t)second.r();

@@ -29,6 +29,11 @@ Matrix44 Similarity::toMatrix() const
     return Matrix44::Shift(shiftR) * Matrix44::Scale(scaleR) * rotation.toMatrix() * Matrix44::Scale(1.0 / scaleL) * Matrix44::Shift(-shiftL);
 }
 
+Vector3dd Similarity::transform(const Vector3dd &point) const
+{
+    return (rotation * ((point - shiftL) / scaleL)) * scaleR + shiftR;
+}
+
 double Similarity::getScale()
 {
     return scaleL / scaleR;
@@ -83,6 +88,20 @@ Similarity Similarity::getInterpolated(double t)
     toReturn.shiftR = lerp(Vector3dd(0.0), shiftR, t);
 
     toReturn.rotation = Quaternion::slerp(Quaternion::RotationIdentity(), rotation, t);
+
+    return toReturn;
+}
+
+Similarity Similarity::inverted()
+{
+    Similarity toReturn;
+    toReturn.shiftL = shiftR;
+    toReturn.shiftR = shiftL;
+    toReturn.scaleL = scaleR;
+    toReturn.scaleR = scaleL;
+
+    toReturn.rotation = rotation.conjugated();
+
 
     return toReturn;
 }

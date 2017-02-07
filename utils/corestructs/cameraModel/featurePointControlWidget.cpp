@@ -82,7 +82,7 @@ void FeaturePointControlWidget::setParametersVirtual(void *input)
 
 void FeaturePointControlWidget::setEnabled(bool flag)
 {
-    qDebug("FeaturePointControlWidget::setEnabled(flag = %s)", flag ? "true" : "false");
+    //qDebug("FeaturePointControlWidget::setEnabled(flag = %s)", flag ? "true" : "false");
 
     ui->nameLineEdit->setEnabled(flag);
 

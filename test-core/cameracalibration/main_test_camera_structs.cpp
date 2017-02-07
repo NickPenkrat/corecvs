@@ -207,7 +207,24 @@ TEST(CalibrationStructsTest, testStructConversion)
 
     ASSERT_TRUE(q.notTooFar(q1, 1e-6));
     ASSERT_TRUE(q.notTooFar(qR, 1e-6));
+}
 
 
+TEST(CalibrationStructsTest, testFrustrumMatrix)
+{
+    CameraModel model;
+    model.intrinsics = PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(60));
+    model.setLocation(Affine3DQ());
 
+    Matrix44 mF = model.intrinsics.getFrustumMatrix(1.0, 1000.0);
+    cout << "Frustrum Matrix" << endl;
+    cout << mF;
+
+    {
+        Vector3dd x1(0, 0, 10);
+        cout << x1 << " -> " << mF * x1 << endl;
+    }
+
+    cout << "Frustrum Matrix old" << endl;
+    cout << Matrix44::Frustum(degToRad(60), 1.0, 1.0, 1000.0) << endl;
 }

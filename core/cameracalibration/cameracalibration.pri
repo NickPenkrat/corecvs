@@ -4,7 +4,8 @@ HEADERS += \
         cameracalibration/calibrationLocation.h      \
         cameracalibration/projectionModels.h         \
         cameracalibration/cameraConstraints.h \
-    $$PWD/calibrationDrawHelpers.h
+    $$PWD/calibrationDrawHelpers.h \
+    $$PWD/pinholeCameraIntrinsics.h
 
 
 SOURCES += \
@@ -13,5 +14,6 @@ SOURCES += \
         cameracalibration/flatPatternCalibrator.cpp    \
         cameracalibration/projectionModels.cpp         \
         cameracalibration/cameraConstraints.cpp \
-    $$PWD/calibrationDrawHelpers.cpp
+    $$PWD/calibrationDrawHelpers.cpp \
+    $$PWD/pinholeCameraIntrinsics.cpp
 

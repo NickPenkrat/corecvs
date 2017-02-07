@@ -9,7 +9,7 @@ XmlGetter::XmlGetter(const QString &fileName)
     mFileName = fileName;
     QFile file(mFileName);
     if (!file.open(QFile::ReadWrite)) {
-        qDebug() << "Can't open file <" << mFileName << ">";
+        qDebug() << "XmlGetter::XmlGetter(): Can't open file <" << mFileName << ">";
         return;
     }
     QDomDocument doc("document");

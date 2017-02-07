@@ -55,7 +55,7 @@ public:
     Mesh3DDecorated *mMesh = NULL;
 
     SceneShaded()
-    {
+    {       
         for (int target = 0; target < ShaderTarget::LAST; target++)
         {
             mProgram[target] = NULL;
@@ -71,10 +71,10 @@ public:
 
     virtual void setParameters(void * params)  override;
 
-    virtual void prepareMesh(CloudViewDialog * /*dialog*/) override;
+    virtual void prepareMesh(CloudViewDialog *dialog) override;
     virtual void drawMyself(CloudViewDialog *dialog)  override;
 
-    virtual ~SceneShaded() {}
+    virtual ~SceneShaded();
     void addTexture(GLuint texId, RGB24Buffer *input);
 };
 

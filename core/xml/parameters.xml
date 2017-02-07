@@ -66,6 +66,32 @@
       <item name="ML_AFTER_LSE" id = "4" />
   </enum>
 
+  <class name="Focus Estimation Parameters">
+    <field type="double" name="JunctionCoef"      defaultValue="0.1" min="0.0" max="1.0" />
+    <field type="double" name="Center Coef"       defaultValue="0.6" min="0.0" max="1.0" />
+    <field type="bool"   name="Produce Debug"     default="false"/>
+    <field type="bool"   name="Compute Noise"     default="true"/>
+    <field type="bool"   name="Compute Old Stats" default="true"/>
+
+    <field type="int"    name="edge Threshold"    default="10"/>
+
+
+  </class>
+
+  <class name="Focus Estimation Result">
+        <field type="int" name="score"     defaultValue="0" comment="result for the whole image" />
+        <field type="int" name="scoreROI"  defaultValue="0" comment="result for the chosen rectangular ROI" />
+
+        <field type="int" name="fullScore" defaultValue="0" comment="result for the full image" />
+
+        <field type="bool"   name="boardProcessed" defaultValue="false" />
+        <field type="double" name="bnoise"    defaultValue="0" comment="amount of noise on black parts of the board (per pixel)" />
+        <field type="double" name="wnoise"    defaultValue="0" comment="amount of noise on white parts of the board (per pixel)" />
+
+        <field type="double" name="sharpness" defaultValue="0" comment="sharpness per pixel" />
+  </class>
+
+
 <!--
   <class name="Dummy">
      <field type="Homography Algorithm" name="Method"    defaultValue="0"/>

@@ -30,7 +30,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
     for (size_t i = 0; i < reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
-        qDebug() << "Processing field:" <<  field->getSimpleName();
+        // qDebug() << "Processing field:" <<  field->getSimpleName();
 
         QLabel *label = new QLabel(this);
         label->setText(QString(field->getSimpleName()));
@@ -246,7 +246,7 @@ bool ReflectionWidget::getParameters(void *param) const
     for (int i = 0; i < (int)reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
-        qDebug() << "Processing field:" <<  field->getSimpleName();
+        // qDebug() << "Processing field:" <<  field->getSimpleName();
 
         switch (field->type) {
             case BaseField::TYPE_INT:
@@ -335,7 +335,7 @@ bool ReflectionWidget::setParameters(void *param) const
     for (size_t i = 0; i < reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
-        qDebug() << "Processing field:" <<  field->getSimpleName();
+        // qDebug() << "Processing field:" <<  field->getSimpleName();
 
         switch (field->type) {
             case BaseField::TYPE_INT:
