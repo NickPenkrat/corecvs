@@ -216,7 +216,7 @@ void StdStreamLogDrain::drain(Log::Message &message)
 /////////////////////////////////////////////////////////////////////////////
 
 FileLogDrain::FileLogDrain(const std::string &path, bool bAppend, bool fullInfo)
-    : mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
+    : mFile((mPath = path).c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
 {
     mFullInfo = fullInfo;
 }
@@ -225,6 +225,8 @@ FileLogDrain::~FileLogDrain()
 {
     mFile.flush();
     mFile.close();
+
+    L_INFO_P("log <%s> saved", mPath.c_str());
 }
 
 void FileLogDrain::drain(Log::Message &message)
