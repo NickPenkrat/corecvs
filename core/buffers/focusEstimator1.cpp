@@ -84,12 +84,14 @@ void FocusEstimator1::operator ()()
         for (size_t b = 0; b < mBoards.size(); b++)
         {
             BoardCornersType &board = mBoards[b];
-            cout << "Board "  << board.size() << " " << board.front().size() << endl;
+            int boardH = board.size();
+            int boardW = (boardH != 0) ? board.front().size() : 0;
+            cout << "Board "  << boardH << " " << boardW << endl;
 
 
-            for (size_t i = 0; i < board.size() - 1; i++ )
+            for (int i = 0; i < (int)board.size() - 1; i++ )
             {
-                for (size_t j = 0; j < board[i].size() - 1; j++ )
+                for (int j = 0; j < (int)board[i].size() - 1; j++ )
                 {
                     bool isWhite = !((i + j) % 2);
 
