@@ -7,22 +7,18 @@ isEmpty(GTEST_PATH) {
     }
 } else {
     INCLUDEPATH += $$GTEST_PATH/include
+
     equals(QMAKE_TARGET.arch, "x86") {
-		CONFIG(debug, debug|release) {
-		    LIBS += -L$$GTEST_PATH/build_x86/Debug   -lgtest
-		   #LIBS += -L$$GTEST_PATH/build_x86/Release -lgtest
-		}
-		CONFIG(release, debug|release) {
-		    LIBS += -L$$GTEST_PATH/build_x86/Release -lgtest
-		}
+		GTEST_PATH_BUILD = $$GTEST_PATH/build_x86
     } else {
-		CONFIG(debug, debug|release) {
-		    LIBS += -L$$GTEST_PATH/build/Debug   -lgtest
-		   #LIBS += -L$$GTEST_PATH/build/Release -lgtest
-		}
-		CONFIG(release, debug|release) {
-		    LIBS += -L$$GTEST_PATH/build/Release -lgtest
-		}
+		GTEST_PATH_BUILD = $$GTEST_PATH/build
+    }
+    
+    CONFIG(debug, debug|release) {
+        LIBS += -L$$GTEST_PATH_BUILD/Debug   -lgtest
+    }
+    CONFIG(release, debug|release) {
+        LIBS += -L$$GTEST_PATH_BUILD/Release -lgtest
     }
 
     !build_pass:message(Using <$$GTEST_PATH/build/Release|Debug>)
