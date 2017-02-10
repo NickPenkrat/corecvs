@@ -148,7 +148,7 @@ public:
     **/
    int getSize()
    {
-       return P.size();
+       return (int)P.size();
    }
 
    /**

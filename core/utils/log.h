@@ -325,8 +325,8 @@ public:
 
 class FileLogDrain : public LogDrain
 {
-    std::ofstream  mFile;
     std::string    mPath;
+    std::ofstream  mFile;
 
 public:
     FileLogDrain(const std::string& path, bool bAppend = false, bool fullInfo = true);
