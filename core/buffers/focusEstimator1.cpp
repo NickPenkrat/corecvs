@@ -1,17 +1,13 @@
 #include "focusEstimator1.h"
 #include "focusEstimator.h"
 #include "ellipticalApproximation.h"
-
-
 #include "abstractPainter.h"
 #include "polygonPointIterator.h"
 
 namespace corecvs {
 
 FocusEstimator1::FocusEstimator1()
-{
-
-}
+{}
 
 void FocusEstimator1::setInputImage(RGB24Buffer *buffer)
 {
@@ -84,17 +80,15 @@ void FocusEstimator1::operator ()()
         for (size_t b = 0; b < mBoards.size(); b++)
         {
             BoardCornersType &board = mBoards[b];
-            int boardH = board.size();
-            int boardW = (boardH != 0) ? board.front().size() : 0;
+            int boardH = (int)board.size();
+            int boardW = (boardH != 0) ? (int)board.front().size() : 0;
             cout << "Board "  << boardH << " " << boardW << endl;
 
-
-            for (int i = 0; i < (int)board.size() - 1; i++ )
+            for (int i = 0; i < (int)board.size() - 1; i++)
             {
-                for (int j = 0; j < (int)board[i].size() - 1; j++ )
+                for (int j = 0; j < (int)board[i].size() - 1; j++)
                 {
                     bool isWhite = !((i + j) % 2);
-
 
                     Vector2dd p = board[i][j];
                     Vector2dd v1 = board[i + 1][j    ] - board[i][j];
@@ -117,7 +111,6 @@ void FocusEstimator1::operator ()()
                     Polygon center;
                     double scenter  = (1.0 - mParams.centerCoef()) / 2;
                     double ecenter  = (1.0 - scenter);
-
 
                     center.push_back(p + v1 * scenter + v2 * scenter);
                     center.push_back(p + v1 * scenter + v2 * ecenter);
@@ -146,12 +139,8 @@ void FocusEstimator1::operator ()()
                              mDebug->element(runner).blendWith(RGBColor::Green());
                          }
                     }
-
-
-
                 }
             }
-
 
             /*if (mDebug != NULL)
             {
@@ -209,7 +198,6 @@ void FocusEstimator1::operator ()()
                     }
                 }
             }
-
         } // Cycle over boards
     } // If Boards
 
@@ -219,7 +207,6 @@ void FocusEstimator1::operator ()()
 
     Statistics::endInterval(mStats, "Overall computation");
     Statistics::leaveContext(mStats);
-
 }
 
 void FocusEstimator1::reset()
