@@ -222,20 +222,19 @@ G8Buffer *RuntimeTypeBuffer::toG8Buffer()
 {
     if (!isValid())
         return NULL;
-    G8Buffer *buffer = new G8Buffer(rows, cols);
+
+    G8Buffer *buffer = new G8Buffer((int)rows, (int)cols, false);
     if (type == BufferType::U8)
     {
         buffer->fillWithRaw(data);
     }
-
-    if (type == BufferType::F32)
+    else if (type == BufferType::F32)
     {
-
         for (size_t i = 0; i < rows; i++)
         {
             for (size_t j = 0; j < cols; j++)
             {
-                buffer->element(i,j) = at<float>(i,j);
+                buffer->element(i, j) = (uint8_t)(at<float>(i, j));
             }
         }
     }
@@ -246,26 +245,26 @@ G12Buffer *RuntimeTypeBuffer::toG12Buffer(double min, double max)
 {
     if (!isValid())
         return NULL;
-    G12Buffer *buffer = new G12Buffer(rows, cols);
+
+    G12Buffer *buffer = new G12Buffer((int)rows, (int)cols, false);
     if (type == BufferType::U8)
     {
         for (size_t i = 0; i < rows; i++)
         {
             for (size_t j = 0; j < cols; j++)
             {
-                buffer->element(i,j) = at<uint8_t>(i,j) << 4;
+                buffer->element(i, j) = at<uint8_t>(i, j) << 4;
             }
         }
     }
-
-    if (type == BufferType::F32)
+    else if (type == BufferType::F32)
     {
         for (size_t i = 0; i < rows; i++)
         {
             for (size_t j = 0; j < cols; j++)
             {
-                double value = lerpLimit(0, G12Buffer::BUFFER_MAX_VALUE, at<float>(i,j), min, max);
-                buffer->element(i,j) = (uint16_t)value;
+                double value = lerpLimit(0, G12Buffer::BUFFER_MAX_VALUE, at<float>(i, j), min, max);
+                buffer->element(i, j) = (uint16_t)value;
             }
         }
     }
@@ -276,26 +275,26 @@ RGB24Buffer *RuntimeTypeBuffer::toRGB24Buffer(double min, double max)
 {
     if (!isValid())
         return NULL;
-    RGB24Buffer *buffer = new RGB24Buffer(rows, cols);
+
+    RGB24Buffer *buffer = new RGB24Buffer((int)rows, (int)cols, false);
     if (type == BufferType::U8)
     {
         for (size_t i = 0; i < rows; i++)
         {
             for (size_t j = 0; j < cols; j++)
             {
-                buffer->element(i,j) = RGBColor::gray(at<uint8_t>(i,j));
+                buffer->element(i, j) = RGBColor::gray(at<uint8_t>(i, j));
             }
         }
     }
-
-    if (type == BufferType::F32)
+    else if (type == BufferType::F32)
     {
         for (size_t i = 0; i < rows; i++)
         {
             for (size_t j = 0; j < cols; j++)
             {
-                double value = lerpLimit(0, 0xFF, at<float>(i,j), min, max);
-                buffer->element(i,j) = RGBColor::gray(value);
+                double value = lerpLimit(0, 0xFF, at<float>(i, j), min, max);
+                buffer->element(i, j) = RGBColor::gray(value);
             }
         }
     }
