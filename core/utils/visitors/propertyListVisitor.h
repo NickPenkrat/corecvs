@@ -66,7 +66,7 @@ template <typename inputType>
 template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType *fieldDescriptor);
 
-/* Generic array support. Could be made much more compact */
+    /* Generic array support. Could be made much more compact */
     template <typename innerType>
     void visit(std::vector<innerType> &field, const char* arrayName)
     {
@@ -78,12 +78,9 @@ template <typename inputType, typename reflectionType>
         }
         std::ostringstream ss;
         ss << arrayName << ".size";
-        int length = field.size();
+        int length = (int)field.size();
         visit<int>(length, 0, ss.str().c_str());
     }
-
-
-
 };
 
 template<class Type>
@@ -192,9 +189,7 @@ template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType *fieldDescriptor);
 
 
-
-
-/* Generic array support*/
+    /* Generic array support*/
     template <typename innerType>
     void visit(std::vector<innerType> &field, const char* arrayName)
     {
@@ -211,8 +206,6 @@ template <typename inputType, typename reflectionType>
             visit<innerType>(field[i], ss.str().c_str());
         }
     }
-
-
 };
 
 template<class Type>

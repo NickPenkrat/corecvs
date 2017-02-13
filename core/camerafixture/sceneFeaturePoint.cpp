@@ -135,7 +135,7 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
     bool ok = false;
     Vector3dd initial = mct.triangulate(&ok);
     if (!ok) {
-        SYNC_PRINT(("SceneFeaturePoint::triangulate(%s): initail guess unable to obtain\n", name.c_str()));
+        SYNC_PRINT(("SceneFeaturePoint::triangulate(%s): initial guess unable to obtain\n", name.c_str()));
     }
     Vector3dd res = mct.triangulateLM(initial, &ok);
     if (!ok) {
@@ -150,6 +150,7 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
         mct.accept<PropertyListWriterVisitor>(writer);
     }
 #endif
+
     accuracy = mct.getCovarianceInvEstimation(res);
     return res;
 }

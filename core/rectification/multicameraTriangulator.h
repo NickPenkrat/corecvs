@@ -135,7 +135,7 @@ public:
     };
 
 
-    /* Ability to serialise and restore state */
+    /* Ability to serialize and restore state */
     template<class VisitorType>
         void accept(VisitorType &visitor)
         {
@@ -143,18 +143,18 @@ public:
            visitor.visit(xy, "xy"      );
         }
 
-   /**
-    * Get numeber of measurements
-    **/
-   int getSize()
-   {
-       return P.size();
-   }
+    /**
+     * Get number of measurements
+     **/
+    int getSize()
+    {
+        return (int)P.size();
+    }
 
-   /**
-    * Returns a trinagulator with the state holding a subset of the current one
-    **/
-   MulticameraTriangulator subset(const std::vector<bool> &mask);
+    /**
+     * Returns a triangulator with the state holding a subset of the current one
+     **/
+    MulticameraTriangulator subset(const std::vector<bool> &mask);
 
 };
 

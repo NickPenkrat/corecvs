@@ -59,8 +59,7 @@ public:
     {
         for (int i = 0; i < H; i++)
             a(i,i) = d;
-    }    
-
+    }
 
     Matrix44(const FixedVector<double, 16> &data) : BaseClass(data)
     { }

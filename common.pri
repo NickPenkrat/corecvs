@@ -416,12 +416,12 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
             DEFINES += WITH_TBB
 
             win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {
-                win32-msvc2013 {
+                win32-msvc2010 {
+                    TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc10
+                } else:win32-msvc2013 {
                     TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc12
                 } else:win32-msvc* {
-                    TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc14
-                } else {
-                   TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc10
+                   TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc14
                 }
             } else:win32-msvc2010 {
                 TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc10

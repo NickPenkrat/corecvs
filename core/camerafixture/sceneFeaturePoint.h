@@ -203,7 +203,7 @@ public:
     Vector3dd getDrawPosition(bool preferReprojected = false, bool forceKnown = false);
 
     /**
-     * This method triandulates a point based on it's observations
+     * This method triangulates a point based on its observations
      *
      * \param use__ - should we use observations from observations or observations__
      * \param mask - to select observations to use
