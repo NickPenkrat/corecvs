@@ -1582,6 +1582,8 @@ TEST(SparseMatrix, Submatrix)
 
 }
 
+#if !defined(_WIN32) || defined(_WIN64)
+
 TEST(SparseMatrix, SchurComplement)
 {
     double foo[] =
@@ -1602,11 +1604,12 @@ TEST(SparseMatrix, SchurComplement)
     corecvs::Vector xx(5);
     M.linSolveSchurComplement(rhs, blocks, xx, false, false);
 
-
     std::cout << M << std::endl << std::endl << x << std::endl << xx << std::endl << rhs << std::endl << M * xx << std::endl;
 
     ASSERT_LE(!(x - xx), 1e-6);
 }
+
+#endif
 
 TEST(SparseMatrix, denseRows)
 {
