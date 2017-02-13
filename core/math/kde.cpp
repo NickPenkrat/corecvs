@@ -102,6 +102,11 @@ void corecvs::kde::addData(std::vector<double>& x){
     }
 }
 
+std::pair<std::map<int, double>, std::map<int, double>> corecvs::kde::getMinMax()
+{
+    return std::make_pair(minMap, maxMap);
+}
+
 std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel)
 {
     ndX = testPointCountX;
