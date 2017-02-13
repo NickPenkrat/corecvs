@@ -1729,7 +1729,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
          Ch = M.h - Ah;
     auto Dw = Bw;
 
-#ifndef WITH_BLA
+#ifndef WITH_BLAS
 #	error NIY
 #else
     /*
