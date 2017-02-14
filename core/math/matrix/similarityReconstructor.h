@@ -110,14 +110,14 @@ template<class VisitorType>
         return out;
     }
 
-    void print ()
+    void print()
     {
         std::cout << *this;
     }
 
     /**
      * This is an exact syntactic comparison
-     * Even if the action are acting the same way this would only return true if data structures are per-field equal
+     * Even if the action is acting the same way this would only return true if data structures are per-field equal
      **/
     bool operator == (const Similarity &other)
     {

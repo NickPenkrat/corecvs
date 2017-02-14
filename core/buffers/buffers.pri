@@ -62,7 +62,7 @@ HEADERS += \
     buffers/nonMaximalSuperssor.h \
     buffers/rgb24/bresenhamRasteriser.h \
     buffers/abstractBufferParams.h \
-    $$PWD/focusEstimator1.h
+    buffers/focusEstimator1.h \
 
 
 SOURCES += \
@@ -106,6 +106,6 @@ SOURCES += \
     buffers/rgb24/lineSpan.cpp \
     buffers/nonMaximalSuperssor.cpp \
     buffers/rgb24/bresenhamRasteriser.cpp \
-    $$PWD/focusEstimator1.cpp
+    buffers/focusEstimator1.cpp \
 
 

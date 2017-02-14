@@ -65,6 +65,9 @@ public:
 
     void drawCorners(RGB24Buffer &image, bool details = false);
 
+    bool detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
+    BoardCornersType getBestBoard();
+
 #if 0
     void dumpState();
 #endif
@@ -80,11 +83,6 @@ private:
     ChessBoardAssembler                     assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
 
-public:
-    bool    detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
-    BoardCornersType getBestBoard();
-
-private:
     /* Some statistics */
     Statistics  *stats = nullptr;
 

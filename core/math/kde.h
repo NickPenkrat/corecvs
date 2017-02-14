@@ -22,6 +22,9 @@ namespace corecvs {
 
         std::vector<double>
                 calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .3);
+
+        std::pair<std::map<int, double>, std::map<int, double>> getMinMax();
+
     private:
         std::vector<std::vector<double> >
                 dataMatrix;

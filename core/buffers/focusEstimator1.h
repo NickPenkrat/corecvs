@@ -12,13 +12,10 @@
 namespace corecvs {
 
 
-
 class FocusEstimator1
 {
 public:
     FocusEstimator1();
-
-
 
     /* Forms the state of the estimator. Pointer data should remain valid untill operator() is called and exited */
     void setInputImage(RGB24Buffer* buffer);
@@ -37,20 +34,19 @@ public:
     ~FocusEstimator1();
 
 private:
-    RGB24Buffer *mPrevious = NULL;  /* Owned */
-    RGB24Buffer *mDebug = NULL;     /* Owned */
+    RGB24Buffer                    *mPrevious = NULL;  /* Owned */
+    RGB24Buffer                    *mDebug = NULL;     /* Owned */
 
+    FocusEstimationResult           mResult;
 
-    FocusEstimationResult mResult;
+    Rectangled                      mROI = Rectangled::Empty();
+    RGB24Buffer                    *mCurrent = NULL;    /* Not owned */
+    Statistics                     *mStats    = NULL;
 
-    Rectangled mROI = Rectangled::Empty();
-    RGB24Buffer *mCurrent = NULL;    /* Not owned */
-    Statistics *mStats    = NULL;
-
-    std::vector<BoardCornersType> mBoards;
+    std::vector<BoardCornersType>   mBoards;
 
 public:
-    FocusEstimationParameters mParams;
+    FocusEstimationParameters       mParams;
 
 };
 

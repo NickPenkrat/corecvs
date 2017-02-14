@@ -176,7 +176,7 @@ public:
     int currentY;
     int currentDX;
 
-    /* FIX ASAP: storing the refernce to object*/
+    /* FIX ASAP: storing the reference to object*/
     CircleSpanIterator(const Circle2d &circle) : circle(circle)
     {
         radSQ     = circle.r * circle.r;

@@ -217,9 +217,11 @@ bool LensDistortionModelParameters::check(const double r)
     coeff[0] = 1.0;
     for (int i = 1; i <= n; ++i)
         coeff[i] = (i + 1) * mKoeff[i - 1];
+
     Polynomial p(coeff);
     std::vector<double> roots;
     PolynomialSolver::solve(p, roots);
+
     std::cout << "LDMP roots: ";
     for (auto& r : roots)
     {
@@ -228,6 +230,7 @@ bool LensDistortionModelParameters::check(const double r)
         if (r > 0.0 && r < rn)
             return false;
     }
+
     return (radialScaleNormalized(rn / 2.0) > 0) ^ (radialScaleNormalized(rn) < 0);
 }
 
@@ -257,20 +260,20 @@ bool LensDistortionModelParameters::check(const Vector2dd &tl, const Vector2dd &
 Matrix22 LensDistortionModelParameters::jacobian(double x, double y) const
 {
     auto dT1 = mMapForward ? Matrix22(1.0 / mScale,          0.0,
-                                                0.0, 1.0 / mScale) :
-                                Matrix22(1.0, 0.0,
-                                        0.0, 1.0);
+                                               0.0, 1.0 / mScale) :
+                             Matrix22(1.0, 0.0,
+                                      0.0, 1.0);
     auto dT2 = Matrix22(1.0 / mNormalizingFocal * mAspect,                     0.0,
-                                                        0.0, 1.0 / mNormalizingFocal);
+                                                      0.0, 1.0 / mNormalizingFocal);
     auto T1 = mMapForward ? Matrix33(1.0 / mScale,          0.0, -mShiftX / mScale,
-                                                0.0, 1.0 / mScale, -mShiftY / mScale,
-                                                0.0,          0.0,               1.0) :
+                                              0.0, 1.0 / mScale, -mShiftY / mScale,
+                                              0.0,          0.0,               1.0) :
                             Matrix33(1.0, 0.0, 0.0,
-                                        0.0, 1.0, 0.0,
-                                        0.0, 0.0, 1.0);
+                                     0.0, 1.0, 0.0,
+                                     0.0, 0.0, 1.0);
     auto T2 = Matrix33(1.0 / mNormalizingFocal * mAspect,                     0.0, -mPrincipalX / mNormalizingFocal * mAspect,
-                                                        0.0, 1.0 / mNormalizingFocal, -mPrincipalY / mNormalizingFocal,
-                                                        0.0,                     0.0,                              1.0);
+                                                     0.0, 1.0 / mNormalizingFocal, -mPrincipalY / mNormalizingFocal,
+                                                     0.0,                     0.0,                              1.0);
     Vector3dd xy(x, y, 1.0);
     auto dxdyv = T2 * (T1 * xy);
     auto dx = dxdyv[0], dy = dxdyv[1];
