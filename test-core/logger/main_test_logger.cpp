@@ -78,6 +78,9 @@ TEST(Logger, testFileLogging)
 {
     string pathLog = corecvs::HelperUtils::getFullPathWithoutExt("some_test_file.something") +  "_calibration.txt";
     Log::mLogDrains.add(new FileLogDrain(pathLog));
-
-    L_INFO_P("test:") << " test1" << " test2";
+    {
+        L_INFO_P("test:") << " test1" << " test2";
+        SYNC_PRINT(("Leaving test logging context\n"));
+    }
+    SYNC_PRINT(("Leaving logger\n"));
 }

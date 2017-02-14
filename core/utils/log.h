@@ -63,10 +63,16 @@ public:
     std::mutex mMutex;
 
     LogDrainsKeeper() {}
+
    ~LogDrainsKeeper()
     {
-        for (auto it = begin(); it != end(); ++it) {
-            delete_safe(*it);
+        SYNC_PRINT(("LogDrainsKeeper::~LogDrainsKeeper():called\n"));
+
+        while (!empty())
+        {
+            LogDrain *drain = back();
+            pop_back();
+            delete_safe(drain);
         }
     }
 
