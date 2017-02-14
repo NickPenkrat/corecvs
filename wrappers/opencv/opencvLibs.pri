@@ -278,35 +278,38 @@ with_opencv {
         DEFINES     += WITH_OPENCV
     } else {
         isEmpty(OPENCV_PATH) {
-            !build_pass:message(Compiling with system OpenCV)
+            !build_pass:message(Compiling with system OpenCV)    
+
+#====================== PROMISCUOUS SECTION =============
+            CONFIG += link_pkgconfig
+            PKGCONFIG += opencv
+            OPENCV_LIBS = $$system(pkg-config --libs opencv)
+            system(pkg-config --atleast-version=3.0 opencv) {
+                message(Detected OpenCV 3.x)
+                DEFINES += WITH_OPENCV_3x
+
+                OPENCV_CONTRIB_LIBS = $$find(OPENCV_LIBS, opencv_xfeatures2d)
+                OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_cuda)
+
+                !isEmpty(OPENCV_CONTRIB_LIBS) {
+                    message(Detected OpenCV contrib module)
+                }
+            } else {
+                OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_gpu)
+            }
+
         } else {
             !build_pass:message(Compiling with OpenCV from $$OPENCV_PATH)
             DEPENDPATH  += $$OPENCV_PATH/include
             INCLUDEPATH += $$OPENCV_PATH/include
             LIBS        += -L$$OPENCV_PATH/lib/
+#==================PRIVATE SECTION======SECTION===========
+            LIBS += -lopencv_calib3d    -lopencv_video   -lopencv_core    -lopencv_highgui   \
+                    -lopencv_features2d -lopencv_flann   -lopencv_imgproc -lopencv_objdetect \
+                    -lopencv_nonfree    -lopencv_legacy #-llibopencv_ml
+                    -lopencv_gpu
         }
 
-#==================OLD======SECTION===========
-#       LIBS += -lopencv_calib3d    -lopencv_video   -lopencv_core    -lopencv_highgui   \
-#               -lopencv_features2d -lopencv_flann   -lopencv_imgproc -lopencv_objdetect \
-#               -lopencv_nonfree    -lopencv_legacy #-llibopencv_ml
-#==================NEW======SECTION===========
-        CONFIG += link_pkgconfig
-        PKGCONFIG += opencv
-        OPENCV_LIBS = $$system(pkg-config --libs opencv)
-        system(pkg-config --atleast-version=3.0 opencv) {
-            message(Detected OpenCV 3.x)
-            DEFINES += WITH_OPENCV_3x
- 
-            OPENCV_CONTRIB_LIBS = $$find(OPENCV_LIBS, opencv_xfeatures2d)
-            OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_cuda)
-
-            !isEmpty(OPENCV_CONTRIB_LIBS) {
-                message(Detected OpenCV contrib module)
-            }
-        } else {
-            OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_gpu)
-        }
 
         !isEmpty(OPENCV_GPU_LIBS) {
             message(Detected OpenCV GPU module)

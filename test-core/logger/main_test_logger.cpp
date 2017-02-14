@@ -12,12 +12,16 @@
 //#define TRACE
 #endif
 
+#include <string>
 #include <iostream>
 #include "gtest/gtest.h"
 
 #include "global.h"
-
+#include "utils.h"
 #include "log.h"
+
+using namespace std;
+using namespace corecvs;
 
 TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
 {
@@ -28,7 +32,7 @@ TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
     Log logger;
     Log::MessageScoped(&logger, Log::LEVEL_ERROR, "A", 0, "F");
 
-    std::cout << Log::formatted("Here we go %d\n", 1, 2, "three");
+    cout << Log::formatted("Here we go %d\n", 1, 2, "three");
 }
 
 class Foo {
@@ -60,12 +64,20 @@ TEST(Logger, testObjectLog)
         Log::staticInit();
     }
 
-    std::string out(os.str());
-    std::string checkStr("test: foo1:foo data=123 foo2:foo data=456");
+    string out(os.str());
+    string checkStr("test: foo1:foo data=123 foo2:foo data=456");
 
     size_t pos = out.find(checkStr);
     //cout << "pos=" << pos << " len:" << checkStr.length() << " len:" << out.length() << endl;
 
     CORE_ASSERT_TRUE_P(pos + checkStr.length() + 1 == out.length(), ("incorrect log content"));
     CORE_ASSERT_TRUE_P(out[out.length() - 1]       == '\n'        , ("incorrect last char"));
+}
+
+TEST(Logger, testFileLogging)
+{
+    string pathLog = corecvs::HelperUtils::getFullPathWithoutExt("some_test_file.something") +  "_calibration.txt";
+    Log::mLogDrains.add(new FileLogDrain(pathLog));
+
+    L_INFO_P("test:") << " test1" << " test2";
 }
