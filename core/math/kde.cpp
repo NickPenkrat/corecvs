@@ -184,7 +184,7 @@ std::vector<double> kde::calcPDF(int testPointCountX
     y = minY;
     x = minX;
 
-    AbstractPainter<RGB24Buffer> painter(buffer);
+    auto painter = buffer ? new AbstractPainter<RGB24Buffer>(buffer) : nullptr;
 
     for (int i = 0; i < ndX; i++)
     {
@@ -201,12 +201,15 @@ std::vector<double> kde::calcPDF(int testPointCountX
             def[index] = norm;
             ss << norm << "\t";
 
-            painter.drawFormat(x, y, RGBColor(0x00FF00), 1, std::to_string(norm).c_str());
+            if (painter)
+                painter->drawFormat(x, y, RGBColor(0x00FF00), 1, std::to_string(norm).c_str());
         }
         L_INFO << ss.str();
     }
 
     L_INFO << "Complete";
+
+    delete_safe(painter);
     return def;
 }
 
