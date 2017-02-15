@@ -14,10 +14,11 @@ public:
         TYPE_PNG,
         TYPE_TIFF,
         TYPE_BMP,
+        TYPE_RAW10BIT,
         TYPE_UNKNOWN
     };
 
-    static string getResolution(FileType type)
+    static string getExtension(FileType type)
     {
         switch (type)
         {
@@ -30,6 +31,8 @@ public:
             return "tif";
         case TYPE_BMP:
             return "bmp";
+        case TYPE_RAW10BIT:
+            return "raw";
         case TYPE_UNKNOWN:
         default:
             break;
