@@ -1,14 +1,15 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
-#include "kde.h"
 
+#include "kde.h"
 #include "rgb24Buffer.h"
 #include "abstractPainter.h"
 
-void corecvs::kde::defaultBandwidth(int currentVariable){
-
-    if(!countMap[currentVariable]){
+void corecvs::kde::defaultBandwidth(int currentVariable)
+{
+    if (!countMap[currentVariable])
+    {
         std::cout << "No data!" << std::endl;
         exit(1);
     }
@@ -22,62 +23,75 @@ void corecvs::kde::defaultBandwidth(int currentVariable){
     bandwidthMap[currentVariable] = b;
 }
 
-void corecvs::kde::calcBandwidth(){
-    for(int currentVariable = 0; currentVariable < dataMatrix.size(); currentVariable++){
-        if(bandwidthMap[currentVariable] == -1.0){
+void corecvs::kde::calcBandwidth()
+{
+    for (int currentVariable = 0; currentVariable < dataMatrix.size(); currentVariable++)
+    {
+        if (bandwidthMap[currentVariable] == -1.0)
+        {
             defaultBandwidth(currentVariable);
         }
     }
 }
 
-double corecvs::kde::gaussPDF(double x, double m, double s){
-    double z = (x - m)/s;
-    return exp(-0.5*z*z)/(s*sqrt( 2.0*M_PI));
+double corecvs::kde::gaussPDF(double x, double m, double s)
+{
+    double z = (x - m) / s;
+    return exp(-0.5 * z * z) / (s * sqrt(2.0 * M_PI));
 }
 
-double corecvs::kde::pdf(double x){
+double corecvs::kde::pdf(double x)
+{
     std::vector<double> tmp;
     tmp.push_back(x);
     return(pdf(tmp));
 }
 
-double corecvs::kde::pdf(double x, double y){
+double corecvs::kde::pdf(double x, double y)
+{
     std::vector<double> tmp;
     tmp.push_back(x);
     tmp.push_back(y);
     return(pdf(tmp));
 }
 
-double corecvs::kde::pdf(std::vector<double>& data){
+double corecvs::kde::pdf(std::vector<double>& data)
+{
     calcBandwidth();
     double d = 0.0;
-    for(int i = 0; i < dataMatrix[0].size(); i++){
+    for (int i = 0; i < dataMatrix[0].size(); i++)
+    {
         double a = 1.0;
-        for(int currentVariable = 0; currentVariable < dataMatrix.size(); currentVariable++){
+        for (int currentVariable = 0; currentVariable < dataMatrix.size(); currentVariable++)
+        {
             a *= gaussPDF(data[currentVariable], dataMatrix[currentVariable][i], bandwidthMap[currentVariable]);
         }
         d += a;
     }
-    return(d/countMap[0]);
+    return d / countMap[0];
 }
 
-void corecvs::kde::addData(double x){
+void corecvs::kde::addData(double x)
+{
     std::vector<double> tmp;
     tmp.push_back(x);
     addData(tmp);
 }
 
-void corecvs::kde::addData(double x, double y){
+void corecvs::kde::addData(double x, double y)
+{
     std::vector<double> tmp;
     tmp.push_back(x);
     tmp.push_back(y);
     addData(tmp);
 }
 
-void corecvs::kde::addData(std::vector<double>& x){
-
-    if(!dataMatrix.size()){
-        for(int i = 0; i < x.size(); i++){
+void corecvs::kde::addData(std::vector<double>& x)
+{
+    if (!dataMatrix.size())
+    {
+        for (int i = 0; i < x.size(); i++)
+        {
             std::vector<double> tmp;
             tmp.push_back(x[i]);
             dataMatrix.push_back(tmp);
@@ -88,11 +102,17 @@ void corecvs::kde::addData(std::vector<double>& x){
             maxMap[i] = x[i];
             bandwidthMap[i] = -1.0;
         }
-    }else{
-        if(x.size() != dataMatrix.size()){
+    }
+    else
+    {
+        if (x.size() != dataMatrix.size())
+        {
             std::cout << "Number of variables doesn't match!" << std::endl;
-        }else{
-            for(int i = 0; i < x.size(); i++){
+        }
+        else
+        {
+            for (int i = 0; i < x.size(); i++)
+            {
                 dataMatrix[i].push_back(x[i]);
                 sumXMap[i] += x[i];
                 sumX2Map[i] += x[i]*x[i];
@@ -105,15 +125,13 @@ void corecvs::kde::addData(std::vector<double>& x){
     }
 }
 
-std::vector<double>
-        corecvs::kde::calcPDF(
-        int testPointCountX,
-        int testPointCountY,
-        double passLevel,
-        std::vector<double> minXY,
-        std::vector<double> maxXY,
-        corecvs::RGB24Buffer* buffer
-        )
+std::vector<double> corecvs::kde::calcPDF(int testPointCountX
+    , int testPointCountY
+    , double passLevel
+    , std::vector<double> minXY
+    , std::vector<double> maxXY
+    , corecvs::RGB24Buffer* buffer
+    )
 {
     double minX = minXY[0];
     double maxX = maxXY[0];
@@ -126,8 +144,8 @@ std::vector<double>
     ndX = testPointCountX;
     ndY = testPointCountY;
 
-    double xIncrement = (maxX - minX)/ndX;
-    double yIncrement = (maxY - minY)/ndY;
+    double xIncrement = (maxX - minX) / ndX;
+    double yIncrement = (maxY - minY) / ndY;
     double y = minY;
     double x = minX;
 
@@ -143,10 +161,12 @@ std::vector<double>
     double min = 0.0;
     double max = 0.0;
 
-    for(int i = 0; i < ndX; i++){
+    for(int i = 0; i < ndX; i++)
+    {
         x += xIncrement;
         y = minY;
-        for(int j = 0; j < ndY; j++){
+        for (int j = 0; j < ndY; j++)
+        {
             y += yIncrement;
             def.emplace_back(pdf(x,y));
             min = def.back() < min ? def.back() : min;
@@ -162,14 +182,17 @@ std::vector<double>
 
     AbstractPainter<RGB24Buffer> painter(buffer);
 
-    for(int i = 0; i < ndX; i++){
+    for (int i = 0; i < ndX; i++)
+    {
         x += xIncrement;
         y = minY;
-        for(int j = 0; j < ndY; j++){
+        for (int j = 0; j < ndY; j++)
+        {
             y += yIncrement;
             index++;
             double norm = (def[index] - min)/(max-min);
-            if(norm < passLevel) underPass++;
+            if (norm < passLevel)
+                underPass++;
             def[index] = norm;
             std::cout << norm << "\t" ;
 
@@ -182,7 +205,10 @@ std::vector<double>
     return def;
 }
 
-std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel, corecvs::RGB24Buffer* buffer)
+std::vector<double> corecvs::kde::calcPDF(int testPointCountX
+    , int testPointCountY
+    , double passLevel
+    , corecvs::RGB24Buffer* buffer)
 {
     double minX = getMin(0);
     double maxX = getMax(0);
