@@ -9,8 +9,6 @@
  */
 #include <vector>
 #include <map>
-#include "rgb24Buffer.h"
-#include "abstractPainter.h"
 
 #include "global.h"
 

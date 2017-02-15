@@ -3,6 +3,9 @@
 #include <iostream>
 #include "kde.h"
 
+#include "rgb24Buffer.h"
+#include "abstractPainter.h"
+
 void corecvs::kde::defaultBandwidth(int currentVariable){
 
     if(!countMap[currentVariable]){
