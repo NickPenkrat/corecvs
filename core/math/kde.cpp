@@ -102,23 +102,26 @@ void corecvs::kde::addData(std::vector<double>& x){
     }
 }
 
-std::pair<std::map<int, double>, std::map<int, double>> corecvs::kde::getMinMax()
+std::vector<double>
+        corecvs::kde::calcPDF(
+        int testPointCountX,
+        int testPointCountY,
+        double passLevel,
+        std::vector<double> minXY,
+        std::vector<double> maxXY,
+        corecvs::RGB24Buffer* buffer
+        )
 {
-    return std::make_pair(minMap, maxMap);
-}
-
-std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel)
-{
-    ndX = testPointCountX;
-    ndY = testPointCountY;
-
-    double minX = getMin(0);
-    double maxX = getMax(0);
-    double minY = getMin(1);
-    double maxY = getMax(1);
+    double minX = minXY[0];
+    double maxX = maxXY[0];
+    double minY = minXY[1];
+    double maxY = maxXY[1];
 
     std::cout << "min x,y = " << minX << "," << minY << std::endl;
     std::cout << "max x,y = " << maxX << "," << maxY << std::endl;
+
+    ndX = testPointCountX;
+    ndY = testPointCountY;
 
     double xIncrement = (maxX - minX)/ndX;
     double yIncrement = (maxY - minY)/ndY;
@@ -151,17 +154,43 @@ std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCoun
     int underPass = 0;
     int index = 0;
 
+    y = minY;
+    x = minX;
+
+    AbstractPainter<RGB24Buffer> painter(buffer);
+
     for(int i = 0; i < ndX; i++){
+        x += xIncrement;
+        y = minY;
         for(int j = 0; j < ndY; j++){
+            y += yIncrement;
             index++;
             double norm = (def[index] - min)/(max-min);
             if(norm < passLevel) underPass++;
             def[index] = norm;
-            std::cout << ( int )(norm < passLevel)<< "\t" ;
+            std::cout << norm << "\t" ;
+
+            painter.drawFormat(x,  y, RGBColor(0x00FF00), 1, std::to_string(norm).c_str());
         }
         std::cout << std::endl;
     }
 
     std::cout << "Complete " << std::endl;
     return def;
+}
+
+std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel, corecvs::RGB24Buffer* buffer)
+{
+    double minX = getMin(0);
+    double maxX = getMax(0);
+    double minY = getMin(1);
+    double maxY = getMax(1);
+
+    return calcPDF(testPointCountX,
+                   testPointCountY,
+                   passLevel,
+                   std::vector<double>({minX, minY}),
+                   std::vector<double>({maxX, maxY}),
+                   buffer
+                   );
 }

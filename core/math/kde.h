@@ -9,6 +9,8 @@
  */
 #include <vector>
 #include <map>
+#include "rgb24Buffer.h"
+#include "abstractPainter.h"
 
 #include "global.h"
 
@@ -21,9 +23,17 @@ namespace corecvs {
         void    addData(std::vector<double>& x);
 
         std::vector<double>
-                calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .3);
+                calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .3, corecvs::RGB24Buffer* buffer = nullptr);
 
-        std::pair<std::map<int, double>, std::map<int, double>> getMinMax();
+        std::vector<double>
+                calcPDF(
+                int testPointCountX,
+                int testPointCountY,
+                double passLevel,
+                std::vector<double> min,
+                std::vector<double> max,
+                corecvs::RGB24Buffer* buffer = nullptr
+                );
 
     private:
         std::vector<std::vector<double> >
