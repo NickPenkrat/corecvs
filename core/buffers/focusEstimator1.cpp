@@ -56,6 +56,7 @@ void FocusEstimator1::operator ()()
 
     EllipticalApproximation1d approxCenterW;
     EllipticalApproximation1d approxCenterB;
+    EllipticalApproximation1d approxCenterBouter;
 
     EllipticalApproximation1d approxSharpness;
 
@@ -88,6 +89,8 @@ void FocusEstimator1::operator ()()
             {
                 for (int j = 0; j < (int)board[i].size() - 1; j++)
                 {
+                    EllipticalApproximation1d approxCenterBinner;
+
                     bool isWhite = !((i + j) % 2);
 
                     Vector2dd p = board[i][j];
@@ -130,17 +133,24 @@ void FocusEstimator1::operator ()()
                         if (!mCurrent->isValidCoord(runner))
                             continue;
 
-                        if (isWhite)
+                        if (isWhite) {
                             approxCenterW.addPoint(mCurrent->element(runner).yd());
-                        else
+                        } else {
                             approxCenterB.addPoint(mCurrent->element(runner).yd());
+                            approxCenterBinner.addPoint(mCurrent->element(runner).yd());
+                        }
 
-                         if (mDebug != NULL) {
-                             mDebug->element(runner).blendWith(RGBColor::Green());
-                         }
+                        if (mDebug != NULL) {
+                            mDebug->element(runner).blendWith(RGBColor::Green());
+                        }
                     }
+
+                    approxCenterBouter.addPoint(approxCenterBinner.getRadius());
+
                 }
             }
+
+
 
             /*if (mDebug != NULL)
             {
@@ -201,9 +211,13 @@ void FocusEstimator1::operator ()()
         } // Cycle over boards
     } // If Boards
 
-    mResult.setBnoise(approxCenterB.getRadius());
+    //mResult.setBnoise(approxCenterB.getRadius());
+    mResult.setBnoise(approxCenterBouter.getMean());
+    SYNC_PRINT(("FocusEstimator1::FocusEstimator1() : old = %lf new = %lf\n", approxCenterB.getRadius(), approxCenterBouter.getRadius() ));
+
     mResult.setWnoise(approxCenterW.getRadius());
     mResult.setSharpness(approxSharpness.getMean());
+
 
     Statistics::endInterval(mStats, "Overall computation");
     Statistics::leaveContext(mStats);
