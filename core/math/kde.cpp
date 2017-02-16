@@ -3,9 +3,6 @@
 #include <iostream>
 #include "kde.h"
 
-#include "rgb24Buffer.h"
-#include "abstractPainter.h"
-
 void corecvs::kde::defaultBandwidth(int currentVariable){
 
     if(!countMap[currentVariable]){
@@ -111,8 +108,7 @@ std::vector<double>
         int testPointCountY,
         double passLevel,
         std::vector<double> minXY,
-        std::vector<double> maxXY,
-        corecvs::RGB24Buffer* buffer
+        std::vector<double> maxXY
         )
 {
     double minX = minXY[0];
@@ -157,23 +153,13 @@ std::vector<double>
     int underPass = 0;
     int index = 0;
 
-    y = minY;
-    x = minX;
-
-    AbstractPainter<RGB24Buffer> painter(buffer);
-
     for(int i = 0; i < ndX; i++){
-        x += xIncrement;
-        y = minY;
         for(int j = 0; j < ndY; j++){
-            y += yIncrement;
             index++;
             double norm = (def[index] - min)/(max-min);
             if(norm < passLevel) underPass++;
             def[index] = norm;
-            std::cout << norm << "\t" ;
-
-            painter.drawFormat(x,  y, RGBColor(0x00FF00), 1, std::to_string(norm).c_str());
+            std::cout << ((int) norm < passLevel) << "\t" ;
         }
         std::cout << std::endl;
     }
@@ -182,7 +168,7 @@ std::vector<double>
     return def;
 }
 
-std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel, corecvs::RGB24Buffer* buffer)
+std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel)
 {
     double minX = getMin(0);
     double maxX = getMax(0);
@@ -193,7 +179,6 @@ std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCoun
                    testPointCountY,
                    passLevel,
                    std::vector<double>({minX, minY}),
-                   std::vector<double>({maxX, maxY}),
-                   buffer
+                   std::vector<double>({maxX, maxY})
                    );
 }

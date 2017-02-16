@@ -21,7 +21,7 @@ namespace corecvs {
         void    addData(std::vector<double>& x);
 
         std::vector<double>
-                calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .3, corecvs::RGB24Buffer* buffer = nullptr);
+                calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .3);
 
         std::vector<double>
                 calcPDF(
@@ -29,8 +29,7 @@ namespace corecvs {
                 int testPointCountY,
                 double passLevel,
                 std::vector<double> min,
-                std::vector<double> max,
-                corecvs::RGB24Buffer* buffer = nullptr
+                std::vector<double> max
                 );
 
     private:
