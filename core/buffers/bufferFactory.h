@@ -89,7 +89,6 @@ private:
     vector<BufferSaver<RGB24Buffer> *> mSaversRGB24;
 
 
-
 };
 
 } //namespace corecvs

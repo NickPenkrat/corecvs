@@ -52,6 +52,9 @@ public:
      */
     int         toRGB48(DebayerMethod::DebayerMethod method, RGB48Buffer* out);
 
+    /** this is quick and dirty helper **/
+    int         toRGB24(DebayerMethod::DebayerMethod method, RGB24Buffer* out);
+
     /**
     * Fill bayer data from RGB48 image applying Bayerian grid to it.
     *

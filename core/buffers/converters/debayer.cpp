@@ -900,6 +900,24 @@ int Debayer::toRGB48(DebayerMethod::DebayerMethod method, RGB48Buffer *output)
     return 0;
 }
 
+int Debayer::toRGB24(DebayerMethod::DebayerMethod method, RGB24Buffer *out)
+{
+    RGB48Buffer *outputDraft = new RGB48Buffer(out->getSize(), false);
+    int result = toRGB48(method, outputDraft);
+    for (uint i = 0; i < out->h; i++)
+    {
+        for (uint j = 0; j < out->w; j++)
+        {
+            RGBColor48 color = outputDraft->element(i,j);
+            int scaler = (1 << (mDepth - 8));
+
+            out->element(i,j) = RGBColor(color.r() / scaler, color.g() / scaler, color.b() / scaler);
+        }
+    }
+    delete_safe(outputDraft);
+    return result;
+}
+
 void Debayer::preprocess(bool overwrite)
 {
     // recalculate white balance coefficients

@@ -40,7 +40,7 @@ int Log::staticInit()
 
 void Log::message(Message &message)
 {
-    for (auto& el: mLogDrains)
+    for (LogDrain *el: mLogDrains)
     {
         el->drain(message);
     }
@@ -224,10 +224,11 @@ FileLogDrain::FileLogDrain(const std::string &path, bool bAppend, bool fullInfo)
 
 FileLogDrain::~FileLogDrain()
 {
+    SYNC_PRINT(("FileLogDrain::~FileLogDrain():called\n"));
     mFile.flush();
     mFile.close();
 
-    L_INFO_P("log <%s> saved", mPath.c_str());
+    SYNC_PRINT(("log <%s> saved", mPath.c_str()));
 }
 
 void FileLogDrain::drain(Log::Message &message)

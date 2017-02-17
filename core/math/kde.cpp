@@ -3,10 +3,7 @@
 #include <iostream>
 
 #include "kde.h"
-#include "rgb24Buffer.h"
-#include "abstractPainter.h"
 #include "log.h"
-
 namespace corecvs {
 
 
@@ -129,13 +126,14 @@ void kde::addData(std::vector<double>& x)
     }
 }
 
-std::vector<double> kde::calcPDF(int testPointCountX
-    , int testPointCountY
-    , double passLevel
-    , std::vector<double> minXY
-    , std::vector<double> maxXY
-    , RGB24Buffer* buffer
-)
+std::vector<double>
+        corecvs::kde::calcPDF(
+        int testPointCountX,
+        int testPointCountY,
+        double passLevel,
+        std::vector<double> minXY,
+        std::vector<double> maxXY
+        )
 {
     double minX = minXY[0];
     double maxX = maxXY[0];
@@ -181,42 +179,27 @@ std::vector<double> kde::calcPDF(int testPointCountX
     int underPass = 0;
     int index = 0;
 
-    y = minY;
-    x = minX;
-
-    auto painter = buffer ? new AbstractPainter<RGB24Buffer>(buffer) : nullptr;
-
     for (int i = 0; i < ndX; i++)
     {
         std::ostringstream ss;
-        x += xIncrement;
-        y = minY;
         for (int j = 0; j < ndY; j++)
         {
-            y += yIncrement;
             index++;
             double norm = (def[index] - min) / (max - min);
             if (norm < passLevel)
                 underPass++;
             def[index] = norm;
-            ss << norm << "\t";
-
-            if (painter)
-                painter->drawFormat(x, y, RGBColor(0x00FF00), 1, std::to_string(norm).c_str());
+            ss << ((int) norm < passLevel) << "\t" ;
         }
         L_INFO << ss.str();
     }
 
     L_INFO << "Complete";
 
-    delete_safe(painter);
     return def;
 }
 
-std::vector<double> kde::calcPDF(int testPointCountX
-    , int testPointCountY
-    , double passLevel
-    , RGB24Buffer* buffer)
+std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel)
 {
     double minX = getMin(0);
     double maxX = getMax(0);
@@ -224,12 +207,11 @@ std::vector<double> kde::calcPDF(int testPointCountX
     double maxY = getMax(1);
 
     return calcPDF(testPointCountX,
-        testPointCountY,
-        passLevel,
-        std::vector<double>({ minX, minY }),
-        std::vector<double>({ maxX, maxY }),
-        buffer
-    );
+                   testPointCountY,
+                   passLevel,
+                   std::vector<double>({minX, minY}),
+                   std::vector<double>({maxX, maxY})
+                   );
 }
 
 } // namespace corecvs

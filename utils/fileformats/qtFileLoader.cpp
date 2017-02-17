@@ -66,7 +66,7 @@ RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
 
 QImage* QTFileLoader::RGB24BufferToQImage(RGB24Buffer &buffer)
 {
-    auto* img = new QImage(buffer.w, buffer.h, QImage::Format_RGB32);
+    QImage* img = new QImage(buffer.w, buffer.h, QImage::Format_RGB32);
     for (int i = 0; i < buffer.h; ++i)
     {
         for (int j = 0; j < buffer.w; ++j)
