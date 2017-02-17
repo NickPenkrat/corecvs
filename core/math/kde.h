@@ -13,8 +13,12 @@
 #include "global.h"
 
 namespace corecvs {
-    class kde
-	{
+
+class RGB24Buffer;
+
+
+class kde
+{
 	public:
         void    addData(double x);
         void    addData(double x, double y);
@@ -23,11 +27,17 @@ namespace corecvs {
         std::vector<double>
                 calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .3);
 
-        std::pair<std::map<int, double>, std::map<int, double>> getMinMax();
+        std::vector<double>
+                calcPDF(
+                int testPointCountX,
+                int testPointCountY,
+                double passLevel,
+                std::vector<double> min,
+                std::vector<double> max
+                );
 
     private:
-        std::vector<std::vector<double> >
-                dataMatrix;
+        std::vector<std::vector<double> >   dataMatrix;
 
         std::map<int,double>
                 sumXMap,
@@ -38,13 +48,11 @@ namespace corecvs {
                 bandwidthMap;
 
         int     extension;
-
         int     ndX, ndY;
 
-        double  getMin(int x){ return minMap[x]; }
-        double  getMax(int x){ return maxMap[x]; }
-
-        double  getBandwidth(int x){ return(bandwidthMap[x]);}
+        double  getMin(int x)       { return minMap[x]; }
+        double  getMax(int x)       { return maxMap[x]; }
+        double  getBandwidth(int x) { return(bandwidthMap[x]); }
 
         void    calcBandwidth();
         void    defaultBandwidth(int currentVariable);
@@ -52,7 +60,8 @@ namespace corecvs {
         double  pdf(double x);
         double  pdf(double x, double y);
         double  pdf(std::vector<double>& data);
-    };
-} //namespace corecvs
-#endif  //KDE_H_
+};
 
+} //namespace corecvs
+
+#endif  //KDE_H_
