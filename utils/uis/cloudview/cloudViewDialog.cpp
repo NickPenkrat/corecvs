@@ -28,11 +28,16 @@ const double CloudViewDialog::START_Y = 0;
 const double CloudViewDialog::START_Z = 1 * Grid3DScene::GRID_SIZE * Grid3DScene::GRID_STEP;
 
 
-CloudViewDialog::CloudViewDialog(QWidget *parent)
+CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     : ViAreaWidget(parent)
     , mCameraZoom(1.0)
     , mIsTracking(false)
 {
+    if (!name.isEmpty()) {
+        setWindowTitle(name);
+        setAccessibleName(name);
+    }
+
     mFancyTexture = -1;
 
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
@@ -48,7 +53,8 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
     /* Now lets work with UI a bit */
     mUi.setupUi(this);
 
-    qDebug("Creating CloudViewDialog for working with OpenGL(%d.%d)",
+    qDebug("Creating CloudViewDialog (%s) for working with OpenGL(%d.%d)",
+            windowTitle().toLatin1().constData(),
             mUi.widget->format().majorVersion(),
             mUi.widget->format().minorVersion());
 
@@ -97,8 +103,8 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
     connect(mUi.loadMeshPushButton, SIGNAL(released()), this, SLOT(loadMesh()));
     connect(mUi.addFramePushButton, SIGNAL(released()), this, SLOT(addCoordinateFrame()));
 
-    addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()));
-    addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()));
+    addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()), false);
+    addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()), false);
 
 #if 0
     {
@@ -108,12 +114,12 @@ CloudViewDialog::CloudViewDialog(QWidget *parent)
 
         shaded->mMesh = mesh;
 
-        addSubObject("test"  , QSharedPointer<Scene3D>(shaded));
+        addSubObject("Shaded"  , QSharedPointer<Scene3D>(shaded));
 
         Mesh3DScene *scene = new Mesh3DScene;
         scene->switchColor(true);
         scene->add(*mesh, true);
-        addSubObject("test1"  , QSharedPointer<Scene3D>(scene));
+        addSubObject("Old Style"  , QSharedPointer<Scene3D>(scene));
     }
 #endif
 
@@ -183,7 +189,7 @@ void CloudViewDialog::addMesh(QString name, Mesh3D *mesh)
 
 TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointer<Scene3D> scene, bool visible)
 {
-    qDebug() << "Adding object" << name;
+    qDebug("CloudViewDialog::addSubObject(%s, _, %s): called", name.toLatin1().constData(), visible ? "true" : "false" );
 
     TreeSceneController * result = mTreeModel.addObject(name, scene, visible);
     mUi.widget->updateGL();
@@ -261,6 +267,14 @@ void CloudViewDialog::childWheelEvent ( QWheelEvent * event )
 
 void CloudViewDialog::resetCameraPos()
 {
+    if (isOrtho((CameraType)mUi.cameraTypeBox->currentIndex()))
+    {
+        mUi.frustumFarBox->setValue(99999999);
+    } else {
+        mUi.frustumFarBox->setValue(fabs(3 * START_Z));
+    }
+
+
     switch (mUi.cameraTypeBox->currentIndex())
     {
         case ORTHO_TOP:
@@ -447,6 +461,49 @@ void CloudViewDialog::resetCamera()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+}
+
+void CloudViewDialog::setCamera(const CameraModel &model)
+{
+    /* Show in UI*/
+    bool was = mUi.cameraTypeBox->blockSignals(true);
+    mUi.cameraTypeBox->setCurrentIndex(USER_CAMERA);
+    mUi.cameraTypeBox->blockSignals(was);
+
+    int width  = mUi.widget->width();
+    int height = mUi.widget->height();
+
+    qDebug() << "CloudViewDialog::setCamera() : setting camera";
+
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    OpenGLTools::glMultMatrixMatrix44(model.intrinsics.getFrustumMatrix());
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    mCamera = model.getPositionMatrix();
+
+    mUi.widget->updateGL();
+}
+
+void CloudViewDialog::lookAt(const Vector3dd &point)
+{
+    Vector3dd camCoords(0.0, 0.0, 2.0);
+    Vector3dd world =  mCamera.inverted() * camCoords;
+    cout << " CloudViewDialog::lookAt (" << point << ")" << endl;
+    cout << "   camera coord:" << camCoords << endl;
+    cout << "    world coord:" << world << endl;
+    cout << "   oldCamera   :"  << endl;
+    cout << mCamera << endl;
+    mCamera = mCamera * Matrix44::Shift(- point + world);
+
+    cout << "   newCamera   :" << endl;
+    cout << mCamera << endl;
+
+    cout << "  selfcheck    :" << mCamera * point << endl;
+
+
+    mUi.widget->updateGL();
 }
 
 void CloudViewDialog::childMoveEvent(QMouseEvent *event)
@@ -759,6 +816,13 @@ void CloudViewDialog::setNewCameraImage(QSharedPointer<QImage> texture, int came
     mCameraImage[cameraId] = texture;
     //mCameraTexture[cameraId] = mUi.widget->bindTexture(*texture.data(), GL_TEXTURE_2D, GL_RGBA);
     mUi.widget->update();
+}
+
+
+
+const QGLContext *CloudViewDialog::getAreaContext()
+{
+    return mUi.widget->context();
 }
 
 GLuint CloudViewDialog::texture(int cameraId)

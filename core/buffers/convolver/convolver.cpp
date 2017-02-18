@@ -581,8 +581,9 @@ void Convolver::convolve(FpImage &src, FpKernel &kernel, FpImage &dst, Convolver
     }
 }
 
-/**/
+#if WITH_AVX
 
+/**/
 template <int UNROLL = 5>
 struct ConvolutorImplWrappersUnrollFloat
 {
@@ -639,6 +640,8 @@ struct ConvolutorImplWrappersUnrollFloat
     FpKernel *kernel;
     int h, w, kw, kh, kx, ky, t, l, d, r;
 };
+
+#endif
 
 
 #if WITH_AVX

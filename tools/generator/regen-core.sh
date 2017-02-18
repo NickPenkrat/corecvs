@@ -234,6 +234,8 @@ classes+=" homorgaphyReconstructorBlockBase"
 
 # We will try to use reflectionWidget
 classes+=" calibrationDrawHelpersParameters"
+classes+=" focusEstimationParameters"
+classes+=" focusEstimationResult"
 
 
 full_ui_classes+=" checkerboardDetectionParameters"

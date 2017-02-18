@@ -1,6 +1,7 @@
 #include "sceneFeaturePoint.h"
 #include "fixtureScene.h"
 #include "multicameraTriangulator.h"
+#include "propertyListVisitor.h"
 
 
 #ifdef WITH_BOOST
@@ -35,7 +36,7 @@ int SceneObservation::ensureDistorted(bool distorted)
     return true;
 }
 
-Vector2dd SceneObservation::getDistorted(bool distorted)
+Vector2dd SceneObservation::getDistorted(bool distorted) const
 {
     if (distorted) {
         return  onDistorted ? observation : camera->distortion.mapForward(observation);  // undist => dist
@@ -124,15 +125,32 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
                 mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
                 if (mask && ptr + 1 < mask->size())
                     CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
-                ++ptr;
+                ptr++;
             }
             if (mask && ptr == mask->size())
                 break;
-            ++id;
+            id++;
         }
     }
+    bool ok = false;
+    Vector3dd initial = mct.triangulate(&ok);
+    if (!ok) {
+        SYNC_PRINT(("SceneFeaturePoint::triangulate(%s): initial guess unable to obtain\n", name.c_str()));
+    }
+    Vector3dd res = mct.triangulateLM(initial, &ok);
+    if (!ok) {
+        SYNC_PRINT(("SceneFeaturePoint::triangulate(%s): LM guess unable to obtain\n", name.c_str()));
+    }
 
-    auto res = mct.triangulateLM(mct.triangulate());
+#ifndef DEEP_TRACE_702
+    {
+        std::ostringstream ss;
+        ss << "dump" << name << ".txt";
+        PropertyListWriterVisitor writer(ss.str());
+        mct.accept<PropertyListWriterVisitor>(writer);
+    }
+#endif
+
     accuracy = mct.getCovarianceInvEstimation(res);
     return res;
 }

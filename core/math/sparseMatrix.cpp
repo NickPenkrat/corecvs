@@ -1526,6 +1526,8 @@ void SparseMatrix::print(std::ostream& out) const
     out << *this;
 }
 
+#	if !defined(_WIN32) || defined(_WIN64)
+
 bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
 {
     /*
@@ -1554,7 +1556,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#error NIY
+#	error NIY
 #else
     /*
      * The same as above, but with fancy LAPACK
@@ -1728,7 +1730,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#error NIY
+#	error NIY
 #else
     /*
      * The same as above, but with fancy LAPACK
@@ -1970,7 +1972,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#error NIY
+#	error NIY
 #else
     /*
      * The same as above, but with fancy LAPACK
@@ -2153,6 +2155,8 @@ bool        corecvs::SparseMatrix::linSolveSchurComplement(const corecvs::Vector
 {
     return corecvs::SparseMatrix::LinSolveSchurComplement(*this, B, diagBlocks, res, symmetric, posDef);
 }
+
+#endif // #	if !defined(_WIN32) || defined(_WIN64)
 
 std::ostream& corecvs::operator<<(std::ostream& os, const SparseImplementations &si)
 {

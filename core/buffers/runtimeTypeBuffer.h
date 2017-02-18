@@ -182,8 +182,8 @@ public:
 
     void load(std::istream &is);
     void save(std::ostream &os) const;
-    void load(const std::string &filename);
-    void save(const std::string &filename) const;
+    //void load(const std::string &filename);
+    //void save(const std::string &filename) const;
     friend std::ostream& ::operator<<(std::ostream &os, const corecvs::RuntimeTypeBuffer &b);
     friend std::istream& ::operator>>(std::istream &is, corecvs::RuntimeTypeBuffer &b);
 
@@ -205,16 +205,16 @@ private:
     }
     void copy(uint8_t *src)
     {
-        SYNC_PRINT(("RuntimeTypeBuffer:copy(%p -> %p [%d]):called\n", src, data, (int)getDataSize()));
+        //SYNC_PRINT(("RuntimeTypeBuffer:copy(%p -> %p [%d]):called\n", src, data, (int)getDataSize()));
         if (src != NULL) { /*memcpy: (ISO/IEC 9899:1999): 7.1.4 */
             memcpy(data, src, getDataSize());
         }
     }
     uint8_t *data;
-    size_t rows;
-    size_t cols;
-    size_t sz;
-    int type;
+    size_t  rows;
+    size_t  cols;
+    size_t  sz;
+    int     type;
 };
 }
 

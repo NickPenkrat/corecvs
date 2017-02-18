@@ -110,6 +110,11 @@ public:
         return Rectangle(corner1, corner2 - corner1);
     }
 
+    static Rectangle Empty()
+    {
+        return Rectangle(0,0,0,0);
+    }
+
 
     friend ostream & operator <<(ostream &out, const Rectangle &rect)
     {

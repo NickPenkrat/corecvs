@@ -12,10 +12,41 @@
 #   if defined( WITH_OPENCV_GPU ) && defined( WITH_OPENCV_3x )
 #       include <opencv2/cuda/cuda.hpp>
 #   endif
-#endif
 
 namespace corecvs
 {
+
+typedef struct RemapCache
+{
+    cv::Mat mat0, mat1;
+} RemapCache;
+
+#   ifdef WITH_OPENCV_GPU
+typedef struct CudaRemapCache
+{
+    RemapCache cpuCache;
+#       if defined( WITH_OPENCV_3x )
+    cv::cuda::GpuMat
+#else
+    cv::gpu::GpuMat
+#endif
+    cudaMat0, cudaMat1;
+} CudaRemapCache;
+
+typedef struct OpenCLRemapCache
+{
+    RemapCache cpuCache;
+#       if defined( WITH_OPENCV_3x )
+    cv::UMat
+#else
+    cv::ocl::oclMat
+#endif
+    oclMat0, oclMat1;
+} OpenCLRemapCache;
+#   endif
+
+#endif
+
 #ifdef WITH_OPENCV
     // map0 & map1 are input params in cv::remap()
     void convert( const corecvs::DisplacementBuffer &src, cv::Mat &map0, cv::Mat &map1 );

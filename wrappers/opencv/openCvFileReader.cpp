@@ -87,6 +87,7 @@ bool OpenCVLoaderRGB24Loader::acceptsFile(std::string name)
     return true;
 }
 
+/* I don't see how an inability to load particular format is an exceptional situation */
 RGB24Buffer *OpenCVLoaderRGB24Loader::load(std::string name)
 {
     cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_COLOR);

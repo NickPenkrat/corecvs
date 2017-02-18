@@ -134,6 +134,28 @@ public:
         virtual Matrix getLSQHessian(const double *in, double delta = 1e-5) override;
     };
 
+
+    /* Ability to serialize and restore state */
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+           visitor.visit(P , "matrices");
+           visitor.visit(xy, "xy"      );
+        }
+
+    /**
+     * Get number of measurements
+     **/
+    int getSize()
+    {
+        return (int)P.size();
+    }
+
+    /**
+     * Returns a triangulator with the state holding a subset of the current one
+     **/
+    MulticameraTriangulator subset(const std::vector<bool> &mask);
+
 };
 
 } // namespace corecvs

@@ -21,6 +21,8 @@ CalibrationDrawHelpersParametersControlWidget::CalibrationDrawHelpersParametersC
 {
     mUi->setupUi(this);
 
+    QObject::connect(mUi->useOldBackendCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->scaleForCamerasSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->printNamesCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->billboardNamesCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->preferReprojectedCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
@@ -29,6 +31,8 @@ CalibrationDrawHelpersParametersControlWidget::CalibrationDrawHelpersParametersC
     QObject::connect(mUi->largePointsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->drawFixtureCamsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->drawObservationsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->drawTrueLinesCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->projectionRayLengthSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->drawRaysCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
@@ -65,7 +69,9 @@ CalibrationDrawHelpersParameters *CalibrationDrawHelpersParametersControlWidget:
 
 
     return new CalibrationDrawHelpersParameters(
-          mUi->printNamesCheckBox->isChecked()
+          mUi->useOldBackendCheckBox->isChecked()
+        , mUi->scaleForCamerasSpinBox->value()
+        , mUi->printNamesCheckBox->isChecked()
         , mUi->billboardNamesCheckBox->isChecked()
         , mUi->preferReprojectedCheckBox->isChecked()
         , mUi->forceKnownCheckBox->isChecked()
@@ -73,6 +79,8 @@ CalibrationDrawHelpersParameters *CalibrationDrawHelpersParametersControlWidget:
         , mUi->largePointsCheckBox->isChecked()
         , mUi->drawFixtureCamsCheckBox->isChecked()
         , mUi->drawObservationsCheckBox->isChecked()
+        , mUi->drawTrueLinesCheckBox->isChecked()
+        , mUi->projectionRayLengthSpinBox->value()
         , mUi->drawRaysCheckBox->isChecked()
     );
 }
@@ -81,6 +89,8 @@ void CalibrationDrawHelpersParametersControlWidget::setParameters(const Calibrat
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+    mUi->useOldBackendCheckBox->setChecked(input.useOldBackend());
+    mUi->scaleForCamerasSpinBox->setValue(input.scaleForCameras());
     mUi->printNamesCheckBox->setChecked(input.printNames());
     mUi->billboardNamesCheckBox->setChecked(input.billboardNames());
     mUi->preferReprojectedCheckBox->setChecked(input.preferReprojected());
@@ -89,6 +99,8 @@ void CalibrationDrawHelpersParametersControlWidget::setParameters(const Calibrat
     mUi->largePointsCheckBox->setChecked(input.largePoints());
     mUi->drawFixtureCamsCheckBox->setChecked(input.drawFixtureCams());
     mUi->drawObservationsCheckBox->setChecked(input.drawObservations());
+    mUi->drawTrueLinesCheckBox->setChecked(input.drawTrueLines());
+    mUi->projectionRayLengthSpinBox->setValue(input.projectionRayLength());
     mUi->drawRaysCheckBox->setChecked(input.drawRays());
     blockSignals(wasBlocked);
     emit paramsChanged();

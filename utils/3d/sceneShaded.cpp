@@ -164,9 +164,10 @@ void SceneShaded::setParameters(void *params)
 }
 
 
-void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
+void SceneShaded::prepareMesh(CloudViewDialog * dialog)
 {
-    initializeGLFunctions();
+    SYNC_PRINT(("void SceneShaded::prepareMesh():called\n"));
+    initializeGLFunctions(dialog->getAreaContext());
 
     setParameters(&mParameters);
 
@@ -532,5 +533,10 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
     //mProgram->release();
 
 
+}
+
+SceneShaded::~SceneShaded()
+{
+    delete_safe(mMesh);
 }
 

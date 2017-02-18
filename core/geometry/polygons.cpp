@@ -188,8 +188,8 @@ void PolygonCombiner::prepare()
             }
 
 
-            if ((t1 < 0 || t1 > 1.0) ||
-                (t2 < 0 || t2 > 1.0))
+            if ((t1 < 0.0 || t1 > 1.0) ||
+                (t2 < 0.0 || t2 > 1.0))
             {
                 continue;
             }
@@ -378,8 +378,7 @@ Polygon PolygonCombiner::intersection() const
         if (v.flag == INSIDE)
         {
             /* Moving inside the outer polygon */
-            currentId = (currentId + 1) % c[currentChain].size();
-            continue;
+            currentId = (currentId + 1) % c[currentChain].size();           
         }
         if (v.flag == OUTSIDE)
         {
@@ -398,11 +397,6 @@ Polygon PolygonCombiner::intersection() const
 
             printf("Branching (%c%d) (%c%d)\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
 
-            if ((currentId == 0) && (nextCurrent == fst.first))
-                break;
-            if ((currentId == 1) && (nextCurrent == fst.second))
-                break;
-
             if (candidate1.flag != OUTSIDE) {
                 cout << "choice1" << endl;
                 currentId = nextCurrent;
@@ -411,6 +405,23 @@ Polygon PolygonCombiner::intersection() const
                 currentChain = otherChain;
                 currentId    = nextOther;
             }
+        }
+
+        /* Check for exit condition */
+        VertexData v1 = c[currentChain][currentId];
+        if (v1.flag == COMMON)
+        {
+            printf("Checking for exit on (%c%d)\n", currentChain == 0 ? 'A' : 'B' , currentId);
+
+            if ((currentChain == 0) && (currentId == fst.first))
+                break;
+            if ((currentChain == 0) && (v1.other  == fst.second))
+                break;
+
+            if ((currentChain == 1) && (currentId == fst.second))
+                break;
+            if ((currentChain == 1) && (v1.other   == fst.first))
+                break;
         }
     }
     return result;

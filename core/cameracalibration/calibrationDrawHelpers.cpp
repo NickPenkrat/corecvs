@@ -159,13 +159,13 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double 
             CameraFixture *fixture = cam->cameraFixture;
             FixtureCamera rawCam = fixture->getWorldCamera(cam);
 
-            if (fp.hasKnownPosition) {
+            if (fp.hasKnownPosition && drawTrueLines()) {
                 mesh.addLine(rawCam.extrinsics.position, fp.position);
             } else {
             }
 
-            Ray3d ray = rawCam.rayFromPixel(observ.observation);
-            Vector3dd p2 = ray.getPoint(scale);
+            Ray3d ray = rawCam.rayFromPixel(observ.getDistorted(false));
+            Vector3dd p2 = ray.getPoint(projectionRayLength() * scale);
             mesh.addLine(ray.p, p2);
 
             /*Ray3d rayDir(rawCam.extrinsics.position, observ.observDir);

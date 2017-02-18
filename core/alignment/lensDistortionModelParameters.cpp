@@ -28,138 +28,7 @@ SUPPRESS_OFFSET_WARNING_BEGIN
 
 int LensDistortionModelParameters::staticInit()
 {
-
-    ReflectionNaming &nameing = naming();
-    nameing = ReflectionNaming(
-        "Lens Distortion Model Parameters",
-        "Lens Distortion Model Parameters",
-        ""
-    );
-
-
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::PRINCIPALX_ID,
-          offsetof(LensDistortionModelParameters, mPrincipalX),
-          240,
-          "principalX",
-          "principalX",
-          "The center of the distortion \f$x_c\f$"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::PRINCIPALY_ID,
-          offsetof(LensDistortionModelParameters, mPrincipalY),
-          320,
-          "principalY",
-          "principalY",
-          "The center of the distortion \f$y_c\f$"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::TANGENTIALX_ID,
-          offsetof(LensDistortionModelParameters, mTangentialX),
-          0,
-          "tangentialX",
-          "tangentialX",
-          "First tangent correction coefficient - \f$p_1\f$"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::TANGENTIALY_ID,
-          offsetof(LensDistortionModelParameters, mTangentialY),
-          0,
-          "tangentialY",
-          "tangentialY",
-          "Second tangent correction coefficient - \f$p_2\f$"
-        )
-    );
-    fields().push_back(
-        new DoubleVectorField
-        (
-          LensDistortionModelParameters::KOEFF_ID,
-          offsetof(LensDistortionModelParameters, mKoeff),
-          0,
-          0,
-          "koeff",
-          "koeff",
-          "Polynom to describe radial correction"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::ASPECT_ID,
-          offsetof(LensDistortionModelParameters, mAspect),
-          1,
-          "aspect",
-          "aspect",
-          "aspect"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::SCALE_ID,
-          offsetof(LensDistortionModelParameters, mScale),
-          1,
-          "scale",
-          "scale",
-          "scale"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::NORMALIZING_FOCAL_ID,
-          offsetof(LensDistortionModelParameters, mNormalizingFocal),
-          1,
-          "Normalizing Focal",
-          "Normalizing Focal",
-          "Normalizing Focal"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::SHIFT_X_ID,
-          offsetof(LensDistortionModelParameters, mShiftX),
-          0,
-          "Shift X",
-          "Shift X",
-          "Shift X"
-        )
-    );
-    fields().push_back(
-        new DoubleField
-        (
-          LensDistortionModelParameters::SHIFT_Y_ID,
-          offsetof(LensDistortionModelParameters, mShiftY),
-          0,
-          "Shift Y",
-          "Shift Y",
-          "Shift Y"
-        )
-    );
-    fields().push_back(
-        new BoolField
-        (
-          LensDistortionModelParameters::MAP_FORWARD_ID,
-          offsetof(LensDistortionModelParameters, mMapForward),
-          false,
-          "Map forward",
-          "Map forward",
-          "True if maps from undistorted to distorted"
-        )
-    );
-   return 0;
+    return LensDistortionModelParametersBase::staticInit();
 }
 
 SUPPRESS_OFFSET_WARNING_END
@@ -217,9 +86,11 @@ bool LensDistortionModelParameters::check(const double r)
     coeff[0] = 1.0;
     for (int i = 1; i <= n; ++i)
         coeff[i] = (i + 1) * mKoeff[i - 1];
+
     Polynomial p(coeff);
     std::vector<double> roots;
     PolynomialSolver::solve(p, roots);
+
     std::cout << "LDMP roots: ";
     for (auto& r : roots)
     {
@@ -228,6 +99,7 @@ bool LensDistortionModelParameters::check(const double r)
         if (r > 0.0 && r < rn)
             return false;
     }
+
     return (radialScaleNormalized(rn / 2.0) > 0) ^ (radialScaleNormalized(rn) < 0);
 }
 
@@ -257,20 +129,20 @@ bool LensDistortionModelParameters::check(const Vector2dd &tl, const Vector2dd &
 Matrix22 LensDistortionModelParameters::jacobian(double x, double y) const
 {
     auto dT1 = mMapForward ? Matrix22(1.0 / mScale,          0.0,
-                                                0.0, 1.0 / mScale) :
-                                Matrix22(1.0, 0.0,
-                                        0.0, 1.0);
+                                               0.0, 1.0 / mScale) :
+                             Matrix22(1.0, 0.0,
+                                      0.0, 1.0);
     auto dT2 = Matrix22(1.0 / mNormalizingFocal * mAspect,                     0.0,
-                                                        0.0, 1.0 / mNormalizingFocal);
+                                                      0.0, 1.0 / mNormalizingFocal);
     auto T1 = mMapForward ? Matrix33(1.0 / mScale,          0.0, -mShiftX / mScale,
-                                                0.0, 1.0 / mScale, -mShiftY / mScale,
-                                                0.0,          0.0,               1.0) :
+                                              0.0, 1.0 / mScale, -mShiftY / mScale,
+                                              0.0,          0.0,               1.0) :
                             Matrix33(1.0, 0.0, 0.0,
-                                        0.0, 1.0, 0.0,
-                                        0.0, 0.0, 1.0);
+                                     0.0, 1.0, 0.0,
+                                     0.0, 0.0, 1.0);
     auto T2 = Matrix33(1.0 / mNormalizingFocal * mAspect,                     0.0, -mPrincipalX / mNormalizingFocal * mAspect,
-                                                        0.0, 1.0 / mNormalizingFocal, -mPrincipalY / mNormalizingFocal,
-                                                        0.0,                     0.0,                              1.0);
+                                                     0.0, 1.0 / mNormalizingFocal, -mPrincipalY / mNormalizingFocal,
+                                                     0.0,                     0.0,                              1.0);
     Vector3dd xy(x, y, 1.0);
     auto dxdyv = T2 * (T1 * xy);
     auto dx = dxdyv[0], dy = dxdyv[1];

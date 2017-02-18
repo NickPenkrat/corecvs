@@ -40,7 +40,7 @@ int Log::staticInit()
 
 void Log::message(Message &message)
 {
-    for (auto& el: mLogDrains)
+    for (LogDrain *el: mLogDrains)
     {
         el->drain(message);
     }
@@ -216,15 +216,19 @@ void StdStreamLogDrain::drain(Log::Message &message)
 /////////////////////////////////////////////////////////////////////////////
 
 FileLogDrain::FileLogDrain(const std::string &path, bool bAppend, bool fullInfo)
-    : mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
+    : mPath(path)
+    , mFile(path.c_str(), bAppend ? std::ios_base::app : std::ios_base::trunc)
 {
     mFullInfo = fullInfo;
 }
 
 FileLogDrain::~FileLogDrain()
 {
+    SYNC_PRINT(("FileLogDrain::~FileLogDrain():called\n"));
     mFile.flush();
     mFile.close();
+
+    SYNC_PRINT(("log <%s> saved", mPath.c_str()));
 }
 
 void FileLogDrain::drain(Log::Message &message)

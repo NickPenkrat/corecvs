@@ -51,8 +51,9 @@ public:
     void operator()(T* p)
     {
         CORE_UNUSED(p);
-        if (mNeedDel)
+        if (mNeedDel) {
             delete p;
+        }
     }
 };
 
@@ -62,29 +63,44 @@ public:
     std::mutex mMutex;
 
     LogDrainsKeeper() {}
+
    ~LogDrainsKeeper()
     {
-        for(auto it = begin(); it != end(); ++it)
+        SYNC_PRINT(("LogDrainsKeeper::~LogDrainsKeeper():called\n"));
+
+        while (!empty())
         {
-            delete_safe(*it);
+            LogDrain *drain = back();
+            pop_back();
+            delete_safe(drain);
         }
     }
 
-   void add(LogDrain* p) {
+   void add(LogDrain* p)
+   {
        mMutex.lock();
        push_back(p);
        mMutex.unlock();
    }
 
-   void detach(LogDrain* p) {
+   void detach(LogDrain* p)
+   {
        mMutex.lock();
        const auto &it = std::find(begin(), end(), p);
-       if (it != end()){
+       if (it != end()) {
            erase(it);
        }
        mMutex.unlock();
    }
 
+   void detachLastAddedLog()
+   {
+       if (size() > 1) {                // detach a log just have been added before
+           LogDrain* log = (*this)[size() - 1];
+           detach(log);
+           delete_safe(log);
+       }
+   }
 };
 
 /** \class Log
@@ -315,6 +331,7 @@ public:
 
 class FileLogDrain : public LogDrain
 {
+    std::string    mPath;
     std::ofstream  mFile;
 
 public:

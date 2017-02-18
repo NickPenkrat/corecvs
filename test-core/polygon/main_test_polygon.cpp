@@ -347,6 +347,15 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
     return p3;
 }
 
+TEST(polygon, eightPoints)
+{
+    Polygon  p2 = Polygon::RegularPolygon(8, Vector2dd(200, 80), 80);
+    Polygon  p1 = Polygon::RegularPolygon(8, Vector2dd(200,120), 80);
+    Polygon  p3 = testTwoPolygons(p1, p2, "poly-8.bmp");
+
+    CORE_ASSERT_TRUE_P(p3.size() == 8, ("We have polygon of size %d\n", (int)p3.size()));
+}
+
 TEST(polygon, twoSeparateIntersections)
 {
     Polygon  p2 = Polygon::Reverse(Polygon::RegularPolygon(5, Vector2dd(TEST_FILED_W / 2 , TEST_FILED_H / 2), 180, degToRad(72)));
@@ -354,6 +363,16 @@ TEST(polygon, twoSeparateIntersections)
     Polygon  p1 = p2;
     p2.transform(Matrix33::ShiftProj(TEST_FILED_W, 10) * Matrix33::MirrorYZ());
     testTwoPolygons(p1, p2, "poly-nonconvex-2.bmp");
+}
+
+
+TEST(polygon, twoSeparateIntersections1)
+{
+    Polygon  p2 = Polygon::Reverse(Polygon::RegularPolygon(5, Vector2dd(TEST_FILED_W / 2 , TEST_FILED_H / 2), 180, degToRad(72)));
+    p2[0] = Vector2dd(TEST_FILED_W / 2, TEST_FILED_H / 2);
+    Polygon  p1 = p2;
+    p2.transform(Matrix33::ShiftProj(TEST_FILED_W + 15, 10) * Matrix33::MirrorYZ());
+    testTwoPolygons(p1, p2, "poly-nonconvex-3.bmp");
 }
 
 TEST(polygon, trivialIntersection)
@@ -407,7 +426,7 @@ TEST(polygon, CameraView)
     cam1.intrinsics = PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(50));
     cam2.intrinsics = PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(50));
 
-    cam1.setLocation(Affine3DQ::Shift(-10, 0, 0) * Affine3DQ::RotationY(degToRad(10)));
+    cam1.setLocation(Affine3DQ::Shift(-10, 0, 0) * Affine3DQ::RotationY(degToRad(10)) * Affine3DQ::RotationX(degToRad(4)));
     cam1.setLocation(Affine3DQ::Shift( 10, 0, 0) * Affine3DQ::RotationY(degToRad(-10)));
 
 
@@ -417,26 +436,30 @@ TEST(polygon, CameraView)
 
     Polygon in;
     in.push_back(Vector2dd(-200,-200));
-//    in.push_back(Vector2dd(-100,-200));
+    in.push_back(Vector2dd(-100,-200));
     in.push_back(Vector2dd(-  0,-200));
-//    in.push_back(Vector2dd( 100,-200));
+    in.push_back(Vector2dd( 100,-200));
     in.push_back(Vector2dd( 200,-200));
 
-//    in.push_back(Vector2dd( 200,-100));
+    in.push_back(Vector2dd( 200,-100));
     in.push_back(Vector2dd( 200,-  0));
-//    in.push_back(Vector2dd( 200, 100));
+    in.push_back(Vector2dd( 200, 100));
     in.push_back(Vector2dd( 200, 200));
 
-//    in.push_back(Vector2dd( 100, 200));
+    in.push_back(Vector2dd( 100, 200));
     in.push_back(Vector2dd(   0, 200));
-//    in.push_back(Vector2dd(-100, 200));
+    in.push_back(Vector2dd(-100, 200));
     in.push_back(Vector2dd(-200, 200));
 
-//    in.push_back(Vector2dd(-200, 100));
+    in.push_back(Vector2dd(-200, 100));
     in.push_back(Vector2dd(-200,   0));
-//    in.push_back(Vector2dd(-200,-100));
+    in.push_back(Vector2dd(-200,-100));
     in.push_back(Vector2dd(-200,-200));
 
+    for (size_t i = 0; i < in.size(); i++)
+    {
+        in[i] += Vector2dd(200, 200);
+    }
 
     Mesh3D mesh;
     mesh.switchColor(true);
@@ -449,7 +472,7 @@ TEST(polygon, CameraView)
     drawer.drawCamera(mesh, cam2, 3.0);
 
     mesh.setColor(RGBColor::Blue());
-    mesh.addIcoSphere(s, 2.0);
+    mesh.addSphere(s, 2.0);
 
     std::vector<Vector3dd> proj1;
     std::vector<Vector3dd> proj2;
@@ -463,24 +486,27 @@ TEST(polygon, CameraView)
         r1.ray = ray1;
         sphere.intersect(r1);
         proj1.push_back(r1.getPoint());
+        mesh.addSphere(r1.getPoint(), 1);
+        mesh.addLine(ray1.getPoint(0.0), ray1.getPoint(20.0));
 
         Ray3d ray2 = cam2.rayFromPixel(in[i]).normalised();
         RayIntersection r2;
         r2.ray = ray2;
         sphere.intersect(r2);
         proj2.push_back(r2.getPoint());
-
+        mesh.addSphere(r2.getPoint(), 1);
+        mesh.addLine(ray2.getPoint(0.0), ray2.getPoint(20.0));
 
 
         p1.push_back(Vector3dd::toSpherical(sphereRot * r1.getPoint()).xy());
         p2.push_back(Vector3dd::toSpherical(sphereRot * r2.getPoint()).xy());
     }
 
-    p1.transform(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700));
-    p2.transform(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700));
+    Polygon p1large = p1.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700));
+    Polygon p2large = p2.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700));
 
 
-    PolygonCombiner combiner(p1,p2);
+    PolygonCombiner combiner(p1, p2);
     combiner.prepare();
     Polygon p3 = combiner.intersection();
 
@@ -488,11 +514,11 @@ TEST(polygon, CameraView)
     int w = 4000;
     RGB24Buffer *buffer  = new RGB24Buffer(h, w, RGBColor::Black());
     AbstractPainter<RGB24Buffer> painter(buffer);
-    painter.drawPolygon(p1, RGBColor::Red());
-    painter.drawPolygon(p2, RGBColor::Green());
-    painter.drawPolygon(p3, RGBColor::Yellow());
+    /*painter.drawPolygon(p1large, RGBColor::Red());
+    painter.drawPolygon(p2large, RGBColor::Green());*/
+    painter.drawPolygon(p3.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700)), RGBColor::Yellow());
 
-    combiner.drawDebug(buffer);
+    //combiner.drawDebug(buffer);
     BMPLoader().save("spherical.bmp", buffer);
     delete_safe(buffer);
 
