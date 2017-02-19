@@ -62,6 +62,7 @@ public:
     /** WHY SO SLOW? **/
     bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projectionPtr = NULL);
 
+    Affine3DQ getWorldLocation();
 };
 
 
