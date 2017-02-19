@@ -37,9 +37,9 @@ void FeatureDetectorProvider::print()
     }
 }
 
-void FeatureDetector::detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints)
+void FeatureDetector::detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints, void* pRemapCache)
 {
-    detectImpl(image, keyPoints, nKeypoints);
+	detectImpl(image, keyPoints, nKeypoints, pRemapCache);
 }
 
 FeatureDetectorProvider::~FeatureDetectorProvider()

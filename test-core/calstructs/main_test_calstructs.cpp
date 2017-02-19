@@ -15,7 +15,7 @@
 
 #include "mesh3d.h"
 #include "fixtureScene.h"
-#include "calibrationHelpers.h"
+#include "calibrationDrawHelpers.h"
 
 using namespace corecvs;
 
@@ -74,7 +74,7 @@ TEST(calStructs, testCameraModel)
    // ASSERT_TRUE(rayInCam.projectOnRay(point).notTooFar(point, 1e-7));
    // ASSERT_TRUE(projection.notTooFar(projection1));
 
-    CalibrationHelpers().drawCamera(mesh, model, 2.0);
+    CalibrationDrawHelpers().drawCamera(mesh, model, 2.0);
 
     mesh.dumpPLY("cammodel.ply");
 }

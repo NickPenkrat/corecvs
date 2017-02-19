@@ -1,5 +1,6 @@
 HEADERS += \
     math/eulerAngles.h \
+    math/kde.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
     math/matrix/matrix33.h \
@@ -60,7 +61,8 @@ HEADERS += \
     math/matrix/similarityReconstructor.h \
     math/sse/doublexT4.h \
     math/extensiveCoding.h \
-    math/wisdom.h
+    math/wisdom.h \
+    math/em.h
 
 SOURCES += \
     math/matrix/matrix.cpp \
@@ -83,7 +85,9 @@ SOURCES += \
     math/matrix/similarityReconstructor.cpp \
 #    math/matrix/matrixspeed.cpp
     math/extensiveCoding.cpp \
-    math/wisdom.cpp
+    math/kde.cpp \
+    math/wisdom.cpp \
+    math/em.cpp
 
 
 contains(DEFINES, "WITH_FFTW") {

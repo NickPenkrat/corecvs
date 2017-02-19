@@ -17,6 +17,4 @@ cv::Mat convert(const corecvs::RuntimeTypeBuffer &buffer);
 
 corecvs::RuntimeTypeBuffer convert(const cv::Mat &mat);
 
-
-
 #endif

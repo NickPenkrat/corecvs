@@ -182,8 +182,9 @@ void corecvs::StatusTracker::checkToCancel() const
     if (isToCancel())
     {
         std::cout << "StatusTracker::checkToCancel cancel_group_execution" << std::endl;
+#ifdef WITH_TBB
         task::self().cancel_group_execution();
-
+#endif
         std::cout << "StatusTracker::checkToCancel throw..." << std::endl;
         throw CancelExecutionException("Cancel");
     }

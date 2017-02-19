@@ -723,6 +723,7 @@ void AdvancedImageWidget::changeCenterPoint(QPoint point)
     mZoomCenter = point;
     recomputeRects();
     emit notifyCenterPointChanged(mZoomCenter);
+    forceUpdate();
 }
 
 bool AdvancedImageWidget::isRotationLandscape()
@@ -845,7 +846,7 @@ void AdvancedImageWidget::recomputeRects()
 
     mOutputRect = output;
     mInputRect  = input;
-    delete_safe(mResizeCache), mResizeCache = NULL;
+    delete_safe(mResizeCache);
 }
 
 void AdvancedImageWidget::saveFlowImage(QImage * image)

@@ -2,8 +2,6 @@
 #include "openCvKeyPointsWrapper.h"
 #include "OpenCVTools.h"
 
-#include "global.h"
-
 #include <exception>
 #include <sstream>
 
@@ -65,7 +63,7 @@ RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
 void OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std::string &s)
 {
     auto* b = OpenCVTools::getCVImageFromRGB24Buffer(&const_cast<corecvs::RGB24Buffer&>(buffer));
-    cv::Mat mat(b);
+    CVMAT_FROM_IPLIMAGE( mat, b, false );
     imwrite(s, mat);
     cvReleaseImage(&b);
 }
@@ -85,9 +83,11 @@ OpenCVLoaderRGB24Loader::OpenCVLoaderRGB24Loader()
 
 bool OpenCVLoaderRGB24Loader::acceptsFile(std::string name)
 {
+    CORE_UNUSED(name);
     return true;
 }
 
+/* I don't see how an inability to load particular format is an exceptional situation */
 RGB24Buffer *OpenCVLoaderRGB24Loader::load(std::string name)
 {
     cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_COLOR);
@@ -108,6 +108,7 @@ OpenCVLoaderRuntimeTypeBufferLoader::OpenCVLoaderRuntimeTypeBufferLoader()
 
 bool OpenCVLoaderRuntimeTypeBufferLoader::acceptsFile(std::string name)
 {
+     CORE_UNUSED(name);
      return true;
 }
 

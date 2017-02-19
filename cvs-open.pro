@@ -5,7 +5,7 @@ SUBDIRS +=                   \
 ##    generator              \   	# It needs core. For true rebuild after it's built, it should regenerate sources and then we should build projects once more.
     core                     \
     utils                    \
-#    test-core                \
+    test-core                \
 #    test-core-perf           \
 #    tests_big                \
     \   

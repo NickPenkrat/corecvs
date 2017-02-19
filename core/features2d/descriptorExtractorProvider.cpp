@@ -61,7 +61,7 @@ DescriptorExtractorProvider::DescriptorExtractorProvider()
 {
 }
 
-void DescriptorExtractor::compute(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &buffer)
+void DescriptorExtractor::compute(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &buffer, void* pRemapCache)
 {
-    computeImpl(image, keyPoints, buffer);
+	computeImpl(image, keyPoints, buffer, pRemapCache);
 }

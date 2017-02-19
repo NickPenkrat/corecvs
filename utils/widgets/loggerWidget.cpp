@@ -28,7 +28,7 @@ LoggerWidget::LoggerWidget(QWidget *parent)
 	mLevelIcons   = new QIcon *      [Log::LEVEL_LAST];
 	mLevelFilters = new QPushButton *[Log::LEVEL_LAST];
 
-    QGridLayout *gridLayout = new QGridLayout(this);
+    QGridLayout *gridLayout = new QGridLayout(ui.filterGroupBox);
     ui.filterGroupBox->setLayout(gridLayout);
     gridLayout->setContentsMargins(3,3,3,3);
 
@@ -65,7 +65,12 @@ LoggerWidget::~LoggerWidget()
 void LoggerWidget::drain(Log::Message &message)
 {
     DOTRACE(("Log is in the LoggerWidget drain"));
-	QMetaObject::invokeMethod(this, "doDrain", Qt::QueuedConnection, Q_ARG(Log::Message, message));
+
+    // TODO: message may have pointers to dynamic strings for File and FunctionName fields, and
+    //       after this call they become invalid, which should be fixed properly for such cases!
+    //       By now we are to use these strings as static.
+    //
+    QMetaObject::invokeMethod(this, "doDrain", Qt::QueuedConnection, Q_ARG(Log::Message, message));
 	//doDrain(message);
 }
 

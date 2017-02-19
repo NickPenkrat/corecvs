@@ -42,8 +42,8 @@ public:
 
     void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint> &keypoints, corecvs::RuntimeTypeBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
 protected:
-    void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors);
-    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int);
+    void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors, void*);
+    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int, void*);
 
 	static SiftGPU::SiftKeypoint convert(const KeyPoint &k);
 	static KeyPoint convert(const SiftGPU::SiftKeypoint &k);

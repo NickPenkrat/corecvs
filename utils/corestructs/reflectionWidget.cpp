@@ -30,7 +30,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
     for (size_t i = 0; i < reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
-        qDebug() << "Processing field:" <<  field->getSimpleName();
+        // qDebug() << "Processing field:" <<  field->getSimpleName();
 
         QLabel *label = new QLabel(this);
         label->setText(QString(field->getSimpleName()));
@@ -246,12 +246,12 @@ bool ReflectionWidget::getParameters(void *param) const
     for (int i = 0; i < (int)reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
-        qDebug() << "Processing field:" <<  field->getSimpleName();
+        // qDebug() << "Processing field:" <<  field->getSimpleName();
 
         switch (field->type) {
             case BaseField::TYPE_INT:
             {
-                const IntField *iField = static_cast<const IntField *>(field);
+                // const IntField *iField = static_cast<const IntField *>(field);
                 QSpinBox *spinBox = static_cast<QSpinBox *>(fieldToWidget[i]);
                 *obj.getField<int>(i) = spinBox->value();
                 break;
@@ -271,7 +271,7 @@ bool ReflectionWidget::getParameters(void *param) const
             }
             case BaseField::TYPE_STRING:
             {
-                const StringField *sField = static_cast<const StringField *>(field);
+                // const StringField *sField = static_cast<const StringField *>(field);
                 QTextEdit *textBox = static_cast<QTextEdit *>(fieldToWidget[i]);
                 *obj.getField<std::string>(i) = textBox->toPlainText().toStdString();
                 break;
@@ -285,7 +285,7 @@ bool ReflectionWidget::getParameters(void *param) const
             }
             case BaseField::TYPE_ENUM:
             {
-                const EnumField *eField = static_cast<const EnumField *>(field);
+                // const EnumField *eField = static_cast<const EnumField *>(field);
                 QComboBox *comboBox = static_cast<QComboBox *>(fieldToWidget[i]);
                 *obj.getField<int>(i) = comboBox->currentIndex();
                 break;
@@ -298,7 +298,7 @@ bool ReflectionWidget::getParameters(void *param) const
             }*/
             case BaseField::TYPE_DOUBLE | BaseField::TYPE_VECTOR_BIT:
             {
-                const DoubleVectorField *dField = static_cast<const DoubleVectorField *>(field);
+                // const DoubleVectorField *dField = static_cast<const DoubleVectorField *>(field);
                 DoubleVectorWidget *vectorWidget = static_cast<DoubleVectorWidget *>(fieldToWidget[i]);
                 *obj.getField<vector<double>>(i) = vectorWidget->value();
                 break;
@@ -308,7 +308,7 @@ bool ReflectionWidget::getParameters(void *param) const
             case BaseField::TYPE_COMPOSITE:
             {
                 const CompositeField *cField = static_cast<const CompositeField *>(field);
-                const Reflection *subReflection = cField->reflection;
+                // const Reflection *subReflection = cField->reflection;
                 ReflectionWidget *refWidget = static_cast<ReflectionWidget *>(fieldToWidget[i]);
 
                 if (refWidget != NULL) {
@@ -335,7 +335,7 @@ bool ReflectionWidget::setParameters(void *param) const
     for (size_t i = 0; i < reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
-        qDebug() << "Processing field:" <<  field->getSimpleName();
+        // qDebug() << "Processing field:" <<  field->getSimpleName();
 
         switch (field->type) {
             case BaseField::TYPE_INT:

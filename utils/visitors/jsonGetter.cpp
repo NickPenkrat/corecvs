@@ -24,7 +24,7 @@ void JSONGetter::init(const char *fileName)
         file.close();
     }
     else {
-        qDebug() << "Can't open file <" << QSTR_DATA_PTR(mFileName) << ">";
+        qDebug() << "JSONGetter::init() : Can't open file <" << QSTR_DATA_PTR(mFileName) << ">";
     }
 
     mNodePath.push_back(object);

@@ -29,6 +29,7 @@ CONFIG += with_widgets
 #
 HEADERS += \
     frames.h \
+    trackPainter.h \
     framesources/imageCaptureInterface.h \
     framesources/cameraControlParameters.h \
     framesources/decoders/mjpegDecoder.h \
@@ -109,10 +110,12 @@ HEADERS += \
     3d/sceneShaded.h \
     corestructs/reflectionWidget.h \
     3d/shadedSceneControlWidget.h \
-    scripting/coreToScript.h
+    scripting/coreToScript.h \
+    3d/billboardCaption3DScene.h
 
 SOURCES += \
     frames.cpp \
+    trackPainter.cpp \
     framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
     framesources/cameraControlParameters.cpp \
     framesources/decoders/mjpegDecoder.cpp \
@@ -189,7 +192,8 @@ SOURCES += \
     uis/histogramDepthDialog.cpp \
     3d/sceneShaded.cpp \
     corestructs/reflectionWidget.cpp \
-    3d/shadedSceneControlWidget.cpp
+    3d/shadedSceneControlWidget.cpp \
+    3d/billboardCaption3DScene.cpp
 
 
 FORMS += \

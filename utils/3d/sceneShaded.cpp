@@ -164,9 +164,10 @@ void SceneShaded::setParameters(void *params)
 }
 
 
-void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
+void SceneShaded::prepareMesh(CloudViewDialog * dialog)
 {
-    initializeGLFunctions();
+    SYNC_PRINT(("void SceneShaded::prepareMesh():called\n"));
+    initializeGLFunctions(dialog->getAreaContext());
 
     setParameters(&mParameters);
 
@@ -294,7 +295,7 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 glVertexAttrib3f(mColAttr, pointColor.x(), pointColor.y(), pointColor.z());
             }
 
-            glDrawArrays(GL_POINTS, 0, mMesh->vertexes.size());
+            glDrawArrays(GL_POINTS, 0, static_cast<GLsizei>(mMesh->vertexes.size()));
 
             glDisableVertexAttribArray(mPosAttr);
             glDisableVertexAttribArray(mColAttr);
@@ -337,14 +338,14 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                     edgeColors.push_back(edgeColor);
                 }
 
-                edgeIds.push_back(2 * edgeNum);
-                edgeIds.push_back(2 * edgeNum + 1);
+                edgeIds.push_back((uint32_t)(2 * edgeNum));
+                edgeIds.push_back((uint32_t)(2 * edgeNum + 1));
             }
 
             for (size_t faceNum = 0; faceNum < mMesh->faces.size(); faceNum++)
             {
                 Vector3d32 pointId = mMesh->faces[faceNum];
-                size_t start = positions.size();
+                uint32_t start = (uint32_t)positions.size();
 
                 positions.push_back(mMesh->vertexes[pointId.x()]);
                 positions.push_back(mMesh->vertexes[pointId.y()]);
@@ -367,8 +368,6 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                 edgeIds.push_back(start + 2);
                 edgeIds.push_back(start);
             }
-
-
 
             glVertexAttribPointer(mPosAttr, 3, GL_DOUBLE, GL_FALSE, 0, positions.data());
             glEnableVertexAttribArray(mPosAttr);
@@ -452,9 +451,9 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
                     normals.push_back(mMesh->normalCoords[normalId.z()]);
                 }
 
-                faceIds.push_back(3 * faceNum);
-                faceIds.push_back(3 * faceNum + 1);
-                faceIds.push_back(3 * faceNum + 2);
+                faceIds.push_back((uint32_t)(3 * faceNum));
+                faceIds.push_back((uint32_t)(3 * faceNum + 1));
+                faceIds.push_back((uint32_t)(3 * faceNum + 2));
             }
 
             glVertexAttribPointer(mPosAttr, 3, GL_DOUBLE, GL_FALSE, 0, positions.data());
@@ -534,5 +533,10 @@ void SceneShaded::drawMyself(CloudViewDialog * dialog)
     //mProgram->release();
 
 
+}
+
+SceneShaded::~SceneShaded()
+{
+    delete_safe(mMesh);
 }
 

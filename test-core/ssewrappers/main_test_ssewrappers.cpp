@@ -16,6 +16,7 @@
 #include "preciseTimer.h"
 #include "readers.h"
 #include "genericMath.h"
+#include "int32x8.h"
 
 using namespace corecvs;
 

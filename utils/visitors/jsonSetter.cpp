@@ -18,7 +18,7 @@ JSONSetter::~JSONSetter()
 
     QFile file(mFileName);
     if (!file.open(QFile::WriteOnly)) {
-        qDebug() << "Can't open file <" << mFileName << ">" << endl;
+        qDebug() << "JSONSetter::~JSONSetter(): Can't open file <" << mFileName << ">" << endl;
         return;
     }
 

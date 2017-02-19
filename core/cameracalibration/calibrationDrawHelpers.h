@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rgbColor.h"
+#include "calibrationDrawHelpersParameters.h"
 
 namespace corecvs {
 
@@ -12,7 +13,7 @@ class SceneFeaturePoint;
 class FixtureScene;
 class CameraFixture;
 
-class CalibrationHelpers
+class CalibrationDrawHelpers : public CalibrationDrawHelpersParameters
 {
 public:
 
@@ -23,6 +24,8 @@ public:
 
     static RGBColor palette[6];
 
+
+#if 0
     bool    printNames;
     bool    privateColor;
     bool    largePoints;
@@ -31,15 +34,20 @@ public:
     bool    drawFixtureCams;
     bool    drawObservations;
     bool    drawRays;
+#endif
 
-    CalibrationHelpers()
+    CalibrationDrawHelpers()
+#if 0
       : printNames(false)
       , privateColor(false)
       , largePoints(false)
       , drawFixtureCams(true)
       , drawObservations(false)
       , drawRays(false)
+#endif
     {}
+
+    void setParameters(const CalibrationDrawHelpersParameters &params);
 
     void drawCamera (Mesh3D &mesh, const CameraModel &cam, double scale);
 

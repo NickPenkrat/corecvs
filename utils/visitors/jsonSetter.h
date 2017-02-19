@@ -51,7 +51,9 @@ public:
         popChild(fieldName);
     }
 
-    template <typename Type, typename std::enable_if<!(std::is_enum<Type>::value || (std::is_arithmetic<Type>::value && !(std::is_same<bool, Type>::value || std::is_same<uint64_t, Type>::value))), int>::type foo = 0>
+    template <typename Type, typename std::enable_if<
+                  !(std::is_enum<Type>::value ||
+                  (std::is_arithmetic<Type>::value && !(std::is_same<bool, Type>::value || std::is_same<uint64_t, Type>::value))), int>::type foo = 0>
     void visit(Type &field, Type /*defaultValue*/, const char *fieldName)
     {
         visit(field, fieldName);

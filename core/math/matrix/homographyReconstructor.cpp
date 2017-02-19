@@ -557,11 +557,12 @@ void HomographyReconstructor::CostFunction::operator()(const double in[], double
     reconstructor->getCostFunction(H, out);
 }
 
-Matrix HomographyReconstructor::CostFunction::getJacobian(const double in[], double dlta)
+Matrix HomographyReconstructor::CostFunction::getJacobian(const double in[], double /*dlta*/)
 {
-    auto J1 = reconstructor->getJacobian(Matrix33(in[0], in[1], in[2],
-                                        in[3], in[4], in[5],
-                                        in[6], in[7], 1.0));
+    auto J1 = reconstructor->getJacobian(
+       Matrix33(in[0], in[1], in[2],
+                in[3], in[4], in[5],
+                in[6], in[7], 1.0));
     return J1;
 }
 

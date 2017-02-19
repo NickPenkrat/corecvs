@@ -49,6 +49,8 @@ public:
     int getInputNum() const;
     int getOutputNum() const;
     double factor = 1.0;
+
+    static Affine3DQ TrafoToPlane(const std::vector<std::pair<corecvs::Vector3dd, corecvs::Vector3dd>> &worldToBoard);
 private:
     size_t K, N;
 

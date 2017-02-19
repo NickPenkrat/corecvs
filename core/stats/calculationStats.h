@@ -23,7 +23,7 @@
 
 namespace corecvs {
 
-using std::map;
+//using std::map;
 using std::string;
 using std::deque;
 
@@ -146,7 +146,7 @@ public:
     }
 
     /* New interface */
-    map<string, SingleStat> mValues;
+    std::map<string, SingleStat> mValues;
     string                  mPrefix;
     PreciseTimer            mHelperTimer;
 
@@ -200,7 +200,7 @@ public:
     {
         if (stats == NULL)
             return;
-        stats->leaveContext(stats);
+        stats->leaveContext();
     }
 
     static void startInterval(Statistics *stats)
@@ -243,7 +243,7 @@ class BaseTimeStatisticsCollector
 {
 public:
     /** Types **/
-    typedef map<string, UnitedStat> StatsMap;
+    typedef std::map<string, UnitedStat> StatsMap;
 
     /* Class for filtering */
     class OrderFilter
@@ -285,7 +285,7 @@ public:
     virtual void addSingleStat(const string& name, const SingleStat &stat)
     {
         UnitedStat unitedStat;
-        map<string, UnitedStat>::iterator uit = mSumValues.find(name);
+        std::map<string, UnitedStat>::iterator uit = mSumValues.find(name);
         if (uit != mSumValues.end())
         {
            unitedStat = uit->second;
@@ -297,7 +297,7 @@ public:
     virtual void addStatistics(const Statistics &stats)
     {
         /* New style */
-        map<string, SingleStat>::const_iterator it;
+        std::map<string, SingleStat>::const_iterator it;
         for (it = stats.mValues.begin(); it != stats.mValues.end(); ++it)
         {
             string name = it->first;
@@ -308,14 +308,14 @@ public:
 
     virtual void uniteStatistics(const BaseTimeStatisticsCollector &stats)
     {
-        map<string, UnitedStat>::const_iterator uit;
+        std::map<string, UnitedStat>::const_iterator uit;
         for (uit = stats.mSumValues.begin(); uit != stats.mSumValues.end(); ++uit)
         {
             string     name  = uit->first;
             UnitedStat ustat = uit->second;
 
             UnitedStat unitedStat;
-            map<string, UnitedStat>::iterator uit2 = mSumValues.find(name);
+            std::map<string, UnitedStat>::iterator uit2 = mSumValues.find(name);
             if (uit2 != mSumValues.end())
             {
                 unitedStat = uit2->second;

@@ -92,7 +92,7 @@ public:
 
     Triangle3dd getFaceAsTrinagle(size_t number);
 
-    void addSphere    (Vector3dd center, double radius, int step);
+    void addSphere    (Vector3dd center, double radius, int step = 10);
 
     /**
      *  Adds a cylinder to the Mesh.

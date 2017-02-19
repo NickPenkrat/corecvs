@@ -179,7 +179,7 @@ int LensDistortionModelParametersBase::staticInit()
           false,
           "Map Forward",
           "Map Forward",
-          "This one is used to identify direction of map"
+          "This one is used to identify map direction, true if undistorted->distorted"
         );
     field10->widgetHint=BaseField::CHECK_BOX;
     fields().push_back(field10);

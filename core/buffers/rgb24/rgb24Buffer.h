@@ -106,6 +106,8 @@ public:
      *
      **/
     void drawCrosshare1 ( int x, int y, RGBColor color);
+    void drawCrosshare1 (const Vector2dd &point, RGBColor color);
+
 
     /**
      * This function is used to draw a sort of marker over the buffer
@@ -126,7 +128,7 @@ public:
      *
      **/
     void drawCrosshare3 ( int x, int y, RGBColor color);
-
+    void drawCrosshare3 (const Vector2dd &point, RGBColor color);
 
 
 

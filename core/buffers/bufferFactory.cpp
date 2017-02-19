@@ -82,12 +82,26 @@ RGB24Buffer *BufferFactory::loadRGB24Bitmap(string name)
     vector<BufferLoader<RGB24Buffer> *>::iterator it;
     for (it = mLoadersRGB24.begin(); it != mLoadersRGB24.end(); it++)
     {
+//        SYNC_PRINT(("BufferFactory::loadRGB24Bitmap(%s): loader <%s>\n", name.c_str(), (*it)->name().c_str()));
+
         if (!((*it)->acceptsFile(name)))
             continue;
 
-        RGB24Buffer *result = (*it)->load(name);
+        RGB24Buffer *result = NULL;
+
+        try {
+            result = (*it)->load(name);
+        } catch ( std::exception &e )
+        {
+            SYNC_PRINT(("BufferFactory::loadRGB24Bitmap(): loader <%s> violates contract by throwing unexpected excpation",(*it)->name().c_str() ));
+        }
+
         if (result != NULL)
             return result;
+        else {
+            SYNC_PRINT(("BufferFactory::loadRGB24Bitmap(%s):  loader <%s> agreed to load, but failed\n",
+                        name.c_str(), (*it)->name().c_str() ));
+        }
     }
 
     return NULL;

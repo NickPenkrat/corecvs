@@ -553,6 +553,37 @@ void Matrix::svd (Matrix33 *A, Vector3dd *W, Matrix33 *V)
     *V = (Matrix33)mV;
 }
 
+Matrix Matrix::invPosdefSqrt(const Matrix* preTransform) const
+{
+    CORE_ASSERT_TRUE_S(h == w);
+    CORE_ASSERT_TRUE_S(!preTransform || (preTransform->h == preTransform->w && preTransform->h == h));
+#ifndef WITH_BLAS
+    Matrix U(w, w), W(1, h), V(*this);
+    DiagonalMatrix d(h);
+    Matrix::jacobi(&V, &d, &U, 0);
+    for (int i = 0; i < h; ++i)
+        W.a(0, i) = d.a(i, i);
+#else
+    Matrix A(*this);
+    int lwork, liwork, m;
+    std::unique_ptr<int[]> isuppz(new int[2*h]);
+    Matrix W(1, h), U(h, h);
+    double vl = 0.0, vu = 0.0, abstol = -1.0;
+    int il = 1, iu = h;
+    LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', h, &A.a(0, 0), A.stride, vl, vu, il, iu, abstol, &m, &W.a(0,0), &U.a(0, 0), U.stride, isuppz.get());
+    CORE_ASSERT_TRUE_S(m == h);
+#endif
+    for (int i = 0; i < h; ++i)
+    {
+        auto sqrt = std::sqrt(W.a(0, i));
+        for (int j = 0; j < w; ++j)
+        {
+            U.a(j, i) /= sqrt;
+        }
+    }
+    return preTransform ? U ** preTransform : U;
+}
+
 /**
  * \brief Solves the linear equation.
  *
@@ -1173,13 +1204,6 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
     int n = A->w;
     int m = A->h;
 
-    int     i, its, j, jj, k, l=0, nm = 0, nm1 = n - 1, mm1 = m - 1;
-    double  c, f, h, s, x, y, z;
-    double  anorm = 0.0;
-    double  g = 0.0;
-    double scale = 0.0;
-    double *rv1;
-
     CORE_ASSERT_FALSE((m < n), "SVDCMP: You must augment A with extra zero rows");
     CORE_ASSERT_TRUE(n > 0, "A width should not be zero");
 
@@ -1189,6 +1213,13 @@ void Matrix::svd (Matrix *A, Matrix *W, Matrix *V)
     LAPACKE_dgesvd(LAPACK_ROW_MAJOR, 'O', 'A', m, n, &A->a(0, 0), A->stride, &W->a(0, 0), 0, 1, &V->a(0, 0), V->stride, &vv[0]);
     V->transpose();
 #else
+    int     i, its, j, jj, k, l=0, nm = 0, nm1 = n - 1, mm1 = m - 1;
+    double  c, f, h, s, x, y, z;
+    double  anorm = 0.0;
+    double  g = 0.0;
+    double scale = 0.0;
+    double *rv1;
+
     rv1 = new double[n];
 
     /* Householder reduction to bidigonal form */

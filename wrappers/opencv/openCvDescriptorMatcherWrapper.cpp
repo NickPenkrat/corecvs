@@ -39,12 +39,22 @@ void OpenCvDescriptorMatcherWrapper::knnMatchImpl(RuntimeTypeBuffer &query
 
 void OpenCvDescriptorMatcherWrapper::setProperty(const std::string &name, const double &value)
 {
+#ifdef WITH_OPENCV_3x
+    CORE_UNUSED(name);
+    CORE_UNUSED(value);
+#else
     matcher->set(name, value);
+#endif
 }
 
 double OpenCvDescriptorMatcherWrapper::getProperty(const std::string &name) const
 {
+#ifdef WITH_OPENCV_3x
+    CORE_UNUSED(name);
+    return 0.0;
+#else
     return matcher->get<double>(name);
+#endif
 }
 
 void init_opencv_matchers_provider()
@@ -66,16 +76,21 @@ void init_opencv_matchers_provider()
 
 DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const DescriptorType &type, const MatcherType &matcher, const std::string &params)
 {
+    CORE_UNUSED(params);
+
     SWITCH_MATCHER_TYPE(ANN,
-        SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););
-        SWITCH_TYPE(SURF, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher););
-        SWITCH_TYPE(ORB, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(20, 10, 2))););
-        SWITCH_TYPE(BRISK, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(20, 10, 2)));););
+        SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher);)
+        SWITCH_TYPE(SURF, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher);)
+        SWITCH_TYPE(ORB, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(20, 10, 2)));)
+        SWITCH_TYPE(BRISK, return new OpenCvDescriptorMatcherWrapper(new cv::FlannBasedMatcher(new cv::flann::LshIndexParams(20, 10, 2)));)
+            )
     SWITCH_MATCHER_TYPE(BF,
-        SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_L2)););
-        SWITCH_TYPE(SURF, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_L2)););
-        SWITCH_TYPE(ORB, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING)););
-        SWITCH_TYPE(BRISK, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING));););
+        SWITCH_TYPE(SIFT, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_L2));)
+        SWITCH_TYPE(SURF, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_L2));)
+        SWITCH_TYPE(ORB, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING));)
+        SWITCH_TYPE(BRISK, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING));)
+        SWITCH_TYPE(AKAZE, return new OpenCvDescriptorMatcherWrapper(new cv::BFMatcher(cv::NORM_HAMMING));)
+            )
 
     CORE_ASSERT_FAIL_P(("OpenCvDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcherWrapper", type.c_str(), matcher.c_str()));
     return 0;
@@ -84,15 +99,18 @@ DescriptorMatcher* OpenCvDescriptorMatcherProvider::getDescriptorMatcher(const D
 bool OpenCvDescriptorMatcherProvider::provides(const DescriptorType &type, const MatcherType &matcher)
 {
     SWITCH_MATCHER_TYPE(ANN,
-        SWITCH_TYPE(SIFT, return true;);
-        SWITCH_TYPE(SURF, return true;);
-        SWITCH_TYPE(BRISK, return true;);
-        SWITCH_TYPE(ORB, return true;););
+        SWITCH_TYPE(SIFT, return true;)
+        SWITCH_TYPE(SURF, return true;)
+        SWITCH_TYPE(BRISK, return true;)
+        SWITCH_TYPE(ORB, return true;)
+            )
     SWITCH_MATCHER_TYPE(BF,
-        SWITCH_TYPE(SIFT, return true;);
-        SWITCH_TYPE(SURF, return true;);
-        SWITCH_TYPE(BRISK, return true;);
-        SWITCH_TYPE(ORB, return true;););
+        SWITCH_TYPE(SIFT, return true;)
+        SWITCH_TYPE(SURF, return true;)
+        SWITCH_TYPE(BRISK, return true;)
+        SWITCH_TYPE(ORB, return true;)
+        SWITCH_TYPE(AKAZE, return true;)
+            )
     return false;
 }
 

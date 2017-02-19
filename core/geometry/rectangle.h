@@ -105,6 +105,17 @@ public:
         return Rectangle(center - Vector2d<ElementType>(radius, radius), Vector2d<ElementType>(2 * radius, 2 * radius));
     }
 
+    static Rectangle FromCorners(const Vector2d<ElementType> &corner1, const Vector2d<ElementType> &corner2)
+    {
+        return Rectangle(corner1, corner2 - corner1);
+    }
+
+    static Rectangle Empty()
+    {
+        return Rectangle(0,0,0,0);
+    }
+
+
     friend ostream & operator <<(ostream &out, const Rectangle &rect)
     {
         out << rect.corner << " -> " << rect.size;

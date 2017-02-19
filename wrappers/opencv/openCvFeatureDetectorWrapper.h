@@ -3,26 +3,43 @@
 #include "featureDetectorProvider.h"
 
 namespace cv {
-    class FeatureDetector;
+#ifdef WITH_OPENCV_3x
+	class Feature2D;
+	typedef Feature2D FeatureDetector;
+#else
+	class FeatureDetector;
+#endif  
 }
+
+#ifdef WITH_OPENCV_3x
+    struct SmartPtrDetectorHolder;
+#endif
 
 class OpenCvFeatureDetectorWrapper : public FeatureDetector
 {
 public:
-    OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector);
+#ifdef WITH_OPENCV_3x
+	OpenCvFeatureDetectorWrapper(SmartPtrDetectorHolder *holder);
+#else
+    OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector);  
+#endif  
+    
    ~OpenCvFeatureDetectorWrapper();
 
     double getProperty(const std::string &name) const;
     void   setProperty(const std::string &name, const double &value);
 
 protected:
-    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nMax);
+    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nMax, void* pRemapCache);
 
 private:
     OpenCvFeatureDetectorWrapper(const OpenCvFeatureDetectorWrapper&);
     OpenCvFeatureDetectorWrapper& operator=(const OpenCvFeatureDetectorWrapper&);
 
     cv::FeatureDetector* detector;
+#ifdef WITH_OPENCV_3x
+    SmartPtrDetectorHolder* holder;
+#endif  
 };
 
 extern "C"

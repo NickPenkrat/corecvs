@@ -246,8 +246,52 @@ public:
 
 };
 
+#if 0
+template<typename RealType, typename ElementType, typename ReturnType = RealType>
+class MatrixVisitOperationsBase
+{
+public:
+    /**
+     *  Static cast functions
+     **/
+    inline RealType *realThis() {
+        return static_cast<RealType *>(this);
+    }
+
+    inline const RealType *realThis() const {
+        return static_cast<const RealType *>(this);
+    }
+
+private:
+    /**
+     *  Interface related functions
+     **/
+    inline ElementType &_atm(int i, int j) {
+        return realThis()->atm(i, j);
+    }
+
+    inline const ElementType &_atm(int i, int j) const {
+        return realThis()->atm(i, j);
+    }
+
+    inline int _height() const {
+        return realThis()->height();
+    }
+
+    inline int _width() const {
+        return realThis()->width();
+    }
+
+    inline RealType _createMatrix(int h, int w) const {
+        return realThis()->createMatrix(h, w);
+    }
+public:
+    visit
 
 
+
+};
+#endif
 
 /**
  * A matrix over abstract buffer having a static size
