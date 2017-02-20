@@ -518,7 +518,11 @@ TEST(polygon, CameraView)
     painter.drawPolygon(p2large, RGBColor::Green());*/
     painter.drawPolygon(p3.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700)), RGBColor::Yellow());
 
-    //combiner.drawDebug(buffer);
+
+    // This is for debug only
+    PolygonCombiner largeCombiner(p1large, p2large);
+    largeCombiner.prepare();
+    largeCombiner.drawDebug(buffer);
     BMPLoader().save("spherical.bmp", buffer);
     delete_safe(buffer);
 
