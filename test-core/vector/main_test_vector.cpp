@@ -22,6 +22,7 @@
 #include "vector3d.h"
 
 using namespace corecvs;
+using namespace std;
 
 template<int length>
 class TestVector : public VectorOperationsBase< TestVector<length>, int>
@@ -151,6 +152,7 @@ TEST(Vector, MulAllElements)
 
 TEST(Vector, testSpherical)
 {
+    cout << "Case 1:" << endl;
     {
         double longitude = degToRad(45.0);
         double latitude  = degToRad(45.0);
@@ -170,6 +172,28 @@ TEST(Vector, testSpherical)
         ASSERT_DOUBLE_EQ(latitude , back.x());
         ASSERT_DOUBLE_EQ(longitude, back.y());
     }
+
+    cout << "Case 2:" << endl;
+    {
+        double longitude = degToRad(50.0);
+        double latitude  = degToRad(20.0);
+        double length    = 45.0;
+
+        Vector3dd vec = Vector3dd::FromSpherical(latitude, longitude, length);
+        cout << "Vector:" << vec << std::endl;
+
+        cout << "Length:" << vec.l2Metric() << std::endl;
+
+
+        Vector3dd back = Vector3dd::toSpherical(vec);
+        cout << "Back:" << back << std::endl;
+
+        ASSERT_DOUBLE_EQ( length, back.z());
+
+        ASSERT_DOUBLE_EQ(latitude , back.x());
+        ASSERT_DOUBLE_EQ(longitude, back.y());
+    }
+
 
     {
         Vector3dd vec(0.0, 0.0, 50.0);

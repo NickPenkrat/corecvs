@@ -432,7 +432,8 @@ TEST(polygon, CameraView)
 
     Sphere3d s(Vector3dd::Zero(), 200);
     RaytraceableSphere sphere(s);
-    Matrix44 sphereRot = Matrix44::RotationX(degToRad(90));
+    Matrix44 sphereRot    = Matrix44::RotationX(degToRad(90));
+    Matrix44 sphereRotInv = Matrix44::RotationX(degToRad(-90));
 
     Polygon in;
     in.push_back(Vector2dd(-200,-200));
@@ -502,29 +503,27 @@ TEST(polygon, CameraView)
         p2.push_back(Vector3dd::toSpherical(sphereRot * r2.getPoint()).xy());
     }
 
-    Polygon p1large = p1.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700));
-    Polygon p2large = p2.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700));
-
 
     PolygonCombiner combiner(p1, p2);
     combiner.prepare();
     Polygon p3 = combiner.intersection();
 
-    int h = 4000;
-    int w = 4000;
-    RGB24Buffer *buffer  = new RGB24Buffer(h, w, RGBColor::Black());
-    AbstractPainter<RGB24Buffer> painter(buffer);
-    /*painter.drawPolygon(p1large, RGBColor::Red());
-    painter.drawPolygon(p2large, RGBColor::Green());*/
-    painter.drawPolygon(p3.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700)), RGBColor::Yellow());
+    {
+        int h = 4000;
+        int w = 4000;
+        RGB24Buffer *buffer  = new RGB24Buffer(h, w, RGBColor::Black());
+        AbstractPainter<RGB24Buffer> painter(buffer);
+        painter.drawPolygon(p3.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700)), RGBColor::Yellow());
 
-
-    // This is for debug only
-    PolygonCombiner largeCombiner(p1large, p2large);
-    largeCombiner.prepare();
-    largeCombiner.drawDebug(buffer);
-    BMPLoader().save("spherical.bmp", buffer);
-    delete_safe(buffer);
+        // This is for debug only
+        Polygon p1large = p1.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700));
+        Polygon p2large = p2.transformed(Matrix33::ShiftProj(2000, 2000) * Matrix33::Scale2(700));
+        PolygonCombiner largeCombiner(p1large, p2large);
+        largeCombiner.prepare();
+        largeCombiner.drawDebug(buffer);
+        BMPLoader().save("spherical.bmp", buffer);
+        delete_safe(buffer);
+    }
 
     mesh.setColor(RGBColor::Green());
     for (size_t i = 0; i < in.size(); i++)
