@@ -24,5 +24,14 @@ bool FixtureCamera::projectPointFromWorld(const Vector3dd &point, Vector2dd *pro
     return true;
 }
 
+Affine3DQ FixtureCamera::getWorldLocation()
+{
+   Affine3DQ local = extrinsics.toAffine3D();
+   if (cameraFixture == NULL) {
+       return local;
+   }
+   return (cameraFixture->location * local);
+}
+
 
 } // namespace corecvs
