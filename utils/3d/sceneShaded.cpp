@@ -167,7 +167,7 @@ void SceneShaded::setParameters(void *params)
 void SceneShaded::prepareMesh(CloudViewDialog * dialog)
 {
     SYNC_PRINT(("void SceneShaded::prepareMesh():called\n"));
-    initializeGLFunctions(dialog->getAreaContext());
+    initializeOpenGLFunctions();
 
     setParameters(&mParameters);
 
@@ -201,6 +201,7 @@ void SceneShaded::prepareMesh(CloudViewDialog * dialog)
 
 void SceneShaded::drawMyself(CloudViewDialog * dialog)
 {
+    initializeOpenGLFunctions();
 /*    if (mProgram[] == NULL)
     {
         qDebug("SceneShaded::drawMyself(): mProgram is NULL");

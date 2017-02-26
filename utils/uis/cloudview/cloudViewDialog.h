@@ -174,7 +174,7 @@ public:
     }
 
 
-    const QGLContext *getAreaContext();
+    const QOpenGLContext *getAreaContext();
 
     /* OpenGL textures */
 public:

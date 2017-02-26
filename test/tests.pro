@@ -31,6 +31,7 @@ SUBDIRS +=       \
 
 !win32 {
     SUBDIRS += jitplayground
+    SUBDIRS += gcodeplayground
 }
 
 with_qscript {
@@ -50,6 +51,7 @@ grab                                = grab/grab.pro
 grab_N_captures                     = grab_N_captures/grab_N_captures.pro
 serialize1                          = serialize1/serialize1.pro
 jitplayground                       = jitplayground/jitplayground.pro
+gcodeplayground                     = gcodeplayground/gcodeplayground.pro
 example_scene                       = example_scene/example_scene.pro
 adoptcolor                          = adoptcolor/adoptcolor.pro
 avigrab                             = avigrab/avigrab.pro
