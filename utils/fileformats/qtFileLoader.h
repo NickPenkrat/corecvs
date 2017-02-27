@@ -73,7 +73,8 @@ public:
 
 };
 
-class QTRuntimeLoader : public BufferLoader<RuntimeTypeBuffer>{
+class QTRuntimeLoader : public BufferLoader<RuntimeTypeBuffer>
+{
 public:
     static int registerMyself()
     {
