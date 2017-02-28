@@ -17,6 +17,9 @@
 
 using namespace corecvs;
 
+/**
+ *  With new style Qt this class seem to become deprecated
+ **/
 class OpenGLTools
 {
 public:

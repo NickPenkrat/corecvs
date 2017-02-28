@@ -57,8 +57,12 @@ namespace HelperUtils
     bool            endsWith  (const string &str, const string &postfix);
     istream&        getlineSafe(istream& is, string& str);
 
+    std::string removeLeading(const string &str, const string &symbols = " ");
+
     void            stringSplit(const string &s, char delim, vector<string> &elems);
     vector<string>  stringSplit(const string &s, char delim);
+
+    string stringCombine(vector<string> parts, char delim);
 
     string          toNativeSlashes(const string& str);
 

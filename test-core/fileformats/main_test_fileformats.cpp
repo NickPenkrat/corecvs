@@ -197,9 +197,34 @@ TEST(FileFormats, testGcodeLoader)
             "G00 Z5.000000\n";
 
     GcodeLoader loader;
+    Mesh3D mesh;    
+    std::string str(input);
+    {
+        std::istringstream stream(str);
+        /*int result =*/ loader.loadGcode(stream, mesh);
+        mesh.dumpPLY("gcode-test.ply");
+    }
+
+    {
+        std::istringstream stream(str);
+        std::ostringstream ostream;
+
+        GCodeProgram program;
+
+        loader.loadGcode(stream, program);
+        loader.saveGcode(ostream, program);
+        cout << "Saving:" << endl;
+        cout << ostream.str() << endl;
+    }
+
+}
+
+TEST(FileFormats, testGcodeLoader1)
+{
+    const char input[] = "G1 X0  F3000\n";
+    GcodeLoader loader;
     Mesh3D mesh;
     std::string str(input);
     std::istringstream stream(str);
-    /*int result =*/ loader.loadGcode(stream, mesh);
-    mesh.dumpPLY("gcode-test.ply");
+    loader.loadGcode(stream, mesh);
 }
