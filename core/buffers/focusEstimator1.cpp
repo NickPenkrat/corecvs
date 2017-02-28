@@ -83,7 +83,7 @@ void FocusEstimator1::operator ()()
             BoardCornersType &board = mBoards[b];
             int boardH = (int)board.size();
             int boardW = (boardH != 0) ? (int)board.front().size() : 0;
-            cout << "Board "  << boardH << " " << boardW << endl;
+            cout << "FocusEstimator1 \tBoard_HxW: "  << boardH << " " << boardW << endl;
 
             for (int i = 0; i < (int)board.size() - 1; i++)
             {
@@ -122,7 +122,7 @@ void FocusEstimator1::operator ()()
 
                     if (mDebug != NULL) {
                         painter.drawPolygon(junction, RGBColor::Yellow());
-                        painter.drawPolygon(center  , isWhite ? RGBColor::Amber() : RGBColor::Gray());
+                        painter.drawPolygon(center, isWhite ? RGBColor::Amber() : RGBColor::Gray());
                     }
 
                     /* Check the uniform*/
@@ -146,11 +146,8 @@ void FocusEstimator1::operator ()()
                     }
 
                     approxCenterBouter.addPoint(approxCenterBinner.getRadius());
-
                 }
             }
-
-
 
             /*if (mDebug != NULL)
             {
@@ -166,7 +163,7 @@ void FocusEstimator1::operator ()()
 
             if (mDebug != NULL)
             {
-                cout << "pixelSize is :" << pixelSize << endl;
+                cout << "FocusEstimator1 \tpixelSize is :" << pixelSize << endl;
             }
 
             for (size_t i = 0; i < board.size(); i++ )
@@ -177,14 +174,14 @@ void FocusEstimator1::operator ()()
 
                     if (mDebug != NULL)
                     {
-                        cout << "Processing cross:" << i << " " << j << " " << workArea << endl;
+                        //cout << "Processing cross:" << i << " " << j << " " << workArea << endl;
                         // painter.drawCircle(board[i][j], pixelSize, RGBColor::Blue());
                     }
 
                     CircleSpanIterator inner(workArea);
                     while (inner.hasValue())
                     {
-                       // cout << "!\n";
+                        // cout << "!\n";
                         HLineSpanInt span = inner.getSpan();
                         if (span.y() < 1 || span.y() + 1 >= mCurrent->h)
                             continue;
@@ -213,11 +210,10 @@ void FocusEstimator1::operator ()()
 
     //mResult.setBnoise(approxCenterB.getRadius());
     mResult.setBnoise(approxCenterBouter.getMean());
-    SYNC_PRINT(("FocusEstimator1::FocusEstimator1() : old = %lf new = %lf\n", approxCenterB.getRadius(), approxCenterBouter.getRadius() ));
+    SYNC_PRINT(("FocusEstimator1::FocusEstimator1() : old = %lf new = %lf\n", approxCenterB.getRadius(), approxCenterBouter.getRadius()));
 
     mResult.setWnoise(approxCenterW.getRadius());
     mResult.setSharpness(approxSharpness.getMean());
-
 
     Statistics::endInterval(mStats, "Overall computation");
     Statistics::leaveContext(mStats);
