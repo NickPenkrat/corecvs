@@ -197,7 +197,7 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     uint8_t *charImage = new uint8_t[size];
     if (charImage == nullptr)
     {
-        CORE_ASSERT_FAIL_P(("out of memory on allocate %d bytes", (int)size));
+        CORE_ASSERT_FAIL_P(("out of memory on allocate %" PRISIZE_T " bytes", size));
         goto done;
     }
 
@@ -382,7 +382,7 @@ bool PPMLoader::writeHeader(FILE *fp, unsigned long int h, unsigned long int w, 
     {
         for (MetaData::iterator i = metadata.begin(); i != metadata.end(); i++)
         {
-            fprintf(fp, "# @meta %s\t@values %i\t", i->first.c_str(), (int)i->second.size());
+            fprintf(fp, "# @meta %s\t@values %" PRISIZE_T "\t", i->first.c_str(), i->second.size());
             for (uint j = 0; j < i->second.size(); j++)
                 fprintf(fp, "%f ", i->second[j]);
             fprintf(fp, "\n");

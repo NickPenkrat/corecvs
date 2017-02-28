@@ -205,7 +205,7 @@ private:
     }
     void copy(uint8_t *src)
     {
-        //SYNC_PRINT(("RuntimeTypeBuffer:copy(%p -> %p [%d]):called\n", src, data, (int)getDataSize()));
+        //SYNC_PRINT(("RuntimeTypeBuffer:copy(%p -> %p [%" PRISIZE_T "]):called\n", src, data, getDataSize()));
         if (src != NULL) { /*memcpy: (ISO/IEC 9899:1999): 7.1.4 */
             memcpy(data, src, getDataSize());
         }
