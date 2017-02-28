@@ -89,13 +89,13 @@ void CameraModelParametersControlWidget::savePressed()
 
 void CameraModelParametersControlWidget::revertPressed()
 {
-    qDebug() << "CameraModelParametersControlWidget::revertPressed(): pressed";
+//    qDebug() << "CameraModelParametersControlWidget::revertPressed(): pressed";
     setParameters(backup);
 }
 
 void CameraModelParametersControlWidget::paramsChangedInUI()
 {
-    qDebug() << "CameraModelParametersControlWidget::paramsChangedInUI(): pressed";
+//    qDebug() << "CameraModelParametersControlWidget::paramsChangedInUI(): pressed";
     ui->revertButton->setEnabled(true);
     emit paramsChanged();
 }

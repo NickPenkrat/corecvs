@@ -24,11 +24,17 @@ namespace corecvs {
 
 using std::vector;
 
+
+/**
+ *  This class holds the non-orthogonal reference frame on 2D plane in 3d space.
+ *
+ *  This class is designed for the situations when you need to map texture on the 3d objects
+ **/
 class PlaneFrame {
 public:
-    Vector3dd p1;
-    Vector3dd e1;
-    Vector3dd e2;
+    Vector3dd p1; /**< Position of zero point in space */
+    Vector3dd e1; /**< Directon in space that form X direction on the plane */
+    Vector3dd e2; /**< Directon in space that form Y direction on the plane (generally non-orthogonal to X) */
 
     PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2) :
         p1(p1), e1(e1), e2(e2)

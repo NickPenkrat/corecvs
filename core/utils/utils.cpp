@@ -38,6 +38,15 @@ istream &getlineSafe(istream &is, string &str)
     return stream;
 }
 
+std::string removeLeading(const string &str, const string &symbols)
+{
+    const auto strBegin = str.find_first_not_of(symbols);
+    if (strBegin == std::string::npos)
+        return std::string(); // no content
+
+    return str.substr(strBegin);
+}
+
 bool startsWith(const string &str, const string &prefix)
 {
     return (str.compare(0, prefix.size(), prefix) == 0);
@@ -109,6 +118,19 @@ std::vector<string> stringSplit(const string &s, char delim)
     std::vector<string> elems;
     stringSplit(s, delim, elems);
     return elems;
+}
+
+std::string stringCombine(std::vector<std::string> parts, char delim)
+{
+    std::string toReturn;
+    for(int i = 0; i < parts.size(); i++)
+    {
+        if (i != 0) {
+            toReturn += delim;
+        }
+        toReturn.append(parts[i]);
+    }
+    return toReturn;
 }
 
 string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
