@@ -18,7 +18,6 @@ using namespace corecvs;
 ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
     reflection(reflection)
 {
-
     resize(396, 356);
 
     setWindowTitle(reflection->name.name);
@@ -27,7 +26,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
     layout->setSpacing(3);
     layout->setContentsMargins(3, 3, 3, 3);
 
-    for (size_t i = 0; i < reflection->fields.size(); i++)
+    for (int i = 0; i < (int)reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
         // qDebug() << "Processing field:" <<  field->getSimpleName();
@@ -332,7 +331,7 @@ bool ReflectionWidget::setParameters(void *param) const
 {
     DynamicObject obj(reflection, param);
 
-    for (size_t i = 0; i < reflection->fields.size(); i++)
+    for (int i = 0; i < (int)reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
         // qDebug() << "Processing field:" <<  field->getSimpleName();

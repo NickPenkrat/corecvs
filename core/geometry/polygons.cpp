@@ -47,7 +47,8 @@ int Polygon::windingNumber(const Vector2dd &point) const
 {
     int    windingNumber = 0;
 
-    for (size_t i = 0; i < size(); i++) {
+    for (int i = 0; i < (int)size(); i++)
+    {
         Vector2dd cur  = getPoint(i);
         Vector2dd next = getNextPoint(i);
         Vector2dd dir  = next - cur;
@@ -60,12 +61,12 @@ int Polygon::windingNumber(const Vector2dd &point) const
 
 
         if (startsNotAbove && endsAbove) { // Crossing up
-            if ( dir.parallelogramOrientedAreaTo(point - next) > 0)
+            if (dir.parallelogramOrientedAreaTo(point - next) > 0)
                  windingNumber++;
         }
 
         if (startsAbove && endsNotAbove)  { // Crossing down
-            if ( dir.parallelogramOrientedAreaTo(point - next) < 0)
+            if (dir.parallelogramOrientedAreaTo(point - next) < 0)
                  windingNumber--;
         }
     }
@@ -167,9 +168,9 @@ void PolygonCombiner::prepare()
         }
     }
 
-    for (size_t i = 0; i < pol[0].size(); i++)
+    for (int i = 0; i < (int)pol[0].size(); i++)
     {
-        for (size_t j = 0; j < pol[1].size(); j++)
+        for (int j = 0; j < (int)pol[1].size(); j++)
         {
             Ray2d r1 = pol[0].getRay(i);
             Ray2d r2 = pol[1].getRay(j);
@@ -215,12 +216,12 @@ void PolygonCombiner::prepare()
     std::sort(c[1].begin(), c[1].end(), comparator);
 
     intersections.resize(intersectionNumber);
-    for (size_t i = 0; i < c[0].size(); i++)
+    for (int i = 0; i < (int)c[0].size(); i++)
     {
         if (c[0][i].flag == COMMON)
             intersections[c[0][i].other].first = i;
     }
-    for (size_t i = 0; i < c[1].size(); i++)
+    for (int i = 0; i < (int)c[1].size(); i++)
     {
         if (c[1][i].flag == COMMON)
             intersections[c[1][i].other].second = i;
@@ -264,50 +265,50 @@ bool PolygonCombiner::validateState() const
 
         for (size_t i = 0; i <= c[p].size(); i++)
         {
-            int num = (i + start) % c[p].size();
+            int num = (int)((i + start) % c[p].size());
 
-           const VertexData &vn = c[p][num];
-           if (vn.flag == COMMON)
-           {
+            const VertexData &vn = c[p][num];
+            if (vn.flag == COMMON)
+            {
                 skipped++;
                 continue;
-           }
+            }
 
-           if (vn.flag == INSIDE  && vc.flag == OUTSIDE)
-           {
-               if (skipped % 2 != 1) {
-                   printf("We have a problematic span [%c%d - out %c%d - in]: crossings %d \n", p == 0 ? 'A' : 'B', (int)oldId , p == 0 ? 'A' : 'B', num, skipped);
-                   ok = false;
-               }
-           }
+            if (vn.flag == INSIDE  && vc.flag == OUTSIDE)
+            {
+                if (skipped % 2 != 1) {
+                    printf("We have a problematic span [%c%d - out %c%d - in]: crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId, p == 0 ? 'A' : 'B', num, skipped);
+                    ok = false;
+                }
+            }
 
-           if (vn.flag == OUTSIDE && vc.flag == INSIDE )
-           {
-               if (skipped % 2 != 1) {
-                   printf("We have a problematic span [%c%d - in %c%d - out]: crossings %d \n", p == 0 ? 'A' : 'B', (int)oldId , p == 0 ? 'A' : 'B', num, skipped);
-                   ok = false;
-               }
-           }
+            if (vn.flag == OUTSIDE && vc.flag == INSIDE)
+            {
+                if (skipped % 2 != 1) {
+                    printf("We have a problematic span [%c%d - in %c%d - out]: crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId, p == 0 ? 'A' : 'B', num, skipped);
+                    ok = false;
+                }
+            }
 
-           if (vn.flag == INSIDE  && vc.flag == INSIDE)
-           {
-               if (skipped % 2 == 1) {
-                   printf("We have a problematic span [%c%d - in %c%d - in] : crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId , p == 0 ? 'A' : 'B', num, skipped);
-                   ok = false;
-               }
-           }
+            if (vn.flag == INSIDE  && vc.flag == INSIDE)
+            {
+                if (skipped % 2 == 1) {
+                    printf("We have a problematic span [%c%d - in %c%d - in] : crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId, p == 0 ? 'A' : 'B', num, skipped);
+                    ok = false;
+                }
+            }
 
-           if (vn.flag == OUTSIDE && vc.flag == OUTSIDE )
-           {
-               if (skipped % 2 == 1) {
-                   printf("We have a problematic span [%c%d - out %c%d - out] : crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId , p == 0 ? 'A' : 'B', num, skipped);
-                   ok = false;
-               }
-           }
+            if (vn.flag == OUTSIDE && vc.flag == OUTSIDE)
+            {
+                if (skipped % 2 == 1) {
+                    printf("We have a problematic span [%c%d - out %c%d - out] : crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId, p == 0 ? 'A' : 'B', num, skipped);
+                    ok = false;
+                }
+            }
 
-           oldId = num;
-           skipped = 0;
-           vc = vn;
+            oldId = num;
+            skipped = 0;
+            vc = vn;
         }
     }
     return ok;
@@ -322,7 +323,7 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer) const
 
     for (int p = 0; p < 2; p++)
     {
-        for (size_t i = 0; i < c[p].size(); i++)
+        for (int i = 0; i < (int)c[p].size(); i++)
         {
             const VertexData &v = c[p][i];
             Vector2dd pos = v.pos;
@@ -335,11 +336,9 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer) const
                 buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Blue());
 
             painter.drawFormat(pos.x(), pos.y() + p * 10, RGBColor::White(), 1, "%c%d (%0.2lf) [%d]", p == 0 ? 'A' : 'B', i, v.t, v.other);
-            printf("(%lf %lf) %c%d (%0.2lf) [%d]\n", pos.x(), pos.y() , p == 0 ? 'A' : 'B', i, v.t, v.other);
+            printf("(%lf %lf) %c%d (%0.2lf) [%" PRISIZE_T "]\n", pos.x(), pos.y() , p == 0 ? 'A' : 'B', i, v.t, v.other);
         }
     }
-
-
 }
 
 Polygon PolygonCombiner::intersection() const
@@ -369,8 +368,7 @@ Polygon PolygonCombiner::intersection() const
     while (limit ++ < 100) {
         VertexData v = c[currentChain][currentId];
         result.push_back(v.pos);
-        printf("Adding vertex c: %c%d point: %d (%lf %lf)\n", currentChain == 0 ? 'A' : 'B',
-               currentId,
+        printf("Adding vertex c: %c%d point: %" PRISIZE_T " (%lf %lf)\n", currentChain == 0 ? 'A' : 'B', currentId,
                v.orgId,
                c[currentChain][v.orgId].pos.x(),
                c[currentChain][v.orgId].pos.y());
@@ -388,9 +386,9 @@ Polygon PolygonCombiner::intersection() const
 
         if (v.flag == COMMON)
         {
-            int otherChain = 1 - currentChain;
-            int nextCurrent = (currentId  + 1) % c[currentChain].size();
-            int nextOther   = (v.other    + 1) % c[otherChain  ].size();
+            int otherChain  = 1 - currentChain;
+            int nextCurrent = (int)((currentId  + 1) % c[currentChain].size());
+            int nextOther   = (int)((v.other    + 1) % c[otherChain  ].size());
 
             const VertexData &candidate1 = c[currentChain][nextCurrent];
             const VertexData &candidate2 = c[otherChain  ][nextOther];
@@ -468,7 +466,7 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
     }
 
     /* Find one point in hull */
-    int minYId = 0;
+    size_t minYId = 0;
     double minY = list[0].y();
     for (size_t i = 1; i < list.size(); i++)
     {

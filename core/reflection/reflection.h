@@ -638,7 +638,7 @@ public:
             const BaseField * &el = fields[i];
             if (el->id < 0) {                
                 /* Why all this spam? */
-                //SYNC_PRINT(("Reflection::~Reflection(): bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
+                //SYNC_PRINT(("Reflection::~Reflection(): bad id in the reflection object: id:%d size:%" PRISIZE_T "\n", el->id, fields.size()));
                 continue;
             }
             delete_safe(el);
