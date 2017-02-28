@@ -165,7 +165,7 @@ bool Mesh3DDecorated::verify( void )
     for (size_t i = 0; i < normalId.size(); i++) {
         for (int j = 0; j < 3; j++) {
             if (normalId[i][j] > (int)normalCoords.size() && normalId[i][j] != -1) {
-                SYNC_PRINT(("Wrong normal index for face " PRISIZE_T " - [%d %d %d]\n",
+                SYNC_PRINT(("Wrong normal index for face %" PRISIZE_T " - [%d %d %d]\n",
                      i, normalId[i][0], normalId[i][1], normalId[i][2]));
                 return false;
             }
