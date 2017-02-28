@@ -134,15 +134,22 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
     }
     bool ok = false;
     Vector3dd initial = mct.triangulate(&ok);
+#ifdef DEEP_TRACE_702
     if (!ok) {
         SYNC_PRINT(("SceneFeaturePoint::triangulate(%s): initial guess unable to obtain\n", name.c_str()));
     }
+#endif
+
+    ok = true;
     Vector3dd res = mct.triangulateLM(initial, &ok);
+
+#ifdef DEEP_TRACE_702
     if (!ok) {
         SYNC_PRINT(("SceneFeaturePoint::triangulate(%s): LM guess unable to obtain\n", name.c_str()));
     }
+#endif
 
-#ifndef DEEP_TRACE_702
+#ifdef DEEP_TRACE_702
     {
         std::ostringstream ss;
         ss << "dump" << name << ".txt";
