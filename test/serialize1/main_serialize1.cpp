@@ -80,7 +80,7 @@ void testJSON1()
 
     printf("====== Loading back some data ======\n");
 */
-    SYNC_PRINT(("Parsing %zu input:\n%s\n", CORE_COUNT_OF(input), input));
+    SYNC_PRINT(("Parsing %" PRISIZE_T " input:\n%s\n", CORE_COUNT_OF(input), input));
 
 
     QByteArray array(input, CORE_COUNT_OF(input));
@@ -177,7 +177,7 @@ void testJSON2()
     CORE_ASSERT_TRUE(testObject.testField.size() == testObject1.testField.size(), "Wrong loaded array size");
     for (size_t i = 0; i < testObject.testField.size(); i++)
     {
-        CORE_ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %zu", i));
+        CORE_ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %" PRISIZE_T "", i));
         cout << testObject1.testField[i] << " == " << testObject.testField[i] << std::endl;
     }
     cout << std::endl;

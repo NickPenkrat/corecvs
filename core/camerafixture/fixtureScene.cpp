@@ -296,7 +296,7 @@ bool FixtureScene::checkIntegrity()
     {
         CameraPrototype *proto = mCameraPrototypes[i];
         if (proto == NULL) {
-             ok = false; SYNC_PRINT(("Camera Prototype is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
+             ok = false; SYNC_PRINT(("Camera Prototype is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
         }
         if (proto->ownerScene != this) {
              ok = false; SYNC_PRINT(("Camera Prototype  form other scene: cam:<%s> scene:<%s>\n", proto->nameId.c_str(), this->nameId.c_str()));
@@ -307,7 +307,7 @@ bool FixtureScene::checkIntegrity()
     {
         FixtureCamera *cam = mOrphanCameras[i];
         if (cam == NULL) {
-             ok = false; SYNC_PRINT(("Orphan Camera is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
+             ok = false; SYNC_PRINT(("Orphan Camera is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
         }
         if (cam->ownerScene != this) {
              ok = false; SYNC_PRINT(("Orphan Camera form other scene: cam:<%s> scene:<%s>\n", cam->nameId.c_str(), this->nameId.c_str()));
@@ -321,7 +321,7 @@ bool FixtureScene::checkIntegrity()
     {
         CameraFixture *fixture = mFixtures[i];
         if (fixture == NULL) {
-            ok = false; SYNC_PRINT(("Station is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
+            ok = false; SYNC_PRINT(("Station is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
         }
         if (fixture->ownerScene != this) {
             ok = false; SYNC_PRINT(("Station form other scene: station:<%s> scene:<%s>\n", fixture->name.c_str(), this->nameId.c_str()));
@@ -354,7 +354,7 @@ bool FixtureScene::checkIntegrity()
     {
         SceneFeaturePoint *point = mSceneFeaturePoints[i];
         if (point == NULL) {
-            ok = false; SYNC_PRINT(("Point is NULL: scene:<%s> pos <%d>\n", this->nameId.c_str(), (int)i));
+            ok = false; SYNC_PRINT(("Point is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
         }
         if (point->ownerScene != this) {
             ok = false; SYNC_PRINT(("Point form other scene: point:<%s> scene:<%s>\n", point->name.c_str(), this->nameId.c_str()));
@@ -674,7 +674,7 @@ void FixtureScene::setOrphanCameraCount(size_t count)
 //  vector<SceneFeaturePoint *>   points;
 void FixtureScene::setFeaturePointCount(size_t count)
 {
-    //SYNC_PRINT(("FixtureScene::setFeaturePointCount(%d):  called\n", (int)count));
+    //SYNC_PRINT(("FixtureScene::setFeaturePointCount(%" PRISIZE_T "):  called\n", count));
 
     while (mSceneFeaturePoints.size() > count) {
         SceneFeaturePoint *point = mSceneFeaturePoints.back();

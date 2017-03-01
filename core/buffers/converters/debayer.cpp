@@ -904,9 +904,9 @@ int Debayer::toRGB24(DebayerMethod::DebayerMethod method, RGB24Buffer *out)
 {
     RGB48Buffer *outputDraft = new RGB48Buffer(out->getSize(), false);
     int result = toRGB48(method, outputDraft);
-    for (uint i = 0; i < out->h; i++)
+    for (int i = 0; i < out->h; i++)
     {
-        for (uint j = 0; j < out->w; j++)
+        for (int j = 0; j < out->w; j++)
         {
             RGBColor48 color = outputDraft->element(i,j);
             int scaler = (1 << (mDepth - 8));

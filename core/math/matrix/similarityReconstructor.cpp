@@ -277,14 +277,13 @@ double SimilarityReconstructor::getCostFunction(const Similarity &input)
 
 SimilarityReconstructor::~SimilarityReconstructor()
 {
-
 }
 
 void SimilarityReconstructor::reportInputQuality()
 {
     /* Check all tha pairs of correspondance */
 
-    double meanScaler = 1.0; /* arithmetic avrage? Really? */
+    //double meanScaler = 1.0; /* arithmetic average? Really? */
 
     cout << "Pairs ratio (expected to be constant):" << endl;
     for (size_t i = 0; i < p2p.size(); i++)

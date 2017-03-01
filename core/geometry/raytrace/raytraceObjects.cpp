@@ -689,7 +689,7 @@ void RaytraceableUnion::optimize()
     }
     opt->subdivide();
     opt->cache();
-    SYNC_PRINT(("RaytraceableUnion::optimize(): Optimized %zu elements for %2.5f ms \n", elements.size(), timer.usecsToNow() / 1000.0));
+    SYNC_PRINT(("RaytraceableUnion::optimize(): Optimized %" PRISIZE_T " elements for %2.5f ms \n", elements.size(), timer.usecsToNow() / 1000.0));
 }
 
 void RaytraceableCylinder::setPosition(const Affine3DQ &affine)
