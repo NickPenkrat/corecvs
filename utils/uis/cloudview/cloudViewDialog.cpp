@@ -1,8 +1,6 @@
 #include <fstream>
 #include <sstream>
 #include <QtCore/QDebug>
-#include <QtOpenGL/QtOpenGL>
-#include <QtOpenGL/QGLWidget>
 
 #include "cloudViewDialog.h"
 #include "opengl/openGLTools.h"
@@ -106,7 +104,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()), false);
     addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()), false);
 
-#if 0
+#if 1
     {
         SceneShaded *shaded = new SceneShaded();
         Mesh3DDecorated *mesh = new Mesh3DDecorated;
@@ -192,7 +190,7 @@ TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointe
     qDebug("CloudViewDialog::addSubObject(%s, _, %s): called", name.toLatin1().constData(), visible ? "true" : "false" );
 
     TreeSceneController * result = mTreeModel.addObject(name, scene, visible);
-    mUi.widget->updateGL();
+    mUi.widget->update();
     return result;
 }
 
@@ -330,11 +328,13 @@ void CloudViewDialog::resetCameraSlot()
     resetCameraPos();
     resetCamera();
     qDebug() << "Resetting camera";
-    mUi.widget->updateGL();
+    mUi.widget->update();
 }
 
 void CloudViewDialog::resetCamera()
 {
+    SYNC_PRINT(("CloudViewDialog::resetCamera():called\n"));
+
     float farPlane = mUi.frustumFarBox->value();
     int width  = mUi.widget->width();
     int height = mUi.widget->height();
@@ -348,10 +348,16 @@ void CloudViewDialog::resetCamera()
         case ORTHO_TOP:
         case ORTHO_FRONT:
         case ORTHO_LEFT:
+
+            SYNC_PRINT(("CloudViewDialog::resetCamera():setting zoom %lf\n", mCameraZoom));
+
             glLoadIdentity();
             // TODO: Check if it is changed correctly (e.g. it is the RH projection)
             glOrtho(width / 2.0, -width / 2.0, height / 2.0, -height / 2.0, farPlane, -farPlane);
-            glScaled(mCameraZoom, mCameraZoom, mCameraZoom);
+            //cout << "Old Matrix" << endl << OpenGLTools::glGetProjectionMatrix() << endl;
+            glScalef(mCameraZoom, mCameraZoom, mCameraZoom);
+            //cout << "New Matrix" << endl << OpenGLTools::glGetProjectionMatrix() << endl;
+
          //   glRotated(90, 1.0, 0.0, 0.0);
             break;
         case PINHOLE_AT_0:
@@ -461,6 +467,9 @@ void CloudViewDialog::resetCamera()
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+
+    //cout << "New Matrix After change" << endl << OpenGLTools::glGetProjectionMatrix() << endl;
+
 }
 
 void CloudViewDialog::setCamera(const CameraModel &model)
@@ -483,7 +492,7 @@ void CloudViewDialog::setCamera(const CameraModel &model)
     glLoadIdentity();
     mCamera = model.getPositionMatrix();
 
-    mUi.widget->updateGL();
+    mUi.widget->update();
 }
 
 void CloudViewDialog::lookAt(const Vector3dd &point)
@@ -503,7 +512,7 @@ void CloudViewDialog::lookAt(const Vector3dd &point)
     cout << "  selfcheck    :" << mCamera * point << endl;
 
 
-    mUi.widget->updateGL();
+    mUi.widget->update();
 }
 
 void CloudViewDialog::childMoveEvent(QMouseEvent *event)
@@ -645,10 +654,15 @@ void CloudViewDialog::keyReleaseEvent ( QKeyEvent * /*event*/ )
 
 void CloudViewDialog::initializeGLSlot()
 {
+    mUi.widget->makeCurrent();
+
     qDebug() << "GL Init called" << endl;
     resetCameraPos();
 
-    mUi.widget->qglClearColor(Qt::black);
+  //  QOpenGLFunctions *f = mUi.widget->functions()
+    //mUi.widget->glClearColor(Qt::black);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
     glShadeModel(GL_FLAT);
     glEnable(GL_DEPTH_TEST);
     glDisable(GL_CULL_FACE);
@@ -694,6 +708,16 @@ void CloudViewDialog::initializeGLSlot()
 
 void CloudViewDialog::repaintGLSlot()
 {
+    mUi.widget->makeCurrent();
+
+    /**
+     * This seem to be the solution for this strange situation
+     * I however consider this to be underanalyzed
+     *
+     * http://stackoverflow.com/questions/30235463/qopenglwidget-overriding-projection-matrix
+     **/
+    resetCamera();
+
     Statistics stats;
     stats.startInterval();
 
@@ -706,7 +730,13 @@ void CloudViewDialog::repaintGLSlot()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    OpenGLTools::glMultMatrixMatrix44(mCamera);
+    glMultMatrixd(mCamera.transposed().element);
+
+    //OpenGLTools::glMultMatrixMatrix44(mCamera);
+
+    //cout << "Repaint slot:" << std::endl;
+    //cout << OpenGLTools::glGetProjectionMatrix() << std::endl;
+
 
 //    qDebug("=== Starting draw === ");
     if (mTreeModel.mTopItem != NULL &&
@@ -741,6 +771,7 @@ void CloudViewDialog::updateHelperObjects()
 
 void CloudViewDialog::resizeGLSlot(int /*width*/, int /*height*/)
 {
+    mUi.widget->makeCurrent();
     resetCamera();
 }
 
@@ -809,7 +840,7 @@ void CloudViewDialog::setNewCameraImage(QSharedPointer<QImage> texture, int came
     if (mCameraTexture[cameraId] != (unsigned)-1)
     {
         //SYNC_PRINT(("Deleting old texture\n"));
-        mUi.widget->deleteTexture(mCameraTexture[cameraId]);
+        //mUi.widget->deleteTexture(mCameraTexture[cameraId]);
         mCameraTexture[cameraId] = -1;
     }
 
@@ -820,7 +851,7 @@ void CloudViewDialog::setNewCameraImage(QSharedPointer<QImage> texture, int came
 
 
 
-const QGLContext *CloudViewDialog::getAreaContext()
+const QOpenGLContext *CloudViewDialog::getAreaContext()
 {
     return mUi.widget->context();
 }
@@ -829,7 +860,7 @@ GLuint CloudViewDialog::texture(int cameraId)
 {
     if (mCameraTexture[cameraId] == (GLuint)-1 && !mCameraImage[cameraId].isNull())
     {
-            mCameraTexture[cameraId] = mUi.widget->bindTexture(*mCameraImage[cameraId].data(), GL_TEXTURE_2D, GL_RGBA);
+            //mCameraTexture[cameraId] = mUi.widget->bindTexture(*mCameraImage[cameraId].data(), GL_TEXTURE_2D, GL_RGBA);
     }
 
     return mCameraTexture[cameraId];

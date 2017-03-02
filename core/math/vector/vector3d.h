@@ -265,7 +265,7 @@ public:
     static Vector3d FromSpherical(double latitude, double longitude, double length = 1.0)
     {
 
-        return Vector3d(cos(longitude) * sin(latitude), cos(longitude) * cos(latitude), sin(longitude)) * length;
+        return Vector3d(cos(longitude) * cos(latitude), cos(longitude) * sin(latitude), sin(longitude)) * length;
     }
 
     static Vector3d toSpherical(const Vector3d &vector)
