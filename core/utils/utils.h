@@ -91,6 +91,11 @@ namespace HelperUtils
         return filePath.substr(0, filePath.find_last_of("."));
     }
 
+    inline string   getFullPathWithNewExt(const string &filePath, const string &newExt)
+    {
+        return getFullPathWithoutExt(filePath) + newExt;
+    }
+
     /// Add suffix to file name before extension: filename.ext -> filenameSuffix.ext
     inline string   getFilePathWithSuffixAtName(const string& filePath, const string& suffix)
     {
