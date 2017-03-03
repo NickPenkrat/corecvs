@@ -43,47 +43,47 @@ string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, bo
         tempPath = "/tmp";
 #endif
         tempPath += (PATH_SEPARATOR + projectEnviromentVariable);
+    }
         
-        bool createFolder = false;
-        if (FolderScanner::isDir(tempPath))
+    bool createFolder = false;
+    if (FolderScanner::isDir(tempPath))
+    {
+        if (clear)
         {
-            if (clear)
+            bool found = false;
+            for (auto dir : clearedFolders)
             {
-                bool found = false;
-                for (auto dir : clearedFolders)
+                if (projectEnviromentVariable == dir)
                 {
-                    if (projectEnviromentVariable == dir)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) // delete folder to create it later
-                {
-#ifdef WIN32
-                    std::system(("rd /s /q " + tempPath).c_str());
-#else
-                    std::system(("rm -rf " + tempPath).c_str());
-#endif
-                    L_INFO_P("The <%s> folder is deleted.", tempPath.c_str());
-                    createFolder = true;
+                    found = true;
+                    break;
                 }
             }
+
+            if (!found) // delete folder to create it later
+            {
+#ifdef WIN32
+                std::system(("rd /s /q " + tempPath).c_str());
+#else
+                std::system(("rm -rf " + tempPath).c_str());
+#endif
+                L_INFO_P("The <%s> folder is deleted.", tempPath.c_str());
+                createFolder = true;
+            }
         }
-        else
-            createFolder = true;
-
-        if (createFolder) // create folder
-        {
-            std::system(("mkdir " + tempPath).c_str());
-            L_INFO_P("The <%s> folder is created.", tempPath.c_str());
-
-            // the created folder is automatically considered cleared
-            clearedFolders.push_back(projectEnviromentVariable);
-        }    
     }
+    else
+        createFolder = true;
 
+    if (createFolder) // create folder
+    {
+        std::system(("mkdir " + tempPath).c_str());
+        L_INFO_P("The <%s> folder is created.", tempPath.c_str());
+
+        // the created folder is automatically considered cleared
+        clearedFolders.push_back(projectEnviromentVariable);
+    }    
+    
     return tempPath;
 }
 
