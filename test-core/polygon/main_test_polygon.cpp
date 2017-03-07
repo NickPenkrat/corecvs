@@ -1,11 +1,11 @@
 /**
  * \file main_test_polygon.cpp
- * \brief This is the main file for the test polygon 
+ * \brief This is the main file for the test polygon
  *
  * \date дек 27, 2016
  * \author alexander
  *
- * \ingroup autotest  
+ * \ingroup autotest
  */
 
 #include <random>
@@ -312,8 +312,10 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
     combiner.validateState();
 
     Polygon p3 = combiner.intersection();
+    Polygon p4 = combiner.combination();
     cout << "Structure after intersection" << endl;
     cout << combiner << endl;
+
 
     painter.drawPolygon(p1, RGBColor::Yellow());
     painter.drawPolygon(p2, RGBColor::Cyan());
@@ -328,6 +330,7 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
             }
         }
 
+
     //painter.drawPolygon(p3, RGBColor::Magenta());
     /*for (size_t i = 0; i < p3.size(); i++)
     {
@@ -338,13 +341,63 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
 
 
     combiner.drawDebug(buffer);
-    cout << "Result polygon: " << p3 << endl;
+    cout << "Result intersection: " << p3 << endl;
+    cout << "Result combination : " << p4 << endl;
+
     cout << combiner << endl;
+
+    painter.drawPolygon(p4, RGBColor::Magenta());
 
     BMPLoader().save(name, buffer);
     delete_safe(buffer);
 
     return p3;
+}
+
+void testTwoPolygonsIntersection(Polygon &p1, Polygon &p2, const std::string &name, bool debug = true)
+{
+
+    RGB24Buffer *buffer  = new RGB24Buffer(TEST_FILED_H, TEST_FILED_W, RGBColor::Black());
+    AbstractPainter<RGB24Buffer> painter(buffer);
+
+    PolygonCombiner combiner;
+    combiner.pol[0] = p1;
+    combiner.pol[1] = p2;
+
+    combiner.prepare();
+    cout << "Structure after preparation" << endl;
+    cout << combiner << endl;
+    combiner.validateState();
+
+    vector<Polygon> p3 = combiner.intersectionAll();
+    cout << "intersectionAll returned " << p3.size() << endl;
+    cout << "Structure after intersection" << endl;
+    cout << combiner << endl;
+
+
+    painter.drawPolygon(p1, RGBColor::Yellow());
+    painter.drawPolygon(p2, RGBColor::Cyan());
+
+
+    for (int i = 0; i < TEST_FILED_H; i++)
+        for (int j = 0; j < TEST_FILED_W; j++)
+        {
+            for(size_t v = 0; v < p3.size(); v++)
+            {
+                if (p3[v].isInside(Vector2dd(j,i)))
+                {
+                    buffer->element(i,j) = RGBColor::Gray();
+                }
+            }
+        }
+
+    if (debug) {
+        combiner.drawDebug(buffer);
+    }
+    cout << combiner << endl;
+
+    BMPLoader().save(name, buffer);
+    delete_safe(buffer);
 }
 
 TEST(polygon, eightPoints)
@@ -353,7 +406,34 @@ TEST(polygon, eightPoints)
     Polygon  p1 = Polygon::RegularPolygon(8, Vector2dd(200,120), 80);
     Polygon  p3 = testTwoPolygons(p1, p2, "poly-8.bmp");
 
-    CORE_ASSERT_TRUE_P(p3.size() == 8, ("We have polygon of size %" PRISIZE_T "\n", p3.size()));
+    CORE_ASSERT_TRUE_P(p3.size() == 8, ("We have polygon of size %d\n", (int)p3.size()));
+}
+
+TEST(polygon, triangles)
+{
+    Polygon  p2 = Polygon::RegularPolygon(3, Vector2dd(200, 80), 80);
+    Polygon  p1 = Polygon::RegularPolygon(3, Vector2dd(210,120), 80);
+    Polygon  p3 = testTwoPolygons(p1, p2, "poly-3.bmp");
+
+    CORE_ASSERT_TRUE_P(p3.size() == 3, ("We have polygon of size %d\n", (int)p3.size()));
+}
+
+TEST(polygon, simpleNonConvex)
+{
+    Polygon  p2;
+    Polygon  p1;
+
+    p1.push_back(Vector2dd( 20, 200));
+    p1.push_back(Vector2dd(300,  20));
+    p1.push_back(Vector2dd(190, 200));
+    p1.push_back(Vector2dd(300, 380));
+
+    p2.push_back(Vector2dd(380, 200));
+    p2.push_back(Vector2dd(100,  20));
+    p2.push_back(Vector2dd(210, 200));
+    p2.push_back(Vector2dd(100, 380));
+
+    testTwoPolygons(p1, p2, "poly-nonconvex-1.bmp");
 }
 
 TEST(polygon, twoSeparateIntersections)
@@ -395,7 +475,7 @@ TEST(polygon, noIntersection)
     Polygon  p2 = Polygon::FromRectagle(Rectangled(Vector2dd(10,10), Vector2dd( 40, 40)));
     Polygon  p1 = Polygon::FromRectagle(Rectangled(Vector2dd(60,60), Vector2dd(290,290)));
     Polygon  p3 = testTwoPolygons(p1, p2, "poly-no-intersection.bmp");
-    CORE_ASSERT_TRUE_P(p3.size() == 0, ("There should be no intersection. But we have polygon of size %" PRISIZE_T "\n", p3.size()));
+    CORE_ASSERT_TRUE_P(p3.size() == 0, ("There should be no intersection. But we have polygon of size %d\n", (int)p3.size()));
 }
 
 TEST(polygon, DISABLED_intersectionTouch)
@@ -403,7 +483,7 @@ TEST(polygon, DISABLED_intersectionTouch)
     Polygon  p2 = Polygon::FromRectagle(Rectangled(Vector2dd( 10, 10), Vector2dd( 100, 100)));
     Polygon  p1 = Polygon::FromRectagle(Rectangled(Vector2dd(110,110), Vector2dd(290,290)));
     Polygon  p3 = testTwoPolygons(p1, p2, "poly-touch.bmp");
-    CORE_ASSERT_TRUE_P(p3.size() == 0, ("There should be no intersection. But we have polygon of size %" PRISIZE_T "\n", p3.size()));
+    CORE_ASSERT_TRUE_P(p3.size() == 0, ("There should be no intersection. But we have polygon of size %d\n", (int)p3.size()));
 }
 
 TEST(polygon, insideIntersection)
@@ -417,6 +497,58 @@ TEST(polygon, insideIntersection)
     CORE_ASSERT_TRUE(p3[2].notTooFar(Vector2dd(200, 200)), "Fail with one poligon inside the other");
     CORE_ASSERT_TRUE(p3[3].notTooFar(Vector2dd( 60, 200)), "Fail with one poligon inside the other");
 }
+
+
+TEST(polygon, tortureTest1)
+{
+    Polygon  p2;
+    Polygon  p1;
+
+    double step = 80;
+
+    for (int i = 1; i < 400 / step; i++)
+    {
+        double y =  i * step;
+        double x = (i % 2) ? 10 : 350;
+        p1.push_back(Vector2dd(x, y));
+    }
+
+    p1.push_back(Vector2dd(385, 380));
+    p1.push_back(Vector2dd(385, 10));
+
+    p2.push_back(Vector2dd(380, 200));
+    p2.push_back(Vector2dd(100,  20));
+    p2.push_back(Vector2dd(210, 200));
+    p2.push_back(Vector2dd(100, 380));
+
+    testTwoPolygons            (p1, p2, "poly-torture.bmp");
+    testTwoPolygonsIntersection(p1, p2, "poly-torture-all.bmp");
+}
+
+TEST(polygon, tortureTest2)
+{
+    Polygon  p2;
+    Polygon  p1;
+
+    double step = 40;
+
+    for (int i = 1; i < 400 / step; i++)
+    {
+        double y =  i * step;
+        double x = (i % 2) ? 5 : 350;
+        p1.push_back(Vector2dd(x, y));
+    }
+
+    p1.push_back(Vector2dd(385, 380));
+    p1.push_back(Vector2dd(385, 10));
+
+    p2 = p1;
+    p2.transform(Matrix33::SwapXY());
+
+    testTwoPolygons            (p1, p2, "poly-torture2.bmp");
+    testTwoPolygonsIntersection(p1, p2, "poly-torture-all2.bmp", false);
+}
+
 
 
 TEST(polygon, CameraView)

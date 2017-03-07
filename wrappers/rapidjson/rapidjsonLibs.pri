@@ -1,0 +1,5 @@
+with_rapidjson {
+    RAPIDJSON_PATH = $$(RAPIDJSON_PATH)
+    DEFINES += WITH_RAPIDJSON
+
+}

@@ -24,17 +24,11 @@ namespace corecvs {
 
 using std::vector;
 
-
-/**
- *  This class holds the non-orthogonal reference frame on 2D plane in 3d space.
- *
- *  This class is designed for the situations when you need to map texture on the 3d objects
- **/
 class PlaneFrame {
 public:
-    Vector3dd p1; /**< Position of zero point in space */
-    Vector3dd e1; /**< Directon in space that form X direction on the plane */
-    Vector3dd e2; /**< Directon in space that form Y direction on the plane (generally non-orthogonal to X) */
+    Vector3dd p1;
+    Vector3dd e1;
+    Vector3dd e2;
 
     PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2) :
         p1(p1), e1(e1), e2(e2)
@@ -378,21 +372,25 @@ public:
         Vector2dd pos;     /* We don't need this, just a cache*/
         VertexType flag;
         double t;
+        size_t intersection;
         size_t other;
 
-        VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t other = 0) :
+        VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t intersection = 0) :
            orgId(orgId),
            pos(pos),
            flag(inside),
            t(t),
-           other(other)
+           intersection(intersection),
+           other(0)
         {}
     };
 
     typedef std::vector<VertexData> ContainerType; /* This type should better be list */
 
+    /** These are two lists for each of the poligons including there own and common vertexes **/
     ContainerType c[2];
 
+    /** These structures store the common vertexes **/
     int intersectionNumber;
     std::vector<std::pair<int, int>> intersections;
 
@@ -403,8 +401,12 @@ public:
     bool validateState(void) const;
     void drawDebug(RGB24Buffer *buffer) const;
 
+    Polygon followContour(int startIntersection, bool inner, vector<bool> *visited = NULL) const;
+
     Polygon intersection() const;
-    Polygon combination() const;   /**< Not yet implemented */
+    vector<Polygon> intersectionAll() const; /**< Not yet implemented **/
+
+    Polygon combination() const;
     Polygon difference() const;    /**< Not yet implemented */
 
     PolygonCombiner(){}
@@ -430,6 +432,13 @@ public:
             out << " " << i << ":  (" << vd.pos << " " << getName(vd.flag) << " " << vd.t << " " << vd.other << ") " << std::endl;
         }
         out << "]" << std::endl;
+
+        out << "Intersections:" << std::endl;
+        for (auto &pair : combiner.intersections)
+        {
+            out << pair.first << " - " << pair.second << std::endl;
+        }
+
 
         return out;
     }

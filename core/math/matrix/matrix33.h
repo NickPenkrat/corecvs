@@ -139,6 +139,8 @@ public:
     static Matrix33 MirrorYZ();
     static Matrix33 MirrorXZ();
 
+    static Matrix33 SwapXY();
+
     /* Constructing 3D scale matrix */
     static Matrix33 Scale3(const Vector3dd& v);
     static Matrix33 Scale3(double s1, double s2, double s3);

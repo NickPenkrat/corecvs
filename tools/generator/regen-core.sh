@@ -209,7 +209,9 @@ enums="
        preciseInterpolationType
        imageChannel
        debayerMethod
-       homographyAlgorithm"
+       homographyAlgorithm
+       gCodeColoringSheme
+        "
 
 ui_classes="
         rgbColorParameters
@@ -236,6 +238,7 @@ classes+=" homorgaphyReconstructorBlockBase"
 classes+=" calibrationDrawHelpersParameters"
 classes+=" focusEstimationParameters"
 classes+=" focusEstimationResult"
+classes+=" drawGCodeParameters"
 
 
 full_ui_classes+=" checkerboardDetectionParameters"

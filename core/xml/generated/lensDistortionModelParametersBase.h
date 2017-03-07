@@ -145,7 +145,7 @@ public:
 
     /** 
      * \brief Map Forward 
-     * This one is used to identify direction of map 
+     * This one is used to identify map direction, true if undistorted->distorted 
      */
     bool mMapForward;
 
