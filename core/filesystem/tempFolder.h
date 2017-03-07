@@ -20,7 +20,7 @@ public:
     /// \param projectEnviromentVariable         - a unique project env var, i.e. "TOPCON_DIR"
     /// \param clear                             - if true, temp folder is cleared the first time method is called in a process
     ///
-    /// \return threadId - project's temp folder path
+    /// \return project's temp folder path
     ///
     static string getTempFolderPath(const string &projectEnviromentVariable, bool clear = true);
 
