@@ -312,8 +312,10 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
     combiner.validateState();
 
     Polygon p3 = combiner.intersection();
+    Polygon p4 = combiner.combination();
     cout << "Structure after intersection" << endl;
     cout << combiner << endl;
+
 
     painter.drawPolygon(p1, RGBColor::Yellow());
     painter.drawPolygon(p2, RGBColor::Cyan());
@@ -328,6 +330,9 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
             }
         }
 
+    painter.drawPolygon(p4, RGBColor::Magenta());
+
+
     //painter.drawPolygon(p3, RGBColor::Magenta());
     /*for (size_t i = 0; i < p3.size(); i++)
     {
@@ -338,7 +343,9 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
 
 
     combiner.drawDebug(buffer);
-    cout << "Result polygon: " << p3 << endl;
+    cout << "Result intersection: " << p3 << endl;
+    cout << "Result combination : " << p4 << endl;
+
     cout << combiner << endl;
 
     BMPLoader().save(name, buffer);

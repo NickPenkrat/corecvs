@@ -60,7 +60,6 @@ struct PinholeCameraIntrinsics : public CameraProjection
     {
     }
 
-
     /**
      * This actually doesn't differ from matrix multiplication, just is a little bit more lightweight
      *

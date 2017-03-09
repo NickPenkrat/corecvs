@@ -366,7 +366,7 @@ Polygon PolygonCombiner::intersection() const
     printf("Exit condition A%d or B%d\n", fst.first, fst.second);
 
     int limit = 0;
-    while (limit ++ < 100) {
+    while (/*limit ++ < 100*/ true) {
         VertexData v = c[currentChain][currentId];
         result.push_back(v.pos);
         printf("Adding vertex c: %c%d point: %d (%lf %lf)\n", currentChain == 0 ? 'A' : 'B',
