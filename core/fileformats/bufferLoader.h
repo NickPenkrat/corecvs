@@ -25,7 +25,7 @@ public:
     virtual bool acceptsFile(string name) = 0;
     virtual BufferType *load(string name) = 0;
 
-    virtual std::string name() {return "noname";}
+    virtual std::string name() { return "noname"; }
     virtual ~BufferLoader() {}
 
 };
@@ -39,9 +39,8 @@ public:
     virtual bool acceptsFile(string name) = 0;
     virtual bool load(BufferType &buffer, string name) = 0;
 
-    virtual std::string name() {return "noname";}
+    virtual std::string name() { return "noname"; }
     virtual ~BufferSaver() {}
-
 };
 
 
