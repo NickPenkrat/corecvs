@@ -120,17 +120,17 @@ private:
     bool parallelable;
 };
 
-class EpipolarRefiner : public FeatureMatchingPipelineStage
-{
-public:
-    void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
-    void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-    void run(FeatureMatchingPipeline *pipeline);
-    EpipolarRefiner(double distanceLimit = 100.0);
-private:
-    double distanceLimit;
-
-};
+//class EpipolarRefiner : public FeatureMatchingPipelineStage
+//{
+//public:
+//    void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
+//    void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+//    void run(FeatureMatchingPipeline *pipeline);
+//    EpipolarRefiner(double distanceLimit = 100.0);
+//private:
+//    double distanceLimit;
+//
+//};
 
 class VsfmWriterStage : public FeatureMatchingPipelineStage
 {
@@ -179,23 +179,6 @@ private:
     std::string params;
 };
 
-void addDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline,
-    DetectorType detectorType,
-    DescriptorType descriptorType,
-    MatcherType matcherType,
-    int maxFeatureCount = 4000,
-    int downsampleFactor = 1,
-    const std::string &params = "",
-    size_t responsesPerPoint = 2 );
-
-void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
-	DetectorType detectorType,
-	DescriptorType descriptorType,
-	int maxFeatureCount = 4000,
-    int downsampleFactor = 1,
-	const std::string &params = "",
-    bool keypointsColor = true );
-
 class FeatureMatchingPipeline
 {
 public:
@@ -239,5 +222,23 @@ private:
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 
     corecvs::StatusTracker*         processState = nullptr;
-
 };
+
+//---------------------------------------------------------------------------
+
+void addDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline,
+    DetectorType detectorType,
+    DescriptorType descriptorType,
+    MatcherType matcherType,
+    int maxFeatureCount = 4000,
+    int downsampleFactor = 1,
+    const std::string &params = "",
+    size_t responsesPerPoint = 2);
+
+void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
+    DetectorType detectorType,
+    DescriptorType descriptorType,
+    int maxFeatureCount = 4000,
+    int downsampleFactor = 1,
+    const std::string &params = "",
+    bool keypointsColor = true);
