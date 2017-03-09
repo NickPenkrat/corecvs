@@ -101,3 +101,4 @@ SOURCES += \
     polygon/main_test_polygon.cpp \
     multicamera/main_test_multicamera.cpp \
     imagequality/main_test_imagequality.cpp \
+    json/main_test_json.cpp \

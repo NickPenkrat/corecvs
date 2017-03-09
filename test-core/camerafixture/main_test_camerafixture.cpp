@@ -14,6 +14,7 @@
 #include "global.h"
 #include "fixtureScene.h"
 #include "printerVisitor.h"
+#include "jsonPrinter.h"
 
 using namespace corecvs;
 
@@ -54,11 +55,36 @@ TEST(Fixture, testVisitors)
     PrinterVisitor visitor;
     scene->accept<PrinterVisitor, FixtureScene>(visitor);
 
-
-
-
     delete_safe(scene);
 }
+
+TEST(Fixture, testVisitorJSON)
+{
+    cout << "----------------Running the test-------------" << std::endl;
+    FixtureScene *scene = new FixtureScene();
+    CameraFixture *fixture1 = scene->createCameraFixture();
+    fixture1->name = "Fixture1";
+
+    FixtureCamera *camera1 = scene->createCamera();
+    camera1->nameId = "Camera1";
+    FixtureCamera *camera2 = scene->createCamera();
+    camera2->nameId = "Camera2";
+
+    scene->addCameraToFixture(camera1, fixture1);
+
+    scene->dumpInfo(cout);
+
+    cout << "==========================" << endl;
+
+    {
+        JSONPrinter visitor(&cout);
+        scene->accept<JSONPrinter, FixtureScene>(visitor);
+    }
+
+    cout << "==========================" << endl;
+    delete_safe(scene);
+}
+
 
 FixtureScene *createTestScene()
 {
