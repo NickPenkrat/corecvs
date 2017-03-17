@@ -22,6 +22,7 @@ private:
     static QString getEnumWidgetProperties(const BaseField* field);
     static QString getIntWidgetProperties(const BaseField* field);
     static QString getStringWidgetProperties(const BaseField* field);
+    static QString getWStringWidgetProperties(const BaseField* field);
     static QString getBoolWidgetProperties(const BaseField* field);
     static QString getVectorBitWidgetProperties(const BaseField* field);
     static QString getDoubleWidgetProperties(const BaseField* field);

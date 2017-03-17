@@ -115,6 +115,7 @@ public:
         TYPE_BOOL,
         TYPE_STRING,
         TYPE_ENUM,
+        TYPE_WSTRING,
 
         /* CoreTypes */
         TYPE_VECTOR2DD,
@@ -263,6 +264,7 @@ template<> inline BaseField::FieldType BaseField::getType<double>()             
 template<> inline BaseField::FieldType BaseField::getType<float>()                { return TYPE_FLOAT;     }
 template<> inline BaseField::FieldType BaseField::getType<bool>()                 { return TYPE_BOOL;      }
 template<> inline BaseField::FieldType BaseField::getType<std::string>()          { return TYPE_STRING;    }
+template<> inline BaseField::FieldType BaseField::getType<std::wstring>()         { return TYPE_WSTRING;   }
 
 template<> inline BaseField::FieldType BaseField::getType<vector<int> >()         { return (FieldType)(TYPE_VECTOR_BIT | TYPE_INT);       }
 template<> inline BaseField::FieldType BaseField::getType<vector<int64_t> >()     { return (FieldType)(TYPE_VECTOR_BIT | TYPE_TIMESTAMP); }
@@ -270,6 +272,7 @@ template<> inline BaseField::FieldType BaseField::getType<vector<double> >()    
 template<> inline BaseField::FieldType BaseField::getType<vector<float> >()       { return (FieldType)(TYPE_VECTOR_BIT | TYPE_FLOAT);     }
 template<> inline BaseField::FieldType BaseField::getType<vector<bool> >()        { return (FieldType)(TYPE_VECTOR_BIT | TYPE_BOOL);      }
 template<> inline BaseField::FieldType BaseField::getType<vector<std::string> >() { return (FieldType)(TYPE_VECTOR_BIT | TYPE_STRING);    }
+template<> inline BaseField::FieldType BaseField::getType<vector<std::wstring> >(){ return (FieldType)(TYPE_VECTOR_BIT | TYPE_WSTRING);   }
 
 //template<> inline BaseField::FieldType BaseField::getType<corecvs::Vector2dd>() { return TYPE_VECTOR2DD; }
 //template<> inline BaseField::FieldType BaseField::getType<corecvs::Vector3dd>() { return TYPE_VECTOR3DD; }
@@ -535,7 +538,48 @@ public:
 
     virtual ~StringField() {}
 #endif
+};
 
+
+class WStringField : public BaseField
+{
+public:
+    typedef std::wstring CPPType;
+    std::wstring     defaultValue;
+
+    WStringField (
+            int _id,
+            int _offset,
+            std::wstring _defaultValue,
+            const char *_name,
+            const char *_decription,
+            const char *_comment
+    ) :
+        BaseField(_id, getType<std::wstring>(), _name, _decription, _comment, _offset),
+        defaultValue (_defaultValue)
+    {}
+
+    WStringField (
+            int _id,
+            int _offset,
+            std::wstring _defaultValue,
+            const ReflectionNaming &_naming
+    ) :
+        BaseField(_id, getType<std::wstring>(), _naming, _offset),
+        defaultValue (_defaultValue)
+    {}
+
+#ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
+    /**
+     * Make a bit-by-bit clone
+     **/
+    virtual BaseField* clone() const
+    {
+        return new WStringField(*this);
+    }
+
+    virtual ~WStringField() {}
+#endif
 };
 
 class Reflection;

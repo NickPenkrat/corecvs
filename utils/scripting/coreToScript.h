@@ -67,6 +67,12 @@ template<class ExposeType>
                   obj.setProperty(name, QString::fromStdString(*input.template getField<std::string>(i)));
                   break;
               }
+              case corecvs::BaseField::TYPE_WSTRING:
+              {
+                  //const StringField *sField = static_cast<const StringField *>(field);
+                  obj.setProperty(name, QString::fromStdWString(*input.template getField<std::wstring>(i)));
+                  break;
+              }
               case corecvs::BaseField::TYPE_BOOL:
               {
                   //const BoolField *bField = static_cast<const BoolField *>(field);
@@ -142,6 +148,11 @@ template<class ExposeType>
             case corecvs::BaseField::TYPE_STRING:
             {
                 *input.template getField<std::string>(i) = value.toString().toStdString();
+                break;
+            }
+            case corecvs::BaseField::TYPE_WSTRING:
+            {
+                *input.template getField<std::wstring>(i) = value.toString().toStdWString();
                 break;
             }
             case corecvs::BaseField::TYPE_BOOL:

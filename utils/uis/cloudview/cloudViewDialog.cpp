@@ -104,7 +104,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()), false);
     addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()), false);
 
-#if 1
+#if 0
     {
         SceneShaded *shaded = new SceneShaded();
         Mesh3DDecorated *mesh = new Mesh3DDecorated;

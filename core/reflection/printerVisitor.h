@@ -10,6 +10,7 @@
 namespace corecvs {
 
 using std::string;
+using std::wstring;
 using std::ostream;
 using std::cout;
 
@@ -132,6 +133,9 @@ void PrinterVisitor::visit<bool,   BoolField>(bool &field, const BoolField *fiel
 
 template <>
 void PrinterVisitor::visit<string, StringField>(string &field, const StringField *fieldDescriptor);
+
+template <>
+void PrinterVisitor::visit<wstring, WStringField>(wstring &field, const WStringField *fieldDescriptor);
 
 template <>
 void PrinterVisitor::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor);

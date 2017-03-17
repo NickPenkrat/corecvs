@@ -26,7 +26,8 @@
      <field type="double" name="Double field0" defaultValue="2.0"/>
      <field type="double" name="Double field1" defaultValue="1.0"  widget="ExponentialSlider"/>
 
-     <field type="string" name="String field"  defaultValue="Test string field"/>
+     <field type="string"  name="String field"  defaultValue="Test string field"/>
+     <field type="wstring" name="WString field"  defaultValue="Test こんにちは ÄäËëḦḧÏïN̈n̈ÖöT̈ẗÜüṲṳẄẅẌẍŸÿ"/>
 
      <field type="Test Enum" name="Enum Field0" defaultValue="0"/>
      <field type="Test Enum" name="Enum Field1" defaultValue="0" widget="TabWidget"/>

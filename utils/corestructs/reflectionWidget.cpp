@@ -111,8 +111,17 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
             widget = textBox;
             break;
-        }
+        }            
+        case BaseField::TYPE_WSTRING:
+        {
+            const WStringField *sField = static_cast<const WStringField *>(field);
+            QTextEdit *textBox = new QTextEdit(this);
+            textBox->setText(QString::fromStdWString(sField->defaultValue));
+            layout->addWidget(textBox, i, 1, 1, 1);
+            connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
+            widget = textBox;
             break;
+        }
         case BaseField::TYPE_BOOL:
         {
             const BoolField *bField = static_cast<const BoolField *>(field);
@@ -275,7 +284,13 @@ bool ReflectionWidget::getParameters(void *param) const
                 *obj.getField<std::string>(i) = textBox->toPlainText().toStdString();
                 break;
             }
+            case BaseField::TYPE_WSTRING:
+            {
+                // const StringField *sField = static_cast<const StringField *>(field);
+                QTextEdit *textBox = static_cast<QTextEdit *>(fieldToWidget[i]);
+                *obj.getField<std::wstring>(i) = textBox->toPlainText().toStdWString();
                 break;
+            }
             case BaseField::TYPE_BOOL:
             {
                 QCheckBox *checkBox = static_cast<QCheckBox *>(fieldToWidget[i]);
@@ -362,7 +377,12 @@ bool ReflectionWidget::setParameters(void *param) const
                 textBox->setText(QString::fromStdString(*obj.getField<std::string>(i)));
                 break;
             }
+            case BaseField::TYPE_WSTRING:
+            {
+                QTextEdit *textBox = static_cast<QTextEdit *>(fieldToWidget[i]);
+                textBox->setText(QString::fromStdWString(*obj.getField<std::wstring>(i)));
                 break;
+            }
             case BaseField::TYPE_BOOL:
             {
                 QCheckBox *checkBox = static_cast<QCheckBox *>(fieldToWidget[i]);
