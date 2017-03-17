@@ -1,11 +1,4 @@
 #include "featureMatchingPipeline.h"
-
-#include <fstream>
-#include <iomanip>
-#include <sstream>
-#include <algorithm>
-#include <ctime>  // clock???  Please use PreciseTimer!!!
-
 #include "featureDetectorProvider.h"
 #include "descriptorExtractorProvider.h"
 #include "descriptorMatcherProvider.h"
@@ -15,33 +8,18 @@
 #include "vsfmIo.h"
 #include "tbbWrapper.h"
 #include "bufferFactory.h"
+#include "utils.h"
+
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <algorithm>
+#include <ctime>  // clock???  Please use PreciseTimer!!!
+
 
 static const char* KEYPOINT_EXTENSION   = "keypoints";
 static const char* DESCRIPTOR_EXTENSION = "descriptors";
 static const char* SIFT_EXTENSION       = "sift";
-
-
-std::string changeExtension(const std::string &imgName, const std::string &desiredExt)
-{
-    std::string res(imgName);
-
-    int dotPos = (int)res.size() - 1;
-    for (; dotPos >= 0 && res[dotPos] != '.'; --dotPos);
-    CORE_ASSERT_TRUE_S(dotPos >= 0);
-
-    res.resize(dotPos + 1 + desiredExt.size());
-
-    std::copy(desiredExt.begin(), desiredExt.end(), res.begin() + dotPos + 1);
-    return res;
-}
-
-
-std::string getFilename(const std::string &imgName)
-{
-    int pos = (int)imgName.find_last_of(PATH_SEPARATOR[0]);
-    std::string res = imgName.substr(pos,imgName.size() - pos);
-    return res;
-}
 
 FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> &filenames, const std::vector<void*> &remapCaches, corecvs::StatusTracker* processState)
 {
@@ -97,6 +75,16 @@ void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, bo
     pipeline.push_back(ps);
 }
 
+void FeatureMatchingPipeline::printCaps()
+{
+    cout << "Current caps are: " << std::endl;
+    FeatureDetectorProvider::getInstance().print();
+    DescriptorExtractorProvider::getInstance().print();
+    DescriptorMatcherProvider::getInstance().print();
+}
+
+//---------------------------------------------------------------------------
+
 class ParallelDetector
 {
     FeatureMatchingPipeline* pipeline;
@@ -104,6 +92,7 @@ class ParallelDetector
     std::string params;
     int maxFeatureCount;
     int downsampleFactor;
+
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
@@ -125,8 +114,8 @@ public:
             ss1 << image.filename << ", ";
 
 			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
-			img->downsample( downsampleFactor );
-            detector->detect( ( *img.get() ), image.keyPoints.keyPoints, maxFeatureCount, downsampleFactor == 1 ? image.remapCache : 0 );
+			img->downsample(downsampleFactor);
+            detector->detect((*img.get()), image.keyPoints.keyPoints, maxFeatureCount, downsampleFactor == 1 ? image.remapCache : 0);
 
             kpt += image.keyPoints.keyPoints.size();
             cnt++;
@@ -148,7 +137,9 @@ public:
             cnt = 0;
         }
     }
-    ParallelDetector( FeatureMatchingPipeline* pipeline, DetectorType detectorType, int maxFeatureCount, int downsampleFactor, const std::string &params = "" ) : pipeline( pipeline ), detectorType( detectorType ), params( params ), maxFeatureCount( maxFeatureCount ), downsampleFactor( downsampleFactor ){}
+    ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType, int maxFeatureCount, int downsampleFactor, const std::string &params = "")
+        : pipeline(pipeline), detectorType(detectorType), params(params), maxFeatureCount(maxFeatureCount), downsampleFactor(downsampleFactor)
+    {}
 };
 
 void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
@@ -158,7 +149,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for( ( size_t )0, N, CORE_MAX( N / MAX_CORE_COUNT_ESTIMATE, ( size_t )1 ), ParallelDetector( pipeline, detectorType, maxFeatureCount, downsampleFactor, params ), parallelable );
+    corecvs::parallelable_for((size_t)0, N, CORE_MAX(N / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline, detectorType, maxFeatureCount, downsampleFactor, params), parallelable);
 
     ss1 << "Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
@@ -169,9 +160,7 @@ void KeyPointDetectionStage::saveResults(FeatureMatchingPipeline *pipeline, cons
     std::vector<Image>& images = pipeline->images;
     for (size_t i = 0; i < images.size(); ++i)
     {
-        std::string filename = changeExtension(images[i].filename, KEYPOINT_EXTENSION);
-
-        images[i].keyPoints.save(filename);
+        images[i].keyPoints.save(corecvs::HelperUtils::getFullPathWithNewExt(images[i].filename, KEYPOINT_EXTENSION));
     }
     CORE_UNUSED(_filename);
 }
@@ -181,40 +170,36 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
     std::vector<Image>& images = pipeline->images;
     for (size_t i = 0; i < images.size(); ++i)
     {
-        std::string filename = changeExtension(images[i].filename, KEYPOINT_EXTENSION);
-        std::ifstream ifs;
-
-        images[i].keyPoints.load(filename);
+        images[i].keyPoints.load(corecvs::HelperUtils::getFullPathWithNewExt(images[i].filename, KEYPOINT_EXTENSION));
     }
     CORE_UNUSED(_filename);
 }
 
-KeyPointDetectionStage::KeyPointDetectionStage( DetectorType type, int maxFeatureCount, int downsampleFactor, const std::string &params ) : 
-    detectorType( type ),
-    downsampleFactor( downsampleFactor ),
-    params( params ), 
-	maxFeatureCount(maxFeatureCount)
+KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, int downsampleFactor, const std::string &params)
+    : detectorType(type)
+    , downsampleFactor(downsampleFactor)
+    , params(params)
+    , maxFeatureCount(maxFeatureCount)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();
     delete detector;
 }
 
+//---------------------------------------------------------------------------
+
 void DescriptorExtractionStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &_filename) const
 {
     auto images = pipeline->images;
     for (size_t i = 0; i < images.size(); ++i)
     {
-        std::string filename = changeExtension(images[i].filename, DESCRIPTOR_EXTENSION);
-
-        images[i].descriptors.save(filename);
+        images[i].descriptors.save(corecvs::HelperUtils::getFullPathWithNewExt(images[i].filename, DESCRIPTOR_EXTENSION));
 
         // NOTE: in some cases (e.g. using different detector/descriptor setup) we are not able
         // to compute descriptor for each of keypoint, so some of them are removed.
         // So, we need to overwrite keypoint files!
-        filename = changeExtension(images[i].filename, KEYPOINT_EXTENSION);
-
-        images[i].keyPoints.save(filename);
+        //
+        images[i].keyPoints.save(corecvs::HelperUtils::getFullPathWithNewExt(images[i].filename, KEYPOINT_EXTENSION));
     }
     CORE_UNUSED(_filename);
 }
@@ -225,12 +210,10 @@ void DescriptorExtractionStage::loadResults(FeatureMatchingPipeline *pipeline, c
     for (size_t i = 0; i < images.size(); ++i)
     {
         Image &image = images[i];
-        std::string filename = changeExtension(image.filename, DESCRIPTOR_EXTENSION);
 
-        image.descriptors.load(filename);
+        image.descriptors.load(corecvs::HelperUtils::getFullPathWithNewExt(image.filename, DESCRIPTOR_EXTENSION));
 
         CORE_ASSERT_TRUE_S(image.descriptors.type == descriptorType);
-
         CORE_ASSERT_TRUE_S(image.keyPoints.keyPoints.size() == (image.descriptors.mat.getRows()));
     }
     CORE_UNUSED(_filename);
@@ -243,6 +226,7 @@ class ParallelExtractor
     std::string params;
     int downsampleFactor;
     bool keypointsColor;
+
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
@@ -263,17 +247,17 @@ public:
             ss1 << image.filename << ", ";
 
 			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
-            img->downsample( downsampleFactor );
+            img->downsample(downsampleFactor);
 
 			if (extractor)
-                extractor->compute( *img.get(), image.keyPoints.keyPoints, image.descriptors.mat, downsampleFactor == 1 ? image.remapCache : 0 );
+                extractor->compute(*img.get(), image.keyPoints.keyPoints, image.descriptors.mat, downsampleFactor == 1 ? image.remapCache : 0);
             image.descriptors.type = descriptorType;
 
             CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
-            if ( downsampleFactor == 1 && keypointsColor )
+            if (downsampleFactor == 1 && keypointsColor)
             {
 				std::unique_ptr<corecvs::RGB24Buffer      > bufferRGB(corecvs::BufferFactory::getInstance()->loadRGB24Bitmap(image.filename));
-                for ( auto& kp : image.keyPoints.keyPoints )
+                for (auto& kp : image.keyPoints.keyPoints)
                 {
 					corecvs::RGB24Buffer::RGBEx32 mean(corecvs::RGBColor::Black());
                     int cnt = 0;
@@ -318,7 +302,7 @@ public:
 
         delete extractor;
     }
-    ParallelExtractor( FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, const std::string &params, int downsampleFactor, bool keypointsColor ) : pipeline( pipeline ), descriptorType( descriptorType ), params( params ), downsampleFactor( downsampleFactor ), keypointsColor( keypointsColor ){}
+    ParallelExtractor(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, const std::string &params, int downsampleFactor, bool keypointsColor) : pipeline(pipeline), descriptorType(descriptorType), params(params), downsampleFactor(downsampleFactor), keypointsColor(keypointsColor){}
 };
 
 void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
@@ -328,18 +312,20 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for( ( size_t )0, N, CORE_MAX( N / MAX_CORE_COUNT_ESTIMATE, ( size_t )1 ), ParallelExtractor( pipeline, descriptorType, params, downsampleFactor, keypointsColor ), parallelable );
+    corecvs::parallelable_for((size_t)0, N, CORE_MAX(N / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelExtractor(pipeline, descriptorType, params, downsampleFactor, keypointsColor), parallelable);
 
     ss1 << "Extracting " << descriptorType << " descriptors";
     pipeline->toc(ss1.str(), ss2.str());
 }
 
-DescriptorExtractionStage::DescriptorExtractionStage( DescriptorType type, int downsampleFactor, const std::string &params, bool keypointsColor ) : descriptorType( type ), downsampleFactor( downsampleFactor ), params( params ), keypointsColor( keypointsColor )
+DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, int downsampleFactor, const std::string &params, bool keypointsColor) : descriptorType(type), downsampleFactor(downsampleFactor), params(params), keypointsColor(keypointsColor)
 {
     DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType, params);
 	parallelable = extractor ? extractor->isParallelable() : false;
     delete extractor;
 }
+
+//---------------------------------------------------------------------------
 
 void FileNameRefinedMatchingPlanComputationStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
 {
@@ -445,7 +431,10 @@ void MatchingPlanComputationStage::run(FeatureMatchingPipeline *pipeline)
     pipeline->toc("Preparing matching plan", "");
 }
 
-MatchingStage::MatchingStage(DescriptorType type, MatcherType matcherType, size_t responsesPerPoint) : descriptorType(type), matcherType(matcherType), responsesPerPoint(responsesPerPoint)
+//---------------------------------------------------------------------------
+
+MatchingStage::MatchingStage(DescriptorType type, MatcherType matcherType, size_t responsesPerPoint)
+    : descriptorType(type), matcherType(matcherType), responsesPerPoint(responsesPerPoint)
 {
     DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
 	parallelable = matcher ? matcher->isParallelable() : false;
@@ -483,7 +472,6 @@ public:
 
             corecvs::RuntimeTypeBuffer qb(images[I].descriptors.mat);
             corecvs::RuntimeTypeBuffer tb(images[J].descriptors.mat);
-
 #if 0
             for (size_t j = 0; j < query.queryFeatures.size(); ++j)
             {
@@ -494,7 +482,6 @@ public:
                 memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
             }
 #endif
-
             std::vector<std::vector<RawMatch>> ml;
 			if (matcher)
 				matcher->knnMatch(qb, tb, ml, responsesPerPoint);
@@ -569,6 +556,7 @@ void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::st
     pipeline->rawMatches.save(filename);
 }
 
+//---------------------------------------------------------------------------
 
 class ParallelMatcherRefiner
 {
@@ -579,6 +567,7 @@ class ParallelMatcherRefiner
     double scaleThreshold;
     bool thresholdDistance;
     std::vector<int> *first_ptr, *next_ptr, *idx_ptr;
+
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
@@ -687,7 +676,7 @@ public:
                         {
                             accumulator[query][dm.featureQ][1] = accumulator[query][dm.featureQ][0];
                             accumulator[query][dm.featureQ][0] = dm;
-                        } else if ( dm.distance < accumulator[query][dm.featureQ][1].distance) {
+                        } else if (dm.distance < accumulator[query][dm.featureQ][1].distance) {
                             accumulator[query][dm.featureQ][1] = dm;
                         }
                     }
@@ -1101,10 +1090,12 @@ void RandIndexStage::run(FeatureMatchingPipeline *pipeline)
 
 }
 #endif
-RefineMatchesStage::RefineMatchesStage(bool symmetric, double scaleThreshold) :
-    symmetric(symmetric), scaleThreshold(scaleThreshold)
-{
-}
+
+//---------------------------------------------------------------------------
+
+RefineMatchesStage::RefineMatchesStage(bool symmetric, double scaleThreshold)
+    : symmetric(symmetric), scaleThreshold(scaleThreshold)
+{}
 
 void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline)
 {
@@ -1157,7 +1148,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline)
                 {
                     accumulator[query][train][dm.featureQ][1] = accumulator[query][train][dm.featureQ][0];
                     accumulator[query][train][dm.featureQ][0] = dm;
-                } else if ( dm.distance < accumulator[query][train][dm.featureQ][1].distance) {
+                } else if (dm.distance < accumulator[query][train][dm.featureQ][1].distance) {
                     accumulator[query][train][dm.featureQ][1] = dm;
                 }
             }
@@ -1248,22 +1239,7 @@ void RefineMatchesStage::loadResults(FeatureMatchingPipeline *pipeline, const st
 }
 
 VsfmWriterStage::VsfmWriterStage(bool sortFeatures) : sortFeatures(sortFeatures)
-{
-}
-
-std::string file_name(const std::string &full_name)
-{
-    std::string name = full_name;
-    size_t from = 0;
-    for (size_t i = 0; i < full_name.size(); ++i)
-        if (full_name[i] == '/' || full_name[i] == '\\')
-            from = i + 1;
-    std::string res;
-    res.resize(full_name.size() - from);
-    for (size_t i = from, j = 0; i < full_name.size(); ++i, ++j)
-        res[j] = full_name[i];
-    return res;
-}
+{}
 
 void VsfmWriterStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
 {
@@ -1279,10 +1255,8 @@ void VsfmWriterStage::loadResults(FeatureMatchingPipeline *pipeline, const std::
     {
         images[i].keyPoints.keyPoints.clear();
 
-        std::string file = changeExtension(images[i].filename, SIFT_EXTENSION);
-
         std::ifstream of;
-        of.open(file.c_str(), std::ifstream::in);
+        of.open(corecvs::HelperUtils::getFullPathWithNewExt(images[i].filename, SIFT_EXTENSION).c_str(), std::ifstream::in);
         VsfmSiftIO::readBinary(of, features);
 
         size_t M;
@@ -1381,10 +1355,8 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
             write_features[j] = features[i][reordering[i][j]];
         }
 
-        std::string file = changeExtension(images[i].filename, SIFT_EXTENSION);
-
         std::ofstream of;
-        of.open(file.c_str(), std::ofstream::out);
+        of.open(corecvs::HelperUtils::getFullPathWithNewExt(images[i].filename, SIFT_EXTENSION).c_str(), std::ofstream::out);
         VsfmSiftIO::writeAscii(of, write_features);
     }
 
@@ -1395,9 +1367,11 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
     for (size_t i = 0; i < refinedMatches.matchSets.size(); ++i)
     {
         RefinedMatchSet& set = refinedMatches.matchSets[i];
-        if(!set.matches.size())
+        if (!set.matches.size())
             continue;
-        ofs << file_name(images[set.imgA].filename) << std::endl << file_name(images[set.imgB].filename) << std::endl;
+
+        ofs << corecvs::HelperUtils::getFileNameFromFilePath(images[set.imgA].filename) << std::endl
+            << corecvs::HelperUtils::getFileNameFromFilePath(images[set.imgB].filename) << std::endl;
 
         ofs << set.matches.size() << std::endl;
 
@@ -1506,15 +1480,17 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
     }
 }
 
-DetectAndExtractStage::DetectAndExtractStage( DetectorType detectorType, DescriptorType descriptorType, int maxFeatureCount, int downsampleFactor, const std::string &params, bool keypointsColor ) :
-    detectorType( detectorType ),
-    descriptorType( descriptorType ),
-    downsampleFactor( downsampleFactor ),
-    maxFeatureCount( maxFeatureCount ),
-    params( params ),
-    keypointsColor( keypointsColor )
+//---------------------------------------------------------------------------
+
+DetectAndExtractStage::DetectAndExtractStage(DetectorType detectorType, DescriptorType descriptorType, int maxFeatureCount, int downsampleFactor, const std::string &params, bool keypointsColor)
+    : detectorType(detectorType)
+    , descriptorType(descriptorType)
+    , downsampleFactor(downsampleFactor)
+    , maxFeatureCount(maxFeatureCount)
+    , params(params)
+    , keypointsColor(keypointsColor)
 {
-    DetectAndExtract* detector = DetectAndExtractProvider::getInstance().getDetector( detectorType, descriptorType );
+    DetectAndExtract* detector = DetectAndExtractProvider::getInstance().getDetector(detectorType, descriptorType);
     parallelable = detector ? detector->isParallelable() : false;
     delete detector;
 }
@@ -1529,19 +1505,19 @@ class ParallelDetectorExtractor
     int downsampleFactor;
     bool keypointsColor;
 public:
-    void operator() ( const corecvs::BlockedRange<size_t>& r ) const
+    void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-        std::unique_ptr<DetectAndExtract> detector( DetectAndExtractProvider::getInstance().getDetector( detectorType, descriptorType, params ) );
+        std::unique_ptr<DetectAndExtract> detector(DetectAndExtractProvider::getInstance().getDetector(detectorType, descriptorType, params));
         size_t N = pipeline->images.size();
         size_t id = r.begin();
 
         std::stringstream ss1, ss2;
         ss1 << "Detecting keypoints with " << detectorType << " on ";
         size_t cnt = 0;
-        pipeline->tic( id, false );
+        pipeline->tic(id, false);
         size_t kpt = 0;
 
-        for ( size_t i = r.begin(); i != r.end(); ++i )
+        for (size_t i = r.begin(); i != r.end(); ++i)
         {
             Image& image = pipeline->images[ i ];
             image.keyPoints.keyPoints.clear();
@@ -1549,21 +1525,21 @@ public:
 
             ss1 << image.filename << ",\n";
 
-            std::unique_ptr<BufferReader> reader( BufferReaderProvider::getInstance().getBufferReader( image.filename ) );
+            std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
 			corecvs::RuntimeTypeBuffer img = reader->read(image.filename);
-            img.downsample( downsampleFactor );
+            img.downsample(downsampleFactor);
    
-            if ( detector.get() )
-                detector->detectAndExtract( img, image.keyPoints.keyPoints, image.descriptors.mat, maxFeatureCount, downsampleFactor == 1 ? image.remapCache : 0 );
+            if (detector.get())
+                detector->detectAndExtract(img, image.keyPoints.keyPoints, image.descriptors.mat, maxFeatureCount, downsampleFactor == 1 ? image.remapCache : 0);
 
             kpt += image.keyPoints.keyPoints.size();
             image.descriptors.type = descriptorType;
-            CORE_ASSERT_TRUE_S( image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size() );
+            CORE_ASSERT_TRUE_S(image.descriptors.mat.getRows() == image.keyPoints.keyPoints.size());
 
-            if ( downsampleFactor == 1 && keypointsColor )
+            if (downsampleFactor == 1 && keypointsColor)
             {
-                corecvs::RGB24Buffer bufferRGB = reader->readRgb( image.filename );
-                for ( auto& kp : image.keyPoints.keyPoints )
+                corecvs::RGB24Buffer bufferRGB = reader->readRgb(image.filename);
+                for (auto& kp : image.keyPoints.keyPoints)
                 {
 					corecvs::RGB24Buffer::RGBEx32 mean(corecvs::RGBColor::Black());
                     int cnt = 0;
@@ -1571,13 +1547,13 @@ public:
                     int y = kp.position.y();
                     int sz = kp.size / 2;
 
-                    for ( int xx = x - sz; xx <= x + sz; ++xx )
-                        for ( int yy = y - sz; yy <= y + sz; ++yy )
+                    for (int xx = x - sz; xx <= x + sz; ++xx)
+                        for (int yy = y - sz; yy <= y + sz; ++yy)
                         {
-                            if ( !bufferRGB.isValidCoord( yy, xx ) )
+                            if (!bufferRGB.isValidCoord(yy, xx))
                                 continue;
 
-                            auto color = bufferRGB.element( yy, xx );
+                            auto color = bufferRGB.element(yy, xx);
 							mean += corecvs::RGB24Buffer::RGBEx32(color);
                             cnt++;
                         }
@@ -1587,105 +1563,99 @@ public:
             }
 
             cnt++;
-            if ( cnt % 4 == 0 )
+            if (cnt % 4 == 0)
             {
                 ss2 << kpt << " keypoints / descriptors"; kpt = 0;
-                pipeline->toc( ss1.str(), ss2.str(), N, cnt, id, false ); cnt = 0;
-                ss1.str( "" );
-                ss2.str( "" );
+                pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false); cnt = 0;
+                ss1.str("");
+                ss2.str("");
                 ss1 << "Detecting " << detectorType << " keypoints and " << descriptorType << " descriptors ";
-                pipeline->tic( r.begin(), false );
+                pipeline->tic(r.begin(), false);
             }
         }
 
-        if ( cnt )
+        if (cnt)
         {
             ss2 << kpt << " keypoints / descriptors"; kpt = 0;
-            pipeline->toc( ss1.str(), ss2.str(), N, cnt, id, false );
+            pipeline->toc(ss1.str(), ss2.str(), N, cnt, id, false);
             cnt = 0;
         }
     }
 
-    ParallelDetectorExtractor( FeatureMatchingPipeline* pipeline, DetectorType detectorType, DescriptorType descriptorType,
-        int maxFeatureCount, int downsampleFactor, const std::string &params = "", bool keypointsColor = true ) :
-        pipeline( pipeline ), 
-        detectorType( detectorType ), 
-        descriptorType( descriptorType ),
-        params( params ), 
-        maxFeatureCount( maxFeatureCount ), 
-        keypointsColor( keypointsColor ),
-        downsampleFactor( downsampleFactor )
+    ParallelDetectorExtractor(FeatureMatchingPipeline* pipeline, DetectorType detectorType, DescriptorType descriptorType,
+        int maxFeatureCount, int downsampleFactor, const std::string &params = "", bool keypointsColor = true) :
+        pipeline(pipeline), 
+        detectorType(detectorType), 
+        descriptorType(descriptorType),
+        params(params), 
+        maxFeatureCount(maxFeatureCount), 
+        keypointsColor(keypointsColor),
+        downsampleFactor(downsampleFactor)
     {}
 };
 
-void DetectAndExtractStage::run( FeatureMatchingPipeline *pipeline )
+void DetectAndExtractStage::run(FeatureMatchingPipeline *pipeline)
 {
     pipeline->tic();
     std::stringstream ss1, ss2;
 
     size_t N = pipeline->images.size();
 
-    corecvs::parallelable_for( ( size_t )0, N, CORE_MAX( N / MAX_CORE_COUNT_ESTIMATE, ( size_t )1 ), ParallelDetectorExtractor( pipeline, detectorType, descriptorType, maxFeatureCount, downsampleFactor, params, keypointsColor ), parallelable );
+    corecvs::parallelable_for((size_t)0, N, CORE_MAX(N / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetectorExtractor(pipeline, detectorType, descriptorType, maxFeatureCount, downsampleFactor, params, keypointsColor), parallelable);
 
     ss1 << "Detecting by " << detectorType << " and extracting descriptors by " << descriptorType;
-    pipeline->toc( ss1.str(), ss2.str() );
+    pipeline->toc(ss1.str(), ss2.str());
 }
 
-void DetectAndExtractStage::saveResults( FeatureMatchingPipeline *pipeline, const std::string &_filename ) const
+void DetectAndExtractStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &_filename) const
 {
     auto images = pipeline->images;
-    for ( size_t i = 0; i < images.size(); ++i )
+    for (size_t i = 0; i < images.size(); ++i)
     {
-        std::string filename = changeExtension( images[ i ].filename, KEYPOINT_EXTENSION );
-        images[ i ].keyPoints.save( filename );
-        filename = changeExtension( images[ i ].filename, DESCRIPTOR_EXTENSION );
-        images[ i ].descriptors.save( filename );
+        Image &image = images[i];
+        image.keyPoints.save  (corecvs::HelperUtils::getFullPathWithNewExt(image.filename, KEYPOINT_EXTENSION));
+        image.descriptors.save(corecvs::HelperUtils::getFullPathWithNewExt(image.filename, DESCRIPTOR_EXTENSION));
     }
 
-    CORE_UNUSED( _filename );
+    CORE_UNUSED(_filename);
 }
 
-void DetectAndExtractStage::loadResults( FeatureMatchingPipeline *pipeline, const std::string &_filename )
+void DetectAndExtractStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &_filename)
 {
     std::vector<Image>& images = pipeline->images;
-    for ( size_t i = 0; i < images.size(); ++i )
+    for (size_t i = 0; i < images.size(); ++i)
     {
-        Image &image = images[ i ];
-        std::string filename = changeExtension( image.filename, KEYPOINT_EXTENSION );
-        std::ifstream ifs;
+        Image &image = images[i];
+        image.keyPoints.load  (corecvs::HelperUtils::getFullPathWithNewExt(image.filename, KEYPOINT_EXTENSION));
+        image.descriptors.load(corecvs::HelperUtils::getFullPathWithNewExt(image.filename, DESCRIPTOR_EXTENSION));
 
-        image.keyPoints.load( filename );  
-
-        filename = changeExtension( image.filename, DESCRIPTOR_EXTENSION );
-        image.descriptors.load( filename );
-
-        CORE_ASSERT_TRUE_S( image.descriptors.type == descriptorType );
-        CORE_ASSERT_TRUE_S( image.keyPoints.keyPoints.size() == ( image.descriptors.mat.getRows() ) );
+        CORE_ASSERT_TRUE_S(image.descriptors.type == descriptorType);
+        CORE_ASSERT_TRUE_S(image.keyPoints.keyPoints.size() == (image.descriptors.mat.getRows()));
     }
-    CORE_UNUSED( _filename );
+    CORE_UNUSED(_filename);
 }
 
-DetectExtractAndMatchStage::DetectExtractAndMatchStage( DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, int downsampleFactor, size_t responsesPerPoint, const std::string &params ) :
-    detectorType( detectorType ),
-    descriptorType( descriptorType ),
-    matcherType( matcherType ),
-    downsampleFactor( downsampleFactor ),
-    maxFeatureCount( maxFeatureCount ),
-    responsesPerPoint( responsesPerPoint ),
-    params( params )
-{
+//---------------------------------------------------------------------------
 
-}
+DetectExtractAndMatchStage::DetectExtractAndMatchStage(DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, int downsampleFactor, size_t responsesPerPoint, const std::string &params)
+    : detectorType(detectorType)
+    , descriptorType(descriptorType)
+    , matcherType(matcherType)
+    , downsampleFactor(downsampleFactor)
+    , maxFeatureCount(maxFeatureCount)
+    , responsesPerPoint(responsesPerPoint)
+    , params(params)
+{}
 
 void DetectExtractAndMatchStage::run(FeatureMatchingPipeline *pipeline)
 {
-    std::unique_ptr<DetectExtractAndMatch> detector( DetectExtractAndMatchProvider::getInstance().getDetector( detectorType, descriptorType, matcherType, params ) );
+    std::unique_ptr<DetectExtractAndMatch> detector(DetectExtractAndMatchProvider::getInstance().getDetector(detectorType, descriptorType, matcherType, params));
     std::stringstream ss1;
     pipeline->tic();
 
 	const size_t numImages = pipeline->images.size();
 	if (detector.get())
-		detector->detectExtractAndMatch( *pipeline, maxFeatureCount, ( int )responsesPerPoint );
+		detector->detectExtractAndMatch(*pipeline, maxFeatureCount, (int)responsesPerPoint);
 	else
 	{
 		for (uint i = 0; i < numImages; i++)
@@ -1696,34 +1666,36 @@ void DetectExtractAndMatchStage::run(FeatureMatchingPipeline *pipeline)
 		std::cerr << pipeline->images[i].filename << "\t\t\t " << pipeline->images[i].keyPoints.keyPoints.size() << " keypoints " << std::endl;
 
 	ss1 << "Detect " << detectorType << " and match " << matcherType;
-    pipeline->toc( ss1.str(), "");
+    pipeline->toc(ss1.str(), "");
 }
 
 void DetectExtractAndMatchStage::loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename)
 {
-    pipeline->rawMatches.load( filename );
+    pipeline->rawMatches.load(filename);
 }
 
 void DetectExtractAndMatchStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
 {
-    pipeline->rawMatches.save( filename );
+    pipeline->rawMatches.save(filename);
 }
 
+//---------------------------------------------------------------------------
+
 void addDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline, DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType,
-    int maxFeatureCount, int downsampleFactor, const std::string &params, size_t responsesPerPoint )
+    int maxFeatureCount, int downsampleFactor, const std::string &params, size_t responsesPerPoint)
 {
 #ifndef WITH_OPENCV_3x
-    if ( std::string::npos != detectorType  .find( "_GPU" ) &&
-         std::string::npos != descriptorType.find( "_GPU" ) &&
-         std::string::npos != matcherType   .find( "_GPU" ) )
+    if (std::string::npos != detectorType  .find("_GPU") &&
+        std::string::npos != descriptorType.find("_GPU") &&
+        std::string::npos != matcherType   .find("_GPU"))
 	{
-        pipeline.add( new DetectExtractAndMatchStage( detectorType, descriptorType, matcherType, maxFeatureCount, downsampleFactor, responsesPerPoint, params ), true );
+        pipeline.add(new DetectExtractAndMatchStage(detectorType, descriptorType, matcherType, maxFeatureCount, downsampleFactor, responsesPerPoint, params), true);
 	}
 	else
 #endif
 	{
-        pipeline.add( new KeyPointDetectionStage( detectorType, maxFeatureCount, downsampleFactor, params ), true );
-        pipeline.add( new DescriptorExtractionStage( descriptorType, downsampleFactor, params ), true );
+        pipeline.add(new KeyPointDetectionStage(detectorType, maxFeatureCount, downsampleFactor, params), true);
+        pipeline.add(new DescriptorExtractionStage(descriptorType, downsampleFactor, params), true);
 		pipeline.add(new MatchingPlanComputationStage(), true);
 		pipeline.add(new MatchingStage(descriptorType, matcherType, responsesPerPoint), true);
 	}
@@ -1735,30 +1707,22 @@ void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
 	int maxFeatureCount,
     int downsampleFactor,
 	const std::string &params,
-    bool keypointsColor )
+    bool keypointsColor)
 {
 
-	if (std::string::npos != detectorType.find("_GPU") &&
+	if (std::string::npos != detectorType  .find("_GPU") &&
 		std::string::npos != descriptorType.find("_GPU"))
 	{
-        pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, params, keypointsColor ), true );
+        pipeline.add(new DetectAndExtractStage(detectorType, descriptorType, maxFeatureCount, downsampleFactor, params, keypointsColor), true);
 	}
-	else if ( detectorType == "AKAZE" && descriptorType == "AKAZE" )
-    //else if ( detectorType == descriptorType )
+	else if (detectorType == "AKAZE" && descriptorType == "AKAZE")
+    //else if (detectorType == descriptorType)
     {
-        pipeline.add( new DetectAndExtractStage( detectorType, descriptorType, maxFeatureCount, downsampleFactor, params, keypointsColor ), true );
+        pipeline.add(new DetectAndExtractStage(detectorType, descriptorType, maxFeatureCount, downsampleFactor, params, keypointsColor), true);
     }
     else
 	{
-        pipeline.add( new KeyPointDetectionStage( detectorType, maxFeatureCount, downsampleFactor, params ), true );
-        pipeline.add( new DescriptorExtractionStage( descriptorType, downsampleFactor, params, keypointsColor ), true );
+        pipeline.add(new KeyPointDetectionStage(detectorType, maxFeatureCount, downsampleFactor, params), true);
+        pipeline.add(new DescriptorExtractionStage(descriptorType, downsampleFactor, params, keypointsColor), true);
 	}
-}
-
-void FeatureMatchingPipeline::printCaps()
-{
-     cout << "Current caps are: " << std::endl;
-     FeatureDetectorProvider::getInstance().print();
-     DescriptorExtractorProvider::getInstance().print();
-     DescriptorMatcherProvider::getInstance().print();
 }

@@ -15,6 +15,10 @@
 #include "g12Image.h"
 #include "qtHelper.h"
 
+using std::string;
+using namespace corecvs;
+
+
 /**
  *  This is a form of dirty hack to be sure that int QT builds loading QT images will always
  *  work without any change of code.
@@ -44,7 +48,8 @@ RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
                 out++;
             }
         }
-    } else {
+    }
+    else {
         /**
          * TODO: Make this faster using .bits() method.
          * So far don't want to mess with possible image formats
@@ -206,10 +211,7 @@ RuntimeTypeBuffer *QTRuntimeLoader::load(std::string name)
     }
 
     return result;
-
 }
 
 QTRuntimeLoader::~QTRuntimeLoader()
-{
-
-}
+{}

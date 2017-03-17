@@ -79,8 +79,8 @@ with_fma {
         QMAKE_CFLAGS   += -mfma
         QMAKE_CXXFLAGS += -mfma
     } else {
-        QMAKE_CFLAGS   += /arch:FMA
-        QMAKE_CXXFLAGS += /arch:FMA
+#        QMAKE_CFLAGS   += /arch:FMA     # msvc doesn't support this :(
+#        QMAKE_CXXFLAGS += /arch:FMA
     }
 }
 
