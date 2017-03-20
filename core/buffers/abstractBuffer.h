@@ -1175,7 +1175,7 @@ private:
                     });
             this->data = (ElementType *)memoryBlock.getAlignedStart();
 
-            CORE_ASSERT_TRUE_P(this->data, ("out of memory or invalid buffer size (%zu)", allocatedSize));
+            CORE_ASSERT_TRUE_P(this->data, ("out of memory or invalid buffer size (%" PRISIZE_T ")", allocatedSize));
             if (shouldInit || !TRIVIALLY_DEFAULT_CONSTRUCTIBLE) {
                 CORE_CLEAR_MEMORY(this->data, allocatedSize);
                 _initArray(this->data, h, w, sa);

@@ -260,6 +260,13 @@ extern "C" {
 # define PRIi64 "I64d"
 #endif
 
+#if defined(_MSC_VER) && (_MSC_VER < 1900)      // fix bug for older vs than msvc2015
+# define PRISIZE_T  PRIu64
+#else
+# define PRISIZE_T "zu"
+#endif
+
+
 #define REFLECTION_IN_CORE
 
 

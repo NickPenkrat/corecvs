@@ -47,7 +47,8 @@ int Polygon::windingNumber(const Vector2dd &point) const
 {
     int    windingNumber = 0;
 
-    for (size_t i = 0; i < size(); i++) {
+    for (int i = 0; i < (int)size(); i++)
+    {
         Vector2dd cur  = getPoint(i);
         Vector2dd next = getNextPoint(i);
         Vector2dd dir  = next - cur;
@@ -60,12 +61,12 @@ int Polygon::windingNumber(const Vector2dd &point) const
 
 
         if (startsNotAbove && endsAbove) { // Crossing up
-            if ( dir.parallelogramOrientedAreaTo(point - next) > 0)
+            if (dir.parallelogramOrientedAreaTo(point - next) > 0)
                  windingNumber++;
         }
 
         if (startsAbove && endsNotAbove)  { // Crossing down
-            if ( dir.parallelogramOrientedAreaTo(point - next) < 0)
+            if (dir.parallelogramOrientedAreaTo(point - next) < 0)
                  windingNumber--;
         }
     }
@@ -167,9 +168,9 @@ void PolygonCombiner::prepare()
         }
     }
 
-    for (size_t i = 0; i < pol[0].size(); i++)
+    for (int i = 0; i < (int)pol[0].size(); i++)
     {
-        for (size_t j = 0; j < pol[1].size(); j++)
+        for (int j = 0; j < (int)pol[1].size(); j++)
         {
             Ray2d r1 = pol[0].getRay(i);
             Ray2d r2 = pol[1].getRay(j);
@@ -215,15 +216,15 @@ void PolygonCombiner::prepare()
     std::sort(c[1].begin(), c[1].end(), comparator);
 
     intersections.resize(intersectionNumber);
-    for (size_t i = 0; i < c[0].size(); i++)
+    for (int i = 0; i < (int)c[0].size(); i++)
     {
         if (c[0][i].flag == COMMON)
-            intersections[c[0][i].other].first = i;
+            intersections[c[0][i].intersection].first = i;
     }
-    for (size_t i = 0; i < c[1].size(); i++)
+    for (int i = 0; i < (int)c[1].size(); i++)
     {
         if (c[1][i].flag == COMMON)
-            intersections[c[1][i].other].second = i;
+            intersections[c[1][i].intersection].second = i;
     }
     for (size_t i = 0; i < intersections.size(); i++)
     {
@@ -264,50 +265,50 @@ bool PolygonCombiner::validateState() const
 
         for (size_t i = 0; i <= c[p].size(); i++)
         {
-            int num = (i + start) % c[p].size();
+            int num = (int)((i + start) % c[p].size());
 
-           const VertexData &vn = c[p][num];
-           if (vn.flag == COMMON)
-           {
+            const VertexData &vn = c[p][num];
+            if (vn.flag == COMMON)
+            {
                 skipped++;
                 continue;
-           }
+            }
 
-           if (vn.flag == INSIDE  && vc.flag == OUTSIDE)
-           {
-               if (skipped % 2 != 1) {
-                   printf("We have a problematic span [%c%d - out %c%d - in]: crossings %d \n", p == 0 ? 'A' : 'B', (int)oldId , p == 0 ? 'A' : 'B', num, skipped);
-                   ok = false;
-               }
-           }
+            if (vn.flag == INSIDE  && vc.flag == OUTSIDE)
+            {
+                if (skipped % 2 != 1) {
+                    printf("We have a problematic span [%c%d - out %c%d - in]: crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId, p == 0 ? 'A' : 'B', num, skipped);
+                    ok = false;
+                }
+            }
 
-           if (vn.flag == OUTSIDE && vc.flag == INSIDE )
-           {
-               if (skipped % 2 != 1) {
-                   printf("We have a problematic span [%c%d - in %c%d - out]: crossings %d \n", p == 0 ? 'A' : 'B', (int)oldId , p == 0 ? 'A' : 'B', num, skipped);
-                   ok = false;
-               }
-           }
+            if (vn.flag == OUTSIDE && vc.flag == INSIDE)
+            {
+                if (skipped % 2 != 1) {
+                    printf("We have a problematic span [%c%d - in %c%d - out]: crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId, p == 0 ? 'A' : 'B', num, skipped);
+                    ok = false;
+                }
+            }
 
-           if (vn.flag == INSIDE  && vc.flag == INSIDE)
-           {
-               if (skipped % 2 == 1) {
-                   printf("We have a problematic span [%c%d - in %c%d - in] : crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId , p == 0 ? 'A' : 'B', num, skipped);
-                   ok = false;
-               }
-           }
+            if (vn.flag == INSIDE  && vc.flag == INSIDE)
+            {
+                if (skipped % 2 == 1) {
+                    printf("We have a problematic span [%c%d - in %c%d - in] : crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId, p == 0 ? 'A' : 'B', num, skipped);
+                    ok = false;
+                }
+            }
 
-           if (vn.flag == OUTSIDE && vc.flag == OUTSIDE )
-           {
-               if (skipped % 2 == 1) {
-                   printf("We have a problematic span [%c%d - out %c%d - out] : crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId , p == 0 ? 'A' : 'B', num, skipped);
-                   ok = false;
-               }
-           }
+            if (vn.flag == OUTSIDE && vc.flag == OUTSIDE)
+            {
+                if (skipped % 2 == 1) {
+                    printf("We have a problematic span [%c%d - out %c%d - out] : crossings %d\n", p == 0 ? 'A' : 'B', (int)oldId, p == 0 ? 'A' : 'B', num, skipped);
+                    ok = false;
+                }
+            }
 
-           oldId = num;
-           skipped = 0;
-           vc = vn;
+            oldId = num;
+            skipped = 0;
+            vc = vn;
         }
     }
     return ok;
@@ -322,7 +323,7 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer) const
 
     for (int p = 0; p < 2; p++)
     {
-        for (size_t i = 0; i < c[p].size(); i++)
+        for (int i = 0; i < (int)c[p].size(); i++)
         {
             const VertexData &v = c[p][i];
             Vector2dd pos = v.pos;
@@ -335,52 +336,47 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer) const
                 buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Blue());
 
             painter.drawFormat(pos.x(), pos.y() + p * 10, RGBColor::White(), 1, "%c%d (%0.2lf) [%d]", p == 0 ? 'A' : 'B', i, v.t, v.other);
-            printf("(%lf %lf) %c%d (%0.2lf) [%d]\n", pos.x(), pos.y() , p == 0 ? 'A' : 'B', i, v.t, v.other);
+            printf("(%lf %lf) %c%d (%0.2lf) [%" PRISIZE_T "]\n", pos.x(), pos.y() , p == 0 ? 'A' : 'B', i, v.t, v.other);
         }
     }
-
-
 }
 
-Polygon PolygonCombiner::intersection() const
+Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector<bool> *visited) const
 {
     Polygon result;
-    if (intersectionNumber == 0) /* There are no contur intersection */
-    {
-        /* First poligon is inside the second one */
-        if (!c[0].empty() && c[0].front().flag == INSIDE)
-            return Polygon(pol[0]);
 
-        /* second poligon is inside the first one */
-        if (!c[1].empty() && c[1].front().flag == INSIDE)
-            return Polygon(pol[1]);
+    SYNC_PRINT(("PolygonCombiner::followContour(%d, %s)\n", startIntersection, inner ? "inner" : "outer"));
 
-        return result;
-    }
+    VertexType flagToFollow = inner ?  INSIDE : OUTSIDE;
+    VertexType flagToAvoid  = inner ? OUTSIDE : INSIDE ;
 
-    const std::pair<int, int> &fst = intersections[0];
+
+    const std::pair<int, int> &fst = intersections[startIntersection];
 
     int currentId = fst.first;
     int currentChain = 0;
 
-    printf("Exit condition A%d or B%d\n", fst.first, fst.second);
+    SYNC_PRINT(("Exit condition A%d or B%d\n", fst.first, fst.second));
 
     int limit = 0;
-    while (/*limit ++ < 100*/ true) {
+    while (limit ++ < 30 /*true*/) {
         VertexData v = c[currentChain][currentId];
+        if ((visited != NULL) && (v.flag == COMMON)) {
+            visited->operator [](v.intersection) = true;
+        }
+
         result.push_back(v.pos);
-        printf("Adding vertex c: %c%d point: %d (%lf %lf)\n", currentChain == 0 ? 'A' : 'B',
-               currentId,
+        printf("Adding vertex c: %c%d point: %" PRISIZE_T " (%lf %lf)\n", currentChain == 0 ? 'A' : 'B', currentId,
                v.orgId,
                c[currentChain][v.orgId].pos.x(),
                c[currentChain][v.orgId].pos.y());
 
-        if (v.flag == INSIDE)
+        if (v.flag == flagToFollow)
         {
-            /* Moving inside the outer polygon */
-            currentId = (currentId + 1) % c[currentChain].size();           
+            /* Moving at the right side of the other polygon */
+            currentId = (currentId + 1) % c[currentChain].size();
         }
-        if (v.flag == OUTSIDE)
+        if (v.flag == flagToAvoid)
         {
             cout << "Internal Error" << endl;
             break;
@@ -388,22 +384,64 @@ Polygon PolygonCombiner::intersection() const
 
         if (v.flag == COMMON)
         {
-            int otherChain = 1 - currentChain;
-            int nextCurrent = (currentId  + 1) % c[currentChain].size();
-            int nextOther   = (v.other    + 1) % c[otherChain  ].size();
+            int otherChain  = 1 - currentChain;
+            int nextCurrent = (int)((currentId  + 1) % c[currentChain].size());
+            int nextOther   = (int)((v.other    + 1) % c[otherChain  ].size());
 
-            const VertexData &candidate1 = c[currentChain][nextCurrent];
-            const VertexData &candidate2 = c[otherChain  ][nextOther];
+            struct {
+                const VertexData *node;
+                int chain;
+                int pos;
+            } candidates[2];
+
+            candidates[0] = {&c[currentChain][nextCurrent], currentChain, nextCurrent};
+            candidates[1] = {&c[otherChain  ][nextOther  ], otherChain  , nextOther  };
 
             printf("Branching (%c%d) (%c%d)\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
 
-            if (candidate1.flag != OUTSIDE) {
-                cout << "choice1" << endl;
-                currentId = nextCurrent;
-            } else {
-                cout << "choice2" << endl;
-                currentChain = otherChain;
-                currentId    = nextOther;
+            /*if ( ( inner && (candidate1.flag != OUTSIDE)) ||
+                 (!inner && (candidate1.flag == OUTSIDE)))*/
+
+            int cand = 0;
+            /* Prefer going your direction */
+            for (cand = 0; cand < 2; cand++)
+            {
+                if (candidates[cand].node->flag == flagToFollow)
+                {
+                    cout << "Choosing:" << cand << " because flag" << endl;
+                    currentChain = candidates[cand].chain;
+                    currentId    = candidates[cand].pos  ;
+                    break;
+                }
+            }
+
+            if (cand == 2) {
+                /* Always change the chain if both ends are common */
+                if (candidates[0].node->flag == COMMON && candidates[1].node->flag == COMMON)
+                {
+                    cout << "Choosing:" << cand << " because chain change" << endl;
+                    currentChain = candidates[1].chain;
+                    currentId    = candidates[1].pos  ;
+                    cand = 0;
+                }
+            }
+
+            if (cand == 2) {
+                for (cand = 0; cand < 2; cand++)
+                {
+                    if (candidates[cand].node->flag != flagToAvoid)
+                    {
+                        cout << "Choosing:" << cand << " because avoid" << endl;
+                        currentChain = candidates[cand].chain;
+                        currentId    = candidates[cand].pos  ;
+                        break;
+                    }
+                }
+            }
+
+            if (cand == 2) {
+                cout << "Internal Error2" << endl;
+                break;
             }
         }
 
@@ -427,10 +465,73 @@ Polygon PolygonCombiner::intersection() const
     return result;
 }
 
+Polygon PolygonCombiner::intersection() const
+{
+    Polygon result;
+    if (intersectionNumber == 0) /* There are no contur intersection */
+    {
+        /* First poligon is inside the second one */
+        if (!c[0].empty() && c[0].front().flag == INSIDE)
+            return Polygon(pol[0]);
+
+        /* second poligon is inside the first one */
+        if (!c[1].empty() && c[1].front().flag == INSIDE)
+            return Polygon(pol[1]);
+
+        return result;
+    }
+
+    return followContour(0, true);
+}
+
+vector<Polygon> PolygonCombiner::intersectionAll() const
+{
+    vector<Polygon> result;
+    cout << "PolygonCombiner::intersectionAll(): intesections: " << intersectionNumber << endl;
+    if (intersectionNumber == 0) /* There are no contur intersection */
+    {
+        cout << "PolygonCombiner::intersectionAll(): no intersections" << endl;
+
+        /* First poligon is inside the second one */
+        if (!c[0].empty() && c[0].front().flag == INSIDE) {
+            result.push_back(pol[0]);
+        }
+
+        /* second poligon is inside the first one */
+        if (!c[1].empty() && c[1].front().flag == INSIDE) {
+            result.push_back(pol[1]);
+            return result;
+        }
+        return result;
+    }
+
+    vector<bool> visited(intersectionNumber, false);
+
+    while (true) {
+        int p0 = -1;
+        for (int v = 0; v < visited.size(); v++)
+        {
+            if (!visited[v]) {
+                p0 = v;
+            }
+        }
+        if (p0 == -1)
+            return result;
+
+        result.push_back(followContour(p0, true, &visited));
+    }
+}
+
 Polygon PolygonCombiner::combination() const
 {
-    SYNC_PRINT(("PolygonCombiner::combination(): Not yet implemented\n"));
-    return Polygon();
+    Polygon result;
+    if (intersectionNumber == 0) /* There are no contur intersection */
+    {
+        // So far we return empty poligon
+        return result;
+    }
+
+    return followContour(0, false);
 }
 
 Polygon PolygonCombiner::difference() const
@@ -468,7 +569,7 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
     }
 
     /* Find one point in hull */
-    int minYId = 0;
+    size_t minYId = 0;
     double minY = list[0].y();
     for (size_t i = 1; i < list.size(); i++)
     {

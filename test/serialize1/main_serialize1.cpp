@@ -17,6 +17,15 @@
 #include "jsonGetter.h"
 #include "jsonSetter.h"
 
+#ifdef WITH_RAPIDJSON
+    #include "rapidJSONReader.h"
+#endif
+
+
+/*******************************
+ *    XML
+ ********************************/
+
 void testXML1()
 {
     QDomDocument document("document");
@@ -54,8 +63,9 @@ void testXML2()
 }
 
 
-/*========== Now with json ==============*/
-
+/*******************************
+ *    Now with QT json
+ ********************************/
 
 void testJSON1()
 {
@@ -80,7 +90,7 @@ void testJSON1()
 
     printf("====== Loading back some data ======\n");
 */
-    SYNC_PRINT(("Parsing %zu input:\n%s\n", CORE_COUNT_OF(input), input));
+    SYNC_PRINT(("Parsing %" PRISIZE_T " input:\n%s\n", CORE_COUNT_OF(input), input));
 
 
     QByteArray array(input, CORE_COUNT_OF(input));
@@ -109,8 +119,6 @@ void testJSON1()
 
     cout << "Result:" << result;
 }
-
-
 
 
 class TestComplexStructure : public BaseReflection<TestComplexStructure>{
@@ -177,7 +185,7 @@ void testJSON2()
     CORE_ASSERT_TRUE(testObject.testField.size() == testObject1.testField.size(), "Wrong loaded array size");
     for (size_t i = 0; i < testObject.testField.size(); i++)
     {
-        CORE_ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %zu", i));
+        CORE_ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %" PRISIZE_T "", i));
         cout << testObject1.testField[i] << " == " << testObject.testField[i] << std::endl;
     }
     cout << std::endl;
@@ -297,6 +305,86 @@ void testJSON_saveDistortion()
 
 }
 
+#ifdef WITH_RAPIDJSON
+/*******************************
+ *    Now with Rapid json
+ ********************************/
+
+
+void testRapidJSON1()
+{
+    cout << std::endl;
+    cout << "testRapidJSON1()" << std::endl;
+    cout << std::endl;
+
+    const char input[] =
+    "{\n"
+    "  \"vector\":{\n"
+    "     \"x\": 1,\n"
+    "     \"y\": 2,\n"
+    "     \"z\": 3\n"
+    "  }\n"
+    "}\n";
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+
+    rapidjson::Document document;
+    document.Parse(input);
+    rapidjson::Value object = document.GetObject();
+
+    cout << "Before parsing" << endl;
+    Vector3dd result(1.5,2.5,5.5);
+    cout << result << endl;
+    {
+        RapidJSONReader getter(object);
+        getter.visit(result, "vector");
+    }
+    cout << "After parsing" << endl;
+    cout << result << endl;
+
+}
+
+void testRapidJSON_saveDistortion()
+{
+    cout << std::endl;
+    cout << "testRapidJSON_saveDistortion()" << std::endl;
+    cout << std::endl;
+
+    LensDistortionModelParameters params;
+    LensDistortionModelParameters loaded;
+
+    params.setPrincipalX(400);
+    params.setPrincipalY(400);
+    params.setTangentialX(0.3);
+    params.setTangentialY(0.4);
+
+    params.setShiftX(200);
+    params.setShiftY(200);
+
+    params.setAspect(10.0);
+    params.setScale(1.1);
+    params.setKoeff({1.0, 2.0, std::numeric_limits<double>::min()});
+
+    cout << "testJSON_saveDistortion() test called" << endl;
+    cout << "Initial state" << endl;
+    cout << params << endl;
+
+    {
+        JSONSetter saver("out1.json");
+        saver.visit(params, "stage1");
+    }
+    {
+        RapidJSONReader loader("out1.json");
+        loader.visit(loaded, "stage1");
+    }
+
+    cout << "After parsing" << endl;
+    cout << loaded << endl;
+
+}
+
+#endif
+
 
 int main (int /*argc*/, char ** /*argv*/)
 {
@@ -312,6 +400,11 @@ int main (int /*argc*/, char ** /*argv*/)
 
     /*testJSON_FixtureScene();*/
     // testJSON_StereoScene();
+
+#ifdef WITH_RAPIDJSON
+     testRapidJSON1();
+     testRapidJSON_saveDistortion();
+#endif
 
 	return 0;
 }

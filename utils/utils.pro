@@ -111,7 +111,8 @@ HEADERS += \
     corestructs/reflectionWidget.h \
     3d/shadedSceneControlWidget.h \
     scripting/coreToScript.h \
-    3d/billboardCaption3DScene.h
+    3d/billboardCaption3DScene.h \
+    3d/gCodeScene.h
 
 SOURCES += \
     frames.cpp \
@@ -193,7 +194,8 @@ SOURCES += \
     3d/sceneShaded.cpp \
     corestructs/reflectionWidget.cpp \
     3d/shadedSceneControlWidget.cpp \
-    3d/billboardCaption3DScene.cpp
+    3d/billboardCaption3DScene.cpp \
+    3d/gCodeScene.cpp
 
 
 FORMS += \

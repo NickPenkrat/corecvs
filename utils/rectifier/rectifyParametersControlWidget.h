@@ -37,6 +37,21 @@ public:
 
     void setManualTab(CameraAnglesLegacy &angle, Vector3dd &dir)
     {
+        double pitchDelta = mUi->manualPitchSpinBox->value() - angle.pitch();
+        double yawDelta   = mUi->manualYawSpinBox->value()   - angle.yaw();
+        double rollDelta  = mUi->manualRollSpinBox->value()  - angle.roll();
+
+        Vector3dd old(mUi->manualXSpinBox->value(), mUi->manualYSpinBox->value(), mUi->manualZSpinBox->value());
+        double shiftDelta = (old - dir).l2Metric() * mUi->baselineLengthSpinBox->value();
+
+        QString deltaText = QString("pitch=%1deg\nyaw=%1deg\nroll=%1deg\ndelta=%1unit")
+                .arg(radToDeg(pitchDelta))
+                .arg(radToDeg(yawDelta))
+                .arg(radToDeg(rollDelta))
+                .arg(shiftDelta);
+
+        mUi->deltaLabel->setText(deltaText);
+
         mUi->manualPitchSpinBox->setValue(angle.pitch());
         mUi->manualYawSpinBox  ->setValue(angle.yaw());
         mUi->manualRollSpinBox ->setValue(angle.roll());

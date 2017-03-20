@@ -277,6 +277,7 @@ PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, 
     /*Delegate activity*/
     mDelegateStyleBox = new QComboBox(this);
     mDelegateStyleBox->addItem("No Delegate");
+    mDelegateStyleBox->addItem("Small");
     mDelegateStyleBox->addItem("Selected");
     mDelegateStyleBox->addItem("Only");
     mDelegateStyleBox->addItem("All");
@@ -430,10 +431,10 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
         /* We should probably use our own mechnism */
         bool drawDelegate = false;
-        if (mDelegateStyleBox->currentIndex() == 2 ||
-            mDelegateStyleBox->currentIndex() == 3 )
+        if (mDelegateStyleBox->currentIndex() == STYLE_ONLY_DELEGATE ||
+            mDelegateStyleBox->currentIndex() == STYLE_ALL )
             drawDelegate = true;
-        if (mDelegateStyleBox->currentIndex() == 1 && isSelected)
+        if (mDelegateStyleBox->currentIndex() == STYLE_SELECTED && isSelected)
             drawDelegate = true;
 
         if (drawDelegate)
@@ -450,12 +451,18 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
             painter.setTransform(old);
         }
 
-        if (mDelegateStyleBox->currentIndex() != 2)
+        if (mDelegateStyleBox->currentIndex() != STYLE_ONLY_DELEGATE)
         {
-            painter.setPen(Qt::yellow);
-            drawCircle(painter, imageCoords, 5);
-            painter.setPen(Qt::blue);
-            drawCircle(painter, imageCoords, 10);
+            if (mDelegateStyleBox->currentIndex() != STYLE_NO_DELEGATE_SMALL)
+            {
+                painter.setPen(Qt::yellow);
+                drawCircle(painter, imageCoords, 5);
+                painter.setPen(Qt::blue);
+                drawCircle(painter, imageCoords, 10);
+            } else {
+                painter.setPen(Qt::yellow);
+                drawCircle(painter, imageCoords, 2);
+            }
 
             if (mAddInfoButton->isChecked())
             {

@@ -4,10 +4,13 @@
 #include <vector>
 #include <iostream>
 
+
 #include "global.h"
 
 #include "mesh3d.h"
 #include "polygons.h"
+
+#include "gCodeColoringSheme.h"
 
 namespace corecvs {
 
@@ -104,14 +107,8 @@ public:
     bool trace = true;
     int arcSteps = 10;
 
-    enum ColoringSheme {
-        COLOR_FROM_G_CODE,
-        COLOR_FROM_EXTRSION_RATE,
-        COLOR_FROM_TEMPERATUE,
-        COLOR_FROM_SPEED
-    };
 
-    ColoringSheme coloring = COLOR_FROM_SPEED;
+    GCodeColoringSheme::GCodeColoringSheme coloring = GCodeColoringSheme::COLOR_FROM_SPEED;
 
 
 

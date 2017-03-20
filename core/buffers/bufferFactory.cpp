@@ -88,19 +88,20 @@ RGB24Buffer *BufferFactory::loadRGB24Bitmap(string name)
             continue;
 
         RGB24Buffer *result = NULL;
-
         try {
             result = (*it)->load(name);
-        } catch ( std::exception &e )
+        }
+        catch (std::exception &)
         {
-            SYNC_PRINT(("BufferFactory::loadRGB24Bitmap(): loader <%s> violates contract by throwing unexpected excpation",(*it)->name().c_str() ));
+            SYNC_PRINT(("BufferFactory::loadRGB24Bitmap(): loader <%s> violates contract by throwing unexpected exception", (*it)->name().c_str()));
         }
 
-        if (result != NULL)
+        if (result != NULL) {
             return result;
+        }
         else {
             SYNC_PRINT(("BufferFactory::loadRGB24Bitmap(%s):  loader <%s> agreed to load, but failed\n",
-                        name.c_str(), (*it)->name().c_str() ));
+                        name.c_str(), (*it)->name().c_str()));
         }
     }
 

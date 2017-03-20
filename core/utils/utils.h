@@ -57,12 +57,12 @@ namespace HelperUtils
     bool            endsWith  (const string &str, const string &postfix);
     istream&        getlineSafe(istream& is, string& str);
 
-    std::string removeLeading(const string &str, const string &symbols = " ");
+    std::string     removeLeading(const string &str, const string &symbols = " ");
 
     void            stringSplit(const string &s, char delim, vector<string> &elems);
     vector<string>  stringSplit(const string &s, char delim);
 
-    string stringCombine(vector<string> parts, char delim);
+    string          stringCombine(vector<string> parts, char delim);
 
     string          toNativeSlashes(const string& str);
 
@@ -77,7 +77,8 @@ namespace HelperUtils
 
     inline string   getFileNameFromFilePath(const string &filePath)
     {
-        return filePath.substr(filePath.find_last_of("/\\") + 1);
+        size_t pos = filePath.find_last_of("/\\");
+        return filePath.substr(pos == string::npos ? 0 : (pos + 1));
     }
 
     inline string   getPathWithoutFilename(const string &filePath)
@@ -90,11 +91,16 @@ namespace HelperUtils
         return filePath.substr(0, filePath.find_last_of("."));
     }
 
+    inline string   getFullPathWithNewExt(const string &filePath, const string &newExt)
+    {
+        return getFullPathWithoutExt(filePath) + newExt;
+    }
+
     /// Add suffix to file name before extension: filename.ext -> filenameSuffix.ext
     inline string   getFilePathWithSuffixAtName(const string& filePath, const string& suffix)
     {
-        size_t extPosition = filePath.find_last_of(".");
-        return filePath.substr(0, extPosition) + suffix + filePath.substr(extPosition);
+        size_t pos = filePath.find_last_of(".");
+        return filePath.substr(0, pos) + suffix + (pos == string::npos ? "" : filePath.substr(pos));
     }
 
 

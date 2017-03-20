@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
     printf("Starting cloudView...\n");
     QApplication app(argc, argv);
-    CloudViewDialog mainWindow;
+    CloudViewDialog mainWindow(NULL, "CloudView Test Application");
     MeshLoader loader;
 
     mainWindow.show();

@@ -98,5 +98,25 @@
   </class>
 -->
 
+   <enum name="GCode Coloring Sheme">
+       <item name="Color From GCode"          id = "0" />
+       <item name="Color From Extrusion Rate" id = "1" />
+       <item name="Color From Temperature"    id = "2" />
+       <item name="Color From Speed"          id = "3" />
+  </enum>
+
+
+
+  <class name="draw GCode Parameters">
+     <field type="GCode Coloring Sheme"  name="scheme"  />
+
+     <field type="double"  name="minTemp"   min = "0" max="1000"   defaultValue="200" />
+     <field type="double"  name="maxTemp"   min = "0" max="1000"   defaultValue="250" />
+
+     <field type="double"  name="minSpeed"   min = "0" max="1000"   defaultValue="200" />
+     <field type="double"  name="maxSpeed"   min = "0" max="1000"   defaultValue="950" />
+  </class>
+
+
 </poco>
 
