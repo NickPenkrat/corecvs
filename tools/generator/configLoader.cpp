@@ -32,6 +32,9 @@ const char *ConfigLoader::toCString(QString const &str)
         return strdup(str.toLatin1());
 }
 
+
+
+
 /**
  *   We do this to support both
  *
@@ -208,8 +211,13 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                 }
                 else if (type == "string")
                 {
-                    const char *dValue = toCString(defaultValue);
+                    std::string dValue = defaultValue.toStdString();
                     field = new StringFieldGen(dValue, fieldNameing);
+                }
+                else if (type == "wstring")
+                {
+                    std::wstring dValue = defaultValue.toStdWString();
+                    field = new WStringFieldGen(dValue, fieldNameing);
                 }
                 else if (type == "Vector2dd" || type == "Vector3dd")
                 {

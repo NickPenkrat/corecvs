@@ -146,6 +146,48 @@ string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
     return toNativeSlashes(envDirPath + path + filename);
 }
 
+string escapeString(const string &s, const std::unordered_map<char, char> &symbols, const string &escape)
+{
+
+     std::ostringstream out;
+
+     for (const char &symbol : s)
+     {
+
+         auto p = symbols.find(symbol);
+         if (p != symbols.end())
+         {
+             out << escape;
+             out << p->second;
+         } else {
+             out << symbol;
+         }
+     }
+     return out.str();
+}
+
+string unescapeString(const string &s, const std::unordered_map<char, char> &symbols, char guard)
+{
+    std::ostringstream out;
+    for (size_t n = 0; n < s.size(); n++)
+    {
+        if (s[n] == guard && n < s.size() - 1)
+        {
+            auto p = symbols.find(s[n + 1]);
+            if (p != symbols.end())
+            {
+                out << p->second;
+            } else {
+                out << guard;
+            }
+            n++;
+        } else {
+            out << s[n];
+        }
+    }
+    return out.str();
+}
+
 } // namespace HelperUtils
 
 } //namespace corecvs

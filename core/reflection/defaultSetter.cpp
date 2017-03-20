@@ -61,6 +61,15 @@ void DefaultSetter::visit<std::string, StringField>(
 }
 
 template <>
+void DefaultSetter::visit<std::wstring, WStringField>(
+        std::wstring &field,
+        const WStringField *fieldDescriptor)
+{
+    field = fieldDescriptor->defaultValue;
+}
+
+
+template <>
 void DefaultSetter::visit<double, DoubleVectorField>(
         std::vector<double> &field,
         const DoubleVectorField *fieldDescriptor)

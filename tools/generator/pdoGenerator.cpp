@@ -994,16 +994,25 @@ void PDOGenerator::generateControlWidgetCpp()
 
         if (type == BaseField::TYPE_POINTER)
             continue;
-
-        QString suffix = (type == BaseField::TYPE_STRING) ? ".c_str()" : "";
-
-        if (type == BaseField::TYPE_ENUM)
+        if       (type == BaseField::TYPE_STRING)
         {
-            prefix = "";
-        }
+    result+=
+    "    "+prefix+"mUi->"+boxName+"->"+getWidgetSetterMethodForType(type)+"(QString::fromStdString(input."+getterName+"()));\n";
+        } else if(type == BaseField::TYPE_WSTRING)
+        {
+    result+=
+    "    "+prefix+"mUi->"+boxName+"->"+getWidgetSetterMethodForType(type)+"(QString::fromStdWString(input."+getterName+"()));\n";
+        } else {
+
+            if (type == BaseField::TYPE_ENUM)
+            {
+                prefix = "";
+            }
 
     result+=
-    "    "+prefix+"mUi->"+boxName+"->"+getWidgetSetterMethodForType(type)+"(input."+getterName+"()"+suffix+");\n";
+    "    "+prefix+"mUi->"+boxName+"->"+getWidgetSetterMethodForType(type)+"(input."+getterName+"());\n";
+        }
+
     }
 
     result+=

@@ -121,9 +121,9 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     }
 #endif
 
+#if 0
     QSharedPointer<CoordinateFrame> worldFrame = QSharedPointer<CoordinateFrame>(new CoordinateFrame());
 
-#if 0
 /*    QSharedPointer<Scene3D> grid  = QSharedPointer<Scene3D>(new Grid3DScene());
     QSharedPointer<Scene3D> plane = QSharedPointer<Scene3D>(new Plane3DScene());
     grid->name  = "Grid";
@@ -160,9 +160,10 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     box->name = "box-mesh";
     //addSubObject("box-mesh", QSharedPointer<Scene3D>(box));
     worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(box));
+    addSubObject("World Frame", worldFrame);
 #endif
 
-    addSubObject("World Frame", worldFrame);
+
 
     /* Stats collection */
     connect(mUi.statsButton, SIGNAL(released()), this, SLOT(statsOpen()));
@@ -187,7 +188,7 @@ void CloudViewDialog::addMesh(QString name, Mesh3D *mesh)
 
 TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointer<Scene3D> scene, bool visible)
 {
-    qDebug("CloudViewDialog::addSubObject(%s, _, %s): called", name.toLatin1().constData(), visible ? "true" : "false" );
+    qDebug("CloudViewDialog(%s)::addSubObject(%s, _, %s): called", windowTitle().toLatin1().constData(), name.toLatin1().constData(), visible ? "true" : "false" );
 
     TreeSceneController * result = mTreeModel.addObject(name, scene, visible);
     mUi.widget->update();

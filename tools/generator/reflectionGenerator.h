@@ -22,6 +22,7 @@ using corecvs::BoolField;
 using corecvs::IntField;
 using corecvs::DoubleField;
 using corecvs::StringField;
+using corecvs::WStringField;
 using corecvs::CompositeField;
 using corecvs::CompositeArrayField;
 using corecvs::EnumField;
@@ -129,6 +130,24 @@ public:
     }
 };
 
+class WStringFieldGen : public WStringField
+{
+public:
+    WStringFieldGen (
+            const std::wstring _defaultValue,
+            const ReflectionNaming &_nameing
+    ) : WStringField (
+            BaseField::UNKNOWN_ID,
+            BaseField::UNKNOWN_OFFSET,
+            _defaultValue,
+            _nameing
+    ) {}
+
+    virtual BaseField* clone() const
+    {
+        return new WStringFieldGen(*this);
+    }
+};
 
 enum BoolWidgetType {
     checkBox,

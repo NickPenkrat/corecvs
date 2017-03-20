@@ -48,6 +48,12 @@ bool DynamicObject::simulateConstructor()
             *getField<std::string>(count) = tfield->defaultValue;
             break;
         }
+        case BaseField::TYPE_WSTRING:
+        {
+            const WStringField *tfield = static_cast<const WStringField *>(field);
+            *getField<std::wstring>(count) = tfield->defaultValue;
+            break;
+        }
         case (BaseField::FieldType)(BaseField::TYPE_VECTOR_BIT | BaseField::TYPE_DOUBLE) :
         {
             const DoubleVectorField *tfield = static_cast<const DoubleVectorField *>(field);
