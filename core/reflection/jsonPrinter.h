@@ -14,6 +14,10 @@ using std::string;
 using std::ostream;
 using std::cout;
 
+
+/**
+   Please note, json is finallised on destruction of the object.
+**/
 class JSONPrinter
 {
 public:
@@ -201,6 +205,9 @@ template <>
 void JSONPrinter::visit<int,    IntField>(int &field, const IntField *fieldDescriptor);
 
 template <>
+void JSONPrinter::visit<uint64_t, UInt64Field>(uint64_t &field, const UInt64Field *fieldDescriptor);
+
+template <>
 void JSONPrinter::visit<double, DoubleField>(double &field, const DoubleField *fieldDescriptor);
 
 template <>
@@ -231,6 +238,8 @@ void JSONPrinter::visit<double, DoubleVectorField>(std::vector<double> &field, c
  *
  * this methods can be made universal, but are separated to make it a bit more controllable
  **/
+template <>
+void JSONPrinter::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);
 
 template <>
 void JSONPrinter::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);

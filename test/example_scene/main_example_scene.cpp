@@ -4,6 +4,7 @@
 #endif
 #include <QtXml/QDomDocument>
 #include <vector>
+#include <fstream>
 
 #include "abstractPainter.h"
 #include "bmpLoader.h"
@@ -16,6 +17,10 @@
 
 #include "jsonGetter.h"
 #include "jsonSetter.h"
+
+#include "jsonPrinter.h"
+
+using namespace std;
 
 
 void testJSON_FixtureScene()
@@ -237,6 +242,17 @@ void testJSON_StereoScene()
         JSONSetter setter("stereo.json");
         setter.visit(*scene, "scene");
     }
+    {
+        ofstream file;
+        file.open("stereo_new.json", std::ofstream::out);
+        {
+            JSONPrinter printer(file);
+            printer.visit(*scene, "scene");
+        } // Stream would be finalised on JSONPrinter destructor
+        file.close();
+    }
+
+
     delete_safe(scene);
 
 }
