@@ -58,7 +58,7 @@ double kde::pdf(double x, double y)
 
 double kde::pdf(std::vector<double>& data)
 {
-    CORE_ASSERT_TRUE_S(!dataMatrix.size());
+    CORE_ASSERT_TRUE_S(dataMatrix.size());
 
     calcBandwidth();
     double d = 0.0;
@@ -138,7 +138,7 @@ std::vector<double>
         std::vector<double> maxXY
         )
 {
-    CORE_ASSERT_TRUE_S(!dataMatrix.size());
+    CORE_ASSERT_TRUE_S(dataMatrix.size());
 
     double minX = minXY[0];
     double maxX = maxXY[0];
@@ -189,12 +189,12 @@ std::vector<double>
         std::ostringstream ss;
         for (int j = 0; j < ndY; j++)
         {
-            index++;
             double norm = (def[index] - min) / (max - min);
             if (norm < passLevel)
                 underPass++;
             def[index] = norm;
             ss << ((int) norm < passLevel) << "\t" ;
+            index++;
         }
         L_INFO << ss.str();
     }
@@ -206,7 +206,7 @@ std::vector<double>
 
 std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel)
 {
-    CORE_ASSERT_TRUE_S(!dataMatrix.size());
+    CORE_ASSERT_TRUE_S(dataMatrix.size());
 
     double minX = getMin(0);
     double maxX = getMax(0);
