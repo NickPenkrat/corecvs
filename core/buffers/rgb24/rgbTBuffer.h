@@ -715,17 +715,17 @@ public:
                 int g1 = ((298 * cy1 - 100 * cu - 208 * cv + 128) >> 8);
                 int b1 = ((298 * cy1 + 516 * cu + 128) >> 8);
 
-                if (r1 > 255) r1 = 255;  if (r1 < 0) r1 = 0;
-                if (g1 > 255) g1 = 255;  if (g1 < 0) g1 = 0;
-                if (b1 > 255) b1 = 255;  if (b1 < 0) b1 = 0;
+                if (r1 > 255) r1 = 255; else if (r1 < 0) r1 = 0;
+                if (g1 > 255) g1 = 255; else if (g1 < 0) g1 = 0;
+                if (b1 > 255) b1 = 255; else if (b1 < 0) b1 = 0;
 
                 int r2 = ((298 * cy2 + 409 * cv + 128) >> 8);
                 int g2 = ((298 * cy2 - 100 * cu - 208 * cv + 128) >> 8);
                 int b2 = ((298 * cy2 + 516 * cu + 128) >> 8);
 
-                if (r2 > 255) r2 = 255;  if (r2 < 0) r2 = 0;
-                if (g2 > 255) g2 = 255;  if (g2 < 0) g2 = 0;
-                if (b2 > 255) b2 = 255;  if (b2 < 0) b2 = 0;
+                if (r2 > 255) r2 = 255; else if (r2 < 0) r2 = 0;
+                if (g2 > 255) g2 = 255; else if (g2 < 0) g2 = 0;
+                if (b2 > 255) b2 = 255; else if (b2 < 0) b2 = 0;
 
                 this->element(i, j    ) = RGBTColor<T>(r1, g1, b1);
                 this->element(i, j + 1) = RGBTColor<T>(r2, g2, b2);
