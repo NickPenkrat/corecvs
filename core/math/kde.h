@@ -23,6 +23,7 @@ class kde
         void    addData(double x);
         void    addData(double x, double y);
         void    addData(std::vector<double>& x);
+        size_t  getDataSize() {return dataMatrix.size();}
 
         std::vector<double>
                 calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .3);

@@ -97,8 +97,6 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uin
 {
     MulticameraTriangulator mct;
     int id = 0, ptr = 0;
-	if (numProjections != nullptr)
-		*numProjections = 0;
 
     if (use__)
     {
@@ -107,7 +105,6 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uin
             if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
             {
                 mct.addCamera(obs.first.u->getMMatrix(obs.first.v), obs.second.observation);
-				(*numProjections)++;
                 if (mask && ptr + 1 < mask->size())
                     CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
                 ++ptr;
@@ -127,7 +124,6 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uin
             if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
             {
                 mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
-				(*numProjections)++;
                 if (mask && ptr + 1 < mask->size())
                     CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
                 ptr++;
@@ -166,7 +162,10 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uin
     }
 #endif
 
-    accuracy = mct.getCovarianceInvEstimation(res);
+    accuracy = mct.getCovarianceInvEstimation(res); 
+	if (numProjections != nullptr)
+		*numProjections = mct.P.size();
+
     return res;
 }
 
