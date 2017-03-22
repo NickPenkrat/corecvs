@@ -3,6 +3,8 @@
 #include "utils.h"
 #include "folderScanner.h"
 
+#include <mutex>
+
 namespace corecvs {
 
 string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, bool clear)

@@ -93,10 +93,13 @@ int SceneFeaturePoint::ensureDistortedObservations(bool distorted)
     return toReturn;
 }
 
-Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
+Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uint* numProjections)
 {
     MulticameraTriangulator mct;
     int id = 0, ptr = 0;
+	if (numProjections != nullptr)
+		*numProjections = 0;
+
     if (use__)
     {
         for (auto& obs: observations__)
@@ -104,6 +107,7 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
             if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
             {
                 mct.addCamera(obs.first.u->getMMatrix(obs.first.v), obs.second.observation);
+				(*numProjections)++;
                 if (mask && ptr + 1 < mask->size())
                     CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
                 ++ptr;
@@ -123,6 +127,7 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
             if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
             {
                 mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
+				(*numProjections)++;
                 if (mask && ptr + 1 < mask->size())
                     CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
                 ptr++;
@@ -139,6 +144,9 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask)
         SYNC_PRINT(("SceneFeaturePoint::triangulate(%s): initial guess unable to obtain\n", name.c_str()));
     }
 #endif
+
+	//if (ok == false)
+	//	return Vector3dd(0.0);
 
     ok = true;
     Vector3dd res = mct.triangulateLM(initial, &ok);
