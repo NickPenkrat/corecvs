@@ -50,10 +50,15 @@ public:
 public slots:
     void setCollapseTree(bool collapse);
 
+    /*These rotate model*/
     void downRotate();
     void upRotate();
     void leftRotate();
     void rightRotate();
+    /* These rotate camera */
+    void clockRotate();
+    void anticlockRotate();
+
     void resetCameraPos();
     void resetCamera();
     void resetCameraSlot();
@@ -96,6 +101,7 @@ public slots:
 
 
     void statsOpen();
+
 public:
     Ui_CloudViewDialogClass mUi;
 

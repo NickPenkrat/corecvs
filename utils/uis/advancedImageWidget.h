@@ -204,6 +204,12 @@ protected:
     void        saveFlowImage(QImage * image);
     void        recalculateZoomCenter();
 
+    virtual void showEvent(QShowEvent *event) override;
+    virtual void hideEvent(QHideEvent *event) override;
+
+protected slots:
+    void        showScheduledHint();
+
 public:
     /* Saving loading parameters to/from widget */
     /* TODO: Use visitors here*/

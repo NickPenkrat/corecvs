@@ -61,6 +61,11 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     connect(mUi.upButton,     SIGNAL(pressed()), this, SLOT(upRotate    ()));
     connect(mUi.leftButton,   SIGNAL(pressed()), this, SLOT(leftRotate  ()));
     connect(mUi.rightButton,  SIGNAL(pressed()), this, SLOT(rightRotate ()));
+
+    connect(mUi.rotateClockPushButton,      SIGNAL(pressed()), this, SLOT(    clockRotate()));
+    connect(mUi.rotateAntiClockPushButton,  SIGNAL(pressed()), this, SLOT(anticlockRotate()));
+
+
     connect(mUi.centerButton, SIGNAL(pressed()), this, SLOT(resetCameraSlot ()));
     connect(mUi.zoomInButton, SIGNAL(pressed()), this, SLOT(zoomIn      ()));
     connect(mUi.zoomOutButton,SIGNAL(pressed()), this, SLOT(zoomOut     ()));
@@ -234,6 +239,19 @@ void CloudViewDialog::rightRotate()
     mCamera *= Matrix33::RotationY(-ROTATE_STEP);
     mUi.widget->scheduleUpdate();
 }
+
+void CloudViewDialog::clockRotate()
+{
+    mCamera = Matrix33::RotationZ( ROTATE_STEP) * mCamera;
+    mUi.widget->scheduleUpdate();
+}
+
+void CloudViewDialog::anticlockRotate()
+{
+    mCamera = Matrix33::RotationZ(-ROTATE_STEP) * mCamera;
+    mUi.widget->scheduleUpdate();
+}
+
 
 void CloudViewDialog::setZoom(double value)
 {
