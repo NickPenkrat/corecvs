@@ -359,7 +359,7 @@ Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
     return Matrix::multiplyHomebrewMD(M, D);
 }
 
-Matrix operator *(DiagonalMatrix &D, const Matrix &M)
+Matrix operator *(const DiagonalMatrix &D, const Matrix &M)
 {
     CORE_ASSERT_TRUE(M.h == D.size(), "DiagonalMatrix and Matrix have wrong sizes");
     Matrix result(M.h, M.w);

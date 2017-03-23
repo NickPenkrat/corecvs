@@ -126,6 +126,33 @@ void Cholesky::udutDecompose(Matrix *A, Matrix **Uresult, DiagonalMatrix **Dresu
     }
 }
 
+void Cholesky::uutDecompose(Matrix *A, Matrix **Uresult)
+{
+    Matrix *U;
+    DiagonalMatrix *D;
+    Cholesky::udutDecompose(A, &U, &D);
+    if (Uresult != NULL) {
+        cout << "D" << *D << endl;
+        for (int j = 0; j < U->w; j++)
+        {
+            if (D->a(j) < 0) {
+                SYNC_PRINT(("One diagonal value is negative\n"));
+            }
+        }
+        for (int j = 0; j < U->w; j++)
+        {
+            double v = sqrt(fabs(D->a(j)));
+            for (int i = 0; i < U->h; i++)
+            {
+                U->element(i,j) = U->element(i,j) * v;
+            }
+        }
+        *Uresult = U;
+    } else {
+        delete U;
+    }
+}
+
 
 void Cholesky::udutDecompose(Matrix *A, UpperUnitaryMatrix **Uresult, DiagonalMatrix **Dresult)
 {

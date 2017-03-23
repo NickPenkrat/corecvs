@@ -63,6 +63,15 @@ TEST(CholeskyTest, testCholesky)
     delete U1;
     delete D;
     delete D1;
+
+    {
+        Matrix *U2;
+        Cholesky::uutDecompose(&A,&U2);
+        Matrix B = (*U2) * U2->t();
+        ASSERT_TRUE( A.notTooFar(&B, 1e-7, true));
+        delete_safe(U2);
+    }
+
 }
 
 TEST(CholeskyTest, testCholesky1)
