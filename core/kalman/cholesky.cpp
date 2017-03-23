@@ -141,7 +141,10 @@ void Cholesky::uutDecompose(Matrix *A, Matrix **Uresult)
         }
         for (int j = 0; j < U->w; j++)
         {
-            double v = sqrt(fabs(D->a(j)));
+
+            double v = 0;
+            if (D->a(j) > 0)
+                v = sqrt(D->a(j));
             for (int i = 0; i < U->h; i++)
             {
                 U->element(i,j) = U->element(i,j) * v;

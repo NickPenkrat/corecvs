@@ -83,9 +83,15 @@ TEST(Eigen, testEllipse)
     C.a(2,0) = 2;
 
     vector<Vector2dd> inputs;
+    std::mt19937 rng;
+    std::uniform_real_distribution<double> runif(-7, 7);
 
-    for (int i = 0; i < 10; i++) {
-        Vector2dd point = Vector2dd::FromPolar(i / 10.0, 6.0) * Vector2dd(1.0, 2.0) + Vector2dd(100,100);
+
+    for (int i = 0; i < 20; i++) {
+        Vector2dd point = Vector2dd::FromPolar(i / 10.0, 40.0) * Vector2dd(1.0, 2.0);
+        point = Matrix33::RotationZ(degToRad(30)) * point;
+        point += Vector2dd(100 + runif(rng),100 + runif(rng));
+
         inputs.push_back(point);
         buffer->element(point.y(), point.x()) = RGBColor::Green();
     }
@@ -97,7 +103,7 @@ TEST(Eigen, testEllipse)
         dD.fillLineWithArgs(i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
     }
 
-    Matrix S = dD.ata();
+    Matrix S = dD.t() * dD;
 
 
     Matrix *U;
@@ -187,8 +193,10 @@ TEST(Eigen, testEllipse)
     {
         if (D.a(i) > 0) {
             cout << "Positive eigen " << i << endl;
+            Matrix rev =  U->t().inv() * V.column(i);
+
             for (int j = 0; j < 6; j++) {
-                result[j] = V.a(i,j);
+                result[j] = rev.a(j,0);
             }
             break;
         }
@@ -207,8 +215,8 @@ TEST(Eigen, testEllipse)
         double Det = B * B - 4 * A * C;
         double T = (A * E * E + C * D * D - B * D * E + Det * F);
         double R = sqrt((A - C) * (A - C)  + B * B);
-        double a = - sqrt(T * (A + C + R));
-        double b = - sqrt(T * (A + C - R));
+        double a = - sqrt(2 * T * (A + C + R)) / Det;
+        double b = - sqrt(2 * T * (A + C - R)) / Det;
 
         double xc = (2 * C * D - B * E) / Det;
         double yc = (2 * A * E - B * D) / Det;
@@ -218,7 +226,24 @@ TEST(Eigen, testEllipse)
         cout << "yc = " << yc << endl;
 
         cout << "a = " << a << endl;
-        cout << "b = " << b<< endl;
+        cout << "b = " << b << endl;
+        cout << "tetta = " << tetta << endl;
+
+        int MAX = 850;
+        for (int k = 0; k < MAX; k++)
+        {
+            double v = 2 * M_PI / MAX * k;
+            Vector2dd point = Vector2dd(a * cos(v), b * sin(v));
+            point = Matrix33::RotationZ(tetta) * point;
+            point += Vector2dd(xc,yc);
+            buffer->element(point.y(), point.x()) = RGBColor::Yellow();
+        }
+
+        for (size_t i = 0; i < inputs.size(); i++) {
+            Vector2dd point = inputs[i];
+            buffer->drawCrosshare3(point,RGBColor::Red());
+        }
+
 
     }
 
