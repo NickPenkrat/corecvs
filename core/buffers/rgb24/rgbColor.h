@@ -394,14 +394,24 @@ public:
         int g =  ((298 * c - 100 * d - 208 * e + 128) >> 8);
         int b =  ((298 * c + 516 * d           + 128) >> 8);
 
-        if (r < 0) r = 0;
-        if (g < 0) g = 0;
-        if (b < 0) b = 0;
-        if (r > 255) r = 255;
-        if (g > 255) g = 255;
-        if (b > 255) b = 255;
+        return RGBColor(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255));
+    }
 
-        return RGBColor(r,g,b);
+    /**
+    *  Format "Y′UV420sp (NV21) to RGB conversion (Android)" of the article at:
+    *  https://en.wikipedia.org/wiki/YUV#Y.E2.80.B2UV420p_.28and_Y.E2.80.B2V12_or_YV12.29_to_RGB888_conversion
+    *
+    **/
+    static RGBColor FromYUV420sp(uint8_t y, uint8_t u, uint8_t v)
+    {
+        int d = u - 128;
+        int e = v - 128;
+
+        int r = y + roundShiftUp(          1404 * e, 10);
+        int g = y - roundShiftUp( 346 * d + 715 * e, 10);
+        int b = y + roundShiftUp(1774 * d          , 10);
+
+        return RGBColor(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255));
     }
 
     static RGBColor Black()
