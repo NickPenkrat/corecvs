@@ -40,10 +40,10 @@ RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
             RGBColor *out = &result->element(i, 0);
             for (int j = 0; j < image->width(); j++)
             {
-                uint8_t r = *(in++);
-                uint8_t g = *(in++);
                 uint8_t b = *(in++);
-                *out = RGBColor(b,g,r);
+                uint8_t g = *(in++);
+                uint8_t r = *(in++);
+                *out = RGBColor(r, g, b);
                 in++;
                 out++;
             }

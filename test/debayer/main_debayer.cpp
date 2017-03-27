@@ -1,13 +1,13 @@
 /*
     Bayer to PPM converter
-*/
+ */
 #include <iostream>
+#include <time.h>
 
 #include "ppmLoader.h"
 #include "converters/debayer.h"
-#include "commandLineSetter.h"
-#include <time.h>
 #include "converters/errorMetrics.h"
+#include "commandLineSetter.h"
 
 using namespace std;
 using namespace corecvs;
