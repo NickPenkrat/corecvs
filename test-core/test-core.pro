@@ -103,3 +103,4 @@ SOURCES += \
     imagequality/main_test_imagequality.cpp \
     json/main_test_json.cpp \
 	utils/main_test_utils.cpp \
+	quadric/main_test_quadric.cpp \

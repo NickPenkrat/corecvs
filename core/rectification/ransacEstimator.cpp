@@ -46,23 +46,23 @@ public:
 class ModelFundamental8Point : public Model8Point
 {
 public:
-    ModelFundamental8Point() : Model8Point() {};
+    ModelFundamental8Point() : Model8Point() {}
     ModelFundamental8Point(const vector<Correspondence *> &samples) :
                 Model8Point(samples)
     {
         model.assertRank2();
-    };
+    }
 };
 
 class ModelEssential8Point : public Model8Point
 {
 public:
-    ModelEssential8Point() : Model8Point() {};
+    ModelEssential8Point() : Model8Point() {}
     ModelEssential8Point(const vector<Correspondence *> &samples) :
                 Model8Point(samples)
     {
         model.projectToEssential();
-    };
+    }
 };
 
 
