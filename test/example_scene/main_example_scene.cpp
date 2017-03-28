@@ -116,7 +116,7 @@ void testJSON_FixtureScene()
     cout << "================================" << endl;
 }
 
-void testJSON_StereoScene()
+void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
 {
     cout << "----------------Running the test-------------" << std::endl;
     FixtureScene *scene = new FixtureScene();
@@ -161,9 +161,13 @@ void testJSON_StereoScene()
 
     int count = 0;
 
-    for (double x = 0.0; x <= 5.0; x += 2.5)
-        for (double y = 0.0; y <= 5.0; y += 2.5)
-            for (double z = 0.0; z <= 5.0; z += 2.5)
+    double MAX_SHIFT = 5.0;
+
+    double delta = MAX_SHIFT / (targetSize - 1);
+
+    for (double x = 0.0; x <= MAX_SHIFT; x += delta)
+        for (double y = 0.0; y <= MAX_SHIFT; y += delta)
+            for (double z = 0.0; z <= MAX_SHIFT; z += delta)
             {
                 char buffer[100];
                 snprintf2buf(buffer, "Test Point %d", count++);
@@ -273,12 +277,24 @@ void testJSON_StereoRecheck()
      }
 }
 
-int main (int /*argc*/, char ** /*argv*/)
+int main (int argc, char ** argv)
 {
     printf("Generate some test scenes\n");
+
+    int size = 3;
+    bool custom = false;
+    if (argc == 2) {
+        size = std::stoi(argv[1]);
+        custom = true;
+        SYNC_PRINT(("We will create scene of custom size %d\n", size));
+    }
+
 //    testJSON_FixtureScene();
-    testJSON_StereoScene();
-    testJSON_StereoRecheck();
+    testJSON_StereoScene(size, true);
+
+    if (!custom) {
+        testJSON_StereoRecheck();
+    }
 
 	return 0;
 }

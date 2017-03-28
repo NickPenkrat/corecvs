@@ -4,6 +4,8 @@ isEmpty(RAPIDJSON_WRAPPER_DIR) {
     !exists($$RAPIDJSON_WRAPPER_DIR/sources/readme.md) {
         message(Rapidjson is switched off! Not cloned.)
     } else {
+        message(Rapidjson found!)
+
         include(rapidjsonLibs.pri)
     }
 }
