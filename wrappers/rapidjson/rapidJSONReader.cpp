@@ -6,6 +6,12 @@
 
 using namespace corecvs;
 
+#define CONDITIONAL_TRACE(X) \
+    if (trace) {             \
+        SYNC_PRINT(X);       \
+    }                        \
+
+
 void RapidJSONReader::init(const char *fileName)
 {
     mFileName = fileName;
@@ -16,37 +22,6 @@ void RapidJSONReader::init(const char *fileName)
     mDocument.ParseStream(is);
     //rapidjson::Value &value = mDocument.GetObject();
     mNodePath.push_back(&mDocument);
-
-#if 0
-    QFile file(mFileName);
-    QJsonObject object;
-
-
-    FILE* fp = fopen(fileName, "rb"); // non-Windows use "r"
-    char readBuffer[65536];
-    FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-    Document d;
-    d.ParseStream(is);
-
-
-    if (file.open(QFile::ReadOnly))
-    {
-        QByteArray array = file.readAll();
-
-        QJsonDocument document = QJsonDocument::fromJson(array);
-        if (document.IsNull())
-        {
-            SYNC_PRINT(("Fail parsing the data from <%s>\n", QSTR_DATA_PTR(mFileName)));
-        }
-        object = document.object();
-        file.close();
-    }
-    else {
-        qDebug() << "RapidJSONReader::init() : Can't open file <" << QSTR_DATA_PTR(mFileName) << ">";
-    }
-
-    mNodePath.push_back(object);
-#endif
 }
 
 template <>
@@ -67,6 +42,7 @@ void RapidJSONReader::visit<bool>(bool &boolField, bool defaultValue, const char
 template <>
 void RapidJSONReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName)
 {
+    CONDITIONAL_TRACE(("RapidJSONReader::visit<uint64_t>(_ , _ , %d)", fieldName));
     rapidjson::Value &value = (*mNodePath.back())[fieldName];
 
     intField = defaultValue;
@@ -81,8 +57,11 @@ void RapidJSONReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue,
             std::istringstream ss(string);
             uint64_t res = 0;
             ss >> res;
-            if (ss.bad()) {
+            if (!ss.bad()) {
                 intField = res;
+                CONDITIONAL_TRACE(( "RapidJSONReader::visit<uint64_t>() got %" PRIu64 "\n", intField ));
+            } else {
+                SYNC_PRINT(( "RapidJSONReader::visit<uint64_t>() unable to parse %s \n", string));
             }
         }
     }

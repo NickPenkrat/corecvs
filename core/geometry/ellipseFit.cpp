@@ -91,11 +91,75 @@ SecondOrderCurve EllipseFit::solveBLAS()
 
     Matrix S = dD.t() * dD;
 
-    double vr[6];
-    double vi[6];
+    double er[6];
+    double ei[6];
+    double beta[6];
 
-   // LAPACKE_dggev(LAPACK_ROW_MAJOR, 'N', 'V', S.h, S.data, 6, C.data, 6, vr, vi,
+    Matrix VL(6, 6);
+    Matrix VR(6, 6);
 
+    cout << "VL.stride  :" << VL.stride << endl;
+    cout << "VL.width   :" << VL.w      << endl;
+
+    /**
+         We should check alignment problems
+     **/
+    Matrix Sblas = S;
+    Matrix Cblas = C;
+
+
+    LAPACKE_dggev(LAPACK_ROW_MAJOR, 'N', 'V', 6, Sblas.data, 6, Cblas.data, 6, er, ei, beta, VL.data, 6, VR.data, 6);
+
+    for (int i = 0; i < 6; i++)
+    {
+        cout << (er[i] / beta[i]) << endl;
+    }
+
+    cout << "VL" << endl << VL << endl;
+    cout << "VR" << endl << VR << endl;
+
+#ifdef DEBUG
+    cout << "Sanity Check" << endl;
+    for (int i = 0; i < 6; i++)
+    {
+        cout << "Checking vector: " << i << endl;
+        //Matrix rev =  VR.row(i).t();
+        Matrix rev =  VR.column(i);
+
+        Matrix SR = S * rev;
+        Matrix CR = C * rev;
+
+        cout << "S * rev" << endl << SR << endl;
+        cout << "C * rev" << endl << CR << endl;
+        /*for (int j = 0; j < 6; j++)
+            cout << "Sanity: " << SR.a(j,0) / CR.a(j,0) << endl;*/
+        cout << "Sanity: " << (SR * beta[i] - CR * er[i]) << endl;
+    }
+#endif
+
+
+    SecondOrderCurve result;
+
+    for (int i = 0; i < 6; i++)
+    {
+        if (er[i] / beta[i] > 0) {
+            cout << "Positive eigen " << i << endl;
+            Matrix rev =  VR.column(i);
+            cout << "Rev" << endl << rev << endl;
+
+            result.a11() = rev.a(0,0);
+            result.a22() = rev.a(2,0);
+            result.a12() = rev.a(1,0) / 2;
+            result.a13() = rev.a(3,0) / 2;
+            result.a23() = rev.a(4,0) / 2;
+            result.a33() = rev.a(5,0);
+            break;
+        }
+    }
+
+    result.prettyPrint();
+
+    return result;
 
 }
 #endif

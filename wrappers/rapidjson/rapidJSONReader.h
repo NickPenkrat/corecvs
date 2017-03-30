@@ -18,6 +18,13 @@ using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
 
+#define CONDITIONAL_TRACE(X) \
+    if (trace) {             \
+        SYNC_PRINT(X);       \
+    }                        \
+
+
+
 /**
  *    This class allows to read form JSON file
  **/
@@ -62,7 +69,11 @@ public:
     template <class Type>
     void visit(Type &field, const char *fieldName)
     {
-        SYNC_PRINT(("RapidJSONReader::visit(Type &field, %s)\n", fieldName));
+        CONDITIONAL_TRACE(("RapidJSONReader::visit(Type &field, %s)\n", fieldName));
+        if (!mNodePath.back()->HasMember(fieldName)) {
+             SYNC_PRINT(("RapidJSONReader::visit(): member %s not found\n", fieldName));
+             return;
+        }
         pushChild(fieldName);
             field.accept(*this);
         popChild();
@@ -77,6 +88,11 @@ public:
     template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
+        if (!mNodePath.back()->HasMember(fieldDescriptor->getSimpleName())) {
+             SYNC_PRINT(("RapidJSONReader::visit(): member %s not found\n", fieldDescriptor->getSimpleName()));
+             return;
+        }
+
         pushChild(fieldDescriptor->getSimpleName());
            field.accept(*this);
         popChild();
@@ -195,18 +211,22 @@ public:
     template <typename type, typename std::enable_if<std::is_arithmetic<type>::value && !std::is_same<bool, type>::value && !std::is_same<uint64_t, type>::value, int>::type foo = 0>
     void visit(type &field, type defaultValue, const char *fieldName)
     {
-        SYNC_PRINT(("RapidJSONReader::visit(type &field, type defaultValue, %s) v1 \n", fieldName ));
+        CONDITIONAL_TRACE(("RapidJSONReader::visit(type &field, type defaultValue, %s) v1 \n", fieldName ));
+        if (!mNodePath.back()->HasMember(fieldName)) {
+             SYNC_PRINT(("RapidJSONReader::visit(): member not found\n"));
+             return;
+        }
 
         rapidjson::Value &value = (*mNodePath.back())[fieldName];
         if (value.IsNumber())
         {
             double rawValue = value.GetDouble();
-            SYNC_PRINT(("RapidJSONReader::visit() raw = %lf\n", rawValue));
+            CONDITIONAL_TRACE(("RapidJSONReader::visit() raw = %lf\n", rawValue));
             field = static_cast<type>(rawValue);
         }
         else
         {
-            SYNC_PRINT(("RapidJSONReader::visit(): not a number\n"));
+            CONDITIONAL_TRACE(("RapidJSONReader::visit(): not a number\n"));
             field = defaultValue;
         }
     }
@@ -214,7 +234,7 @@ public:
     template <typename type, typename std::enable_if<std::is_enum<type>::value, int>::type foo = 0>
     void visit(type &field, type defaultValue, const char *fieldName)
     {
-        SYNC_PRINT(("RapidJSONReader::visit(type &field, type defaultValue, %s) v2 \n", fieldName ));
+        CONDITIONAL_TRACE(("RapidJSONReader::visit(type &field, type defaultValue, %s) v2 \n", fieldName ));
 
         using U = typename std::underlying_type<type>::type;
         U u = static_cast<U>(field);
@@ -224,19 +244,22 @@ public:
 
     void pushChild(const char *childName)
     {
-        SYNC_PRINT(("RapidJSONReader::pushChild(%s)\n", childName));
+        CONDITIONAL_TRACE(("RapidJSONReader::pushChild(%s)\n", childName));
         rapidjson::Value &mainNode = *mNodePath.back();
         rapidjson::Value &value    = mainNode[childName];
         if (value.IsNull()) {
-            SYNC_PRINT(("RapidJSONReader::pushChild(%s): no child\n", childName));
+            CONDITIONAL_TRACE(("RapidJSONReader::pushChild(%s): no child\n", childName));
+        } else {
+            CONDITIONAL_TRACE(("RapidJSONReader::pushChild(): depth %d\n", mNodePath.size()));
         }
         mNodePath.push_back(&value);
     }
 
     void popChild()
     {
-        SYNC_PRINT(("RapidJSONReader::visit():popChild()\n"));
+        CONDITIONAL_TRACE(("RapidJSONReader::popChild() from depth %d\n", mNodePath.size()));
         mNodePath.pop_back();
+
     }
 
 private:
@@ -246,7 +269,10 @@ private:
     std::vector<rapidjson::Value *> mNodePath;
     std::string         mFileName;
     rapidjson::Document mDocument;
+    bool trace = false;
 };
+
+#undef CONDITIONAL_TRACE
 
 template <>
 void RapidJSONReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);

@@ -1,5 +1,6 @@
 #include "matrix22.h"
 #include "ellipse.h"
+#include "polynomialSolver.h"
 
 namespace corecvs {
 
@@ -7,29 +8,33 @@ namespace corecvs {
 
 
 
-SecondOrderCurve Ellipse::toSecondOrderCurve()
+SecondOrderCurve Ellipse::toSecondOrderCurve() const
 {
 
-    SecondOrderCurve p;
     double sa = sin(angle);
     double ca = cos(angle);
 
     double a2 = axis.x() * axis.x();
     double b2 = axis.y() * axis.y();
 
-    p[0] = a2 * sa * sa + b2 * ca * ca;
-    p[1] = 2 * (b2 - a2) * sa * ca;
-    p[2] = a2 * ca * ca + b2 * sa * sa;
-    p[3] = -2 * p[0] * center.x() - p[1] * center.y();
-    p[4] = -p[1] * center.x() - 2 * p[2] * center.y();
-    p[5] = p[0] * center.x() * center.x() + p[1] * center.x() * center.y() + p[2] * center.y() * center.y() - a2*b2;
+    double xx = a2 * sa * sa + b2 * ca * ca;
+    double yy = a2 * ca * ca + b2 * sa * sa;
+    double xy = 2 * (b2 - a2) * sa * ca;
 
-    return p;
+    return SecondOrderCurve::FromPolynomCoef(
+        xx,
+        xy,
+        yy,
+        -2 * xx * center.x() -     xy * center.y(),
+        -    xy * center.x() - 2 * yy * center.y(),
+        xx * center.x() * center.x() + xy * center.x() * center.y() + yy * center.y() * center.y() - a2 * b2
+    );
 }
 
-Ellipse Ellipse::FromPolinomial(const SecondOrderCurve &p)
+Ellipse Ellipse::FromQuadric(const SecondOrderCurve &p)
 {
-    return FromPolinomial(&p[0]);
+    double poly[6] = {p.A(), p.B(), p.C(), p.D(), p.E(), p.F()};
+    return FromPolinomial(&poly[0]);
 }
 
 Ellipse Ellipse::FromPolinomial(const double p[])
@@ -69,6 +74,13 @@ Ellipse Ellipse::FromPolinomial(const double p[])
     return result;
 }
 
+Vector2dd Ellipse::pointFromParam(double alpha) const
+{
+    Vector2dd point = axis * Vector2dd::FromPolar(alpha);
+    point = Matrix33::RotationZ(angle) * point;
+    return point + center;
+}
+
 Ellipse::Ellipse()
 {
 
@@ -94,6 +106,18 @@ SecondOrderCurve SecondOrderCurve::FromMatrix(const Matrix33 &M)
     result.a33() = M.a(2,2);
 
     return result;
+}
+
+SecondOrderCurve SecondOrderCurve::Empty()
+{
+    return SecondOrderCurve::FromRawCoef(0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+}
+
+bool SecondOrderCurve::isEmpty()
+{
+    if ((a11() == 0.0) && (a12() == 0.0) && (a22() == 0.0) && (a13() == 0.0) && (a23() == 0.0) && (a33() != 0.0))
+        return true;
+    return false;
 }
 
 
@@ -199,6 +223,87 @@ bool SecondOrderCurve::isInside(double x, double y) const
     return value(x, y) < 0;
 }
 
+bool SecondOrderCurve::solveForX(double y, double &x1, double &x2)
+{
+    double coef[3];
+
+    coef[2] = a11();
+    coef[1] = 2 * (a12() * y + a13());
+    coef[0] = a22() * y  * y + 2 * a23() * y + a33();
+
+    double roots[2] = {0.0, 0.0 };
+    size_t  num = PolynomialSolver::solve_imp<2>(coef, roots, 2);
+    if (num == 0) {
+        return false;
+    }
+
+    if (num == 1) {
+        x1 = roots[0];
+        x2 = roots[0];
+        return true;
+    }
+
+    if (num == 2) {
+        x1 = roots[0];
+        x2 = roots[1];
+        if (x1 > x2) std::swap(x1,x2);
+        return true;
+    }
+    return false;
+}
+
+bool SecondOrderCurve::solveForY(double x, double &y1, double &y2)
+{
+    double coef[3];
+
+    coef[2] = a22();
+    coef[1] = 2 * (a12() * x + a23());
+    coef[0] = a11() * x  * x + 2 * a13() * x + a33();
+
+    double roots[2] = {0.0, 0.0 };
+    size_t  num = PolynomialSolver::solve_imp<2>(coef, roots, 2);
+    if (num == 0) {
+        return false;
+    }
+
+    if (num == 1) {
+        y1 = roots[0];
+        y2 = roots[0];
+        return true;
+    }
+
+    if (num == 2) {
+        y1 = roots[0];
+        y2 = roots[1];
+        return true;
+    }
+    return false;
+}
+
+SecondOrderCurve SecondOrderCurve::FromRawCoef(double xx, double xyh, double yy, double xh, double yh, double r)
+{
+    SecondOrderCurve result;
+    result.a11() = xx;
+    result.a12() = xyh;
+    result.a22() = yy;
+    result.a13() = xh;
+    result.a13() = yh;
+    result.a33() = r;
+    return result;
+}
+
+SecondOrderCurve SecondOrderCurve::FromPolynomCoef(double xx, double xy, double yy, double x, double y, double r)
+{
+    SecondOrderCurve result;
+    result.a11() = xx;
+    result.a12() = xy / 2.0;
+    result.a22() = yy;
+    result.a13() = x / 2.0;
+    result.a23() = y / 2.0;
+    result.a33() = r;
+    return result;
+}
+
 bool SecondOrderCurve::isInside(const Vector2dd &point) const
 {
     return isInside(point.x(), point.y());
@@ -240,6 +345,27 @@ void SecondOrderCurve::prettyPrint()
 
 }
 
+EllipseSpanIterator::EllipseSpanIterator(const Ellipse &ellipse) : ellipse(ellipse)
+{
+    c = ellipse.toSecondOrderCurve();
+
+    double coef[3]; /* Computing min/max Y*/
+    coef[2] = c.a12() * c.a12() - c.a11() * c.a22();
+    coef[1] = 2 * (c.a12() * c.a13() - c.a11() * c.a23());
+    coef[0] = c.a13() * c.a13() - c.a11() * c.a33();
+
+    double roots[2];
+
+    size_t v = PolynomialSolver::solve_imp<2>(coef, roots, 2);
+    if (v == 2) {
+        currentY = fround(std::min(roots[0], roots[1]));
+        endY     = fround(std::max(roots[0], roots[1]));
+        return;
+    }
+
+    currentY = 1;
+    endY     = 0;
+}
 
 
 } // namespace corecvs

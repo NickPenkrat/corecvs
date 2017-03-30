@@ -1167,7 +1167,7 @@ Matrix Matrix::row(int row)
     Matrix toReturn(1, w);
     for (int column = 0; column < w; column++)
     {
-        toReturn.a(0, column) = toReturn.a(row, column);
+        toReturn.a(0, column) = this->a(row, column);
     }
     return toReturn;
 }

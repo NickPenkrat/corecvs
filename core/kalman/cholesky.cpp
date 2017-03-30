@@ -126,8 +126,9 @@ void Cholesky::udutDecompose(Matrix *A, Matrix **Uresult, DiagonalMatrix **Dresu
     }
 }
 
-void Cholesky::uutDecompose(Matrix *A, Matrix **Uresult)
+bool Cholesky::uutDecompose(Matrix *A, Matrix **Uresult)
 {
+    bool isPositive = true;
     Matrix *U;
     DiagonalMatrix *D;
     Cholesky::udutDecompose(A, &U, &D);
@@ -137,13 +138,14 @@ void Cholesky::uutDecompose(Matrix *A, Matrix **Uresult)
         {
             if (D->a(j) < 0) {
                 SYNC_PRINT(("One diagonal value is negative\n"));
+                isPositive = false;
             }
         }
         for (int j = 0; j < U->w; j++)
         {
 
             double v = 0;
-            if (D->a(j) > 0)
+            if (D->a(j) > 0) /* We try to make small corrections...*/
                 v = sqrt(D->a(j));
             for (int i = 0; i < U->h; i++)
             {
@@ -154,6 +156,7 @@ void Cholesky::uutDecompose(Matrix *A, Matrix **Uresult)
     } else {
         delete U;
     }
+    return isPositive;
 }
 
 

@@ -464,7 +464,9 @@ bool FixtureScene::integrityRelink()
             SceneObservation &observ = it->second;
 
             observ.camera = cam;
-            observ.cameraFixture = cam->cameraFixture;
+            if (cam != NULL) {
+                observ.cameraFixture = cam->cameraFixture;
+            }
             observ.featurePoint = point;
         }
     }
