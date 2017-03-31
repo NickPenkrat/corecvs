@@ -37,8 +37,7 @@ int RGBColor::staticInit()
 RGBColor RGBColor::rainbow(double x)
 {
     x *= 6;
-    if (x < 0.0) x = 0.0;
-    if (x > 6.0) x = 6.0;
+    x = clamp(x, 0., 6.); 
 
     switch ((int)x)
     {
