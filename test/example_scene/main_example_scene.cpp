@@ -160,6 +160,7 @@ void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
 
 
     int count = 0;
+    int namedCount = 0;
 
     double MAX_SHIFT = 5.0;
 
@@ -169,10 +170,16 @@ void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
         for (double y = 0.0; y <= MAX_SHIFT; y += delta)
             for (double z = 0.0; z <= MAX_SHIFT; z += delta)
             {
-                char buffer[100];
-                snprintf2buf(buffer, "Test Point %d", count++);
                 SceneFeaturePoint *point  = scene->createFeaturePoint();
-                point->name = buffer;
+
+                if (namedCount < 30) {
+                    char buffer[100];
+                    snprintf2buf(buffer, "Test Point %d", count++);
+                    point->type = SceneFeaturePoint::POINT_UNKNOWN;
+                    point->name = buffer;
+                    namedCount++;
+                }
+
                 point->setPosition(Vector3dd(20.0 + x , y, z));
                 point->color = RGBColor::rainbow((x + y + z) / 25.0);
             }

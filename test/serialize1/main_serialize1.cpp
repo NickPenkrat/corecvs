@@ -22,6 +22,10 @@
 #endif
 
 
+#ifdef WITH_JSONMODERN
+    #include "jsonModernReader.h"
+#endif
+
 /*******************************
  *    XML
  ********************************/
@@ -382,7 +386,82 @@ void testRapidJSON_saveDistortion()
     cout << loaded << endl;
 
 }
+#endif
 
+#ifdef WITH_JSONMODERN
+/*******************************
+ *    Now with json modern
+ ********************************/
+
+
+void testJSONModern1()
+{
+    cout << std::endl;
+    cout << "testRapidJSON1()" << std::endl;
+    cout << std::endl;
+
+    const char input[] =
+    "{\n"
+    "  \"vector\":{\n"
+    "     \"x\": 1,\n"
+    "     \"y\": 2,\n"
+    "     \"z\": 3\n"
+    "  }\n"
+    "}\n";
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+
+    nlohmann::json document = nlohmann::json::parse(input);
+    cout << "Before parsing" << endl;
+    Vector3dd result(1.5,2.5,5.5);
+    cout << result << endl;
+    {
+        JSONModernReader getter(document);
+        getter.visit(result, "vector");
+    }
+    cout << "After parsing" << endl;
+    cout << result << endl;
+
+}
+
+void testJSONModern_saveDistortion()
+{
+    cout << std::endl;
+    cout << "testRapidJSON_saveDistortion()" << std::endl;
+    cout << std::endl;
+
+    LensDistortionModelParameters params;
+    LensDistortionModelParameters loaded;
+
+    params.setPrincipalX(400);
+    params.setPrincipalY(400);
+    params.setTangentialX(0.3);
+    params.setTangentialY(0.4);
+
+    params.setShiftX(200);
+    params.setShiftY(200);
+
+    params.setAspect(10.0);
+    params.setScale(1.1);
+    params.setKoeff({1.0, 2.0, std::numeric_limits<double>::min()});
+
+    cout << "testJSON_saveDistortion() test called" << endl;
+    cout << "Initial state" << endl;
+    cout << params << endl;
+
+    {
+        JSONSetter saver("out1.json");
+        saver.visit(params, "stage1");
+    }
+    {
+        JSONModernReader loader("out1.json");
+        loader.visit(loaded, "stage1");
+    }
+
+    cout << "After parsing" << endl;
+    cout << loaded << endl;
+
+}
 #endif
 
 
@@ -404,6 +483,11 @@ int main (int /*argc*/, char ** /*argv*/)
 #ifdef WITH_RAPIDJSON
      testRapidJSON1();
      testRapidJSON_saveDistortion();
+#endif
+
+#ifdef WITH_JSONMODERN
+     testJSONModern1();
+     testJSONModern_saveDistortion();
 #endif
 
 	return 0;

@@ -419,14 +419,21 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
     /* This is the fastest way to draw, even outer cycle is brought invards */
     if (mDelegateStyleBox->currentIndex() == STYLE_NO_DELEGATE_SMALL)
     {
+        PreciseTimer timer = PreciseTimer::currentTime();
         painter.setPen(Qt::yellow);
+        Matrix33 curT = currentTransformMatrix();
+
         for (int i = 0; i < rows; i ++)
         {
+            /* TODO: Profiler says this call is very long... */
             Vector2dd point = mObservationListModel->getPoint(i);
-            Matrix33 m = currentTransformMatrix();
-            Vector2dd out = m * point;
-            drawCircle(painter, out, 2);
+            if (!mInputRect.contains(fround(point.x()), fround(point.y())))
+                continue;
+
+            drawCircle(painter, curT * point, 2);
         }
+        uint64_t delay = timer.usecsToNow();
+        qDebug() << "Point draw delay is:" << (double)delay / rows << " usec" << endl;
 
     } else {
         for (int i = 0; i < rows; i ++)

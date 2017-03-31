@@ -1,0 +1,5 @@
+with_jsonmodern {
+    JSONMODERN_PATH = $$(JSONMODERN_PATH)
+    DEFINES += WITH_JSONMODERN
+
+}

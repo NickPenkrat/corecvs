@@ -19,12 +19,24 @@ include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TA
 SOURCES += main_serialize1.cpp
 HEADERS += main_serialize1.h
 
-with_rapidjson {
-    message(We have rapidjson)
-    RAPIDJSON_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/rapidjson
-    include($$RAPIDJSON_WRAPPER_DIR/rapidjson.pri)
 
-    contains(DEFINES, WITH_RAPIDJSON) {
-        INCLUDEPATH += $$RAPIDJSON_WRAPPER_DIR
-    }
-}
+#with_rapidjson {
+#    message(We have rapidjson)
+#    RAPIDJSON_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/rapidjson
+#    include($$RAPIDJSON_WRAPPER_DIR/rapidjson.pri)
+#
+#    contains(DEFINES, WITH_RAPIDJSON) {
+#        INCLUDEPATH += $$RAPIDJSON_WRAPPER_DIR
+#    }
+#}
+
+#with_jsonmodern {
+#    message(We have Json for Modern C++ )
+#    JSONMODERN_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/jsonmodern
+#    include($$JSONMODERN_WRAPPER_DIR/jsonmodern.pri)
+#
+#    contains(DEFINES, WITH_JSONMODERN) {
+#        INCLUDEPATH += $$JSONMODERN_WRAPPER_DIR
+#    }
+#}
+

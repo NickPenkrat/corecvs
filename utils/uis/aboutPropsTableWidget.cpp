@@ -117,6 +117,13 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
     addParameter("RapidJSON Support", "Off (Qt used)");
 #endif
 
+#ifdef WITH_JSONMODERN
+    addParameter("JSON For modern C++ Support", "On");
+#else
+    addParameter("JSON For modern C++ Support", "Off (Qt used)");
+#endif
+
+
 
 
 #if    defined (Q_OS_WIN)
