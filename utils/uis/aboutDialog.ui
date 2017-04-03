@@ -14,7 +14,7 @@
    <string>About</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../../../restricted/cvs/resources/resresource.qrc">
+   <iconset resource="../../resources/main.qrc">
     <normaloff>:/new/logos/cvs24x24.png</normaloff>:/new/logos/cvs24x24.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -63,7 +63,7 @@ p, li { white-space: pre-wrap; }
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
-  <include location="../../../restricted/cvs/resources/resresource.qrc"/>
+  <include location="../../resources/main.qrc"/>
  </resources>
  <connections>
   <connection>
