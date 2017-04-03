@@ -215,7 +215,7 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
             {
                 for (c = 0; c < 3; c++)
                 {
-                    result->element(i, j)[2 - c] = (charImage[i * w * 3 + j * 3 + c]);
+                    result->element(i, j)[2 - c] = (charImage[(i * w + j) * 3 + c]);
                 }
             }
     }
@@ -223,18 +223,15 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     {
         // 2-byte case
         for (i = 0; i < h; i++)
-        {
-            for (j = 0; j < w * 2; j++)
+            for (j = 0; j < w; j++)
             {
-                for (c = 2; c >= 0; c--)
+                for (c = 0; c < 3; c++)
                 {
-                    int offset = (i * w + j) * 6;
+                    int offset = (i * w + j) * 6 + 2 * c;
                     result->element(i, j)[2 - c] = ((charImage[offset + 0]) << 8 |
                                                     (charImage[offset + 1]));
                 }
             }
-        }
-
     }
 
     if (calcWhite)

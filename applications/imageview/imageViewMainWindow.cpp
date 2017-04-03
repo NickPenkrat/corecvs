@@ -51,7 +51,7 @@ void ImageViewMainWindow::setImage(RGB48Buffer *image)
 
 void ImageViewMainWindow::paramsChanged()
 {
-    if(input == NULL)
+    if (input == NULL)
         return;
 
     BitSelectorParameters mBitSelectorParameters;
@@ -119,15 +119,20 @@ void ImageViewMainWindow::loadImage(QString name)
 {
     delete_safe(bayer);
     ui->widget->setInfoString("Loading...");
-    bayer = PPMLoader().g12BufferCreateFromPGM(name.toStdString(), &meta);
-    ui->widget->setInfoString("---");
-
-    if (bayer == NULL) {
-        qDebug("Can't' open bayer file: %s", name.toLatin1().constData());
-    } else {
+    if (name.endsWith(".ppm"))
+    {
+        RGB48Buffer* result = PPMLoader().rgb48BufferCreateFromPPM(name.toStdString(), &meta);
+        setImage(result);
+    }
+    else
+    {
+        bayer = PPMLoader().g12BufferCreateFromPGM(name.toStdString(), &meta);
+        if (bayer == NULL) {
+            qDebug("Can't open Bayer file: %s", name.toLatin1().constData());
+        }
         debayer();
     }
-
+    ui->widget->setInfoString("---");
 }
 
 void ImageViewMainWindow::debayer()
