@@ -19,7 +19,20 @@
 #include "ellipseFit.h"
 
 using namespace std;
-using namespace corecvs;
+/* Ok. In your portable code you should respect Microsoft craze, just because they say it's a dominant platform. */
+//using namespace corecvs;
+/* You could not use your own namespace in your own test, beacuse Microsoft used "Ellipse" a bit earlier. */
+using corecvs::BMPLoader;
+using corecvs::RGB24Buffer;
+using corecvs::SecondOrderCurve;
+using corecvs::RGBColor;
+using corecvs::HLineSpanInt;
+using corecvs::Vector2dd;
+using corecvs::Matrix33;
+using corecvs::Vector2d32;
+using corecvs::fround;
+using corecvs::degToRad;
+using corecvs::EllipseFit;
 
 void drawDirect(RGB24Buffer *buffer, const SecondOrderCurve &curve, RGBColor color)
 {
@@ -34,7 +47,7 @@ void drawDirect(RGB24Buffer *buffer, const SecondOrderCurve &curve, RGBColor col
 }
 
 
-void drawDirect(RGB24Buffer *buffer, const Ellipse &curve, RGBColor color)
+void drawDirect(RGB24Buffer *buffer, const corecvs::Ellipse &curve, RGBColor color)
 {
     int MAX = 850;
     for (int k = 0; k < MAX; k++)
@@ -78,7 +91,7 @@ TEST(quadric, testConversion)
     SecondOrderCurve ellipse = circle.transformed(Matrix33::ShiftProj(80,30) * Matrix33::RotationZ(degToRad(60)) * Matrix33::Scale3(1,3));
     drawDirect(buffer.get(), ellipse, RGBColor::Green());
 
-    Ellipse ellipse1 = Ellipse::FromQuadric(ellipse);
+    corecvs::Ellipse ellipse1 = corecvs::Ellipse::FromQuadric(ellipse);
     drawDirect(buffer.get(), ellipse1, RGBColor::Blue());
 
     SecondOrderCurve ellipse2 = ellipse1.toSecondOrderCurve().transformed(Matrix33::ShiftProj(40, 0));
@@ -226,7 +239,7 @@ TEST(quadric, fitquadric)
 
 TEST(quadric, drawEllipse)
 {
-    Ellipse ellipse;
+    corecvs::Ellipse ellipse;
 
     ellipse.axis   = Vector2dd(90, 20);
     ellipse.angle  = degToRad(75);
@@ -234,7 +247,7 @@ TEST(quadric, drawEllipse)
 
     unique_ptr<RGB24Buffer> buffer(new RGB24Buffer(200, 200));
 
-    EllipseSpanIterator outer(ellipse);
+    corecvs::EllipseSpanIterator outer(ellipse);
     while (outer.hasValue())
     {
         HLineSpanInt span = outer.getSpan();
