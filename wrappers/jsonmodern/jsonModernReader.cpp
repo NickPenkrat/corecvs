@@ -42,7 +42,7 @@ void JSONModernReader::visit<bool>(bool &boolField, bool defaultValue, const cha
 template <>
 void JSONModernReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName)
 {
-    CONDITIONAL_TRACE(("JSONModernReader::visit<uint64_t>(_ , _ , %d)", fieldName));
+    CONDITIONAL_TRACE(("JSONModernReader::visit<uint64_t>(_ , _ , %s)", fieldName));
     nlohmann::json &value = (*mNodePath.back())[fieldName];
 
     intField = defaultValue;
@@ -59,9 +59,9 @@ void JSONModernReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue
             ss >> res;
             if (!ss.bad()) {
                 intField = res;
-                CONDITIONAL_TRACE(( "JSONModernReader::visit<uint64_t>() got %" PRIu64 "\n", intField ));
+                CONDITIONAL_TRACE(( "JSONModernReader::visit<uint64_t>() got %" PRIu64 "\n", intField));
             } else {
-                SYNC_PRINT(( "JSONModernReader::visit<uint64_t>() unable to parse %s \n", string));
+                SYNC_PRINT(( "JSONModernReader::visit<uint64_t>() unable to parse %s\n", string.c_str()));
             }
         }
     }

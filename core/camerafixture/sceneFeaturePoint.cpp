@@ -195,21 +195,21 @@ double SceneFeaturePoint::queryPValue(const corecvs::Vector3dd &query) const
 
 Vector3dd SceneFeaturePoint::getDrawPosition(bool preferReprojected, bool forceKnown)
 {
-    if (preferReprojected) {
-        if (hasKnownReprojectedPosition || forceKnown) {
+    if (preferReprojected)
+    {
+        if (hasKnownReprojectedPosition || forceKnown)
             return reprojectedPosition;
-        } else {
-            if (hasKnownPosition || forceKnown)
-                return position;
-        }
 
-    } else {
-        if (hasKnownPosition || forceKnown) {
+        if (hasKnownPosition || forceKnown)
             return position;
-        } else {
-            if(hasKnownReprojectedPosition || forceKnown)
-                return reprojectedPosition;
-        }
+    }
+    else
+    {
+        if (hasKnownPosition || forceKnown)
+            return position;
+
+        if(hasKnownReprojectedPosition || forceKnown)
+            return reprojectedPosition;
     }
     return position;
 }
