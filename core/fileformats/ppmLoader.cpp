@@ -146,11 +146,9 @@ done:
 RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *meta)
 {
     // PPM headers variable declaration
-    unsigned long int i, j;
     unsigned long int h, w;
     uint8_t type;
     unsigned short int maxval;
-    int8_t c;
 
     // open file for reading in binary mode
     FILE *fp = fopen(name.c_str(), "rb");
@@ -210,31 +208,26 @@ RGB48Buffer* PPMLoader::rgb48BufferCreateFromPPM(const string& name, MetaData *m
     if (maxval <= 0xff)
     {
         // 1-byte case
-        for (i = 0; i < h; i++)
-            for (j = 0; j < w; j++)
+        for (uint k = 0, i = 0; i < h; ++i)
+            for (uint j = 0; j < w; ++j, ++k)
             {
-                for (c = 0; c < 3; c++)
-                {
-                    result->element(i, j)[2 - c] = (charImage[i * w * 3 + j * 3 + c]);
-                }
+                auto& out = result->element(i, j);
+                out[2] = (charImage[k * 3 + 0]);
+                out[1] = (charImage[k * 3 + 1]);
+                out[0] = (charImage[k * 3 + 2]);
             }
     }
     else
     {
         // 2-byte case
-        for (i = 0; i < h; i++)
-        {
-            for (j = 0; j < w * 2; j++)
+        for (uint k = 0, i = 0; i < h; ++i)
+            for (uint j = 0; j < w; ++j, ++k)
             {
-                for (c = 2; c >= 0; c--)
-                {
-                    int offset = (i * w + j) * 6;
-                    result->element(i, j)[2 - c] = ((charImage[offset + 0]) << 8 |
-                                                    (charImage[offset + 1]));
-                }
+                auto& out = result->element(i, j);
+                out[2] = (charImage[k * 6 + 0] << 8) | charImage[k * 6 + 1];
+                out[1] = (charImage[k * 6 + 2] << 8) | charImage[k * 6 + 3];
+                out[0] = (charImage[k * 6 + 4] << 8) | charImage[k * 6 + 5];
             }
-        }
-
     }
 
     if (calcWhite)
