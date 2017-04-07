@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <stack>
 #include <map>
 
@@ -9,10 +10,7 @@
 #include "imageMatches.h"   // RawMatches
 #include "matchingPlan.h"   // MatchPlan
 #include "statusTracker.h"
-
-#ifdef WITH_TBB
-#include <tbb/tbb.h>        // tbb::spin_mutex
-#endif
+#include "tbbWrapper.h"     // tbb::spin_mutex
 
 class FeatureMatchingPipeline;
 
@@ -200,7 +198,7 @@ public:
     DescriptorType      descriptorType;
 
 #ifdef WITH_TBB
-    tbb::spin_mutex mutex;
+    tbb::spin_mutex     mutex;
 #endif
 
     static void printCaps();

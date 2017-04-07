@@ -31,6 +31,16 @@ bool FolderScanner::isDir(const string &path)
     return fs::exists(p) && fs::is_directory(p);
 }
 
+bool FolderScanner::createDir(const string &path)
+{
+    if (isDir(path))
+        return true;
+    std::cout << "creating dir <" << path << ">" << std::endl;
+
+    fs::path p(path);
+    return fs::create_directory(p);
+}
+
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
 {
     if (!isDir(path))
@@ -74,6 +84,15 @@ bool FolderScanner::isDir(const string &path)
 
     closedir(dp);
     return true;
+}
+
+bool FolderScanner::createDir(const string &path)
+{
+    if (isDir(path))
+        return true;
+    std::cout << "creating dir <" << path << ">" << std::endl;
+
+    std::system(("mkdir " + path).c_str());
 }
 
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
