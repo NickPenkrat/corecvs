@@ -162,7 +162,9 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uin
     }
 #endif
 
-    accuracy = mct.getCovarianceInvEstimation(res); 
+    if (!ok)
+        accuracy = mct.getCovarianceInvEstimation(res); 
+
 	if (numProjections != nullptr)
 		*numProjections = mct.P.size();
 
