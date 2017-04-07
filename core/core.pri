@@ -84,7 +84,7 @@ exists($$COREDIR/../../../config.pri) {
     COREBINDIR = $$COREDIR/../bin
 }
 
-message(Corebindir is $$COREBINDIR)
+#message(Corebindir is $$COREBINDIR)
 
 contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted): !contains(TARGET, topcon_core) {
     win32-msvc* {
@@ -109,7 +109,7 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted): !contains(TA
     }
     PRE_TARGETDEPS += $$COREBINDIR/$$CORE_TARGET_NAME
 
-    message(Adding core lib to the linkinglist $$LIBS and targetdeps $$PRE_TARGETDEPS)
+    #message(Adding core lib to the linkinglist $$LIBS and targetdeps $$PRE_TARGETDEPS)
 }
 
 # The filesystem module needs this
