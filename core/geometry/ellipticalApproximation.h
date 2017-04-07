@@ -410,13 +410,8 @@ public:
                 }
             }
 
-            double tmpSwap = mValues[maxid];
-            mValues[maxid] = mValues[i];
-            mValues[i] = tmpSwap;
-
-            ElementType forPush = mAxes[maxid];
-            mAxes[maxid] = mAxes[i];
-            mAxes[maxid] = forPush;
+            std::swap(mValues[maxid], mValues[i]);
+            std::swap(mAxes  [maxid], mAxes  [i]);
         }
 
         return true;

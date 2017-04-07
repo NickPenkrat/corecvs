@@ -308,7 +308,7 @@ void StereoAligner::getAlignmentTransformation(
     Matrix33 second =  rotationalPartSecond * projectivePartSecond;
 
 
-//#ifdef ASSERTS
+#ifdef ASSERTS_OFF
     Matrix33 Ix(
              0,  0,  0,
              0,  0, -1,
@@ -323,7 +323,7 @@ void StereoAligner::getAlignmentTransformation(
     F.print();
     printf("\n");
     CORE_ASSERT_TRUE(Fprim.notTooFar(F, 1e-5) || Fprim.notTooFar(-F, 1e-5), "Matrix reconstruction failed");
-//#endif // ASSERTS
+#endif // ASSERTS
 
     double det1 = rotationalPartFirst .det();
     double det2 = rotationalPartSecond.det();

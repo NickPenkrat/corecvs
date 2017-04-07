@@ -9,9 +9,15 @@ EllipseFit::EllipseFit()
 
 }
 
-void EllipseFit::addPoint(Vector2dd &point)
+void EllipseFit::addPoint(const Vector2dd &point)
 {
     points.push_back(point);
+}
+
+void EllipseFit::setPointList(const vector<Vector2dd> &pointList)
+{
+    points.clear();
+    points = pointList;
 }
 
 /**

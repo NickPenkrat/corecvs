@@ -23,19 +23,21 @@ using std::find;
  *
  *
  **/
+class RansacParameters {
+public:
+    int iterationsNumber;
+    double inliersPercent;
+    double inlierThreshold;
+};
+
 template<typename SampleType, typename ModelType>
-class Ransac {
+class Ransac : public RansacParameters {
 public:
     vector<SampleType *> *data;
     int dataLen;
 
     vector<SampleType *> samples;
     int sampleNumber;
-
-    int iterationsNumber;
-    double inliersPercent;
-    double inlierThreshold;
-
 
     int iteration;
     vector<SampleType *> bestSamples;
