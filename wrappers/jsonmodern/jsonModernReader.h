@@ -1,6 +1,14 @@
 #ifndef JSONModernReader_H
 #define JSONModernReader_H
 
+#if defined(_MSC_VER) && (_MSC_VER < 1900)      // fix bug for older vs than msvc2015
+# define constexpr const
+# define noexcept
+# define noexcept_if(pred)
+#else
+# define noexcept_if(pred)   noexcept((pred))
+#endif
+
 #include "json.hpp"
 
 #include "reflection.h"
