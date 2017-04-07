@@ -177,6 +177,14 @@ SceneFeaturePoint *FixtureScene::createFeaturePoint()
     return point;
 }
 
+FixtureSceneGeometry *FixtureScene::createSceneGeometry()
+{
+    FixtureSceneGeometry *geometry = fabricateSceneGeometry();
+    mOwnedObjects.push_back(geometry);
+    mGeomtery.push_back(geometry);
+    return geometry;
+}
+
 /* This method assumes the scene is well formed */
 void FixtureScene::deleteCamera(FixtureCamera *camera)
 {
@@ -259,6 +267,11 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 {
     vectorErase(mSceneFeaturePoints, point);
+}
+
+void FixtureScene::deleteSceneGeometry(FixtureSceneGeometry *geometry)
+{
+    vectorErase(mGeomtery, geometry);
 }
 
 void FixtureScene::clear()
@@ -689,6 +702,19 @@ void FixtureScene::setFeaturePointCount(size_t count)
     }
 }
 
+void FixtureScene::setGeometryCount(size_t count)
+{
+    while (mGeomtery.size() > count) {
+        FixtureSceneGeometry *geometry = mGeomtery.back();
+        mGeomtery.pop_back();
+        deleteSceneGeometry(geometry);
+    }
+
+    while (mGeomtery.size() < count) {
+        createSceneGeometry();
+    }
+}
+
 FixtureCamera *FixtureScene::getCameraById(FixtureScenePart::IdType id)
 {
     for (FixtureCamera *cam : mOrphanCameras) {
@@ -758,6 +784,12 @@ SceneFeaturePoint *FixtureScene::fabricateFeaturePoint()
 {
     //SYNC_PRINT(("FixtureScene::fabricateFeaturePoint(): called\n"));
     return new SceneFeaturePoint(this);
+}
+
+FixtureSceneGeometry *FixtureScene::fabricateSceneGeometry()
+{
+    //SYNC_PRINT(("FixtureScene::fabricateSceneGeometry(): called\n"));
+    return new FixtureSceneGeometry(this);
 }
 
 void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, const double scale)

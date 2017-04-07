@@ -1,5 +1,5 @@
-#ifndef JSONModernReader_H
-#define JSONModernReader_H
+#ifndef JSON_MODERN_READER_H
+#define JSON_MODERN_READER_H
 
 #include "json.hpp"
 
@@ -262,6 +262,11 @@ public:
 
     }
 
+    bool hasError()
+    {
+        return mHasError;
+    }
+
 private:
     void init(const char *fileName);
 
@@ -270,6 +275,7 @@ private:
     std::string         mFileName;
     nlohmann::json mDocument;
     bool trace = false;
+    bool mHasError = false;
 };
 
 #undef CONDITIONAL_TRACE
@@ -319,4 +325,4 @@ void JSONModernReader::visit<double, DoubleVectorField>(std::vector<double> &fie
 
 
 
-#endif // JSONModernReader_H
+#endif // JSON_MODERN_READER_H

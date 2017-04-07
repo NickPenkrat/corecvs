@@ -122,6 +122,21 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, doub
     }
 }
 
+void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const FixtureSceneGeometry &fg, double /*scale*/)
+{
+    mesh.setColor(RGBColor::Red());
+    /* Simple way */
+    for (size_t i = 0; i < fg.poligon.size(); i++)
+    {
+        Vector2dd p1 = fg.poligon.getPoint(i);
+        Vector2dd p2 = fg.poligon.getNextPoint(i);
+
+        Vector3dd point1 = fg.frame.getPoint(p1);
+        Vector3dd point2 = fg.frame.getPoint(p2);
+        mesh.addLine(point1, point2);
+    }
+}
+
 
 void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
 {
@@ -132,7 +147,7 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
     }
 }
 
-void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, SceneFeaturePoint fp, double scale)
+void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, double scale)
 {
     mesh.setColor(fp.color);
     Vector3dd pos = fp.getDrawPosition(preferReprojected(), forceKnown());
@@ -197,6 +212,12 @@ void CalibrationDrawHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, 
     {
         drawPly(mesh, *fp, scale);
     }
+
+    for (FixtureSceneGeometry *fg: scene.geometries())
+    {
+        drawPly(mesh, *fg, scale);
+    }
+
 }
 
 

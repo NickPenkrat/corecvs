@@ -16,12 +16,16 @@ void JSONModernReader::init(const char *fileName)
 {
     mFileName = fileName;
 
-    std::ifstream is;
-    is.open(fileName, std::ifstream::in);
-    is >> mDocument;
-
-    //rapidjson::Value &value = mDocument.GetObject();
-    mNodePath.push_back(&mDocument);
+    try {
+        std::ifstream is;
+        is.open(fileName, std::ifstream::in);
+        is >> mDocument;
+        mNodePath.push_back(&mDocument);
+    } catch (nlohmann::detail::exception &e)
+    {
+        SYNC_PRINT(("JSONModernReader::init(%s): json parsing had an exception <%s>\n", fileName, e.what()));
+        mHasError = true;
+    }
 }
 
 template <>

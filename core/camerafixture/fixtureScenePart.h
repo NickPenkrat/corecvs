@@ -3,6 +3,7 @@
 
 #include "global.h"
 #include "atomicOps.h"
+#include "polygons.h"
 
 namespace corecvs {
 
@@ -56,6 +57,38 @@ public:
     virtual ~FixtureScenePart() {
         atomic_dec_and_fetch(&OBJECT_COUNT);
     }
+};
+
+class FlatPolygon
+{
+public:
+    PlaneFrame frame;
+    Polygon poligon;
+
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(frame,   "frame");
+        visitor.visit(poligon, "polygon");
+
+    }
+};
+
+/* Ok */
+class FixtureSceneGeometry : public FixtureScenePart, public FlatPolygon
+{
+public:
+    FixtureSceneGeometry(FixtureScene * owner = NULL) :
+        FixtureScenePart(owner)
+    {}
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        FlatPolygon::accept(visitor);
+    }
+
 };
 
 } // namespace corecvs

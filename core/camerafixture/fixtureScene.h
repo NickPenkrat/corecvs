@@ -41,10 +41,12 @@ public:
 class FixtureScene
 {
 public:
-    typedef FixtureCamera     CameraType;
-    typedef CameraPrototype   CameraPrototypeType;
-    typedef CameraFixture     FixtureType;
-    typedef SceneFeaturePoint PointType;
+    typedef FixtureCamera        CameraType;
+    typedef CameraPrototype      CameraPrototypeType;
+    typedef CameraFixture        FixtureType;
+    typedef SceneFeaturePoint    PointType;
+    typedef FixtureSceneGeometry GeometryType;
+
 
     FixtureScene();
 
@@ -98,12 +100,18 @@ public:
     const vector<SceneFeaturePoint *>&  featurePoints() const  { return mSceneFeaturePoints; }
           vector<SceneFeaturePoint *>&  featurePoints()        { return mSceneFeaturePoints; }
 
+    const vector<FixtureSceneGeometry *>&  geometries() const  { return mGeomtery; }
+          vector<FixtureSceneGeometry *>&  geometries()        { return mGeomtery; }
+
+
 protected:
 
-    vector<CameraPrototype *>     mCameraPrototypes;
-    vector<CameraFixture *>       mFixtures;
-    vector<FixtureCamera *>       mOrphanCameras;
-    vector<SceneFeaturePoint *>   mSceneFeaturePoints;
+    vector<CameraPrototype *>      mCameraPrototypes;
+    vector<CameraFixture *>        mFixtures;
+    vector<FixtureCamera *>        mOrphanCameras;
+    vector<SceneFeaturePoint *>    mSceneFeaturePoints;
+    vector<FixtureSceneGeometry *> mGeomtery;
+
 
 
     template<typename T>
@@ -181,21 +189,22 @@ protected:
     }
 
 
-    virtual CameraPrototype    *fabricateCameraPrototype();
-    virtual FixtureCamera      *fabricateCamera();
-    virtual CameraFixture      *fabricateCameraFixture();
-    virtual SceneFeaturePoint  *fabricateFeaturePoint();
-
+    virtual CameraPrototype      *fabricateCameraPrototype();
+    virtual FixtureCamera        *fabricateCamera();
+    virtual CameraFixture        *fabricateCameraFixture();
+    virtual SceneFeaturePoint    *fabricateFeaturePoint();
+    virtual FixtureSceneGeometry *fabricateSceneGeometry();
 
 public:
 
     /**
      * Manipulation with structures
      **/
-    virtual CameraPrototype    *createCameraPrototype();
-    virtual FixtureCamera      *createCamera();
-    virtual CameraFixture      *createCameraFixture();
-    virtual SceneFeaturePoint  *createFeaturePoint();
+    virtual CameraPrototype      *createCameraPrototype();
+    virtual FixtureCamera        *createCamera();
+    virtual CameraFixture        *createCameraFixture();
+    virtual SceneFeaturePoint    *createFeaturePoint();
+    virtual FixtureSceneGeometry *createSceneGeometry();
 
     /* These methods completely purge objects from scene */
     virtual void deleteCamera         (FixtureCamera *camera);
@@ -203,6 +212,7 @@ public:
     virtual void deleteCameraFixture  (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair    (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint   (SceneFeaturePoint *point);
+    virtual void deleteSceneGeometry  (FixtureSceneGeometry *geometries);
 
     virtual void clear();
 
@@ -255,6 +265,8 @@ public:
     void setFixtureCount     (size_t count);
     void setOrphanCameraCount(size_t count);
     void setFeaturePointCount(size_t count);
+    void setGeometryCount    (size_t count);
+
 
     /* This performs full search. It should not */
     FixtureCamera *getCameraById (FixtureScenePart::IdType id);
@@ -264,7 +276,12 @@ public:
 
 
     template<class VisitorType, class SceneType = FixtureScene>
-    void accept(VisitorType &visitor, bool loadCameras = true, bool loadFixtures = true, bool loadPoints = true, bool loadPrototypes = true)
+    void accept(VisitorType &visitor,
+                bool loadCameras = true,
+                bool loadFixtures = true,
+                bool loadPoints = true,
+                bool loadPrototypes = true,
+                bool loadGeometry = true)
     {
         visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
 
@@ -272,6 +289,7 @@ public:
         typedef typename SceneType::CameraType            RealCameraType;
         typedef typename SceneType::FixtureType           RealFixtureType;
         typedef typename SceneType::PointType             RealPointType;
+        typedef typename SceneType::GeometryType          RealGeometryType;
 
         if (loadPrototypes)
         {
@@ -336,6 +354,22 @@ public:
                 visitor.visit(*static_cast<RealPointType *>(mSceneFeaturePoints[i]), buffer);
             }
         }
+
+        if (loadGeometry)
+        {
+            int geometrySize = (int)mGeomtery.size();
+            visitor.visit(geometrySize, 0, "geometry.size");
+
+            setGeometryCount(geometrySize);
+
+            for (size_t i = 0; i < (size_t)geometrySize; i++)
+            {
+                char buffer[100];
+                snprintf2buf(buffer, "geometry[%d]", i);
+                visitor.visit(*static_cast<RealGeometryType *>(mGeomtery[i]), buffer);
+            }
+        }
+
     }
 
     virtual ~FixtureScene();

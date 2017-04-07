@@ -200,7 +200,7 @@ public:
         this->type = type;
     }
 
-    Vector3dd getDrawPosition(bool preferReprojected = false, bool forceKnown = false);
+    Vector3dd getDrawPosition(bool preferReprojected = false, bool forceKnown = false) const;
 
     /**
      * This method triangulates a point based on its observations

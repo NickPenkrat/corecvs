@@ -24,11 +24,16 @@ namespace corecvs {
 
 using std::vector;
 
+/**
+ * This class is a mapping of 2D plane (parallelogram coordinate system) in 3D
+ **/
 class PlaneFrame {
 public:
-    Vector3dd p1;
-    Vector3dd e1;
-    Vector3dd e2;
+    Vector3dd p1; /**< Point of origin */
+    Vector3dd e1; /**< X ort of the plane */
+    Vector3dd e2; /**< Y ort of the plane. It's generally not enforced X and Y to be ortogonal in 3D */
+
+    PlaneFrame() {}
 
     PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2) :
         p1(p1), e1(e1), e2(e2)
@@ -37,6 +42,16 @@ public:
     Vector3dd getNormal() const
     {
         return e1 ^ e2;
+    }
+
+    Vector3dd getPoint(double x, double y) const
+    {
+        return p1 + x * e1 + y * e2;
+    }
+
+    Vector3dd getPoint(const Vector2dd &txy) const
+    {
+        return getPoint(txy.x(), txy.y());
     }
 
     bool intersectWithP(Ray3d &ray, double &resT, double &u, double &v)
@@ -68,6 +83,14 @@ public:
 
         resT = t;
         return true;
+    }
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(p1, Vector3dd(0.0, 0.0, 0.0) , "p");
+        visitor.visit(e1, Vector3dd::OrtX() , "e1");
+        visitor.visit(e2, Vector3dd::OrtY() , "e2");
     }
 
 };
@@ -189,6 +212,24 @@ public:
     }
 
     Vector2dd center();
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        int pointsSize = (int)size();
+        visitor.visit(pointsSize, 0, "points.size");
+
+        resize(pointsSize);
+
+        for (size_t i = 0; i < (size_t)pointsSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "points[%d]", i);
+            visitor.visit(operator [](i), Vector2dd::Zero(), buffer);
+        }
+
+    }
+
 };
 
 /**
@@ -323,6 +364,8 @@ public:
     double area() {
         return fabs(signedArea());
     }
+
+
 
 
     //bool clipRay(const Ray2d &ray, double &t1, double &t2);
