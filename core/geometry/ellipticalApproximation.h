@@ -297,6 +297,8 @@ public:
         mInfMatrix(NULL)
       , mSum(other.mSum)
       , mCount(other.mCount)
+      , mAxes(other.mAxes)
+      , mValues(other.mValues)
     {
         this->mInfMatrix = new Matrix(other.mInfMatrix);
        // SYNC_PRINT(("EllipticalApproximationUnified(const EllipticalApproximationUnified &other) called\n"));
@@ -309,8 +311,10 @@ public:
             delete_safe(this->mInfMatrix);
 
             this->mInfMatrix = new Matrix(other.mInfMatrix);
-            this->mSum = other.mSum;
-            this->mCount = other.mCount;
+            this->mSum    = other.mSum;
+            this->mCount  = other.mCount;
+            this->mAxes   = other.mAxes;
+            this->mValues = other.mValues;
         }
         return *this;
         // SYNC_PRINT(("EllipticalApproximationUnified::operator =(const EllipticalApproximationUnified &other) called\n"));
@@ -327,7 +331,7 @@ public:
      *
      *
      **/
-    void addPoint (ElementType point)
+    void addPoint (const ElementType &point)
     {
         int row, column;
         for (column = 0; column < mInfMatrix->w ; column++)
@@ -492,7 +496,7 @@ inline int EllipticalApproximationUnified<double>::getDimention() const
 }
 
 template <>
-inline void EllipticalApproximationUnified<double>::addPoint (double point)
+inline void EllipticalApproximationUnified<double>::addPoint (const double &point)
 {
     mInfMatrix->a(0, 0) += point * point;
     mSum += point;

@@ -30,7 +30,7 @@ public:
 
         PlaneReconstructionModel (vector<Vector3dd *> points)
         {
-            for (auto v: points) {
+            for (Vector3dd *v: points) {
                 approx.addPoint(*v);
             }
             approx.getEllipseParameters();
@@ -48,20 +48,27 @@ public:
 public:
     Plane3dFit();
 
-    Plane3dFitParameters mParameters;
-    Plane3d result;
+    /* Inputs */
 
+    Plane3dFitParameters mParameters;        
     std::vector<Vector3dd> points;
 
     void addPoint    (const Vector3dd &point);
     void setPointList(const vector<Vector3dd> &pointList);
+    void setParameters(const Plane3dFitParameters& parameters);
 
-    void setParameters(const Plane3dFitParameters& parameters)
-    {
-        mParameters = parameters;
-    }
+    /* Outputs */
+    /** Result just after ransac - based on best random sample **/
+    PlaneReconstructionModel ransacResult;
+    /** Result after rechecking all inliers */
+    PlaneReconstructionModel result;
+
+    /* Error flags */
+    bool hasError = false;
 
     void operator ()();
+
+    Plane3d getPlane();
 
 };
 

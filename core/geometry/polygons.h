@@ -44,6 +44,10 @@ public:
         return e1 ^ e2;
     }
 
+    Plane3d toPlane() {
+        return Plane3d::FromPointAndVectors(p1, e1, e2);
+    }
+
     Vector3dd getPoint(double x, double y) const
     {
         return p1 + x * e1 + y * e2;
@@ -365,13 +369,25 @@ public:
         return fabs(signedArea());
     }
 
-
-
-
     //bool clipRay(const Ray2d &ray, double &t1, double &t2);
 };
 
 
+class FlatPolygon
+{
+public:
+    PlaneFrame frame;
+    Polygon polygon;
+
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(frame,   "frame");
+        visitor.visit(polygon, "polygon");
+
+    }
+};
 
 
 

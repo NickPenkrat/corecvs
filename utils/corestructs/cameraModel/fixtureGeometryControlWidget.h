@@ -3,6 +3,7 @@
 
 #include <QWidget>
 
+#include "sceneFeaturePoint.h"
 #include "fixtureScenePart.h"
 #include "parametersControlWidgetBase.h"
 
@@ -38,6 +39,15 @@ signals:
 
 private:
     Ui::FixtureGeometryControlWidget *ui;
+
+/* This part is FlatPolygon unrelated. Code above would be decoupled */
+public:
+    corecvs::FixtureSceneGeometry *mGeometry = NULL;
+    void setFixtureGeometry(corecvs::FixtureSceneGeometry *geometry);
+
+
 };
+
+
 
 #endif // FIXTUREGEOMETRYCONTROLWIDGET_H

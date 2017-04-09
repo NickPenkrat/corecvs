@@ -45,7 +45,7 @@ public:
 typedef std::unordered_map<std::string, void *> MetaContainer;
 
 
-class CameraModel /*: public ScenePart*/
+class CameraModel
 {
 public:
     /**/
@@ -65,8 +65,7 @@ public:
     std::string     nameId;
 
 public:
-    CameraModel(/*FixtureScene * owner = NULL*/) /*:
-        ScenePart(owner)*/
+    CameraModel()
     {}
 
     CameraModel(
@@ -184,7 +183,9 @@ public:
     Matrix44            getPositionMatrix() const;
     Matrix44            getCameraMatrix() const;
 
+    /* These methods ignore distortion */
     ConvexPolyhedron    getViewport(const Vector2dd &p1, const Vector2dd &p2);
+    ConvexPolyhedron    getCameraViewport();
 
 
     void copyModelFrom(const CameraModel &other) {

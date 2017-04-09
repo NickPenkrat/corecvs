@@ -19,9 +19,28 @@ void Plane3dFit::setPointList(const vector<Vector3dd> &pointList)
     points = pointList;
 }
 
+void Plane3dFit::setParameters(const Plane3dFitParameters &parameters)
+{
+    mParameters = parameters;
+}
+
 void Plane3dFit::operator ()()
 {
     Ransac<Vector3dd, PlaneReconstructionModel> estimator(mParameters.sampleNumber);
+
+    estimator.inlierThreshold = mParameters.tolerance;
+    estimator.iterationsNumber = 1000;
+    estimator.inliersPercent   = 1.0;
+    estimator.trace = true;
+
+
+    SYNC_PRINT(("Plane3dFit::operator (): %d points", (int)points.size()));
+    if (points.size() < 3) {
+        SYNC_PRINT(("Plane3dFit::operator (): Too few points to make fitting"));
+        hasError = true;
+        return;
+    }
+
     vector<Vector3dd *> ptrArr;
     ptrArr.reserve(points.size());
     for (Vector3dd &v : points)
@@ -30,8 +49,26 @@ void Plane3dFit::operator ()()
     }
 
     estimator.data = &ptrArr;
-    PlaneReconstructionModel model = estimator.getModelRansac();
+    ransacResult = estimator.getModelRansac();
 
+    /* Collect info about inliers */
+    vector<Vector3dd *> inliers;
+
+    for (Vector3dd &v : points)
+    {
+        if (ransacResult.fits(v, mParameters.tolerance))
+        {
+            inliers.push_back(&v);
+        }
+    }
+
+
+    result = PlaneReconstructionModel(inliers);
+}
+
+Plane3d Plane3dFit::getPlane()
+{
+    return result.plane;
 }
 
 } // namespace corecvs

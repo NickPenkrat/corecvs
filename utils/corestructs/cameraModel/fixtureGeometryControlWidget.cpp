@@ -93,12 +93,12 @@ void FixtureGeometryControlWidget::getParameters(FlatPolygon& params) const
                 ui->ort2ZSpinBox->value()
             );
 
-    params.poligon.resize(ui->polygonWidget->rowCount());
+    params.polygon.resize(ui->polygonWidget->rowCount());
     for (size_t i = 0; i < ui->polygonWidget->rowCount(); i++)
     {
         QDoubleSpinBox *xWidget = static_cast<QDoubleSpinBox *>(ui->polygonWidget->cellWidget(i,1));
         QDoubleSpinBox *yWidget = static_cast<QDoubleSpinBox *>(ui->polygonWidget->cellWidget(i,2));
-        params.poligon[i] = Vector2dd(xWidget->value(), yWidget->value());
+        params.polygon[i] = Vector2dd(xWidget->value(), yWidget->value());
     }
 
 }
@@ -132,7 +132,7 @@ void FixtureGeometryControlWidget::setParameters(const FlatPolygon &input)
     ui->ort2ZSpinBox->setValue(input.frame.e2.z());
 
     ui->polygonWidget->clear();
-    for (size_t i = 0; i < input.poligon.size(); i++)
+    for (size_t i = 0; i < input.polygon.size(); i++)
     {
         ui->polygonWidget->insertRow(i);
         ui->polygonWidget->setItem(i, 0, new QTableWidgetItem(QString::number(i)));
@@ -142,7 +142,7 @@ void FixtureGeometryControlWidget::setParameters(const FlatPolygon &input)
             widget->setMaximum( 9999999);
             widget->setMinimum(-9999999);
             widget->setDecimals(5);
-            widget->setValue(input.poligon[i].x());
+            widget->setValue(input.polygon[i].x());
             connect(widget, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
             ui->polygonWidget->setCellWidget(i, 1, widget);
         }
@@ -152,7 +152,7 @@ void FixtureGeometryControlWidget::setParameters(const FlatPolygon &input)
             widget->setMaximum( 9999999);
             widget->setMinimum(-9999999);
             widget->setDecimals(5);
-            widget->setValue(input.poligon[i].y());
+            widget->setValue(input.polygon[i].y());
             connect(widget, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
             ui->polygonWidget->setCellWidget(i, 2, widget);
         }
@@ -178,6 +178,23 @@ void FixtureGeometryControlWidget::saveParamWidget(WidgetSaver &)
     SYNC_PRINT(("FixtureGeometryControlWidget::saveParamWidget : Not yet implemented\n"));
 }
 
+void FixtureGeometryControlWidget::setFixtureGeometry(FixtureSceneGeometry *geometry)
+{
+    mGeometry = geometry;
+    ui->infoLabel->setText(QString("Related points :%1").arg(geometry->relatedPoints.size()));
 
+    double sum = 0;
+    double sumRepr = 0;
 
+    Plane3d plane = geometry->frame.toPlane();
 
+    for (size_t i = 0; i < geometry->relatedPoints.size(); i++)
+    {
+        SceneFeaturePoint *point = geometry->relatedPoints[i];
+        Vector3dd position = point->position;
+        Vector3dd repr     = point->reprojectedPosition;
+
+        sum     += plane.distanceTo(position);
+        sumRepr += plane.distanceTo(repr);
+    }
+}

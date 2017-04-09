@@ -20,9 +20,9 @@ HEADERS += \
     geometry/kdtree.h \
     geometry/raytrace/bspTree.h \
     geometry/twoViewOptimalTriangulation.h \
-    $$PWD/ellipse.h \
-    $$PWD/ellipseFit.h \
-    $$PWD/plane3dFit.h
+    geometry/ellipse.h \
+    geometry/ellipseFit.h \
+    geometry/plane3dFit.h
 
 
 
@@ -44,7 +44,7 @@ SOURCES += \
     geometry/raytrace/materialExamples.cpp \
     geometry/mesh3DDecorated.cpp \
     geometry/twoViewOptimalTriangulation.cpp \
-    $$PWD/ellipse.cpp \
-    $$PWD/ellipseFit.cpp \
-    $$PWD/plane3dFit.cpp
+    geometry/ellipse.cpp \
+    geometry/ellipseFit.cpp \
+    geometry/plane3dFit.cpp
 

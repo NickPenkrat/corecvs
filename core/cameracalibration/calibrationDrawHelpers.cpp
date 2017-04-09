@@ -126,10 +126,10 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const FixtureSceneGeometry &f
 {
     mesh.setColor(RGBColor::Red());
     /* Simple way */
-    for (size_t i = 0; i < fg.poligon.size(); i++)
+    for (size_t i = 0; i < fg.polygon.size(); i++)
     {
-        Vector2dd p1 = fg.poligon.getPoint(i);
-        Vector2dd p2 = fg.poligon.getNextPoint(i);
+        Vector2dd p1 = fg.polygon.getPoint(i);
+        Vector2dd p2 = fg.polygon.getNextPoint(i);
 
         Vector3dd point1 = fg.frame.getPoint(p1);
         Vector3dd point2 = fg.frame.getPoint(p2);

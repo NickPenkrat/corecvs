@@ -44,6 +44,7 @@ public:
     ModelType bestModel;
     int bestInliers;
 
+    bool trace = false;
 
     Ransac(int _sampleNumber ) :
         sampleNumber(_sampleNumber)
@@ -87,6 +88,8 @@ public:
                     inliers++;
             }
 
+            if (trace) SYNC_PRINT(("iteration %d : %d inliers \n", iteration, inliers));
+
             if (inliers > bestInliers)
             {
                 bestSamples = samples;
@@ -97,6 +100,10 @@ public:
             if (bestInliers >  sampleNumber * inliersPercent ||
                 iteration >= iterationsNumber )
             {
+                if (trace) {
+
+                }
+
                 return bestModel;
             }
             iteration++;

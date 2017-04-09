@@ -208,7 +208,7 @@ public:
 
     /* These methods completely purge objects from scene */
     virtual void deleteCamera         (FixtureCamera *camera);
-    virtual void deleteCameraPrototype(CameraPrototype *cameraProtype);
+    virtual void deleteCameraPrototype(CameraPrototype *cameraPrototype);
     virtual void deleteCameraFixture  (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair    (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint   (SceneFeaturePoint *point);

@@ -59,37 +59,7 @@ public:
     }
 };
 
-class FlatPolygon
-{
-public:
-    PlaneFrame frame;
-    Polygon poligon;
 
-
-    template<class VisitorType>
-    void accept(VisitorType &visitor)
-    {
-        visitor.visit(frame,   "frame");
-        visitor.visit(poligon, "polygon");
-
-    }
-};
-
-/* Ok */
-class FixtureSceneGeometry : public FixtureScenePart, public FlatPolygon
-{
-public:
-    FixtureSceneGeometry(FixtureScene * owner = NULL) :
-        FixtureScenePart(owner)
-    {}
-
-    template<class VisitorType>
-    void accept(VisitorType &visitor)
-    {
-        FlatPolygon::accept(visitor);
-    }
-
-};
 
 } // namespace corecvs
 

@@ -246,7 +246,7 @@ void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
     /** Geometry **/
     FixtureSceneGeometry *geometry = scene->createSceneGeometry();
     geometry->frame   = PlaneFrame(Vector3dd(100,0,0), Vector3dd(0,1,0), Vector3dd(0,0,1));
-    geometry->poligon = Polygon::RegularPolygon(5, Vector2dd::Zero(), 50, 0);
+    geometry->polygon = Polygon::RegularPolygon(5, Vector2dd::Zero(), 50, 0);
 
 
     cout << "Original scene:" << endl;
