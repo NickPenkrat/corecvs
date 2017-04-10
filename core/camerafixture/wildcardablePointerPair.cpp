@@ -1,4 +1,5 @@
 #include "wildcardablePointerPair.h"
+#include "sceneFeaturePoint.h"
 
 namespace corecvs {
 
