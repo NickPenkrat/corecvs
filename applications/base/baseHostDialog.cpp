@@ -754,7 +754,7 @@ ViAreaWidget * BaseHostDialog::createAdditionalWindow(QString const &name, Windo
             break;
         case oglWindow:
 #ifdef WITH_OPENGL
-            area = new CloudViewDialog();
+            area = new CloudViewDialog(NULL, "Open GL subwindow");
 #endif
             break;
         case graphWindow:

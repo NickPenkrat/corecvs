@@ -61,6 +61,11 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     connect(mUi.upButton,     SIGNAL(pressed()), this, SLOT(upRotate    ()));
     connect(mUi.leftButton,   SIGNAL(pressed()), this, SLOT(leftRotate  ()));
     connect(mUi.rightButton,  SIGNAL(pressed()), this, SLOT(rightRotate ()));
+
+    connect(mUi.rotateClockPushButton,      SIGNAL(pressed()), this, SLOT(    clockRotate()));
+    connect(mUi.rotateAntiClockPushButton,  SIGNAL(pressed()), this, SLOT(anticlockRotate()));
+
+
     connect(mUi.centerButton, SIGNAL(pressed()), this, SLOT(resetCameraSlot ()));
     connect(mUi.zoomInButton, SIGNAL(pressed()), this, SLOT(zoomIn      ()));
     connect(mUi.zoomOutButton,SIGNAL(pressed()), this, SLOT(zoomOut     ()));
@@ -104,7 +109,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()), false);
     addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()), false);
 
-#if 1
+#if 0
     {
         SceneShaded *shaded = new SceneShaded();
         Mesh3DDecorated *mesh = new Mesh3DDecorated;
@@ -121,9 +126,9 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     }
 #endif
 
+#if 0
     QSharedPointer<CoordinateFrame> worldFrame = QSharedPointer<CoordinateFrame>(new CoordinateFrame());
 
-#if 0
 /*    QSharedPointer<Scene3D> grid  = QSharedPointer<Scene3D>(new Grid3DScene());
     QSharedPointer<Scene3D> plane = QSharedPointer<Scene3D>(new Plane3DScene());
     grid->name  = "Grid";
@@ -160,9 +165,10 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     box->name = "box-mesh";
     //addSubObject("box-mesh", QSharedPointer<Scene3D>(box));
     worldFrame->mChildren.push_back(QSharedPointer<Scene3D>(box));
+    addSubObject("World Frame", worldFrame);
 #endif
 
-    addSubObject("World Frame", worldFrame);
+
 
     /* Stats collection */
     connect(mUi.statsButton, SIGNAL(released()), this, SLOT(statsOpen()));
@@ -187,7 +193,7 @@ void CloudViewDialog::addMesh(QString name, Mesh3D *mesh)
 
 TreeSceneController * CloudViewDialog::addSubObject (QString name, QSharedPointer<Scene3D> scene, bool visible)
 {
-    qDebug("CloudViewDialog::addSubObject(%s, _, %s): called", name.toLatin1().constData(), visible ? "true" : "false" );
+    qDebug("CloudViewDialog(%s)::addSubObject(%s, _, %s): called", windowTitle().toLatin1().constData(), name.toLatin1().constData(), visible ? "true" : "false" );
 
     TreeSceneController * result = mTreeModel.addObject(name, scene, visible);
     mUi.widget->update();
@@ -233,6 +239,19 @@ void CloudViewDialog::rightRotate()
     mCamera *= Matrix33::RotationY(-ROTATE_STEP);
     mUi.widget->scheduleUpdate();
 }
+
+void CloudViewDialog::clockRotate()
+{
+    mCamera = Matrix33::RotationZ( ROTATE_STEP) * mCamera;
+    mUi.widget->scheduleUpdate();
+}
+
+void CloudViewDialog::anticlockRotate()
+{
+    mCamera = Matrix33::RotationZ(-ROTATE_STEP) * mCamera;
+    mUi.widget->scheduleUpdate();
+}
+
 
 void CloudViewDialog::setZoom(double value)
 {

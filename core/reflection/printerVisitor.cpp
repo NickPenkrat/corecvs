@@ -41,6 +41,16 @@ void PrinterVisitor::visit<string, StringField>(std::string &field, const String
 }
 
 template <>
+void PrinterVisitor::visit<wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor)
+{
+    if (stream == NULL) return;
+    /* Truncate so far */
+    std::string str( field.begin(), field.end() );
+
+    *stream << indent() << fieldDescriptor->getSimpleName() << "=" << str << endl;
+}
+
+template <>
 void PrinterVisitor::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor)
 {
     if (stream == NULL) return;

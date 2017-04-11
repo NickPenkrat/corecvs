@@ -4,6 +4,7 @@
 #endif
 #include <QtXml/QDomDocument>
 #include <vector>
+#include <fstream>
 
 #include "abstractPainter.h"
 #include "bmpLoader.h"
@@ -16,6 +17,10 @@
 
 #include "jsonGetter.h"
 #include "jsonSetter.h"
+
+#include "jsonPrinter.h"
+
+using namespace std;
 
 
 void testJSON_FixtureScene()
@@ -111,7 +116,7 @@ void testJSON_FixtureScene()
     cout << "================================" << endl;
 }
 
-void testJSON_StereoScene()
+void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
 {
     cout << "----------------Running the test-------------" << std::endl;
     FixtureScene *scene = new FixtureScene();
@@ -155,15 +160,26 @@ void testJSON_StereoScene()
 
 
     int count = 0;
+    int namedCount = 0;
 
-    for (double x = 0.0; x <= 5.0; x += 2.5)
-        for (double y = 0.0; y <= 5.0; y += 2.5)
-            for (double z = 0.0; z <= 5.0; z += 2.5)
+    double MAX_SHIFT = 5.0;
+
+    double delta = MAX_SHIFT / (targetSize - 1);
+
+    for (double x = 0.0; x <= MAX_SHIFT; x += delta)
+        for (double y = 0.0; y <= MAX_SHIFT; y += delta)
+            for (double z = 0.0; z <= MAX_SHIFT; z += delta)
             {
-                char buffer[100];
-                snprintf2buf(buffer, "Test Point %d", count++);
                 SceneFeaturePoint *point  = scene->createFeaturePoint();
-                point->name = buffer;
+
+                if (namedCount < 30) {
+                    char buffer[100];
+                    snprintf2buf(buffer, "Test Point %d", count++);
+                    point->type = SceneFeaturePoint::POINT_UNKNOWN;
+                    point->name = buffer;
+                    namedCount++;
+                }
+
                 point->setPosition(Vector3dd(20.0 + x , y, z));
                 point->color = RGBColor::rainbow((x + y + z) / 25.0);
             }
@@ -227,6 +243,11 @@ void testJSON_StereoScene()
     testProto->nameId = "Test Prototype";
     testProto->copyModelFrom(model);
 
+    /** Geometry **/
+    FixtureSceneGeometry *geometry = scene->createSceneGeometry();
+    geometry->frame   = PlaneFrame(Vector3dd(100,0,0), Vector3dd(0,1,0), Vector3dd(0,0,1));
+    geometry->polygon = Polygon::RegularPolygon(5, Vector2dd::Zero(), 50, 0);
+
 
     cout << "Original scene:" << endl;
     cout << "================================" << endl;
@@ -237,6 +258,16 @@ void testJSON_StereoScene()
         JSONSetter setter("stereo.json");
         setter.visit(*scene, "scene");
     }
+    {
+        ofstream file;
+        file.open("stereo_new.json", std::ofstream::out);
+        {
+            JSONPrinter printer(file);
+            printer.visit(*scene, "scene");
+        } // Stream would be finalised on JSONPrinter destructor
+        file.close();
+    }
+
     delete_safe(scene);
 
 }
@@ -257,12 +288,24 @@ void testJSON_StereoRecheck()
      }
 }
 
-int main (int /*argc*/, char ** /*argv*/)
+int main (int argc, char ** argv)
 {
     printf("Generate some test scenes\n");
+
+    int size = 3;
+    bool custom = false;
+    if (argc == 2) {
+        size = std::stoi(argv[1]);
+        custom = true;
+        SYNC_PRINT(("We will create scene of custom size %d\n", size));
+    }
+
 //    testJSON_FixtureScene();
-    testJSON_StereoScene();
-    testJSON_StereoRecheck();
+    testJSON_StereoScene(size, true);
+
+    if (!custom) {
+        testJSON_StereoRecheck();
+    }
 
 	return 0;
 }

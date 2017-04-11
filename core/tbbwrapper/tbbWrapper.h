@@ -7,8 +7,8 @@
  * This class allows system to work transparently with or without TBB
  *
  **/
-
 #include <cstddef>
+#include <iostream>
 
 #ifdef WITH_TBB
 /*
@@ -16,10 +16,14 @@
    This is a fail. TBB needs to be abolished
 */
 #define Polygon Polygon_
+#define Ellipse Ellipse_
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
 #include <tbb/reader_writer_lock.h>
+#include <tbb/spin_mutex.h>
+#include <tbb/task_scheduler_init.h>
+#undef Ellipse
 #undef Polygon
 
 using namespace tbb;
@@ -262,6 +266,28 @@ inline std::string tbbInfo()
 #endif
     return info;
 }
+
+/** Useful class to setmaximum number of working threads for the whole TBB environment for any application on startup
+ */
+#ifdef WITH_TBB
+    class TbbSchedulerInitializer : public tbb::task_scheduler_init
+    {
+    public:
+        TbbSchedulerInitializer(const char* varName = "CALIBRATION_TEST_THREAD_LIMIT")
+            : tbb::task_scheduler_init(std::getenv(varName) ? std::stoi(std::getenv(varName)) : automatic)
+        {
+            char* var = std::getenv(varName);
+            if (var) {
+                std::cout << "Detected thread limit env.var: " << var << std::endl;
+            }
+        }
+    };
+#else
+    class TbbSchedulerInitializer {
+    public:
+        TbbSchedulerInitializer(const char* var = "") {}
+    };
+#endif
 
 } //namespace corecvs
 

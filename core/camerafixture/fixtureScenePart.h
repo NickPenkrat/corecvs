@@ -3,6 +3,7 @@
 
 #include "global.h"
 #include "atomicOps.h"
+#include "polygons.h"
 
 namespace corecvs {
 
@@ -57,6 +58,8 @@ public:
         atomic_dec_and_fetch(&OBJECT_COUNT);
     }
 };
+
+
 
 } // namespace corecvs
 

@@ -219,12 +219,12 @@ void PolygonCombiner::prepare()
     for (int i = 0; i < (int)c[0].size(); i++)
     {
         if (c[0][i].flag == COMMON)
-            intersections[c[0][i].other].first = i;
+            intersections[c[0][i].intersection].first = i;
     }
     for (int i = 0; i < (int)c[1].size(); i++)
     {
         if (c[1][i].flag == COMMON)
-            intersections[c[1][i].other].second = i;
+            intersections[c[1][i].intersection].second = i;
     }
     for (size_t i = 0; i < intersections.size(); i++)
     {
@@ -341,44 +341,42 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer) const
     }
 }
 
-Polygon PolygonCombiner::intersection() const
+Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector<bool> *visited) const
 {
     Polygon result;
-    if (intersectionNumber == 0) /* There are no contur intersection */
-    {
-        /* First poligon is inside the second one */
-        if (!c[0].empty() && c[0].front().flag == INSIDE)
-            return Polygon(pol[0]);
 
-        /* second poligon is inside the first one */
-        if (!c[1].empty() && c[1].front().flag == INSIDE)
-            return Polygon(pol[1]);
+    SYNC_PRINT(("PolygonCombiner::followContour(%d, %s)\n", startIntersection, inner ? "inner" : "outer"));
 
-        return result;
-    }
+    VertexType flagToFollow = inner ?  INSIDE : OUTSIDE;
+    VertexType flagToAvoid  = inner ? OUTSIDE : INSIDE ;
 
-    const std::pair<int, int> &fst = intersections[0];
+
+    const std::pair<int, int> &fst = intersections[startIntersection];
 
     int currentId = fst.first;
     int currentChain = 0;
 
-    printf("Exit condition A%d or B%d\n", fst.first, fst.second);
+    SYNC_PRINT(("Exit condition A%d or B%d\n", fst.first, fst.second));
 
     int limit = 0;
-    while (limit ++ < 100) {
+    while (limit ++ < 30 /*true*/) {
         VertexData v = c[currentChain][currentId];
+        if ((visited != NULL) && (v.flag == COMMON)) {
+            visited->operator [](v.intersection) = true;
+        }
+
         result.push_back(v.pos);
         printf("Adding vertex c: %c%d point: %" PRISIZE_T " (%lf %lf)\n", currentChain == 0 ? 'A' : 'B', currentId,
                v.orgId,
                c[currentChain][v.orgId].pos.x(),
                c[currentChain][v.orgId].pos.y());
 
-        if (v.flag == INSIDE)
+        if (v.flag == flagToFollow)
         {
-            /* Moving inside the outer polygon */
-            currentId = (currentId + 1) % c[currentChain].size();           
+            /* Moving at the right side of the other polygon */
+            currentId = (currentId + 1) % c[currentChain].size();
         }
-        if (v.flag == OUTSIDE)
+        if (v.flag == flagToAvoid)
         {
             cout << "Internal Error" << endl;
             break;
@@ -390,18 +388,60 @@ Polygon PolygonCombiner::intersection() const
             int nextCurrent = (int)((currentId  + 1) % c[currentChain].size());
             int nextOther   = (int)((v.other    + 1) % c[otherChain  ].size());
 
-            const VertexData &candidate1 = c[currentChain][nextCurrent];
-            const VertexData &candidate2 = c[otherChain  ][nextOther];
+            struct {
+                const VertexData *node;
+                int chain;
+                int pos;
+            } candidates[2];
+
+            candidates[0] = {&c[currentChain][nextCurrent], currentChain, nextCurrent};
+            candidates[1] = {&c[otherChain  ][nextOther  ], otherChain  , nextOther  };
 
             printf("Branching (%c%d) (%c%d)\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
 
-            if (candidate1.flag != OUTSIDE) {
-                cout << "choice1" << endl;
-                currentId = nextCurrent;
-            } else {
-                cout << "choice2" << endl;
-                currentChain = otherChain;
-                currentId    = nextOther;
+            /*if ( ( inner && (candidate1.flag != OUTSIDE)) ||
+                 (!inner && (candidate1.flag == OUTSIDE)))*/
+
+            int cand = 0;
+            /* Prefer going your direction */
+            for (cand = 0; cand < 2; cand++)
+            {
+                if (candidates[cand].node->flag == flagToFollow)
+                {
+                    cout << "Choosing:" << cand << " because flag" << endl;
+                    currentChain = candidates[cand].chain;
+                    currentId    = candidates[cand].pos  ;
+                    break;
+                }
+            }
+
+            if (cand == 2) {
+                /* Always change the chain if both ends are common */
+                if (candidates[0].node->flag == COMMON && candidates[1].node->flag == COMMON)
+                {
+                    cout << "Choosing:" << cand << " because chain change" << endl;
+                    currentChain = candidates[1].chain;
+                    currentId    = candidates[1].pos  ;
+                    cand = 0;
+                }
+            }
+
+            if (cand == 2) {
+                for (cand = 0; cand < 2; cand++)
+                {
+                    if (candidates[cand].node->flag != flagToAvoid)
+                    {
+                        cout << "Choosing:" << cand << " because avoid" << endl;
+                        currentChain = candidates[cand].chain;
+                        currentId    = candidates[cand].pos  ;
+                        break;
+                    }
+                }
+            }
+
+            if (cand == 2) {
+                cout << "Internal Error2" << endl;
+                break;
             }
         }
 
@@ -425,10 +465,73 @@ Polygon PolygonCombiner::intersection() const
     return result;
 }
 
+Polygon PolygonCombiner::intersection() const
+{
+    Polygon result;
+    if (intersectionNumber == 0) /* There are no contur intersection */
+    {
+        /* First poligon is inside the second one */
+        if (!c[0].empty() && c[0].front().flag == INSIDE)
+            return Polygon(pol[0]);
+
+        /* second poligon is inside the first one */
+        if (!c[1].empty() && c[1].front().flag == INSIDE)
+            return Polygon(pol[1]);
+
+        return result;
+    }
+
+    return followContour(0, true);
+}
+
+vector<Polygon> PolygonCombiner::intersectionAll() const
+{
+    vector<Polygon> result;
+    cout << "PolygonCombiner::intersectionAll(): intesections: " << intersectionNumber << endl;
+    if (intersectionNumber == 0) /* There are no contur intersection */
+    {
+        cout << "PolygonCombiner::intersectionAll(): no intersections" << endl;
+
+        /* First poligon is inside the second one */
+        if (!c[0].empty() && c[0].front().flag == INSIDE) {
+            result.push_back(pol[0]);
+        }
+
+        /* second poligon is inside the first one */
+        if (!c[1].empty() && c[1].front().flag == INSIDE) {
+            result.push_back(pol[1]);
+            return result;
+        }
+        return result;
+    }
+
+    vector<bool> visited(intersectionNumber, false);
+
+    while (true) {
+        int p0 = -1;
+        for (int v = 0; v < visited.size(); v++)
+        {
+            if (!visited[v]) {
+                p0 = v;
+            }
+        }
+        if (p0 == -1)
+            return result;
+
+        result.push_back(followContour(p0, true, &visited));
+    }
+}
+
 Polygon PolygonCombiner::combination() const
 {
-    SYNC_PRINT(("PolygonCombiner::combination(): Not yet implemented\n"));
-    return Polygon();
+    Polygon result;
+    if (intersectionNumber == 0) /* There are no contur intersection */
+    {
+        // So far we return empty poligon
+        return result;
+    }
+
+    return followContour(0, false);
 }
 
 Polygon PolygonCombiner::difference() const

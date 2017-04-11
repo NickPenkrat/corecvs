@@ -24,17 +24,16 @@ namespace corecvs {
 
 using std::vector;
 
-
 /**
- *  This class holds the non-orthogonal reference frame on 2D plane in 3d space.
- *
- *  This class is designed for the situations when you need to map texture on the 3d objects
+ * This class is a mapping of 2D plane (parallelogram coordinate system) in 3D
  **/
 class PlaneFrame {
 public:
-    Vector3dd p1; /**< Position of zero point in space */
-    Vector3dd e1; /**< Directon in space that form X direction on the plane */
-    Vector3dd e2; /**< Directon in space that form Y direction on the plane (generally non-orthogonal to X) */
+    Vector3dd p1; /**< Point of origin */
+    Vector3dd e1; /**< X ort of the plane */
+    Vector3dd e2; /**< Y ort of the plane. It's generally not enforced X and Y to be ortogonal in 3D */
+
+    PlaneFrame() {}
 
     PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2) :
         p1(p1), e1(e1), e2(e2)
@@ -43,6 +42,20 @@ public:
     Vector3dd getNormal() const
     {
         return e1 ^ e2;
+    }
+
+    Plane3d toPlane() {
+        return Plane3d::FromPointAndVectors(p1, e1, e2);
+    }
+
+    Vector3dd getPoint(double x, double y) const
+    {
+        return p1 + x * e1 + y * e2;
+    }
+
+    Vector3dd getPoint(const Vector2dd &txy) const
+    {
+        return getPoint(txy.x(), txy.y());
     }
 
     bool intersectWithP(Ray3d &ray, double &resT, double &u, double &v)
@@ -74,6 +87,14 @@ public:
 
         resT = t;
         return true;
+    }
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(p1, Vector3dd(0.0, 0.0, 0.0) , "p");
+        visitor.visit(e1, Vector3dd::OrtX() , "e1");
+        visitor.visit(e2, Vector3dd::OrtY() , "e2");
     }
 
 };
@@ -195,6 +216,24 @@ public:
     }
 
     Vector2dd center();
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        int pointsSize = (int)size();
+        visitor.visit(pointsSize, 0, "points.size");
+
+        resize(pointsSize);
+
+        for (size_t i = 0; i < (size_t)pointsSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "points[%d]", i);
+            visitor.visit(operator [](i), Vector2dd::Zero(), buffer);
+        }
+
+    }
+
 };
 
 /**
@@ -330,11 +369,25 @@ public:
         return fabs(signedArea());
     }
 
-
     //bool clipRay(const Ray2d &ray, double &t1, double &t2);
 };
 
 
+class FlatPolygon
+{
+public:
+    PlaneFrame frame;
+    Polygon polygon;
+
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(frame,   "frame");
+        visitor.visit(polygon, "polygon");
+
+    }
+};
 
 
 
@@ -378,21 +431,25 @@ public:
         Vector2dd pos;     /* We don't need this, just a cache*/
         VertexType flag;
         double t;
+        size_t intersection;
         size_t other;
 
-        VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t other = 0) :
+        VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t intersection = 0) :
            orgId(orgId),
            pos(pos),
            flag(inside),
            t(t),
-           other(other)
+           intersection(intersection),
+           other(0)
         {}
     };
 
     typedef std::vector<VertexData> ContainerType; /* This type should better be list */
 
+    /** These are two lists for each of the poligons including there own and common vertexes **/
     ContainerType c[2];
 
+    /** These structures store the common vertexes **/
     int intersectionNumber;
     std::vector<std::pair<int, int>> intersections;
 
@@ -403,8 +460,12 @@ public:
     bool validateState(void) const;
     void drawDebug(RGB24Buffer *buffer) const;
 
+    Polygon followContour(int startIntersection, bool inner, vector<bool> *visited = NULL) const;
+
     Polygon intersection() const;
-    Polygon combination() const;   /**< Not yet implemented */
+    vector<Polygon> intersectionAll() const; /**< Not yet implemented **/
+
+    Polygon combination() const;
     Polygon difference() const;    /**< Not yet implemented */
 
     PolygonCombiner(){}
@@ -430,6 +491,13 @@ public:
             out << " " << i << ":  (" << vd.pos << " " << getName(vd.flag) << " " << vd.t << " " << vd.other << ") " << std::endl;
         }
         out << "]" << std::endl;
+
+        out << "Intersections:" << std::endl;
+        for (auto &pair : combiner.intersections)
+        {
+            out << pair.first << " - " << pair.second << std::endl;
+        }
+
 
         return out;
     }

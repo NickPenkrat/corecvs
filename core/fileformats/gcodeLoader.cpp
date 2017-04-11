@@ -558,10 +558,10 @@ bool GCodeToMesh::MeshInterpreter::straightHook(int type, const GCodeInterpreter
 
     switch (parent->coloring) {
         default:
-        case COLOR_FROM_G_CODE:         mesh->setColor(type ? RGBColor::Green() : RGBColor::Blue()); break;
-        case COLOR_FROM_EXTRSION_RATE:  mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,                   erate,   0,   1))); break;
-        case COLOR_FROM_TEMPERATUE:     mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.extruderTemperature, 200, 260))); break;
-        case COLOR_FROM_SPEED:          mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.feedRate, 1000, 10000))); break;
+        case GCodeColoringSheme::COLOR_FROM_GCODE:          mesh->setColor(type ? RGBColor::Green() : RGBColor::Blue()); break;
+        case GCodeColoringSheme::COLOR_FROM_EXTRUSION_RATE: mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,                   erate,   0,   1))); break;
+        case GCodeColoringSheme::COLOR_FROM_TEMPERATURE:    mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.extruderTemperature, 200, 260))); break;
+        case GCodeColoringSheme::COLOR_FROM_SPEED:          mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.feedRate, 1000, 10000))); break;
     }
 
     mesh->addLine(before.position, after.position);
@@ -574,10 +574,10 @@ bool GCodeToMesh::MeshInterpreter::arkHook(const GCodeInterpreter::MachineState 
 
     switch (parent->coloring) {
         default:
-        case COLOR_FROM_G_CODE:         mesh->setColor(RGBColor::Yellow()); break;
-        case COLOR_FROM_EXTRSION_RATE:  mesh->setColor(RGBColor::rainbow(0.5)); break;
-        case COLOR_FROM_TEMPERATUE:     mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.extruderTemperature, 200, 260))); break;
-        case COLOR_FROM_SPEED:          mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.feedRate, 100, 400))); break;
+        case GCodeColoringSheme::COLOR_FROM_GCODE:          mesh->setColor(RGBColor::Yellow()); break;
+        case GCodeColoringSheme::COLOR_FROM_EXTRUSION_RATE: mesh->setColor(RGBColor::rainbow(0.5)); break;
+        case GCodeColoringSheme::COLOR_FROM_TEMPERATURE:    mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.extruderTemperature, 200, 260))); break;
+        case GCodeColoringSheme::COLOR_FROM_SPEED:          mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.feedRate, 100, 400))); break;
     }
 
     double arg = 0;

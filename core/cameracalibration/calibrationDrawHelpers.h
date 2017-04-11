@@ -12,6 +12,7 @@ class ObservationList;
 class SceneFeaturePoint;
 class FixtureScene;
 class CameraFixture;
+class FixtureSceneGeometry;
 
 class CalibrationDrawHelpers : public CalibrationDrawHelpersParameters
 {
@@ -52,9 +53,10 @@ public:
     void drawCamera (Mesh3D &mesh, const CameraModel &cam, double scale);
 
     void drawPly    (Mesh3D &mesh, const ObservationList &list);
-    void drawPly    (Mesh3D &mesh, const CameraFixture &ps, double scale);
+    void drawPly    (Mesh3D &mesh, const CameraFixture &ps   , double scale);
+    void drawPly    (Mesh3D &mesh, const SceneFeaturePoint &fp, double scale);
+    void drawPly    (Mesh3D &mesh, const FixtureSceneGeometry &fg, double scale);
 
-    void drawPly    (Mesh3D &mesh, corecvs::SceneFeaturePoint fp, double scale);
 
     void drawScene  (Mesh3D &mesh, const FixtureScene &scene, double scale = 1.0);
 };

@@ -359,7 +359,7 @@ Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
     return Matrix::multiplyHomebrewMD(M, D);
 }
 
-Matrix operator *(DiagonalMatrix &D, const Matrix &M)
+Matrix operator *(const DiagonalMatrix &D, const Matrix &M)
 {
     CORE_ASSERT_TRUE(M.h == D.size(), "DiagonalMatrix and Matrix have wrong sizes");
     Matrix result(M.h, M.w);
@@ -1167,7 +1167,7 @@ Matrix Matrix::row(int row)
     Matrix toReturn(1, w);
     for (int column = 0; column < w; column++)
     {
-        toReturn.a(0, column) = toReturn.a(row, column);
+        toReturn.a(0, column) = this->a(row, column);
     }
     return toReturn;
 }

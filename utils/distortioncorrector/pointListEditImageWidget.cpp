@@ -277,6 +277,7 @@ PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, 
     /*Delegate activity*/
     mDelegateStyleBox = new QComboBox(this);
     mDelegateStyleBox->addItem("No Delegate");
+    mDelegateStyleBox->addItem("Small");
     mDelegateStyleBox->addItem("Selected");
     mDelegateStyleBox->addItem("Only");
     mDelegateStyleBox->addItem("All");
@@ -415,80 +416,101 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
     int rows = (int)mObservationListModel->getPointCount();
 
-    for (int i = 0; i < rows; i ++)
+    /* This is the fastest way to draw, even outer cycle is brought invards */
+    if (mDelegateStyleBox->currentIndex() == STYLE_NO_DELEGATE_SMALL)
     {
-        Vector2dd point = mObservationListModel->getPoint(i);
-        Vector2dd imageCoords = imageToWidgetF(point);
+        PreciseTimer timer = PreciseTimer::currentTime();
+        painter.setPen(Qt::yellow);
+        Matrix33 curT = currentTransformMatrix();
 
-        bool isSelected = false;
-        if (selectionModel != NULL)
+        for (int i = 0; i < rows; i ++)
         {
-            isSelected = selectionModel->isRowSelected(i, QModelIndex());
-        } else {
-            isSelected = (i == mSelectedPoint);
+            /* TODO: Profiler says this call is very long... */
+            Vector2dd point = mObservationListModel->getPoint(i);
+            if (!mInputRect.contains(fround(point.x()), fround(point.y())))
+                continue;
+
+            drawCircle(painter, curT * point, 2);
         }
+        uint64_t delay = timer.usecsToNow();
+        qDebug() << "Point draw delay is:" << (double)delay / rows << " usec" << endl;
 
-        /* We should probably use our own mechnism */
-        bool drawDelegate = false;
-        if (mDelegateStyleBox->currentIndex() == 2 ||
-            mDelegateStyleBox->currentIndex() == 3 )
-            drawDelegate = true;
-        if (mDelegateStyleBox->currentIndex() == 1 && isSelected)
-            drawDelegate = true;
-
-        if (drawDelegate)
+    } else {
+        for (int i = 0; i < rows; i ++)
         {
-            QTransform old = painter.transform();
-            Matrix33 matrix = currentTransformMatrix();
-            QTransform transform = Core2Qt::QTransformFromMatrix(matrix);
-            painter.setTransform(transform, true);
+            Vector2dd point = mObservationListModel->getPoint(i);
+            Vector2dd imageCoords = imageToWidgetF(point);
 
-            DrawDelegate *delegate = mObservationListModel->getDrawDelegate(i);
-            if (delegate != NULL) {
-                delegate->drawAt(painter, point, isSelected);
-            }
-            painter.setTransform(old);
-        }
-
-        if (mDelegateStyleBox->currentIndex() != 2)
-        {
-            painter.setPen(Qt::yellow);
-            drawCircle(painter, imageCoords, 5);
-            painter.setPen(Qt::blue);
-            drawCircle(painter, imageCoords, 10);
-
-            if (mAddInfoButton->isChecked())
+            bool isSelected = false;
+            if (selectionModel != NULL)
             {
-                QString meta = mObservationListModel->getMeta(i);
-                QPointF pos = Core2Qt::QPointFromVector2dd(imageCoords + Vector2dd(5, -10));
-                painter.setPen(Qt::black);
-                painter.drawText(pos, meta);
-                pos += QPointF(1,1);
-                painter.setPen(Qt::white);
-                painter.drawText(pos, meta);
+                isSelected = selectionModel->isRowSelected(i, QModelIndex());
+            } else {
+                isSelected = (i == mSelectedPoint);
             }
-            int flags = NONE_ARROW;
 
-            if (isSelected)
+            /* We should probably use our own mechnism */
+            bool drawDelegate = false;
+            if (mDelegateStyleBox->currentIndex() == STYLE_ONLY_DELEGATE ||
+                mDelegateStyleBox->currentIndex() == STYLE_ALL )
+                drawDelegate = true;
+            if (mDelegateStyleBox->currentIndex() == STYLE_SELECTED && isSelected)
+                drawDelegate = true;
+
+            if (drawDelegate)
             {
-                painter.setPen(Qt::red);
-                drawCircle(painter, imageCoords, 7);
+                QTransform old = painter.transform();
+                Matrix33 matrix = currentTransformMatrix();
+                QTransform transform = Core2Qt::QTransformFromMatrix(matrix);
+                painter.setTransform(transform, true);
 
-                imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
-                painter.setPen(Qt::cyan);
-                drawCircle(painter, imageCoords, 3);
-
-                if (imageCoords.x() < mOutputRect.left ()) flags |= LEFT_ARROW;
-                if (imageCoords.x() > mOutputRect.right()) flags |= RIGHT_ARROW;
-
-                if (imageCoords.y() < mOutputRect.top   ()) flags |= TOP_ARROW;
-                if (imageCoords.y() > mOutputRect.bottom()) flags |= BOTTOM_ARROW;
+                DrawDelegate *delegate = mObservationListModel->getDrawDelegate(i);
+                if (delegate != NULL) {
+                    delegate->drawAt(painter, point, isSelected);
+                }
+                painter.setTransform(old);
             }
 
-            painter.setBrush(Qt::red);
-            painter.setPen(Qt::blue);
-            paintDirectionArrows(painter, flags);
-            painter.setBrush(Qt::NoBrush);
+            if (mDelegateStyleBox->currentIndex() != STYLE_ONLY_DELEGATE)
+            {
+                painter.setPen(Qt::yellow);
+                drawCircle(painter, imageCoords, 5);
+                painter.setPen(Qt::blue);
+                drawCircle(painter, imageCoords, 10);
+
+                if (mAddInfoButton->isChecked())
+                {
+                    QString meta = mObservationListModel->getMeta(i);
+                    QPointF pos = Core2Qt::QPointFromVector2dd(imageCoords + Vector2dd(5, -10));
+                    painter.setPen(Qt::black);
+                    painter.drawText(pos, meta);
+                    pos += QPointF(1,1);
+                    painter.setPen(Qt::white);
+                    painter.drawText(pos, meta);
+                }
+                int flags = NONE_ARROW;
+
+                if (isSelected)
+                {
+                    painter.setPen(Qt::red);
+                    drawCircle(painter, imageCoords, 7);
+
+                    imageCoords = imageToWidgetF(widgetToImageF(imageCoords));
+                    painter.setPen(Qt::cyan);
+                    drawCircle(painter, imageCoords, 3);
+
+                    if (imageCoords.x() < mOutputRect.left ()) flags |= LEFT_ARROW;
+                    if (imageCoords.x() > mOutputRect.right()) flags |= RIGHT_ARROW;
+
+                    if (imageCoords.y() < mOutputRect.top   ()) flags |= TOP_ARROW;
+                    if (imageCoords.y() > mOutputRect.bottom()) flags |= BOTTOM_ARROW;
+                }
+
+                painter.setBrush(Qt::red);
+                painter.setPen(Qt::blue);
+                paintDirectionArrows(painter, flags);
+                painter.setBrush(Qt::NoBrush);
+            }
         }
     }
 

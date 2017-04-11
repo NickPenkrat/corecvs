@@ -10,12 +10,6 @@
 
 namespace corecvs {
 
-#if !defined(WIN32) || (_MSC_VER >= 1900) // Sometime in future (when we switch to VS2015 due to https://msdn.microsoft.com/library/hh567368.apx ) we will get constexpr on windows
-#else
-WPP::UTYPE const WPP::UWILDCARD = nullptr;
-WPP::VTYPE const WPP::VWILDCARD = nullptr;
-#endif
-
 std::string SceneObservation::getPointName()
 {
     return featurePoint ? featurePoint->name : "";
@@ -195,23 +189,23 @@ double SceneFeaturePoint::queryPValue(const corecvs::Vector3dd &query) const
 #endif
 }
 
-Vector3dd SceneFeaturePoint::getDrawPosition(bool preferReprojected, bool forceKnown)
+Vector3dd SceneFeaturePoint::getDrawPosition(bool preferReprojected, bool forceKnown) const
 {
-    if (preferReprojected) {
-        if (hasKnownReprojectedPosition || forceKnown) {
+    if (preferReprojected)
+    {
+        if (hasKnownReprojectedPosition || forceKnown)
             return reprojectedPosition;
-        } else {
-            if (hasKnownPosition || forceKnown)
-                return position;
-        }
 
-    } else {
-        if (hasKnownPosition || forceKnown) {
+        if (hasKnownPosition || forceKnown)
             return position;
-        } else {
-            if(hasKnownReprojectedPosition || forceKnown)
-                return reprojectedPosition;
-        }
+    }
+    else
+    {
+        if (hasKnownPosition || forceKnown)
+            return position;
+
+        if(hasKnownReprojectedPosition || forceKnown)
+            return reprojectedPosition;
     }
     return position;
 }

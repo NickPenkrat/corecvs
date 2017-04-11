@@ -101,3 +101,7 @@ SOURCES += \
     polygon/main_test_polygon.cpp \
     multicamera/main_test_multicamera.cpp \
     imagequality/main_test_imagequality.cpp \
+    json/main_test_json.cpp \
+    utils/main_test_utils.cpp \
+    quadric/main_test_quadric.cpp \
+#todo:   planefit/main_test_planefit.cpp \

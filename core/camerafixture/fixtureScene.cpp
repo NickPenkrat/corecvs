@@ -177,6 +177,14 @@ SceneFeaturePoint *FixtureScene::createFeaturePoint()
     return point;
 }
 
+FixtureSceneGeometry *FixtureScene::createSceneGeometry()
+{
+    FixtureSceneGeometry *geometry = fabricateSceneGeometry();
+    mOwnedObjects.push_back(geometry);
+    mGeomtery.push_back(geometry);
+    return geometry;
+}
+
 /* This method assumes the scene is well formed */
 void FixtureScene::deleteCamera(FixtureCamera *camera)
 {
@@ -207,11 +215,11 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
     delete_safe(camera);
 }
 
-void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraProtype)
+void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraPrototype)
 {
      mOrphanCameras.erase(
         std::remove_if(mOrphanCameras.begin(), mOrphanCameras.end(),
-            [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraProtype;} ),
+            [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
         mOrphanCameras.end()
      );
 
@@ -224,12 +232,14 @@ void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraProtype)
         auto cameras = station->cameras;
         cameras.erase(
            std::remove_if(cameras.begin(), cameras.end(),
-               [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraProtype;} ),
+               [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
            cameras.end()
         );
      }
 
-     vectorErase(mCameraPrototypes, cameraProtype);
+     vectorErase(mCameraPrototypes, cameraPrototype);
+
+     delete_safe(cameraPrototype);
 }
 
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
@@ -254,11 +264,26 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
     }
 
     vectorErase(mFixtures, fixture);
+    delete_safe(fixture);
 }
 
 void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
 {
+    for (size_t i = 0; i < mGeomtery.size(); i++)
+    {
+        FixtureSceneGeometry *geometry = mGeomtery[i];
+        vectorErase(geometry->relatedPoints, point);
+    }
+
     vectorErase(mSceneFeaturePoints, point);
+    delete_safe(point);
+
+}
+
+void FixtureScene::deleteSceneGeometry(FixtureSceneGeometry *geometry)
+{
+    vectorErase(mGeomtery, geometry);
+    delete_safe(geometry);
 }
 
 void FixtureScene::clear()
@@ -418,6 +443,27 @@ bool FixtureScene::checkIntegrity()
         }
     }
 
+    for (size_t i = 0; i < mGeomtery.size(); i++)
+    {
+        FixtureSceneGeometry *geometry = mGeomtery[i];
+        if (geometry == NULL) {
+            ok = false; SYNC_PRINT(("Geometry is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
+        }
+        if (geometry->ownerScene != this) {
+            ok = false; SYNC_PRINT(("Geometry form other scene: geometry:<%d> scene:<%s>\n", i, this->nameId.c_str()));
+        }
+
+        for (auto it = geometry->relatedPoints.begin(); it != geometry->relatedPoints.end(); ++it)
+        {
+            SceneFeaturePoint *point = *it;
+            if (point == NULL) {
+                ok = false; SYNC_PRINT(("Related point is NULL: scene:<%s> geometry <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
+            }
+            if (point->ownerScene != this) {
+                ok = false; SYNC_PRINT(("Related Point form other scene: point:<%s> scene:<%s>\n", point->name.c_str(), this->nameId.c_str()));
+            }
+        }
+    }
 
     return ok;
 }
@@ -464,10 +510,22 @@ bool FixtureScene::integrityRelink()
             SceneObservation &observ = it->second;
 
             observ.camera = cam;
-            observ.cameraFixture = cam->cameraFixture;
+            if (cam != NULL) {
+                observ.cameraFixture = cam->cameraFixture;
+            }
             observ.featurePoint = point;
         }
     }
+
+    vectorErase(mGeomtery, (FixtureSceneGeometry *)NULL);
+
+    for (size_t i = 0; i < mGeomtery.size(); i++)
+    {
+        FixtureSceneGeometry *geometry = mGeomtery[i];
+        geometry->ownerScene = this;
+
+    }
+
 
     return true;
 }
@@ -687,6 +745,19 @@ void FixtureScene::setFeaturePointCount(size_t count)
     }
 }
 
+void FixtureScene::setGeometryCount(size_t count)
+{
+    while (mGeomtery.size() > count) {
+        FixtureSceneGeometry *geometry = mGeomtery.back();
+        mGeomtery.pop_back();
+        deleteSceneGeometry(geometry);
+    }
+
+    while (mGeomtery.size() < count) {
+        createSceneGeometry();
+    }
+}
+
 FixtureCamera *FixtureScene::getCameraById(FixtureScenePart::IdType id)
 {
     for (FixtureCamera *cam : mOrphanCameras) {
@@ -756,6 +827,12 @@ SceneFeaturePoint *FixtureScene::fabricateFeaturePoint()
 {
     //SYNC_PRINT(("FixtureScene::fabricateFeaturePoint(): called\n"));
     return new SceneFeaturePoint(this);
+}
+
+FixtureSceneGeometry *FixtureScene::fabricateSceneGeometry()
+{
+    //SYNC_PRINT(("FixtureScene::fabricateSceneGeometry(): called\n"));
+    return new FixtureSceneGeometry(this);
 }
 
 void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, const double scale)

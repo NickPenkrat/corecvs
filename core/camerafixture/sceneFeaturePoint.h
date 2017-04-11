@@ -6,6 +6,7 @@
 
 #include "fixtureCamera.h"
 #include "imageKeyPoints.h"
+#include "wildcardablePointerPair.h"
 
 
 /* Presentation related */
@@ -17,31 +18,27 @@ namespace corecvs
     class WildcardablePointerPair;
 }
 
-namespace std {
-
-template<typename U, typename V>
-struct hash<corecvs::WildcardablePointerPair<U, V>>
-{
-    size_t operator() (const corecvs::WildcardablePointerPair<U, V> &wpp) const
-    {
-        return std::hash<U*>()(wpp.u) ^ (31 * std::hash<V*>()(wpp.v));
-    }
-};
-
-} // namespace std
-
 
 namespace corecvs {
 
 class SceneFeaturePoint;
 
+
+/**
+ *
+ *   Observation is a class that decribes the result of point beening visble from a particular camera
+ *   As with other FixtureScene parts it's contence is governed by guidelines not strict riles.
+ *
+ *   Working algorithms using this structure actually describe it's own rules. This class is mostly a container
+ *
+ **/
 class SceneObservation
 {
 public:
     SceneObservation(
               FixtureCamera     *cam = nullptr
             , SceneFeaturePoint *sfp = nullptr
-            , Vector2dd          obs = Vector2dd(0)
+            , Vector2dd          obs = Vector2dd::Zero()
             , CameraFixture     *fix = nullptr)
         : camera(cam)
         , cameraFixture(fix)
@@ -52,13 +49,24 @@ public:
         , onDistorted(false)
     {}
 
+    /**
+     *   Id of the camera that observese the point
+     **/
     FixtureCamera      *camera;
+
+    /**
+     *   Id of the camera fixture that observese the point
+     **/
     CameraFixture      *cameraFixture;
+
+    /**
+     *   Point that is observed
+     **/
     SceneFeaturePoint  *featurePoint;
     Vector2dd           observation;
     Vector2dd           accuracy;
-    Vector3dd           observDir;                  /* Ray to point */
-    bool                onDistorted;                /* true when observation belongs to source-distorted image, def: we assume working with points on undist images */
+    Vector3dd           observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
+    bool                onDistorted;                /**< true when observation belongs to source-distorted image, def: we assume working with points on undistorted images */
 
   //MetaContainer       meta;                       /* not used */
 
@@ -102,45 +110,7 @@ public:
     }
 };
 
-template<typename U, typename V>
-class WildcardablePointerPair
-{
-public:
-#if !defined(WIN32) || (_MSC_VER >= 1900) // Sometime in future (when we switch to VS2015 due to https://msdn.microsoft.com/library/hh567368.apx ) we will get constexpr on windows
-    static constexpr U* UWILDCARD = nullptr;
-    static constexpr V* VWILDCARD = nullptr;
-#else
-    static U* const UWILDCARD;
-    static V* const VWILDCARD;
-#endif
-    typedef U* UTYPE;
-    typedef V* VTYPE;
 
-    WildcardablePointerPair(U* u = UWILDCARD, V* v = VWILDCARD) : u(u), v(v)
-    {
-    }
-
-    bool isWildcard() const
-    {
-        return u == UWILDCARD || v == VWILDCARD;
-    }
-
-    // Yes, this is NOT transitive (and you should use wildcarded wpps only for indexing not for insertion)
-    bool operator== (const WildcardablePointerPair<U, V> &wpp) const
-    {
-        return (u == UWILDCARD || wpp.u == UWILDCARD || u == wpp.u) &&
-               (v == VWILDCARD || wpp.v == VWILDCARD || v == wpp.v);
-    }
-
-    // This operator IS transitive
-    bool operator< (const WildcardablePointerPair<U, V> &wpp) const
-    {
-        return u == wpp.u ? v < wpp.v : u < wpp.u;
-    }
-
-    U* u;
-    V* v;
-};
 typedef WildcardablePointerPair<CameraFixture, FixtureCamera> WPP;
 
 
@@ -200,7 +170,7 @@ public:
         this->type = type;
     }
 
-    Vector3dd getDrawPosition(bool preferReprojected = false, bool forceKnown = false);
+    Vector3dd getDrawPosition(bool preferReprojected = false, bool forceKnown = false) const;
 
     /**
      * This method triangulates a point based on its observations
@@ -319,6 +289,28 @@ public:
                 observations__[WPP(observ.cameraFixture, observ.camera)] = observ;
             }
         }
+    }
+
+};
+
+
+class FixtureSceneGeometry : public FixtureScenePart, public FlatPolygon
+{
+public:
+    FixtureSceneGeometry(FixtureScene * owner = NULL) :
+        FixtureScenePart(owner)
+    {}
+
+    /** Related points container */
+    typedef std::vector<SceneFeaturePoint *> RelatedPointsContainer;
+
+    RelatedPointsContainer relatedPoints;
+
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        FlatPolygon::accept(visitor);
     }
 
 };

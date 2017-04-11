@@ -114,6 +114,15 @@ class PointListEditImageWidgetUnited : public AdvancedImageWidget
    Q_OBJECT
 
 public:
+    enum PresentationStyle {
+        STYLE_NO_DELEGATE,
+        STYLE_NO_DELEGATE_SMALL,
+        STYLE_SELECTED,
+        STYLE_ONLY_DELEGATE,
+        STYLE_ALL
+    };
+
+
     enum PaintToolClass
     {
         MOVE_POINT_TOOL = TOOL_CLASS_LAST,

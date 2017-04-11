@@ -147,7 +147,7 @@ double PinholeCameraIntrinsics::getHFov() const
 
 /**
  * Returns a ray in a world coordinate system that originates at the camera position and goes through
- * given pixel
+ * given pixel. This method ignores distortion.
  *
  *  \param point - a point in image coorinates
  *
@@ -222,6 +222,13 @@ ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &
 
     return toReturn;
 }
+
+ConvexPolyhedron  CameraModel::getCameraViewport()
+{
+    return getViewport(Vector2dd::Zero(), intrinsics.size);
+}
+
+
 
 #ifndef Rect
 typedef std::array<corecvs::Vector2dd, 2> Rect;

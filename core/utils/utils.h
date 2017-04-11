@@ -15,6 +15,7 @@
 #include <vector>
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 #include "global.h"
 
@@ -61,6 +62,10 @@ namespace HelperUtils
 
     void            stringSplit(const string &s, char delim, vector<string> &elems);
     vector<string>  stringSplit(const string &s, char delim);
+
+    string          escapeString  (const string &s, const std::unordered_map<char, char> &symbols, const std::string &escape);
+    string          unescapeString(const string &s, const std::unordered_map<char, char> &symbols, char guard);
+
 
     string          stringCombine(vector<string> parts, char delim);
 

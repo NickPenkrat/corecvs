@@ -9,6 +9,7 @@
 #include <QPainter>
 #include <QFileDialog>
 #include <QMouseEvent>
+#include <QToolTip>
 
 #include "global.h"
 
@@ -320,6 +321,8 @@ Vector2dd AdvancedImageWidget::getVisibleImageCenter()
 
 void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWidget)
 {
+
+
     if (mImage == NULL)
         return;
 
@@ -726,6 +729,57 @@ void AdvancedImageWidget::changeCenterPoint(QPoint point)
     forceUpdate();
 }
 
+void AdvancedImageWidget::showEvent(QShowEvent *event)
+{
+    ViAreaWidget::showEvent(event);
+
+    qDebug("AdvancedImageWidget::showEvent():called");
+    QTimer::singleShot(2000, this, SLOT(showScheduledHint()));
+}
+
+void AdvancedImageWidget::hideEvent(QHideEvent *event)
+{
+    ViAreaWidget::hideEvent(event);
+
+    qDebug("AdvancedImageWidget::hideEvent():called");
+
+}
+
+void AdvancedImageWidget::showScheduledHint()
+{
+    QList<int> sizes = mUi->splitter->sizes();
+    bool showHint = (!sizes.isEmpty() && sizes[0] == 0);
+
+    if (isVisible() && showHint)  {
+        QLabel *label = new QLabel(this);
+        label->setText("Drag handle for more");
+        Qt::WindowFlags flags = label->windowFlags();
+        flags &= ~Qt::WindowTitleHint;
+        label->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+        label->setWindowModality(Qt::NonModal);
+        qDebug() << printWindowFlags(label->windowFlags());
+
+        label->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+
+        QPalette palette = label->palette();
+        palette.setColor(label->backgroundRole(), Qt::black);
+        palette.setColor(label->foregroundRole(), Qt::white);
+        label->setPalette(palette);
+
+        QPoint position = mUi->splitter->mapToGlobal((mUi->splitter->geometry().topLeft() + mUi->splitter->geometry().topRight())/ 2);
+        //QPoint position = mapToGlobal(QPoint(0,0));
+        label->setGeometry(position.x(), position.y(), 200,40);
+        label->show();
+        qDebug() << "childRepaint:" << position;
+        qDebug() << geometry();
+
+        connect(this, SIGNAL(destroyed(QObject*)), label, SLOT(deleteLater()));
+
+        QTimer::singleShot(5000, label, SLOT(deleteLater()));
+    }
+
+}
+
 bool AdvancedImageWidget::isRotationLandscape()
 {
     int rotation = mUi->rotationComboBox->currentIndex();
@@ -734,7 +788,7 @@ bool AdvancedImageWidget::isRotationLandscape()
 
 
 void AdvancedImageWidget::zoomIn()
-{
+{    
     mUi->expSpinBox->stepUp();
 }
 

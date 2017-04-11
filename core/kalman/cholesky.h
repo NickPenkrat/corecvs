@@ -24,6 +24,7 @@ class Cholesky
 public:
 
     static void udutDecompose(Matrix *A, Matrix **Uresult, DiagonalMatrix **Dresult);
+    static bool uutDecompose (Matrix *A, Matrix **Uresult );
 
     static void udutDecompose(Matrix *A, UpperUnitaryMatrix **Uresult, DiagonalMatrix **Dresult);
 

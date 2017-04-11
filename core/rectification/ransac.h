@@ -23,8 +23,15 @@ using std::find;
  *
  *
  **/
+class RansacParameters {
+public:
+    int iterationsNumber;
+    double inliersPercent;
+    double inlierThreshold;
+};
+
 template<typename SampleType, typename ModelType>
-class Ransac {
+class Ransac : public RansacParameters {
 public:
     vector<SampleType *> *data;
     int dataLen;
@@ -32,16 +39,12 @@ public:
     vector<SampleType *> samples;
     int sampleNumber;
 
-    int iterationsNumber;
-    double inliersPercent;
-    double inlierThreshold;
-
-
     int iteration;
     vector<SampleType *> bestSamples;
     ModelType bestModel;
     int bestInliers;
 
+    bool trace = false;
 
     Ransac(int _sampleNumber ) :
         sampleNumber(_sampleNumber)
@@ -85,6 +88,8 @@ public:
                     inliers++;
             }
 
+            if (trace) SYNC_PRINT(("iteration %d : %d inliers \n", iteration, inliers));
+
             if (inliers > bestInliers)
             {
                 bestSamples = samples;
@@ -95,6 +100,10 @@ public:
             if (bestInliers >  sampleNumber * inliersPercent ||
                 iteration >= iterationsNumber )
             {
+                if (trace) {
+
+                }
+
                 return bestModel;
             }
             iteration++;

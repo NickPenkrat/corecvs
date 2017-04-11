@@ -42,7 +42,11 @@ with_libpng {
     contains(DEFINES, WITH_LIBPNG) {
         INCLUDEPATH += $$LIBPNG_WRAPPER_DIR
     }
+
 }
+
+
+
 
 OTHER_FILES +=
 

@@ -155,8 +155,8 @@ public:
     template<typename ConvexType>
     bool clip(const ConvexType &convex, double &t1, double &t2) const
     {
-        t1 = -numeric_limits<double>::max();
-        t2 =  numeric_limits<double>::max();
+        t1 = -numeric_limits<double>::infinity();
+        t2 =  numeric_limits<double>::infinity();
 
         for (unsigned i = 0; i < convex.size();  i++) {
             VectorType r = convex.getPoint(i);
@@ -330,6 +330,21 @@ public:
     static Vector3dd bestFit(Ray3d * /*rays*/, unsigned /*number*/)
     {
         return Vector3dd(0.0);
+    }
+
+    /**
+     *  This is a getPoint variant that respects infinitely distant points
+     **/
+    FixedVector<double, 4> getProjectivePoint(double t)
+    {
+        if (std::isinf(t)) {
+            if (t > 0) {
+                return FixedVector<double, 4>(a, 0.0);
+            } else {
+                return FixedVector<double, 4>(-a, 0.0);
+            }
+        }
+        return FixedVector<double, 4>(getPoint(t), 1.0);
     }
 
 };
