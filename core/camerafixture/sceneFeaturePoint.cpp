@@ -156,7 +156,8 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uin
     }
 #endif
 
-    if (!ok)
+    // TODO: in fail case covariance couldn't be estimated, thus we keep "accuracy" field as it is.
+    if (ok)
         accuracy = mct.getCovarianceInvEstimation(res); 
 
 	if (numProjections != nullptr)
