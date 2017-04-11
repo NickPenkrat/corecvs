@@ -33,4 +33,4 @@ unix {
 git_info = "GIT_VERSION=\"$$GIT_INFO_commit $$GIT_INFO_branch ($$GIT_INFO_untracked / $$GIT_INFO_uncommited / $$GIT_INFO_unadded) [$$GIT_INFO_allSubs]\""
 
 DEFINES += $$git_info
-message($$git_info)
+!build_pass: message($$git_info)

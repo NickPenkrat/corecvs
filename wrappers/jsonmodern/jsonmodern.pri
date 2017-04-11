@@ -1,11 +1,9 @@
 isEmpty(JSONMODERN_WRAPPER_DIR) {
-    !build_pass: message(Incorrect usage of jsonmodern.pri with empty JSONMODERN_WRAPPER_DIR. Json for Modern C++ is switched off!)
+    !build_pass: message(Json for Modern C++ is switched off! Empty JSONMODERN_WRAPPER_DIR in jsonmodern.pri)
 } else {
     !exists($$JSONMODERN_WRAPPER_DIR/sources/src/json.hpp) {
-        !build_pass: message(Json for Modern C++ is switched off! Not cloned.)
+        !build_pass: message(Json for Modern C++ is switched off! Not cloned)
     } else {
-        !build_pass: message(Json for Modern C++ found!)
-
         include(jsonmodernLibs.pri)
     }
 }

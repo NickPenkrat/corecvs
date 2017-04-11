@@ -226,7 +226,6 @@ with_synccam {
 }
 
 with_rapidjson {
-    message(We have rapidjson)
     RAPIDJSON_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/rapidjson
     include($$RAPIDJSON_WRAPPER_DIR/rapidjson.pri)
 
@@ -237,7 +236,6 @@ with_rapidjson {
 
 
 with_jsonmodern {
-    message(We have Json for Modern C++ )
     JSONMODERN_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/jsonmodern
     include($$JSONMODERN_WRAPPER_DIR/jsonmodern.pri)
 
