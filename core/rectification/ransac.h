@@ -82,7 +82,7 @@ public:
             ModelType model = ModelType(samples);
 
             int inliers = 0;
-            for (int i = 0; i < sampleNumber; i++)
+            for (int i = 0; i < data->size(); i++)
             {
                 if (model.fits(*(data->at(i)), inlierThreshold))
                     inliers++;
@@ -97,10 +97,12 @@ public:
                 bestModel = model;
             }
 
-            if (bestInliers >  sampleNumber * inliersPercent ||
+            if (bestInliers >  data->size() * inliersPercent ||
                 iteration >= iterationsNumber )
             {
                 if (trace) {
+                    std::cout << "Fininshing:" << std::endl;
+                    std::cout << "BestInliers:" << bestInliers << std::endl;
 
                 }
 

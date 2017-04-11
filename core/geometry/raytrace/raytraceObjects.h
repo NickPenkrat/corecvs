@@ -152,7 +152,7 @@ public:
     {
         double t;
         double u, v;
-        if (!intersectWithP(intersection.ray, t, u, v))
+        if (!intersectWithOrtTriangle(intersection.ray, t, u, v))
             return false;
 
         if (t > 0.000001) {

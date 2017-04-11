@@ -6,6 +6,9 @@
 #include "cameraFixture.h"
 #include "sceneFeaturePoint.h"
 
+/* In future Scene would like to control memory management for child objects */
+//#define SCENE_OWN_ALLOCATOR_DRAFT
+
 namespace corecvs {
 
 class CameraFixture;
@@ -75,7 +78,9 @@ public:
     StatusTracker *               processState = nullptr;
 
     /* This is for future, when all the heap/memory will be completed */
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
     vector<FixtureScenePart *>    mOwnedObjects;
+#endif
 
     /**
      *  Creates and fills the observations with points. It optionally simulates camera by rounding the projection to nearest pixel
@@ -188,7 +193,7 @@ protected:
         v.erase(std::remove(v.begin(), v.end(), t), v.end());
     }
 
-
+    /* Methods that actually create objects */
     virtual CameraPrototype      *fabricateCameraPrototype();
     virtual FixtureCamera        *fabricateCamera();
     virtual CameraFixture        *fabricateCameraFixture();
@@ -205,6 +210,8 @@ public:
     virtual CameraFixture        *createCameraFixture();
     virtual SceneFeaturePoint    *createFeaturePoint();
     virtual FixtureSceneGeometry *createSceneGeometry();
+
+    virtual void destroyObject    (FixtureScenePart *condemned);
 
     /* These methods completely purge objects from scene */
     virtual void deleteCamera         (FixtureCamera *camera);

@@ -63,7 +63,7 @@ public:
     {
         Vector3dd dir    = point - p1;
 
-        Ray3d normal = Ray3d::
+//        Ray3d normal = Ray3d::
 
     }
 
@@ -195,7 +195,7 @@ public:
 
         PlaneFrame frame = toPlaneFrame();
         double u, v;
-        return frame.intersectWithP(ray, resT, u, v);
+        return frame.intersectWithOrtTriangle(ray, resT, u, v);
     }
 
     bool intersectWith(Ray3d &ray, Vector3dd &point)

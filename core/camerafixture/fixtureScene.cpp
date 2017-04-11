@@ -147,7 +147,9 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
 CameraPrototype *FixtureScene::createCameraPrototype()
 {
     CameraPrototype *cameraPrototype = fabricateCameraPrototype();
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
     mOwnedObjects.push_back(cameraPrototype);
+#endif
     mCameraPrototypes.push_back(cameraPrototype);
     return cameraPrototype;
 }
@@ -155,7 +157,9 @@ CameraPrototype *FixtureScene::createCameraPrototype()
 FixtureCamera *FixtureScene::createCamera()
 {
     FixtureCamera *camera = fabricateCamera();
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
     mOwnedObjects.push_back(camera);
+#endif
     mOrphanCameras.push_back(camera);
     return camera;
 }
@@ -163,7 +167,9 @@ FixtureCamera *FixtureScene::createCamera()
 CameraFixture *FixtureScene::createCameraFixture()
 {
     CameraFixture *fixture = fabricateCameraFixture();
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
     mOwnedObjects.push_back(fixture);
+#endif
     mFixtures.push_back(fixture);
     fixture->sequenceNumber = (int)mFixtures.size() - 1;
     return fixture;
@@ -172,7 +178,9 @@ CameraFixture *FixtureScene::createCameraFixture()
 SceneFeaturePoint *FixtureScene::createFeaturePoint()
 {
     SceneFeaturePoint *point = fabricateFeaturePoint();
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
     mOwnedObjects.push_back(point);
+#endif
     mSceneFeaturePoints.push_back(point);
     return point;
 }
@@ -180,9 +188,19 @@ SceneFeaturePoint *FixtureScene::createFeaturePoint()
 FixtureSceneGeometry *FixtureScene::createSceneGeometry()
 {
     FixtureSceneGeometry *geometry = fabricateSceneGeometry();
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
     mOwnedObjects.push_back(geometry);
+#endif
     mGeomtery.push_back(geometry);
     return geometry;
+}
+
+
+void FixtureScene::destroyObject(FixtureScenePart *condemned)
+{
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
+    vectorErase(mOwnedObjects, condemned);
+#endif
 }
 
 /* This method assumes the scene is well formed */
@@ -288,6 +306,9 @@ void FixtureScene::deleteSceneGeometry(FixtureSceneGeometry *geometry)
 
 void FixtureScene::clear()
 {
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
+
+    /** Just purge all heap **/
     for (size_t i = 0; i < mOwnedObjects.size(); i++)
     {
         delete_safe(mOwnedObjects[i]);
@@ -298,6 +319,38 @@ void FixtureScene::clear()
     mFixtures.clear();
     mOrphanCameras.clear();
     mSceneFeaturePoints.clear();
+    mGeomtery.clear();
+#else
+    for (CameraPrototype *&proto: mCameraPrototypes) {
+        delete_safe(proto);
+    }
+    mCameraPrototypes.clear();
+
+    for (CameraFixture *&fixture: mFixtures) {
+        for (FixtureCamera *&camera : fixture->cameras) {
+            delete_safe(camera);
+        }
+        delete_safe(fixture);
+    }
+    mFixtures.clear();
+
+    for (FixtureCamera *&camera : mOrphanCameras) {
+        delete_safe(camera);
+    }
+    mOrphanCameras.clear();
+
+    for (SceneFeaturePoint *&point: mSceneFeaturePoints) {
+        delete_safe(point);
+    }
+    mSceneFeaturePoints.clear();
+
+    for (FixtureSceneGeometry *&geometry: mGeomtery) {
+        delete_safe(geometry);
+    }
+    mGeomtery.clear();
+
+#endif
+
 }
 
 void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
@@ -649,7 +702,9 @@ int FixtureScene::getObeservationNumber(FixtureCamera *cam)
 void FixtureScene::dumpInfo(ostream &out, bool brief)
 {
     out << "FixtureScene::dumpInfo():" << endl;
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
+#endif
 
     out << "Camera Prototypes: " << mCameraPrototypes.size() << endl;
     if (!brief)

@@ -321,13 +321,16 @@ Vector2dd AdvancedImageWidget::getVisibleImageCenter()
 
 void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWidget)
 {
-
-
     if (mImage == NULL)
         return;
 
     QPainter p(childWidget);
+    repaintImage(p);
+    repaintTools(p);
+}
 
+void AdvancedImageWidget::repaintImage(QPainter &p)
+{
     if (mResizeCache != NULL)
     {
         p.drawImage(mOutputRect.topLeft(), *mResizeCache);
@@ -337,8 +340,11 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
         drawResized(p);
     }
 
-     p.drawRect(mOutputRect.adjusted(-1,-1, 1, 1));
+    p.drawRect(mOutputRect.adjusted(-1,-1, 1, 1));
+}
 
+void AdvancedImageWidget::repaintTools(QPainter &p)
+{
     if (mIsMouseLeftPressed && (mCurrentToolClass == ZOOM_SELECT_TOOL))
     {
         p.setPen(Qt::DashLine);
@@ -363,7 +369,7 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
         p.drawLine(QLine(mSelectionStart, mSelectionEnd));
       //p.drawText(mSelectionEnd, QString::number(mDistance));
     }
-} // childRepaint
+}
 
 void AdvancedImageWidget::freezeImage()
 {
