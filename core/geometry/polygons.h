@@ -58,17 +58,39 @@ public:
         return getPoint(txy.x(), txy.y());
     }
 
-    bool intersectWithP(Ray3d &ray, double &resT, double &u, double &v)
+
+    Vector2dd projectTo(const Vector3dd &point)
+    {
+        Vector3dd dir    = point - p1;
+
+        Ray3d normal = Ray3d::
+
+    }
+
+    /**
+       This method intersects with triangle created on two orts of PlaneFrame
+       additionally it searches for texture coordinates.
+
+       This basically solves
+          ray.p + t * ray.a = p + u * e1 + v * e2
+       for t,u,v.
+
+       This method tries to quickly exit if there is no intersection
+     **/
+    bool intersectWithOrtTriangle(Ray3d &ray, double &resT, double &u, double &v)
     {
         double EPSILON = 0.00001;
         Vector3dd p =  ray.a ^ e2;
 
-        /* This is the volume of the parallepiped built on two edges and a ray origin */
+        /** This is the volume of the parallepiped built on two edges and a ray origin **/
         double vol = e1 & p;
+
+        /** If volume is zero this means e1,e2 and ray direction is coplanar so no intersection possible */
         if(vol > -EPSILON && vol < EPSILON)
             return false;
 
         double inv_vol = 1.0 / vol;
+
 
         Vector3dd T = ray.p - p1;
 
@@ -87,6 +109,33 @@ public:
 
         resT = t;
         return true;
+    }
+
+    /**
+       This method intersects with triangle created on two orts of PlaneFrame
+       additionally it searches for texture coordinates.
+
+       This basically solves
+          ray.p + t * ray.a = p + u * e1 + v * e2
+       for t,u,v.
+       <pre>
+                        (   t )        (           )
+       (ray.a e1 e2)    ( - u )     =  ( p - ray.p )
+                    3x3 ( - v ) 3x1    (           ) 3x1
+
+       </pre>
+
+    **/
+    bool intersectWithRay(Ray3d &ray, double &resT, double &u, double &v)
+    {
+        Vector3dd d = p1 - ray.p;
+        Matrix33 M = Matrix33::FromColumns(ray.a, e1, e2);
+        M.invert();
+        Vector3dd res = M * d;
+
+        resT =  res.x();
+        u    = -res.y();
+        v    = -res.z();
     }
 
     template<class VisitorType>

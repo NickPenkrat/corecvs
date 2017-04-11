@@ -181,10 +181,15 @@ void FixtureGeometryControlWidget::saveParamWidget(WidgetSaver &)
 void FixtureGeometryControlWidget::setFixtureGeometry(FixtureSceneGeometry *geometry)
 {
     mGeometry = geometry;
-    ui->infoLabel->setText(QString("Related points :%1").arg(geometry->relatedPoints.size()));
 
+    QString result;
+
+    result += QString("Related points :%1\n").arg(geometry->relatedPoints.size());
     double sum = 0;
     double sumRepr = 0;
+
+    int num = 0;
+    int numRepr = 0;
 
     Plane3d plane = geometry->frame.toPlane();
 
@@ -194,7 +199,22 @@ void FixtureGeometryControlWidget::setFixtureGeometry(FixtureSceneGeometry *geom
         Vector3dd position = point->position;
         Vector3dd repr     = point->reprojectedPosition;
 
-        sum     += plane.distanceTo(position);
-        sumRepr += plane.distanceTo(repr);
+        if (point->hasKnownPosition) {
+            sum     += plane.distanceTo(position);
+            num++;
+        }
+
+        if (point->hasKnownReprojectedPosition)
+        {
+            sumRepr += plane.distanceTo(repr);
+            numRepr++;
+        }
     }
+
+    result += QString("Positions: %1 mean deviation %2\n").arg(num).arg(sum / num);
+    result += QString("Reprojected: %1 mean deviation %2\n").arg(numRepr).arg(sumRepr / numRepr);
+
+
+    ui->infoLabel->setText(result);
+
 }

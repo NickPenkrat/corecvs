@@ -75,6 +75,13 @@ public:
         p(_p)
     {}
 
+          VectorType &direction()       {return a;}
+    const VectorType &direction() const {return a;}
+
+          VectorType &origin()       {return p;}
+    const VectorType &origin() const {return p;}
+
+
     VectorType getPoint(double t) const
     {
         return p + a * t;
@@ -225,21 +232,21 @@ public:
 };
 
 /**
- * Ray2d is 3D version of Ray
+ * Ray3d is 3D version of Ray
  **/
 class Ray3d : public BaseRay<Ray3d, Vector3dd>
 {
 public:
     Ray3d() {}
 
-    Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
-        BaseRay<Ray3d, Vector3dd>(_a, _p)
+    Ray3d(const Vector3dd &direction, const Vector3dd & origin) :
+        BaseRay<Ray3d, Vector3dd>(direction, origin)
     {}
 
     Ray3d(const BaseRay<Ray3d, Vector3dd> &base) : BaseRay<Ray3d, Vector3dd>(base)
     {}
 
-    double distanceTo(const Ray3d &other ) const
+        double distanceTo(const Ray3d &other ) const
     {
         Vector3dd denum = a ^ other.a;
         Vector3dd dp = p - other.p;
