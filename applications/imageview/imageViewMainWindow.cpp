@@ -108,9 +108,9 @@ void ImageViewMainWindow::loadImageAction()
 {
     QString name = QFileDialog::getOpenFileName(
                 this,
-                "Choose an file name",
+                "Choose filename with Bayer or demosaic image",
                 ".",
-                "Images (*.pgm)"
+                "Images (*.pgm *.ppm)"
             );
     loadImage(name);
 }
@@ -133,6 +133,13 @@ void ImageViewMainWindow::loadImage(QString name)
         debayer();
     }
     ui->widget->setInfoString("---");
+
+    int shift = 8 - meta["bits"][0];                // left shift:  8 => 0,  10 => -2,  12 => -4
+
+    BitSelectorParameters bitSelector;
+    ui->bitSelector->getParameters(bitSelector);
+    bitSelector.setShift(shift);
+    ui->bitSelector->setParameters(bitSelector);
 }
 
 void ImageViewMainWindow::debayer()
