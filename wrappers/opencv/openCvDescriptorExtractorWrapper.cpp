@@ -23,7 +23,7 @@ struct SmartPtrExtractorHolder
         SIFT, SURF, BRISK, ORB, AKAZE
     } tag;
 
-#if 0
+#if 1
     union {
 #else
     struct {

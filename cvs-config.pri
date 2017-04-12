@@ -36,7 +36,7 @@ CONFIG +=        \
    with_mkl      \      #  clarify what
    with_fftw     \      #  to use later!
    with_opencv   \
-#   with_fastbuild \    # disable optimization for some src on linux
+   with_fastbuild \    # disable optimization for some src on linux
 #   with_unorthodox \   # allow use an experimental filesystem
    with_cusparse \     # enable CUDA SDK usage for sparse matrix operations
 

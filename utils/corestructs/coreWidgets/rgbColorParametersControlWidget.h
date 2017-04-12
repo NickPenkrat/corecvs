@@ -21,7 +21,7 @@ namespace Ui {
 class RgbColorParametersControlWidget : public ParametersControlWidgetBase
 {
     Q_OBJECT
-    QColorDialog mColorPicker;
+    //QColorDialog mColorPicker;
     QColor color;
 
 public:
@@ -75,6 +75,7 @@ public slots:
 
     void pickerClicked(QMouseEvent * /*event*/)
     {
+#if 0
         mColorPicker.show();
 
         bool signalState = mColorPicker.blockSignals(true);
@@ -84,9 +85,9 @@ public slots:
                 mUi->bSpinBox->value()
         ));
         mColorPicker.blockSignals(signalState);
-
         connect(&mColorPicker, SIGNAL(currentColorChanged (QColor)),
                 this, SLOT(colorSelected(QColor)), Qt::UniqueConnection);
+#endif
     }
 
     void colorSelected(const QColor &color)

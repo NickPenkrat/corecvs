@@ -231,7 +231,7 @@ class SaveableWidget
 public:
     virtual void loadFromQSettings(const QString &fileName, const QString &_root)
     {
-//        qDebug("SaveableWidget::loadFromQSettings(\"%s\", \"%s\"): called",fileName.toLatin1().constData(), _root.toLatin1().constData());
+        qDebug("SaveableWidget::loadFromQSettings(\"%s\", \"%s\"): called",fileName.toLatin1().constData(), _root.toLatin1().constData());
 
         SettingsGetter visitor(fileName, _root);
         WidgetLoader loader(&visitor);
