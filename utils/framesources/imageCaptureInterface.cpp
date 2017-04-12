@@ -29,6 +29,10 @@
 # include "directShowCaptureDecouple.h"
 #endif
 
+#ifdef WITH_TOPVI
+# include "topViCapture.h"
+#endif
+
 #ifdef WITH_UEYE
 # include "uEyeCapture.h"
 #endif
@@ -97,6 +101,15 @@ ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bo
     {
         string tmp = input.substr(v4l2d.size());
         return new ImageCaptureInterfaceWrapper<V4L2CaptureDecoupleInterface>(tmp);
+    }
+#endif
+
+#ifdef WITH_TOPVI
+    string topvi("topvi:");
+    if (input.substr(0, topvi.size()).compare(topvi) == 0)
+    {
+        string tmp = input.substr(topvi.size());
+        return new ImageCaptureInterfaceWrapper<TopViCaptureInterface>(tmp);
     }
 #endif
 
@@ -187,6 +200,15 @@ ImageCaptureInterfaceQt *ImageCaptureInterfaceQtFactory::fabric(string input, in
     }
 #endif
 
+#ifdef WITH_TOPVI
+    string topvi("topvi:");
+    if (input.substr(0, topvi.size()).compare(topvi) == 0)
+    {
+        string tmp = input.substr(topvi.size());
+        return new ImageCaptureInterfaceWrapper<TopViCaptureInterface>(tmp);
+    }
+#endif
+
 #ifdef WITH_UEYE
     string ueye("ueye:");
     if (input.substr(0, ueye.size()).compare(ueye) == 0)
@@ -210,7 +232,7 @@ ImageCaptureInterfaceQt *ImageCaptureInterfaceQtFactory::fabric(string input, in
 
 void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 {
-//    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewFrame()\n"));
+    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewFrame()\n"));
     if (imageInterfaceReceiver != NULL)
     {
         imageInterfaceReceiver->newFrameReadyCallback(frameData);
@@ -245,18 +267,27 @@ void ImageCaptureInterface::getAllCameras(vector<string> &cameras)
 # endif
 #endif
 
-#ifdef Q_OS_LINUX
-    vector<string> v4lcams;
-    V4L2CaptureInterface::getAllCameras(v4lcams);
-    for (string cam: v4lcams) {
-        cameras.push_back(std::string("v4l2:" + cam));
-    }
-#endif
 #ifdef WITH_UEYE
     vector<string> ueyecams;
     UEyeCaptureInterface::getAllCameras(ueyecams);
     for (string cam: ueyecams) {
         cameras.push_back(std::string("ueye:" + cam));
+    }
+#endif
+
+#ifdef WITH_TOPVI
+    vector<string> topvicams;
+    TopViCaptureInterface::getAllCameras(topvicams);
+    for (string cam: topvicams) {
+        cameras.push_back(std::string("topvi:" + cam));
+    }
+#endif
+
+#ifdef Q_OS_LINUX
+    vector<string> v4lcams;
+    V4L2CaptureInterface::getAllCameras(v4lcams);
+    for (string cam: v4lcams) {
+        cameras.push_back(std::string("v4l2:" + cam));
     }
 #endif
 }

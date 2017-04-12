@@ -1,5 +1,4 @@
-#ifndef TopViCapture_H
-#define TopViCapture_H
+#pragma once
 
 #include <errno.h>
 #include <QImage>
@@ -7,9 +6,8 @@
 
 #include "global.h"
 
-#include "topViDeviceDescriptor.h"
 #include "cameraControlParameters.h"
-#include "imageCaptureInterface.h"
+#include "topViDeviceDescriptor.h"
 #include "preciseTimer.h"
 
 #include "ftpLoader.h"
@@ -55,34 +53,23 @@ public:
     //OK
     static int topViTrace(int res, const char *prefix = NULL);
 
+    void replyCallback(string reply);
+
 private:
-     string interfaceName;  /**< Stores the device name*/
+
+    string interfaceName;  /**< Stores the camera name >**/
 
     /* This is a private helper class */
-    class SpinThread : public QThread
+    class FtpSpinThread : public QThread
     {
     public:
         TopViCaptureInterface *capInterface;
-        FtpLoader ftp;
+        FtpLoader ftpLoader;
 
-        SpinThread(TopViCaptureInterface *_capInterface) :
+        FtpSpinThread(TopViCaptureInterface *_capInterface) :
             capInterface(_capInterface)
         {
-            this->setObjectName("TopViCaptureInterface:SpinThread");
-        }
-
-        void run (void);
-    };
-
-    class CmdThread : public QThread
-    {
-    public:
-        TopViCaptureInterface *capInterface;
-
-        CmdThread(TopViCaptureInterface *_capInterface) :
-            capInterface(_capInterface)
-        {
-            this->setObjectName("TopViCaptureInterface:CmdThread");
+            this->setObjectName("TopViCaptureInterface:FtpSpinThread");
         }
 
         void run (void);
@@ -97,26 +84,18 @@ private:
 
     SyncType sync;
 
+    static TopViDeviceDescriptor device;
+
     //void decodeData  (TopViCameraDescriptor *camera, BufferDescriptorType *buffer, G12Buffer **output);
     //void decodeData24(TopViCameraDescriptor *camera, BufferDescriptorType *buffer, RGB24Buffer **output);
 
-    TopViDeviceDescriptor device;
-
-    SpinThread spin;         /**< Spin thread that blocks waiting for the frames */
+    FtpSpinThread ftpSpin;         /**< ftp spin thread that blocks waiting for the frames */
     QMutex protectFrame;     /**< This mutex protects both buffers from concurrent reading/writind
                               *  If somebody is reading of modifying the buffer it should look the mutex
                               **/
-    QMutex spinRunning;
-    volatile bool shouldStopSpinThread;
-    volatile bool shouldActivateSpinThread;
-
-    CmdThread cmd;            /**< Spin thread that blocks waiting for the cmd queues */
-    QMutex protectSocket;  /**< This mutex protects queue from concurrent reading/writind
-                               *  If somebody is reading of modifying the buffer it should look the mutex
-                               **/
-    QMutex cmdRunning;
-    volatile bool shouldStopCmdThread;
+    QMutex ftpSpinRunning;
+    volatile bool shouldStopFtpSpinThread;
+    volatile bool shouldActivateFtpSpinThread;
 
 };
 
-#endif // TopViCapture_H

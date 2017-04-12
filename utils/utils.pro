@@ -24,6 +24,8 @@ QT += gui
 CONFIG += with_filters
 CONFIG += with_widgets
 
+CONFIG += with_topvi
+
 #
 # In global scope we have non UI classes
 #
@@ -111,7 +113,12 @@ HEADERS += \
     corestructs/reflectionWidget.h \
     3d/shadedSceneControlWidget.h \
     scripting/coreToScript.h \
-    3d/billboardCaption3DScene.h
+    3d/billboardCaption3DScene.h \
+    framesources/topvi/ftpLoader.h \
+    framesources/topvi/topViCameraDescriptor.h \
+    framesources/topvi/topViCapture.h \
+    framesources/topvi/topViDeviceDescriptor.h \
+    framesources/topvi/topViGrillInterface.h
 
 SOURCES += \
     frames.cpp \
@@ -122,6 +129,11 @@ SOURCES += \
     framesources/decoders/mjpegDecoderLazy.cpp \
     framesources/decoders/decoupleYUYV.cpp \
     framesources/decoders/aLowCodec.cpp \
+    \
+    framesources/topvi/ftpLoader.cpp \
+    framesources/topvi/topViCameraDescriptor.cpp \
+    framesources/topvi/topViCapture.cpp \
+    framesources/topvi/topViDeviceDescriptor.cpp \
     \
     framesources/file/imageFileCaptureInterface.cpp \
     framesources/file/fileCapture.cpp \
@@ -193,8 +205,8 @@ SOURCES += \
     3d/sceneShaded.cpp \
     corestructs/reflectionWidget.cpp \
     3d/shadedSceneControlWidget.cpp \
-    3d/billboardCaption3DScene.cpp
-
+    3d/billboardCaption3DScene.cpp \
+    framesources/topvi/topViGrillInterface.cpp
 
 FORMS += \
     widgets/vectorWidget.ui \

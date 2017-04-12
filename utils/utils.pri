@@ -35,6 +35,7 @@ UTILS_INCLUDEPATH = \
     $$UTILSDIR/framesources/syncCam \
     $$UTILSDIR/framesources/file \
     $$UTILSDIR/framesources/avcodec \
+    $$UTILSDIR/framesources/topvi \
 #    $$UTILSDIR/framesources/opencv \
     $$UTILSDIR/processor \
     $$UTILSDIR/rectifier \
@@ -147,6 +148,19 @@ with_ueye {
     } else {
         !build_pass:message(Unable to find uEye at "/usr/lib/libueye_api.so")
     }
+}
+
+with_topvi {
+    DEFINES     += WITH_TOPVI
+    win32 {
+        CURL_DIR     = c:\curl
+        INCLUDEPATH += $$CURL_DIR\include
+        LIBS        += -L$$CURL_DIR\build\lib\Release -llibcurl -llibcurl_imp
+
+    } else {
+        LIBS        += -lcurl
+    }
+    !build_pass: message(Switching on TOPVI support)
 }
 
 with_opencv {                                       # all this stuff was extracted from opencv.pri to speedup including

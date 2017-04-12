@@ -1,5 +1,4 @@
-#ifndef TOPVICAMERADESCRIPTOR_H
-#define TOPVICAMERADESCRIPTOR_H
+#pragma once
 
 #include <stdint.h>
 #include <stdio.h>
@@ -11,6 +10,9 @@
 #include "global.h"
 
 #include "topViCameraDescriptor.h"
+#include "imageCaptureInterface.h"
+
+using namespace std;
 
 class BufferDescriptorType
 {
@@ -61,26 +63,62 @@ class TopViCameraDescriptor
 {
 
 public:
-    bool inited;
-    int  camId;
-    int  toSkip;
+    bool inited = false;
+    int  camId = -1;       //actual
+    int  toSkip = 0;
+
+    int  previewMode; //actual
 
     TopViCameraDescriptor() :
         inited(false),
         camId(-1),
+        previewMode(false),
         toSkip(0)
-    {}
+    {
+    }
 
     static const unsigned   IMAGE_BUFFER_COUNT = 3;
     BufferDescriptorType    images[IMAGE_BUFFER_COUNT];
+
+    //  <sk> structure
+    enum SK_STATE {
+        SK_UNKNOWN = -1,
+        SK_OK,
+        SK_ERROR
+    };
+
+    SK_STATE statusCode = SK_UNKNOWN;
+
+    // <pk> structure
+    enum ACTIVE_MODE {
+        PK_UNKNOWN = -1,
+        PK_SLEEP,
+        PK_LIVE,
+        PK_GRAB
+    };
+
+    enum BINNING_MODE {
+        PK_1X1,
+        PK_2X2,
+        PK_4X4
+    };
+
+    struct TopViCameraParam {
+        ACTIVE_MODE activeMode = PK_UNKNOWN;
+        ImageCaptureInterface::CameraFormat format;
+        BINNING_MODE binningMode = PK_1X1;
+        int exposure = 100000; //us
+    } currentParams;
 
     int init(int cameraId);
     int grabFrame();
 
     int initBuffer();
+
+    string getSysId();
+
+    int replyCallback(string reply);
+
     uint16_t* getFrame();
-    BufferDescriptorType* getDescriptorByAddress (char* pbuf);
-
+    BufferDescriptorType* getDescriptorByAddress(char* pbuf);
 };
-
-#endif // TOPVICAMERADESCRIPTOR_H
