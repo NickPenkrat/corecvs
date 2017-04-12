@@ -60,11 +60,11 @@ public:
 
 
     Vector2dd projectTo(const Vector3dd &point)
-    {
-        Vector3dd dir    = point - p1;
-
-//        Ray3d normal = Ray3d::
-
+    {      
+        Ray3d normal = Ray3d(getNormal(), point);
+        double t, u, v;
+        intersectWithRay(normal, t, u, v);
+        return Vector2dd(u, v);
     }
 
     /**
@@ -130,12 +130,16 @@ public:
     {
         Vector3dd d = p1 - ray.p;
         Matrix33 M = Matrix33::FromColumns(ray.a, e1, e2);
+        if (M.det() == 0.0)
+            return false;
         M.invert();
         Vector3dd res = M * d;
 
         resT =  res.x();
         u    = -res.y();
         v    = -res.z();
+
+        return true;
     }
 
     template<class VisitorType>
@@ -248,6 +252,11 @@ public:
            out << (i == 0 ? "" : ", ") << pointPath.at(i) << std::endl;
         out << "]";
         return out;
+    }
+
+    bool hasVertex(const Vector2dd &point)
+    {
+        return std::find(begin(), end(), point) != end();
     }
 
     /* This function checks if the poligon is inside the buffer. It assumes that the poligon coorinate can be rounded to upper value  */

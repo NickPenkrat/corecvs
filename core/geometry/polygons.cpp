@@ -556,14 +556,17 @@ Vector2dd PointPath::center()
 
 Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
 {
+
     Polygon toReturn;
     if (list.empty())
     {
+        // SYNC_PRINT(("ConvexHull::GiftWrap(): Input list in empty"));
         return toReturn;
     }
 
     if (list.size() == 1)
     {
+        // SYNC_PRINT(("ConvexHull::GiftWrap(): Input list has only one point"));
         toReturn.push_back(list[0]);
         return toReturn;
     }
@@ -579,14 +582,17 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
             minYId = i;
         }
     }
+
+    // SYNC_PRINT(("ConvexHull::GiftWrap(): starting with point %i (%lf %lf)\n", minYId, list[minYId].x(), list[minYId].y() ));
     toReturn.push_back(list[minYId]);
     Vector2dd direction = Vector2dd::OrtX();
     Vector2dd current = list[minYId];
+
     /* Wrap */
     do {
         Vector2dd next;
         Vector2dd nextDir;
-        double vmin = std::numeric_limits<double>::max();
+        double vmax = -std::numeric_limits<double>::max();
 
         for (const Vector2dd &point : list)
         {
@@ -594,9 +600,10 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
                 continue;
 
             Vector2dd dir1 = (point - current).normalised();
-            double v = direction.azimuthTo(dir1);
-            if (v < vmin) {
-                vmin = v;
+            double v = direction & dir1;
+            // SYNC_PRINT(("Checking asimuth %lf\n", v));
+            if (v > vmax) {
+                vmax = v;
                 next = point;
                 nextDir = dir1;
             }
@@ -608,11 +615,13 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
             break;
         }
 
+        // SYNC_PRINT(("ConvexHull::GiftWrap(): next point (%lf %lf) with azimuth %lf\n", next.x(), next.y(), vmax));
+
         toReturn.push_back(next);
         current = next;
         direction = nextDir;
 
-    } while (true);
+    } while (/*toReturn.size() < 10*/true);
 
 
     return toReturn;

@@ -352,7 +352,7 @@ void CloudViewDialog::resetCameraSlot()
 
 void CloudViewDialog::resetCamera()
 {
-    SYNC_PRINT(("CloudViewDialog::resetCamera():called\n"));
+    // SYNC_PRINT(("CloudViewDialog::resetCamera():called\n"));
 
     float farPlane = mUi.frustumFarBox->value();
     int width  = mUi.widget->width();
@@ -368,7 +368,7 @@ void CloudViewDialog::resetCamera()
         case ORTHO_FRONT:
         case ORTHO_LEFT:
 
-            SYNC_PRINT(("CloudViewDialog::resetCamera():setting zoom %lf\n", mCameraZoom));
+            // SYNC_PRINT(("CloudViewDialog::resetCamera():setting zoom %lf\n", mCameraZoom));
 
             glLoadIdentity();
             // TODO: Check if it is changed correctly (e.g. it is the RH projection)

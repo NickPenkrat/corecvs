@@ -579,6 +579,8 @@ void GraphPlotDialog::drawGridFixLine(QPainter &painter)
     painter.setPen(gridPen);
     painter.drawLine(mMouseClickedValue, 0,
                      mMouseClickedValue, mUi.widget->height() - 1);
+
+    painter.drawText(mMouseClickedValue, 10, QString::number(mGraphShowPoint));
 }
 
 

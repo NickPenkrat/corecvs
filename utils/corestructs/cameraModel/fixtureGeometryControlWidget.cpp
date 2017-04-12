@@ -1,3 +1,4 @@
+
 #include "fixtureGeometryControlWidget.h"
 #include "ui_fixtureGeometryControlWidget.h"
 
@@ -9,19 +10,30 @@ FixtureGeometryControlWidget::FixtureGeometryControlWidget(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    QObject::connect(ui->originXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
-    QObject::connect(ui->originYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
-    QObject::connect(ui->originZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->originXSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->originYSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->originZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 
-    QObject::connect(ui->ort1XSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
-    QObject::connect(ui->ort1YSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
-    QObject::connect(ui->ort1ZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->ort1XSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->ort1YSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->ort1ZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 
-    QObject::connect(ui->ort2XSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
-    QObject::connect(ui->ort2YSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
-    QObject::connect(ui->ort2ZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->ort2XSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->ort2YSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    connect(ui->ort2ZSpinBox, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 
-    QObject::connect(ui->polygonWidget, SIGNAL(cellChanged(int,int)), this, SLOT(paramsChangedInUI()));
+    connect(ui->polygonWidget, SIGNAL(cellChanged(int,int)), this, SLOT(paramsChangedInUI()));
+
+    /* Things that need to be decoupled later */
+    ui->advancedWidget->setVisible(false);
+
+    connect(ui->advancedButton, SIGNAL(toggled(bool)), ui->advancedWidget, SLOT(setVisible(bool)));
+    connect(ui->relatedGraphButton  , SIGNAL(released()), this, SLOT(showRelatedGraph()));
+    connect(ui->hilightRelatedButton, SIGNAL(released()), this, SLOT(hilightRelatedGraph()));
+
+    connect(ui->binSizeSpinBox, SIGNAL(valueChanged(double)), this, SLOT(regenGraph()));
+    /* No direct call for signalBlock to work on this connection */
+    connect(this, SIGNAL(paramsChanged()), this, SLOT(updateHelperUI()));
 
 }
 
@@ -35,6 +47,22 @@ void FixtureGeometryControlWidget::paramsChangedInUI()
 {
     emit paramsChanged();
 }
+
+void FixtureGeometryControlWidget::updateHelperUI()
+{
+    FlatPolygon params;
+    getParameters(params);
+    Vector3dd normal = params.frame.getNormal().normalised();
+    ui->normalX->setText(QString::number(normal.x()));
+    ui->normalY->setText(QString::number(normal.y()));
+    ui->normalZ->setText(QString::number(normal.z()));
+}
+
+void FixtureGeometryControlWidget::showRelatedGraph()
+{
+    mGraphDialog.show();
+}
+
 
 /*
 void FixtureGeometryControlWidget::addEntry()
@@ -157,8 +185,9 @@ void FixtureGeometryControlWidget::setParameters(const FlatPolygon &input)
             ui->polygonWidget->setCellWidget(i, 2, widget);
         }
     }
+
     blockSignals(wasBlocked);
-    emit paramsChanged();
+    paramsChangedInUI();
 }
 
 void FixtureGeometryControlWidget::setParametersVirtual(void *input)
@@ -178,11 +207,22 @@ void FixtureGeometryControlWidget::saveParamWidget(WidgetSaver &)
     SYNC_PRINT(("FixtureGeometryControlWidget::saveParamWidget : Not yet implemented\n"));
 }
 
+void FixtureGeometryControlWidget::hilightRelatedGraph()
+{
+    for (size_t i = 0; i < mGeometry->relatedPoints.size(); i++)
+    {
+        SceneFeaturePoint *point = mGeometry->relatedPoints[i];
+        point->color = RGBColor::Red();
+    }
+}
+
 void FixtureGeometryControlWidget::setFixtureGeometry(FixtureSceneGeometry *geometry)
 {
     mGeometry = geometry;
 
     QString result;
+
+    ui->colorWidget->setRGBColor(geometry->color);
 
     result += QString("Related points :%1\n").arg(geometry->relatedPoints.size());
     double sum = 0;
@@ -214,7 +254,71 @@ void FixtureGeometryControlWidget::setFixtureGeometry(FixtureSceneGeometry *geom
     result += QString("Positions: %1 mean deviation %2\n").arg(num).arg(sum / num);
     result += QString("Reprojected: %1 mean deviation %2\n").arg(numRepr).arg(sumRepr / numRepr);
 
+    regenGraph();
 
     ui->infoLabel->setText(result);
 
 }
+
+RGBColor FixtureGeometryControlWidget::getColor()
+{
+    return ui->colorWidget->getColor();
+}
+
+void FixtureGeometryControlWidget::regenGraph( void)
+{
+    SYNC_PRINT(("FixtureGeometryControlWidget::regenGraph(void): called\n"));
+    if (mGeometry == NULL)
+        return;
+
+    double binSize = ui->binSizeSpinBox->value();
+    double binsP[1000];
+    double binsR[1000];
+    int H_ZERO = 500;
+
+    for (int i = 0; i < 1000; i++)
+    {
+        binsP[i] = 0.0;
+        binsR[i] = 0.0;
+    }
+
+
+    Plane3d plane = mGeometry->frame.toPlane();
+
+    for (size_t i = 0; i < mGeometry->relatedPoints.size(); i++)
+    {
+        SceneFeaturePoint *point = mGeometry->relatedPoints[i];
+        Vector3dd position = point->position;
+        Vector3dd repr     = point->reprojectedPosition;
+
+        if (point->hasKnownPosition) {
+            double dev = plane.deviationTo(position);
+            dev /= binSize;
+            dev += H_ZERO;
+            int index= fround(dev);
+            if (index >= 0 && index < 1000) {
+                binsP[index]++;
+            }
+        }
+
+        if (point->hasKnownReprojectedPosition) {
+            double dev = plane.deviationTo(repr);
+            dev /= binSize;
+            dev += H_ZERO;
+            int index= fround(dev);
+            if (index >= 0 && index < 1000) {
+                binsR[index]++;
+            }
+        }
+    }
+
+    for (size_t i = 0; i < 1000; i++)
+    {
+        mGraphDialog.addGraphPoint("Postions"   , binsP[i], true);
+        mGraphDialog.addGraphPoint("Reprojected", binsR[i], true);
+    }
+
+
+    mGraphDialog.update();
+}
+

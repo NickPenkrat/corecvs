@@ -78,10 +78,10 @@ public:
     std::string     getPointName();
 
     int             ensureDistorted(bool distorted = true);
-    Vector2dd       getDistorted(bool distorted = true) const;
+    Vector2dd       getDistorted   (bool distorted = true) const;
 
 private:
-    FixtureCamera  *getCameraById(FixtureCamera::IdType id);
+    FixtureCamera     *getCameraById(FixtureCamera::IdType id);
 
 public:
     template<class VisitorType>
@@ -233,6 +233,10 @@ public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        IdType id = getObjectId();
+        visitor.visit(id, IdType(0) , "id");
+        setObjectId(id);
+
         visitor.visit(name                       , std::string("")   , "name");
         visitor.visit(position                   , Vector3dd(0.0)    , "position");
         visitor.visit(hasKnownPosition           , false             , "hasKnownPosition");
@@ -301,6 +305,8 @@ public:
         FixtureScenePart(owner)
     {}
 
+    RGBColor color;
+
     /** Related points container */
     typedef std::vector<SceneFeaturePoint *> RelatedPointsContainer;
 
@@ -311,7 +317,32 @@ public:
     void accept(VisitorType &visitor)
     {
         FlatPolygon::accept(visitor);
+        visitor.visit(color,   RGBColor::Red(),    "color");
+
+        int relatedSize = (int)relatedPoints.size();
+        visitor.visit(relatedSize, 0, "related.size");
+        relatedPoints.resize(relatedSize);
+
+        for (int i = 0; i < relatedSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "pointId[%d]", i);
+
+            if (visitor.isLoader())
+            {
+                SceneFeaturePoint::IdType id;
+                visitor.visit(id, IdType(0) , buffer);
+                relatedPoints[i] = getPointById(id);
+            } else {
+                SceneFeaturePoint::IdType id = relatedPoints[i]->getObjectId();
+                visitor.visit(id, IdType(0) , buffer);
+            }
+        }
+
     }
+
+private:
+    SceneFeaturePoint *getPointById  (FixtureScenePart::IdType id);
 
 };
 

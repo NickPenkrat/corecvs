@@ -276,8 +276,9 @@ public:
 
 
     /* This performs full search. It should not */
-    FixtureCamera *getCameraById (FixtureScenePart::IdType id);
-    CameraFixture *getFixtureById(FixtureScenePart::IdType id);
+    FixtureCamera     *getCameraById (FixtureScenePart::IdType id);
+    CameraFixture     *getFixtureById(FixtureScenePart::IdType id);
+    SceneFeaturePoint *getPointById  (FixtureScenePart::IdType id);
 
     SceneFeaturePoint *getPointByName(const std::string &name);
 

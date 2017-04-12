@@ -7,6 +7,7 @@
 #include "fixtureScenePart.h"
 #include "parametersControlWidgetBase.h"
 
+#include "graphPlotDialog.h"
 
 namespace Ui {
 class FixtureGeometryControlWidget;
@@ -31,6 +32,8 @@ public:
 
 public slots:
     void paramsChangedInUI();
+    void updateHelperUI();
+
 
 signals:
     void valueChanged();
@@ -44,7 +47,14 @@ private:
 public:
     corecvs::FixtureSceneGeometry *mGeometry = NULL;
     void setFixtureGeometry(corecvs::FixtureSceneGeometry *geometry);
+    RGBColor getColor();
 
+    GraphPlotDialog mGraphDialog;
+
+public slots:
+    void showRelatedGraph();
+    void hilightRelatedGraph();
+    void regenGraph();
 
 };
 

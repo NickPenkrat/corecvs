@@ -208,4 +208,18 @@ Vector3dd SceneFeaturePoint::getDrawPosition(bool preferReprojected, bool forceK
     return position;
 }
 
+SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType id)
+{
+    return ownerScene->getPointById(id);
+}
+
+/*
+SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType id)
+{
+    CORE_ASSERT_TRUE_S(featurePoint);
+    CORE_ASSERT_TRUE_S(featurePoint->ownerScene);
+
+    return featurePoint->ownerScene->getCameraById(id);
+}
+*/
 } //namespace corecvs

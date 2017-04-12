@@ -14,6 +14,7 @@
 
 #include "global.h"
 #include "plane3dFit.h"
+#include "polygons.h"
 
 using namespace std;
 using namespace corecvs;
@@ -51,4 +52,16 @@ TEST(planefit, testFitModel)
 
 
     cout << "PASSED: testFitModel" << endl;
+}
+
+TEST(planefit, testPlaneFrame)
+{
+   PlaneFrame frame;
+   frame.p1 = Vector3dd::Zero();
+   frame.e1 = Vector3dd::OrtX();
+   frame.e2 = Vector3dd::OrtY();
+
+   Vector3dd v = Vector3dd(4,5,7);
+
+   ASSERT_TRUE(frame.projectTo(v).notTooFar(Vector2dd(4,5)));
 }
