@@ -516,17 +516,17 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
 
 
 /* These hooks could either return true - then implemenation update the machine state */
-bool GCodeInterpreter::gcodeHook    ( const GCodeProgram::Code &code )
+bool GCodeInterpreter::gcodeHook    ( const GCodeProgram::Code &/*code*/ )
 {
     return true;
 }
 
-bool GCodeInterpreter::straightHook (int type, const MachineState &before, const MachineState &after)
+bool GCodeInterpreter::straightHook (int /*type*/, const MachineState &/*before*/, const MachineState &/*after*/)
 {
     return true;
 }
 
-bool GCodeInterpreter::arkHook(const MachineState &before, const MachineState &after, const PlaneFrame &frame, double maxArg )
+bool GCodeInterpreter::arkHook(const MachineState &/*before*/, const MachineState &/*after*/, const PlaneFrame &/*frame*/, double /*maxArg*/ )
 {
 
     return true;

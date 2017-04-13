@@ -321,34 +321,32 @@ void FixtureScene::clear()
     mSceneFeaturePoints.clear();
     mGeomtery.clear();
 #else
-    for (CameraPrototype *&proto: mCameraPrototypes) {
-        delete_safe(proto);
-    }
-    mCameraPrototypes.clear();
 
-    for (CameraFixture *&fixture: mFixtures) {
-        for (FixtureCamera *&camera : fixture->cameras) {
-            delete_safe(camera);
-        }
-        delete_safe(fixture);
+    while (!mFixtures.empty())
+    {
+       deleteCameraFixture(mFixtures.back(), true);
+       mFixtures.pop_back();
     }
-    mFixtures.clear();
 
-    for (FixtureCamera *&camera : mOrphanCameras) {
-        delete_safe(camera);
+    while (!mOrphanCameras.empty()) {
+        deleteCamera(mOrphanCameras.back());
+        mOrphanCameras.pop_back();
     }
-    mOrphanCameras.clear();
 
-    for (SceneFeaturePoint *&point: mSceneFeaturePoints) {
-        delete_safe(point);
+    while (!mCameraPrototypes.empty()) {
+        deleteCameraPrototype(mCameraPrototypes.back());
+        mCameraPrototypes.pop_back();
     }
-    mSceneFeaturePoints.clear();
 
-    for (FixtureSceneGeometry *&geometry: mGeomtery) {
-        delete_safe(geometry);
+    while (!mSceneFeaturePoints.empty()) {
+        deleteFeaturePoint(mSceneFeaturePoints.back());
+        mSceneFeaturePoints.pop_back();
     }
-    mGeomtery.clear();
 
+    while (!mGeomtery.empty()) {
+        deleteSceneGeometry(mGeomtery.back());
+        mGeomtery.pop_back();
+    }
 #endif
 
 }
