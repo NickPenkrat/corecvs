@@ -126,7 +126,7 @@ public:
         double tangentY = p1 * (rsq + 2 * dysq) +     2 * p2 * dxdy      ;
 
         auto res = Vector2dd(
-               ((dx + radialX + tangentX) / mAspect),
+                ((dx + radialX + tangentX) / mAspect),
                 ((dy + radialY + tangentY))
                ) * mNormalizingFocal;
         if (!mMapForward)
