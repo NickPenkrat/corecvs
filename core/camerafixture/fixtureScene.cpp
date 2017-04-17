@@ -263,7 +263,7 @@ void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraPrototype)
 
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 {
-//    SYNC_PRINT(("FixtureScene::deleteCameraFixture(CameraFixture(%s), %s)", fixture == NULL ? "NULL" : fixture->name.c_str(), recursive ? "true" : "false" ));
+    SYNC_PRINT(("FixtureScene::deleteCameraFixture(CameraFixture(%s), %s)\n", fixture == NULL ? "NULL" : fixture->name.c_str(), recursive ? "true" : "false" ));
 
 //     SYNC_PRINT(("FixtureScene::deleteCameraFixture(): purging point references\n"));
 
@@ -288,7 +288,7 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
         mOrphanCameras.insert(mOrphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
     }
 
-//    SYNC_PRINT(("FixtureScene::deleteCameraFixture():actually removing from scene\n"));
+    SYNC_PRINT(("FixtureScene::deleteCameraFixture():actually removing from scene\n"));
     vectorErase(mFixtures, fixture);
     destroyObject(fixture);
 }
@@ -314,6 +314,8 @@ void FixtureScene::deleteSceneGeometry(FixtureSceneGeometry *geometry)
 
 void FixtureScene::clear()
 {
+    SYNC_PRINT(("FixtureScene::clear(): called\n"));
+
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
 
     /** Just purge all heap **/
