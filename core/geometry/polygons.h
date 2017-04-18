@@ -24,11 +24,16 @@ namespace corecvs {
 
 using std::vector;
 
+/**
+ * This class is a mapping of 2D plane (parallelogram coordinate system) in 3D
+ **/
 class PlaneFrame {
 public:
-    Vector3dd p1;
-    Vector3dd e1;
-    Vector3dd e2;
+    Vector3dd p1; /**< Point of origin */
+    Vector3dd e1; /**< X ort of the plane */
+    Vector3dd e2; /**< Y ort of the plane. It's generally not enforced X and Y to be ortogonal in 3D */
+
+    PlaneFrame() {}
 
     PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2) :
         p1(p1), e1(e1), e2(e2)
@@ -39,17 +44,53 @@ public:
         return e1 ^ e2;
     }
 
-    bool intersectWithP(Ray3d &ray, double &resT, double &u, double &v)
+    Plane3d toPlane() {
+        return Plane3d::FromPointAndVectors(p1, e1, e2);
+    }
+
+    Vector3dd getPoint(double x, double y) const
+    {
+        return p1 + x * e1 + y * e2;
+    }
+
+    Vector3dd getPoint(const Vector2dd &txy) const
+    {
+        return getPoint(txy.x(), txy.y());
+    }
+
+
+    Vector2dd projectTo(const Vector3dd &point)
+    {      
+        Ray3d normal = Ray3d(getNormal(), point);
+        double t, u, v;
+        intersectWithRay(normal, t, u, v);
+        return Vector2dd(u, v);
+    }
+
+    /**
+       This method intersects with triangle created on two orts of PlaneFrame
+       additionally it searches for texture coordinates.
+
+       This basically solves
+          ray.p + t * ray.a = p + u * e1 + v * e2
+       for t,u,v.
+
+       This method tries to quickly exit if there is no intersection
+     **/
+    bool intersectWithOrtTriangle(Ray3d &ray, double &resT, double &u, double &v)
     {
         double EPSILON = 0.00001;
         Vector3dd p =  ray.a ^ e2;
 
-        /* This is the volume of the parallepiped built on two edges and a ray origin */
+        /** This is the volume of the parallepiped built on two edges and a ray origin **/
         double vol = e1 & p;
+
+        /** If volume is zero this means e1,e2 and ray direction is coplanar so no intersection possible */
         if(vol > -EPSILON && vol < EPSILON)
             return false;
 
         double inv_vol = 1.0 / vol;
+
 
         Vector3dd T = ray.p - p1;
 
@@ -68,6 +109,45 @@ public:
 
         resT = t;
         return true;
+    }
+
+    /**
+       This method intersects with triangle created on two orts of PlaneFrame
+       additionally it searches for texture coordinates.
+
+       This basically solves
+          ray.p + t * ray.a = p + u * e1 + v * e2
+       for t,u,v.
+       <pre>
+                        (   t )        (           )
+       (ray.a e1 e2)    ( - u )     =  ( p - ray.p )
+                    3x3 ( - v ) 3x1    (           ) 3x1
+
+       </pre>
+
+    **/
+    bool intersectWithRay(Ray3d &ray, double &resT, double &u, double &v)
+    {
+        Vector3dd d = p1 - ray.p;
+        Matrix33 M = Matrix33::FromColumns(ray.a, e1, e2);
+        if (M.det() == 0.0)
+            return false;
+        M.invert();
+        Vector3dd res = M * d;
+
+        resT =  res.x();
+        u    = -res.y();
+        v    = -res.z();
+
+        return true;
+    }
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(p1, Vector3dd(0.0, 0.0, 0.0) , "p");
+        visitor.visit(e1, Vector3dd::OrtX() , "e1");
+        visitor.visit(e2, Vector3dd::OrtY() , "e2");
     }
 
 };
@@ -119,7 +199,7 @@ public:
 
         PlaneFrame frame = toPlaneFrame();
         double u, v;
-        return frame.intersectWithP(ray, resT, u, v);
+        return frame.intersectWithOrtTriangle(ray, resT, u, v);
     }
 
     bool intersectWith(Ray3d &ray, Vector3dd &point)
@@ -174,6 +254,11 @@ public:
         return out;
     }
 
+    bool hasVertex(const Vector2dd &point)
+    {
+        return std::find(begin(), end(), point) != end();
+    }
+
     /* This function checks if the poligon is inside the buffer. It assumes that the poligon coorinate can be rounded to upper value  */
     bool isInsideBuffer(const Vector2d<int> &bufferSize)
     {
@@ -189,6 +274,24 @@ public:
     }
 
     Vector2dd center();
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        int pointsSize = (int)size();
+        visitor.visit(pointsSize, 0, "points.size");
+
+        resize(pointsSize);
+
+        for (size_t i = 0; i < (size_t)pointsSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "points[%d]", i);
+            visitor.visit(operator [](i), Vector2dd::Zero(), buffer);
+        }
+
+    }
+
 };
 
 /**
@@ -324,11 +427,25 @@ public:
         return fabs(signedArea());
     }
 
-
     //bool clipRay(const Ray2d &ray, double &t1, double &t2);
 };
 
 
+class FlatPolygon
+{
+public:
+    PlaneFrame frame;
+    Polygon polygon;
+
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(frame,   "frame");
+        visitor.visit(polygon, "polygon");
+
+    }
+};
 
 
 

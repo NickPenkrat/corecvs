@@ -6,7 +6,6 @@
 #include "detectAndExtractProvider.h"
 #include "bufferReaderProvider.h"
 #include "vsfmIo.h"
-#include "tbbWrapper.h"
 #include "bufferFactory.h"
 #include "utils.h"
 
@@ -805,9 +804,9 @@ void MatchAndRefineStage::run(FeatureMatchingPipeline *pipeline)
 }
 
 #ifdef WITH_CLUSTERS
+
 RandIndexStage::RandIndexStage()
-{
-};
+{}
 
 void RandIndexStage::saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const
 {
@@ -1085,11 +1084,11 @@ void RandIndexStage::run(FeatureMatchingPipeline *pipeline)
 
     pipeline->tic();
     size_t S = refinedMatches.matchSets.size();
-    tbb::parallel_for (tbb::blocked_range<size_t>(0, S, std::max(S / 16,(size_t)1)), ParallelCl(&clusters,pipeline));
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, S, std::max(S / 16,(size_t)1)), ParallelCl(&clusters,pipeline));
     pipeline->toc("Computing cluster inliers", "");
-
 }
-#endif
+
+#endif // WITH_CLUSTERS
 
 //---------------------------------------------------------------------------
 
@@ -1412,7 +1411,6 @@ void FeatureMatchingPipeline::tic(size_t thread_id, bool level)
     } else {
         tics.top().thread_tics[thread_id] = clock();
     }
-
 }
 
 void FeatureMatchingPipeline::toc(const std::string &name, const std::string &evt, size_t thread_id, bool level)
@@ -1448,7 +1446,6 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 #ifdef WITH_TBB
     tbb::spin_mutex::scoped_lock lock(mutex);
 #endif
-
     if (level)
     {
         size_t toc = clock();
@@ -1474,9 +1471,7 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
         int rm = rs / 60; rs = rs % 60;
         int rh = rm / 60; rm = rm % 60;
 
-
         std::cerr << std::setw(64) << name << std::setw(32) << evt << std::setw(10) << ns << "ms (" << rh << "h " << rm << "m " << rs << "s left)" << " [ " << one << " ] " <<  std::endl;
-
     }
 }
 

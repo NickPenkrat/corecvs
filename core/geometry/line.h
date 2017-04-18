@@ -75,6 +75,13 @@ public:
         p(_p)
     {}
 
+          VectorType &direction()       {return a;}
+    const VectorType &direction() const {return a;}
+
+          VectorType &origin()       {return p;}
+    const VectorType &origin() const {return p;}
+
+
     VectorType getPoint(double t) const
     {
         return p + a * t;
@@ -155,8 +162,8 @@ public:
     template<typename ConvexType>
     bool clip(const ConvexType &convex, double &t1, double &t2) const
     {
-        t1 = -numeric_limits<double>::max();
-        t2 =  numeric_limits<double>::max();
+        t1 = -numeric_limits<double>::infinity();
+        t2 =  numeric_limits<double>::infinity();
 
         for (unsigned i = 0; i < convex.size();  i++) {
             VectorType r = convex.getPoint(i);
@@ -225,21 +232,21 @@ public:
 };
 
 /**
- * Ray2d is 3D version of Ray
+ * Ray3d is 3D version of Ray
  **/
 class Ray3d : public BaseRay<Ray3d, Vector3dd>
 {
 public:
     Ray3d() {}
 
-    Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
-        BaseRay<Ray3d, Vector3dd>(_a, _p)
+    Ray3d(const Vector3dd &direction, const Vector3dd & origin) :
+        BaseRay<Ray3d, Vector3dd>(direction, origin)
     {}
 
     Ray3d(const BaseRay<Ray3d, Vector3dd> &base) : BaseRay<Ray3d, Vector3dd>(base)
     {}
 
-    double distanceTo(const Ray3d &other ) const
+        double distanceTo(const Ray3d &other ) const
     {
         Vector3dd denum = a ^ other.a;
         Vector3dd dp = p - other.p;
@@ -330,6 +337,21 @@ public:
     static Vector3dd bestFit(Ray3d * /*rays*/, unsigned /*number*/)
     {
         return Vector3dd(0.0);
+    }
+
+    /**
+     *  This is a getPoint variant that respects infinitely distant points
+     **/
+    FixedVector<double, 4> getProjectivePoint(double t)
+    {
+        if (std::isinf(t)) {
+            if (t > 0) {
+                return FixedVector<double, 4>(a, 0.0);
+            } else {
+                return FixedVector<double, 4>(-a, 0.0);
+            }
+        }
+        return FixedVector<double, 4>(getPoint(t), 1.0);
     }
 
 };

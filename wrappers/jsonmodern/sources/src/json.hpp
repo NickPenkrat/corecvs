@@ -1085,7 +1085,7 @@ struct to_json_fn
 {
   private:
     template<typename BasicJsonType, typename T>
-    auto call(BasicJsonType& j, T&& val, priority_tag<1>) const noexcept(noexcept(to_json(j, std::forward<T>(val))))
+    auto call(BasicJsonType& j, T&& val, priority_tag<1>) const noexcept_if(noexcept_if(to_json(j, std::forward<T>(val))))
     -> decltype(to_json(j, std::forward<T>(val)), void())
     {
         return to_json(j, std::forward<T>(val));
@@ -1101,7 +1101,7 @@ struct to_json_fn
   public:
     template<typename BasicJsonType, typename T>
     void operator()(BasicJsonType& j, T&& val) const
-    noexcept(noexcept(std::declval<to_json_fn>().call(j, std::forward<T>(val), priority_tag<1> {})))
+    noexcept_if(noexcept_if(std::declval<to_json_fn>().call(j, std::forward<T>(val), priority_tag<1> {})))
     {
         return call(j, std::forward<T>(val), priority_tag<1> {});
     }
@@ -1112,7 +1112,7 @@ struct from_json_fn
   private:
     template<typename BasicJsonType, typename T>
     auto call(const BasicJsonType& j, T& val, priority_tag<1>) const
-    noexcept(noexcept(from_json(j, val)))
+    noexcept_if(noexcept_if(from_json(j, val)))
     -> decltype(from_json(j, val), void())
     {
         return from_json(j, val);
@@ -1128,7 +1128,7 @@ struct from_json_fn
   public:
     template<typename BasicJsonType, typename T>
     void operator()(const BasicJsonType& j, T& val) const
-    noexcept(noexcept(std::declval<from_json_fn>().call(j, val, priority_tag<1> {})))
+    noexcept_if(noexcept_if(std::declval<from_json_fn>().call(j, val, priority_tag<1> {})))
     {
         return call(j, val, priority_tag<1> {});
     }
@@ -1174,8 +1174,8 @@ struct adl_serializer
     @param[in,out] val  value to write to
     */
     template<typename BasicJsonType, typename ValueType>
-    static void from_json(BasicJsonType&& j, ValueType& val) noexcept(
-        noexcept(::nlohmann::from_json(std::forward<BasicJsonType>(j), val)))
+    static void from_json(BasicJsonType&& j, ValueType& val) noexcept_if(
+        noexcept_if(::nlohmann::from_json(std::forward<BasicJsonType>(j), val)))
     {
         ::nlohmann::from_json(std::forward<BasicJsonType>(j), val);
     }
@@ -1190,8 +1190,8 @@ struct adl_serializer
     @param[in] val     value to read from
     */
     template<typename BasicJsonType, typename ValueType>
-    static void to_json(BasicJsonType& j, ValueType&& val) noexcept(
-        noexcept(::nlohmann::to_json(j, std::forward<ValueType>(val))))
+    static void to_json(BasicJsonType& j, ValueType&& val) noexcept_if(
+        noexcept_if(::nlohmann::to_json(j, std::forward<ValueType>(val))))
     {
         ::nlohmann::to_json(j, std::forward<ValueType>(val));
     }
@@ -2276,7 +2276,7 @@ class basic_json
                                      basic_json_t, U>::value and
                                  detail::has_to_json<basic_json, U>::value,
                                  int> = 0>
-    basic_json(CompatibleType && val) noexcept(noexcept(JSONSerializer<U>::to_json(
+    basic_json(CompatibleType && val) noexcept_if(noexcept_if(JSONSerializer<U>::to_json(
                 std::declval<basic_json_t&>(), std::forward<CompatibleType>(val))))
     {
         JSONSerializer<U>::to_json(*this, std::forward<CompatibleType>(val));
@@ -2785,7 +2785,7 @@ class basic_json
 
     @since version 1.0.0
     */
-    reference& operator=(basic_json other) noexcept (
+    reference& operator=(basic_json other) noexcept_if(
         std::is_nothrow_move_constructible<value_t>::value and
         std::is_nothrow_move_assignable<value_t>::value and
         std::is_nothrow_move_constructible<json_value>::value and
@@ -3468,7 +3468,7 @@ class basic_json
             detail::has_from_json<basic_json_t, ValueType>::value and
             not detail::has_non_default_from_json<basic_json_t, ValueType>::value,
             int > = 0 >
-    ValueType get() const noexcept(noexcept(
+    ValueType get() const noexcept_if(noexcept_if(
                                        JSONSerializer<ValueType>::from_json(std::declval<const basic_json_t&>(), std::declval<ValueType&>())))
     {
         // we cannot static_assert on ValueTypeCV being non-const, because
@@ -3521,7 +3521,7 @@ class basic_json
         detail::enable_if_t<not std::is_same<basic_json_t, ValueType>::value and
                             detail::has_non_default_from_json<basic_json_t,
                                     ValueType>::value, int> = 0 >
-    ValueType get() const noexcept(noexcept(
+    ValueType get() const noexcept_if(noexcept_if(
                                        JSONSerializer<ValueTypeCV>::from_json(std::declval<const basic_json_t&>())))
     {
         static_assert(not std::is_reference<ValueTypeCV>::value,
@@ -6000,7 +6000,7 @@ class basic_json
 
     @since version 1.0.0
     */
-    void swap(reference other) noexcept (
+    void swap(reference other) noexcept_if(
         std::is_nothrow_move_constructible<value_t>::value and
         std::is_nothrow_move_assignable<value_t>::value and
         std::is_nothrow_move_constructible<json_value>::value and
@@ -9657,7 +9657,7 @@ class basic_json
         @param[in,out] other  iterator to copy from
         @note It is not checked whether @a other is initialized.
         */
-        iter_impl& operator=(iter_impl other) noexcept(
+        iter_impl& operator=(iter_impl other) noexcept_if(
             std::is_nothrow_move_constructible<pointer>::value and
             std::is_nothrow_move_assignable<pointer>::value and
             std::is_nothrow_move_constructible<internal_iterator>::value and
@@ -13804,7 +13804,7 @@ namespace std
 */
 template<>
 inline void swap(nlohmann::json& j1,
-                 nlohmann::json& j2) noexcept(
+                 nlohmann::json& j2) noexcept_if(
                      is_nothrow_move_constructible<nlohmann::json>::value and
                      is_nothrow_move_assignable<nlohmann::json>::value
                  )

@@ -111,6 +111,7 @@
         <file>shape_rotate_clockwise_exec.png</file>
         <file>shape_rotate_clockwise.png</file>
         <file>lighthouse.png</file>
+        <file>draw_polygon.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

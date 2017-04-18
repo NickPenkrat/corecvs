@@ -404,7 +404,7 @@ void PointListEditImageWidgetUnited::paintTarget(QPainter &painter, Vector2dd im
 
 void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *who)
 {
-    AdvancedImageWidget::childRepaint(event, who);
+    //AdvancedImageWidget::childRepaint(event, who);
     if (mImage.isNull())
         return;
 
@@ -413,6 +413,7 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
     /* Now the points */
     QPainter painter(who);
+    AdvancedImageWidget::repaintImage(painter);
 
     int rows = (int)mObservationListModel->getPointCount();
 
@@ -524,6 +525,8 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
         drawLine(painter, imageCoords - Vector2dd(-4.0, 4.0), imageCoords + Vector2dd(-4.0, 4.0));*/
         paintTarget(painter, imageCoords, 10);
     }
+
+    AdvancedImageWidget::repaintTools(painter);
 }
 
 void PointListEditImageWidgetUnited::toolButtonReleased(QWidget *button)

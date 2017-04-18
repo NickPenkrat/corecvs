@@ -153,10 +153,10 @@ public:
 
    // AdvancedImageWidget interface
 public slots:
-   virtual void childRepaint(QPaintEvent *event, QWidget *who) override;
-   virtual void toolButtonReleased(QWidget *button) override;
-   virtual void childMousePressed(QMouseEvent *event) override;
-   virtual void childMouseMoved(QMouseEvent *event) override;
+   virtual void childRepaint      (QPaintEvent *event, QWidget *who) override;
+   virtual void toolButtonReleased(QWidget     *button) override;
+   virtual void childMousePressed (QMouseEvent *event ) override;
+   virtual void childMouseMoved   (QMouseEvent *event ) override;
 
    void         invalidateModel();
 

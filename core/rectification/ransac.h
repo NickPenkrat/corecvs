@@ -44,6 +44,7 @@ public:
     ModelType bestModel;
     int bestInliers;
 
+    bool trace = false;
 
     Ransac(int _sampleNumber ) :
         sampleNumber(_sampleNumber)
@@ -81,11 +82,13 @@ public:
             ModelType model = ModelType(samples);
 
             int inliers = 0;
-            for (int i = 0; i < sampleNumber; i++)
+            for (int i = 0; i < data->size(); i++)
             {
                 if (model.fits(*(data->at(i)), inlierThreshold))
                     inliers++;
             }
+
+            if (trace) SYNC_PRINT(("iteration %d : %d inliers \n", iteration, inliers));
 
             if (inliers > bestInliers)
             {
@@ -94,9 +97,15 @@ public:
                 bestModel = model;
             }
 
-            if (bestInliers >  sampleNumber * inliersPercent ||
+            if (bestInliers >  data->size() * inliersPercent ||
                 iteration >= iterationsNumber )
             {
+                if (trace) {
+                    std::cout << "Fininshing:" << std::endl;
+                    std::cout << "BestInliers:" << bestInliers << std::endl;
+
+                }
+
                 return bestModel;
             }
             iteration++;

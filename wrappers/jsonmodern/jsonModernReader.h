@@ -1,5 +1,13 @@
-#ifndef JSONModernReader_H
-#define JSONModernReader_H
+#ifndef JSON_MODERN_READER_H
+#define JSON_MODERN_READER_H
+
+#if defined(_MSC_VER) && (_MSC_VER < 1900)      // fix bug for older vs than msvc2015
+# define constexpr const
+# define noexcept
+# define noexcept_if(pred)
+#else
+# define noexcept_if(pred)   noexcept((pred))
+#endif
 
 #include "json.hpp"
 
@@ -234,7 +242,7 @@ public:
     template <typename type, typename std::enable_if<std::is_enum<type>::value, int>::type foo = 0>
     void visit(type &field, type defaultValue, const char *fieldName)
     {
-        CONDITIONAL_TRACE(("JSONModernReader::visit(type &field, type defaultValue, %s) v2 \n", fieldName ));
+        CONDITIONAL_TRACE(("JSONModernReader::visit(type &field, type defaultValue, %s) v2 \n", fieldName));
 
         using U = typename std::underlying_type<type>::type;
         U u = static_cast<U>(field);
@@ -250,16 +258,20 @@ public:
         if (value.is_null()) {
             CONDITIONAL_TRACE(("JSONModernReader::pushChild(%s): no child\n", childName));
         } else {
-            CONDITIONAL_TRACE(("JSONModernReader::pushChild(): depth %d\n", mNodePath.size()));
+            CONDITIONAL_TRACE(("JSONModernReader::pushChild(): depth %" PRIi64 "\n", mNodePath.size()));
         }
         mNodePath.push_back(&value);
     }
 
     void popChild()
     {
-        CONDITIONAL_TRACE(("JSONModernReader::popChild() from depth %d\n", mNodePath.size()));
+        CONDITIONAL_TRACE(("JSONModernReader::popChild() from depth %" PRIi64 "\n", mNodePath.size()));
         mNodePath.pop_back();
+    }
 
+    bool hasError()
+    {
+        return mHasError;
     }
 
 private:
@@ -270,6 +282,7 @@ private:
     std::string         mFileName;
     nlohmann::json mDocument;
     bool trace = false;
+    bool mHasError = false;
 };
 
 #undef CONDITIONAL_TRACE
@@ -319,4 +332,4 @@ void JSONModernReader::visit<double, DoubleVectorField>(std::vector<double> &fie
 
 
 
-#endif // JSONModernReader_H
+#endif // JSON_MODERN_READER_H

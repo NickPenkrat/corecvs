@@ -16,12 +16,16 @@ void JSONModernReader::init(const char *fileName)
 {
     mFileName = fileName;
 
-    std::ifstream is;
-    is.open(fileName, std::ifstream::in);
-    is >> mDocument;
-
-    //rapidjson::Value &value = mDocument.GetObject();
-    mNodePath.push_back(&mDocument);
+    try {
+        std::ifstream is;
+        is.open(fileName, std::ifstream::in);
+        is >> mDocument;
+        mNodePath.push_back(&mDocument);
+    } catch (nlohmann::detail::exception &e)
+    {
+        SYNC_PRINT(("JSONModernReader::init(%s): json parsing had an exception <%s>\n", fileName, e.what()));
+        mHasError = true;
+    }
 }
 
 template <>
@@ -42,7 +46,7 @@ void JSONModernReader::visit<bool>(bool &boolField, bool defaultValue, const cha
 template <>
 void JSONModernReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName)
 {
-    CONDITIONAL_TRACE(("JSONModernReader::visit<uint64_t>(_ , _ , %d)", fieldName));
+    CONDITIONAL_TRACE(("JSONModernReader::visit<uint64_t>(_ , _ , %s)", fieldName));
     nlohmann::json &value = (*mNodePath.back())[fieldName];
 
     intField = defaultValue;
@@ -59,9 +63,9 @@ void JSONModernReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue
             ss >> res;
             if (!ss.bad()) {
                 intField = res;
-                CONDITIONAL_TRACE(( "JSONModernReader::visit<uint64_t>() got %" PRIu64 "\n", intField ));
+                CONDITIONAL_TRACE(( "JSONModernReader::visit<uint64_t>() got %" PRIu64 "\n", intField));
             } else {
-                SYNC_PRINT(( "JSONModernReader::visit<uint64_t>() unable to parse %s \n", string));
+                SYNC_PRINT(( "JSONModernReader::visit<uint64_t>() unable to parse %s\n", string.c_str()));
             }
         }
     }
