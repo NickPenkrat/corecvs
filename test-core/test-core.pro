@@ -104,3 +104,4 @@ SOURCES += \
     json/main_test_json.cpp \
 	utils/main_test_utils.cpp \
 	quadric/main_test_quadric.cpp \
+	planefit/main_test_planefit.cpp \
