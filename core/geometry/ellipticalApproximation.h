@@ -295,10 +295,10 @@ public:
 
     EllipticalApproximationUnified(const EllipticalApproximationUnified &other) :
         mInfMatrix(NULL)
-      , mSum(other.mSum)
-      , mCount(other.mCount)
+      , mSum(other.mSum)      
       , mAxes(other.mAxes)
       , mValues(other.mValues)
+      , mCount(other.mCount)
     {
         this->mInfMatrix = new Matrix(other.mInfMatrix);
        // SYNC_PRINT(("EllipticalApproximationUnified(const EllipticalApproximationUnified &other) called\n"));

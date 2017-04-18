@@ -33,5 +33,14 @@ Affine3DQ FixtureCamera::getWorldLocation()
    return (cameraFixture->location * local);
 }
 
+CameraModel FixtureCamera::getWorldCameraModel()
+{
+    if (cameraFixture != NULL) {
+        return cameraFixture->getWorldCamera(this);
+    }
+
+    return *this;
+}
+
 
 } // namespace corecvs

@@ -39,7 +39,7 @@ public:
         copyInit(x);
     }
 
-    FixedArrayBase(const std::vector<ElementType> &x) : FixedArrayBase((int)x.size(), &x[0])
+    FixedArrayBase(const std::vector<ElementType> &x) : FixedArrayBase((int)x.size(), x.size() ? &x[0] : 0)
     {
     }
 

@@ -201,6 +201,7 @@ void FixtureScene::destroyObject(FixtureScenePart *condemned)
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
     vectorErase(mOwnedObjects, condemned);
 #endif
+    delete_safe(condemned);
 }
 
 /* This method assumes the scene is well formed */
@@ -262,6 +263,10 @@ void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraPrototype)
 
 void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
 {
+    SYNC_PRINT(("FixtureScene::deleteCameraFixture(CameraFixture(%s), %s)\n", fixture == NULL ? "NULL" : fixture->name.c_str(), recursive ? "true" : "false" ));
+
+//     SYNC_PRINT(("FixtureScene::deleteCameraFixture(): purging point references\n"));
+
     for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
     {
         SceneFeaturePoint *point = mSceneFeaturePoints[i];
@@ -270,6 +275,8 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
         deleteCameraFixtureUMWPP(point->observations__, fixture);
     }
 
+
+//    SYNC_PRINT(("FixtureScene::deleteCameraFixture():checking for recursiveness\n"));
     if (recursive)
     {
         while (!fixture->cameras.empty()) {
@@ -281,8 +288,9 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
         mOrphanCameras.insert(mOrphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
     }
 
+    SYNC_PRINT(("FixtureScene::deleteCameraFixture():actually removing from scene\n"));
     vectorErase(mFixtures, fixture);
-    delete_safe(fixture);
+    destroyObject(fixture);
 }
 
 void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
@@ -306,6 +314,8 @@ void FixtureScene::deleteSceneGeometry(FixtureSceneGeometry *geometry)
 
 void FixtureScene::clear()
 {
+    SYNC_PRINT(("FixtureScene::clear(): called\n"));
+
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
 
     /** Just purge all heap **/
@@ -321,34 +331,27 @@ void FixtureScene::clear()
     mSceneFeaturePoints.clear();
     mGeomtery.clear();
 #else
-    for (CameraPrototype *&proto: mCameraPrototypes) {
-        delete_safe(proto);
-    }
-    mCameraPrototypes.clear();
 
-    for (CameraFixture *&fixture: mFixtures) {
-        for (FixtureCamera *&camera : fixture->cameras) {
-            delete_safe(camera);
-        }
-        delete_safe(fixture);
+    while (!mFixtures.empty())
+    {
+       deleteCameraFixture(mFixtures.back(), true);      
     }
-    mFixtures.clear();
 
-    for (FixtureCamera *&camera : mOrphanCameras) {
-        delete_safe(camera);
+    while (!mOrphanCameras.empty()) {
+        deleteCamera(mOrphanCameras.back());
     }
-    mOrphanCameras.clear();
 
-    for (SceneFeaturePoint *&point: mSceneFeaturePoints) {
-        delete_safe(point);
+    while (!mCameraPrototypes.empty()) {
+        deleteCameraPrototype(mCameraPrototypes.back());
     }
-    mSceneFeaturePoints.clear();
 
-    for (FixtureSceneGeometry *&geometry: mGeomtery) {
-        delete_safe(geometry);
+    while (!mSceneFeaturePoints.empty()) {
+        deleteFeaturePoint(mSceneFeaturePoints.back());
     }
-    mGeomtery.clear();
 
+    while (!mGeomtery.empty()) {
+        deleteSceneGeometry(mGeomtery.back());
+    }
 #endif
 
 }
