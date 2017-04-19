@@ -3,13 +3,16 @@
 #include "utils.h"
 #include "folderScanner.h"
 
-#include <mutex>
+//#include <mutex>
+
+using std::vector;
+using std::string;
 
 namespace corecvs {
 
 string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, bool clear)
 {
-    static vector< string > clearedFolders;
+    static vector<string> clearedFolders;
     string tempPath = ".";
     if (projectEnviromentVariable.empty())
     {
