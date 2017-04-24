@@ -690,10 +690,24 @@ template<typename ResultType>
     /** Fills the buffer by random values within the given range */
     void fillWithRands(ElementType valueMax /*= ElementType::max()*/, ElementType valueMin = ElementType(0))
     {
-        srand(rand());
+        std::mt19937 rng;
+        std::uniform_int_distribution<ElementType> dist(valueMax, valueMin);
+
         for (IndexType i = 0; i < this->h; i++)
             for (IndexType j = 0; j < this->w; j++)
-                this->element(i,j) = (ElementType)randRanged(valueMax, valueMin);
+                this->element(i,j) = dist(rng);
+    }
+
+    void checkerBoard(IndexType square, ElementType valueMax /*= ElementType::max()*/, ElementType valueMin = ElementType(0))
+    {
+        for (int i = 0; i < this->h; i++)
+        {
+            for (int j = 0; j < this->w; j++)
+            {
+                bool color = ((i / square) % 2) ^ ((j / square) % 2);
+                this->element(i,j) = color ?  valueMin : valueMax;
+            }
+        }
     }
 
     /**
