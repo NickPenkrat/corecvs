@@ -128,8 +128,8 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const FixtureSceneGeometry &f
     /* Simple way */
     for (size_t i = 0; i < fg.polygon.size(); i++)
     {
-        Vector2dd p1 = fg.polygon.getPoint(i);
-        Vector2dd p2 = fg.polygon.getNextPoint(i);
+        Vector2dd p1 = fg.polygon.getPoint((int)i);
+        Vector2dd p2 = fg.polygon.getNextPoint((int)i);
 
         Vector3dd point1 = fg.frame.getPoint(p1);
         Vector3dd point2 = fg.frame.getPoint(p2);
