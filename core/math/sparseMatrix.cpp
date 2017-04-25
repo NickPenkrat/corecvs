@@ -873,6 +873,8 @@ SparseMatrix SparseMatrix::spmm_homebrew(const SparseMatrix &rhs, bool transA, b
 
     for (int i = 0; i < h; ++i)
     {
+		CORE_ASSERT_TRUE_S(rowPointers[i + 1] < columns.size()); // temporary assert to show the error
+
         std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1]]);
         for (int jj = this->rowPointers[i]; jj < this->rowPointers[i + 1]; ++jj)
         {
