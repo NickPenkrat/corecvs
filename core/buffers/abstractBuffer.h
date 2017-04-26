@@ -19,6 +19,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include <random>
 #include <string>
 #include <functional>
 #include <type_traits>
