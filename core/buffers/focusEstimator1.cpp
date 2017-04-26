@@ -62,7 +62,7 @@ void FocusEstimator1::operator ()()
 
     Statistics::startInterval(mStats);
 
-    if ( mParams.computeOldStats())
+    if (mParams.computeOldStats())
     {
         FocusEstimator::Result res = FocusEstimator::calc(mCurrent, mROI.left(), mROI.top(), mROI.right(), mROI.bottom());
         mResult.setScore   (res.fullScore);
@@ -70,7 +70,6 @@ void FocusEstimator1::operator ()()
     }
 
     Statistics::resetInterval(mStats, "Old Style Score");
-
 
     if (!mBoards.empty())
     {
@@ -186,7 +185,7 @@ void FocusEstimator1::operator ()()
                         if (span.y() < 1 || span.y() + 1 >= mCurrent->h)
                             continue;
 
-                        for (int s1 = std::max(span.x1, 1); s1 < std::min(span.x2, mCurrent->w - 1); s1++ )
+                        for (int s1 = std::max(span.x1, 1); s1 < std::min(span.x2, mCurrent->w - 1); s1++)
                         {
                             if (mDebug != NULL) {
                                 mDebug->element(span.y(), s1) = RGBColor::Cyan();
@@ -210,7 +209,7 @@ void FocusEstimator1::operator ()()
 
     //mResult.setBnoise(approxCenterB.getRadius());
     mResult.setBnoise(approxCenterBouter.getMean());
-    SYNC_PRINT(("FocusEstimator1::FocusEstimator1() : old = %lf new = %lf\n", approxCenterB.getRadius(), approxCenterBouter.getRadius()));
+    SYNC_PRINT(("FocusEstimator1(): old = %lf new = %lf\n", approxCenterB.getRadius(), approxCenterBouter.getRadius()));
 
     mResult.setWnoise(approxCenterW.getRadius());
     mResult.setSharpness(approxSharpness.getMean());
