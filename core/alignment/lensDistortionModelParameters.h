@@ -69,6 +69,31 @@ namespace corecvs {
  **/
 class LensDistortionModelParameters : public LensDistortionModelParametersBase
 {
+
+public:
+
+    Vector2dd principalPoint() const
+    {
+        return Vector2dd(principalX(), principalY());
+    }
+
+    void setPrincipalPoint(const Vector2dd &point )
+    {
+        setPrincipalX(point.x());
+        setPrincipalY(point.y());
+    }
+
+    Vector2dd shift() const
+    {
+        return Vector2dd(shiftX(), shiftY());
+    }
+
+    void setShift(const Vector2dd &point )
+    {
+        setShiftX(point.x());
+        setShiftY(point.y());
+    }
+
 public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */

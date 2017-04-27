@@ -83,7 +83,7 @@ TEST(multicamera, test702)
          cout << "Skipping " << skip << " measurement" << endl;
          vector<bool> mask(M.getSize(), true);
          mask[skip] = false;
-         for (int i = 0; i < mask.size(); i++)
+         for (size_t i = 0; i < mask.size(); i++)
          {
              cout << (mask[i] ? "X" : "O");
          }
@@ -119,7 +119,7 @@ TEST(multicamera, test702)
              mask[skip1] = true;
              mask[skip2] = true;
 
-             for (int i = 0; i < mask.size(); i++)
+             for (size_t i = 0; i < mask.size(); i++)
              {
                  cout << (mask[i] ? "X" : "O");
              }
@@ -152,7 +152,7 @@ TEST(multicamera, test702draw)
     M.accept<PropertyListReaderVisitor>(reader);
 
     Mesh3D mesh;
-    for (int i = 0; i < M.P.size(); i++)
+    for (size_t i = 0; i < M.P.size(); i++)
     {
         Matrix44  P  = M.P [i];
         Vector2dd xy = M.xy[i];

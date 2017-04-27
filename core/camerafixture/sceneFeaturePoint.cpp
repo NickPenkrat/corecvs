@@ -90,7 +90,8 @@ int SceneFeaturePoint::ensureDistortedObservations(bool distorted)
 Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uint* numProjections)
 {
     MulticameraTriangulator mct;
-    int id = 0, ptr = 0;
+    int id = 0;
+    size_t ptr = 0;
 
     if (use__)
     {
@@ -215,6 +216,68 @@ SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType i
 {
     return ownerScene->getPointById(id);
 }
+
+PointPath SceneFeaturePoint::getEpipath(FixtureCamera *camera1, FixtureCamera *camera2, int segments)
+{
+    PointPath result;
+
+    CameraModel secondCamera = camera2->getWorldCameraModel();
+    ConvexPolyhedron secondViewport = secondCamera.getCameraViewport();
+
+    SceneObservation *obs1 = getObservation(camera1);
+
+    if (obs1 == NULL) {
+        return result;
+    }
+
+    Vector2dd m = obs1->getDistorted(false); /*We work with geometry, so we take projective undistorted objservation */
+
+    CameraModel model = camera1->getWorldCameraModel();
+    Ray3d ray = model.rayFromPixel(m);
+
+    //cout << "Ray" << ray << endl;
+
+    /* We go with ray analisys instead of essential matrix beacause it possibly gives
+     * more semanticly valuable info */
+    double t1 = 0;
+    double t2 = 0;
+    bool hasIntersection = secondViewport.intersectWith(ray, t1, t2);
+    if (hasIntersection) {
+        if (t1 < 0.0) t1 = 0.0;
+
+        //cout << "t1 : " << t1 << " t2 : " << t2 << endl;
+
+        FixedVector<double, 4> out1 = (secondCamera.getCameraMatrix() * ray.getProjectivePoint(t1));
+        FixedVector<double, 4> out2 = (secondCamera.getCameraMatrix() * ray.getProjectivePoint(t2));
+
+        //cout << "out1: " << out1 << endl;
+        //cout << "out2: " << out2 << endl;
+
+        Vector2dd pos1 = Vector2dd( out1[0], out1[1]) / out1[2];
+        Vector2dd pos2 = Vector2dd( out2[0], out2[1]) / out2[2];
+
+        //cout << "pos1:" << pos1 << endl;
+        //cout << "pos2:" << pos2 << endl;
+
+        /* We should apply distorion here */
+
+        for (int segm = 0; segm <= segments; segm++)
+        {
+            Vector2dd ssP = lerp(pos1, pos2, segm    , 0, segments);
+            Vector2dd ssI = secondCamera.distortion.mapForward(ssP);
+
+            //cout << "Undistortion: " << ssP << " - " << ssI << endl;
+            //cout << "Undistortion: " << seP << " - " << seI << endl;
+
+            result.push_back(ssI);
+        }
+
+    }
+
+    return result;
+}
+
+
 
 /*
 SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType id)
