@@ -38,7 +38,11 @@ TEST(imagequality, DISABLED_testimagequality)
     filename = "data/test.bmp";
 
     RGB24Buffer *input = BufferFactory::getInstance()->loadRGB24Bitmap(filename);
-
+    if (input == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(input != NULL, "Can't load image");
 
     int H = 18;

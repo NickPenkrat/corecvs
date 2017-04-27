@@ -27,6 +27,11 @@ TEST(FileFormats, testFileFormats)
     /** Test case 1 */
     RAWLoader *rawLoader = new RAWLoader();
     G12Buffer *raw = rawLoader->load("data/testdata/32x32_12h_test_raw.raw");
+    if (raw == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(raw != NULL, "RAW Image load failed");
     CORE_ASSERT_TRUE(raw->h == raw->w, "RAW Image sizes corrupted");
     CORE_ASSERT_TRUE(raw->verify(), "RAW Image verification failed");

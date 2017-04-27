@@ -74,6 +74,11 @@ double UnwarpToWarpLUT[LUT_LEN][2] = {
 TEST(Sphericdist, DISABLED_testUndistored)
 {
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/distored.pgm");
+    if (input == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
 
     vector<Vector2dd> lut;
     for (unsigned i = 0; i < LUT_LEN; i++)
