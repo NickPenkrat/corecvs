@@ -192,7 +192,7 @@ std::vector<double> kde::calcPDF(
             if (norm < passLevel)
                 underPass++;
             def[index++] = norm;
-            ss << (int)(norm < passLevel) << "\t";
+            ss << (norm < passLevel ? 0 : 1) << "\t";
         }
         L_INFO << ss.str();
     }
