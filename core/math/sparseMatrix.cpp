@@ -596,8 +596,8 @@ Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> 
     e.reserve(y2-y1);
     for (int i = y1; i < y2; ++i)
     {
-        int* cbegin = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1] - 1], x1),  // invalid access 
-           *   cend = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1] - 1], x2);  // invalid access 
+        int* cbegin = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x1),
+           *   cend = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x2);
         if (cbegin < cend)
         {
             rowIdx.push_back(i);
@@ -873,9 +873,7 @@ SparseMatrix SparseMatrix::spmm_homebrew(const SparseMatrix &rhs, bool transA, b
 
     for (int i = 0; i < h; ++i)
     {
-		//CORE_ASSERT_TRUE_S(rowPointers[i + 1] < columns.size()); // temporary assert to show the error
-
-        std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1] - 1]); // invalid access 
+        std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1]]);
         for (int jj = this->rowPointers[i]; jj < this->rowPointers[i + 1]; ++jj)
         {
             int j = this->columns[jj];
@@ -1271,7 +1269,7 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rh
 
     for (int i = 0; i < h; ++i)
     {
-        std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1] - 1]);  // invalid access 
+        std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1]]);
         for (int jj = lhs.rowPointers[i]; jj < lhs.rowPointers[i + 1]; ++jj)
         {
             int j = lhs.columns[jj];
@@ -1411,7 +1409,7 @@ SparseMatrix::SparseMatrix(const sparse_matrix_t &mklSparse)
 
 int SparseMatrix::getUBIndex(int i, int j) const
 {
-    return std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1] - 1], j) - &columns[0];  // invalid access 
+    return std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], j) - &columns[0];
 }
 
 int SparseMatrix::getIndex(int i, int j) const
