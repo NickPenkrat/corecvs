@@ -157,7 +157,6 @@ with_topvi {
         INCLUDEPATH += $$CURL_DIR\include
         LIBS        += -L$$CURL_DIR\build\lib\Release -llibcurl -llibcurl_imp
         LIBS        += -lwsock32 -lws2_32
-
     } else {
         LIBS        += -lcurl
     }
