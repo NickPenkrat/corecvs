@@ -11,7 +11,7 @@
 
   #define READ(s, buf, len)     read(s, buf, len)
   #define WRITE(s, buf, len)	write(s, buf, len)
-  #define closesocket(fd)       close(fd)
+  #define CLOSE(s)              close(s)
   #define ERROR_TO_STR          gai_strerror
 #else
   #include <winsock2.h>
@@ -19,8 +19,9 @@
 
   #define READ(s, buf, len)     recv(s, (char*)(buf), len, 0)
   #define WRITE(s, buf, len)    send(s, (char*)(buf), len, 0)
+  #defien CLOSE(s)              { shutdown(s, SD_BOTH); closesocket(s); }
   typedef int socklen_t;
-  #define ERROR_TO_STR          gai_strerrorA
+  #define ERROR_TO_STR          gai_strerrorA                
 #endif
 
 void TopViDeviceDescriptor::CmdSpinThread::run()
@@ -73,7 +74,7 @@ xxx:
            continue;
        if (::connect(fd, rp->ai_addr, rp->ai_addrlen) != -1)
            break;
-       closesocket(fd);
+       CLOSE(fd);
     }
 
     if (rp == NULL) {
@@ -110,7 +111,7 @@ xxx:
             }
             catch(...) {
                 SYNC_PRINT(("Broken pipe\n"));
-                closesocket(fd);
+                CLOSE(fd);
                 goto xxx;
             }
 
@@ -188,7 +189,7 @@ xxx:
             break;
         }
     }
-    closesocket(fd);
+    CLOSE(fd);
     SYNC_PRINT(("TopViDeviceDescriptor::CmdSpinThread(): command thread finished\n"));
 }
 
