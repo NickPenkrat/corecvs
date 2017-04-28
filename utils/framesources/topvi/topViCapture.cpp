@@ -19,6 +19,13 @@
 
 #include "global.h"
 
+#include "rgb24Buffer.h"
+#include "g12Image.h"
+
+#include "g12Image.h"
+#include "ppmLoader.h"
+#include "converters/debayer.h"
+
 #include "topViCapture.h"
 #include "topViDeviceDescriptor.h"
 
@@ -69,12 +76,22 @@ TopViCaptureInterface::TopViCaptureInterface(string _devname, int /*h*/, int /*w
     device.init(0, this);
 }
 
-void TopViCaptureInterface::replyCallback(string reply){
-    SYNC_PRINT(("TopViCaptureInterface: return answer for GUI: %s\n", reply.c_str()));
+int TopViCaptureInterface::replyCallback(string reply){
+    int result = false;
+    SYNC_PRINT(("TopViCaptureInterface: replyCallback return answer for GUI: %s\n", reply.c_str()));
+    protectActivate.lock();
     if (!shouldActivateFtpSpinThread) {
         ftpSpin.ftpLoader.init(reply);
         shouldActivateFtpSpinThread = true;
+        SYNC_PRINT(("TopViCaptureInterface: replyCallback activate ftp loader success\n"));
+        result = true;
     }
+    else {
+        SYNC_PRINT(("TopViCaptureInterface: replyCallback can't activate ftp loader\n"));
+        result = false;
+    }
+    protectActivate.unlock();
+    return result;
 }
 
 int TopViCaptureInterface::setConfigurationString(string _devname, bool isRgb)
@@ -90,42 +107,15 @@ int TopViCaptureInterface::setConfigurationString(string _devname, bool isRgb)
 
 TopViCaptureInterface::~TopViCaptureInterface()
 {
-    bool result = 0;
-    int timeout = 100000;
-    int waitTime = 200;
-
     SYNC_PRINT(("TopViCaptureInterface(%s): request for killing the threads\n", QSTR_DATA_PTR(getInterfaceName())));
-#if 1
-    /* Stopping ftp loader */
-    while (shouldActivateFtpSpinThread) {
-        usleep(waitTime);
-        timeout -= waitTime;
-        if (timeout <= 0) break;
+
+     while (ftpSpin.isRunning()) {
+       SYNC_PRINT(("TopViCaptureInterface: waiting for the ftp thread cancelation...\n"));
+       ftpSpinRunning.lock();
+       shouldStopFtpSpinThread = true;
+       ftpSpinRunning.unlock();
+       usleep(200);
     }
-
-    if (shouldActivateFtpSpinThread) {
-        SYNC_PRINT(("FtpLoader is active too long. Stop it."));
-        shouldActivateFtpSpinThread = false;
-    }
-
-    shouldStopFtpSpinThread = true;
-    result = ftpSpinRunning.tryLock(2000);
-
-    //TODO: use stop camera command
-
-    /* Now no events would be generated, and it is safe to unlock mutex */
-
-    if (result) {
-        printf("TopViCaptureInterface: Camera thread killed\n");
-        ftpSpinRunning.unlock();
-    } else {
-        printf("TopViCaptureInterface: Unable to exit Camera thread\n");
-    }
-
-    printf("TopViCaptureInterface: Deleting image buffers\n");
-
-    printf("TopViCaptureInterface: Closing ftp getter...\n");
-#endif
 
     printf("TopViCaptureInterface: Closing TopVi capture...\n");
 }
@@ -199,31 +189,32 @@ void TopViCaptureInterface::FtpSpinThread::run()
     SYNC_PRINT(("TopViCaptureInterface::ftpSpinThread(): ftp loader thread running\n"));
 
     while (capInterface->ftpSpinRunning.tryLock()) {
-
         if (ftpLoader.inited && capInterface->shouldActivateFtpSpinThread) {
             SYNC_PRINT(("FtpSpinThread::run(): ftp get starting\n"));
             //ftpLoader.makeTest();
             ftpLoader.getFile();
+#if 1
+            /* Now exchange the buffer that is visible from */
+            capInterface->protectFrame.lock();
+            frame_data_t frameData;
+            frameData.timestamp = capInterface->currentFrame->usecsTimeStamp();
+            capInterface->notifyAboutNewFrame(frameData);
+            capInterface->protectFrame.unlock();
+#endif
+            capInterface->protectActivate.lock();
             capInterface->shouldActivateFtpSpinThread = false;
+            capInterface->protectActivate.unlock();
             SYNC_PRINT(("FtpSpinThread::run(): ftp get finished\n"));
         }
-        else {
-            usleep(500);
-        }
-
-        /* Now exchange the buffer that is visible from */
-
-        //capInterface->protectFrame.lock();
-        //frame_data_t frameData;
-        //frameData.timestamp = capInterface->currentLeft->usecsTimeStamp();
-        //capInterface->notifyAboutNewFrame(frameData);
-
         capInterface->ftpSpinRunning.unlock();
+
         if (capInterface->shouldStopFtpSpinThread)
         {
             SYNC_PRINT(("Break command to ftp spin thread received"));
             break;
         }
+
+        usleep(200);
     }
     SYNC_PRINT(("TopViCaptureInterface: ftpLoader thread finished\n"));
 }
@@ -241,16 +232,53 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::initCapture()
     return result;
 }
 
-TopViCaptureInterface::FramePair   TopViCaptureInterface::getFrame(){
-    FramePair result( NULL, NULL);
-    if (!shouldActivateFtpSpinThread)
-    {
-        shouldActivateFtpSpinThread = true;
+TopViCaptureInterface::FramePair  TopViCaptureInterface::getFrame(){
+    FramePair pair(NULL, NULL);
+    SYNC_PRINT(("TopViCaptureInterface::getFrame(): called\n"));
+
+#if 1
+    QString name = "tpv_20170414T164331_cam0_0.pgm";
+    MetaData meta;
+    G12Buffer *bayer = PPMLoader().g12BufferCreateFromPGM(name.toStdString(), &meta);
+    if (bayer == NULL) {
+        SYNC_PRINT(("Can't' open bayer file: %s", name.toLatin1().constData()));
     }
     else {
-        SYNC_PRINT(("FtpLoader is busy. Please, try some later."));
+        DebayerMethod::DebayerMethod methodId = DebayerMethod::NEAREST;
+        int bayerPos = 1;
+        int shift = -4;
+        uint16_t mask = 0xFFFF;
+
+        Debayer d(bayer, meta["bits"][0], &meta, bayerPos);
+        RGB48Buffer* input = new RGB48Buffer(bayer->h, bayer->w, false);
+        d.toRGB48(methodId, input);
+
+        RGB24Buffer *result = new RGB24Buffer(input->getSize());
+        for (int i = 0; i < result->h; i ++)
+        {
+            for (int j = 0; j < result->w; j ++)
+            {
+                RGB48Buffer::InternalElementType colorIn = input->element(i, j);
+                RGBColor colorOut;
+                if (shift >= 0) {
+                    colorOut.r() = (colorIn.r() & mask) << shift;
+                    colorOut.g() = (colorIn.g() & mask) << shift;
+                    colorOut.b() = (colorIn.b() & mask) << shift;
+                }
+                if (shift < 0) {
+                    colorOut.r() = (colorIn.r() & mask) >> (-shift);
+                    colorOut.g() = (colorIn.g() & mask) >> (-shift);
+                    colorOut.b() = (colorIn.b() & mask) >> (-shift);
+                }
+                result->element(i,j) = colorOut;
+            }
+        }
+        pair.rgbBufferLeft = result;
+        delete_safe(input);
     }
-    return result;
+#endif
+    SYNC_PRINT(("TopViCaptureInterface::getFrame(): finished\n"));
+    return pair;
 }
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters(CameraParameters &params)

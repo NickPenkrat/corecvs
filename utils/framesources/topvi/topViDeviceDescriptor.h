@@ -59,6 +59,7 @@ private:
 
     TopViGrillInterface grillInterface;
     QMutex protectGrillRequest;
+    QMutex protectGrillReply;
 
     void replyCallback(TopViGrillCommand *cmd);
     //This is a methods for GRILL API

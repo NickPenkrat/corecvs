@@ -9,7 +9,6 @@ using namespace std;
 class TopViCaptureInterface;
 
 enum TopViCmd {
-    TPV_ERROR = -1,
     TPV_INIT = 1,
     TPV_STATUS,
     TPV_GRAB,
@@ -59,6 +58,7 @@ struct TopViGrillCommand {
 string generateCommand(TopViCmd cmdType, int camId, int value, int additional_value = 0);
 grill_reply *parseReply(string rstr);
 string cmdTypeName(TopViCmd cmdType);
+string cmdStatusName(TopViCmdStatus cmdStatus);
 TopViCmdStatus cmdNeedReplay(TopViCmd cmdType);
 string generateTestReply(TopViCmd cmdType);
 

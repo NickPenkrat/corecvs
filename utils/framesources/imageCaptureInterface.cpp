@@ -238,7 +238,7 @@ void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
         imageInterfaceReceiver->newFrameReadyCallback(frameData);
         imageInterfaceReceiver->newImageReadyCallback();
     } else {
-        SYNC_PRINT(("Warning:  V4L2CaptureInterface::notifyAboutNewFrame(): imageInterfaceReceiver is NULL\n"));
+        SYNC_PRINT(("Warning:  ImageCaptureInterface::notifyAboutNewFrame(): imageInterfaceReceiver is NULL\n"));
     }
 }
 

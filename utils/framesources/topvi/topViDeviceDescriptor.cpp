@@ -111,11 +111,14 @@ xxx:
                 break;
             }
 
+            device->protectGrillReply.lock();
             cmd->state = TPV_QUERY;
+            device->protectGrillReply.unlock();
 
             cmd->state = cmdNeedReplay(cmd->cmdType);
 
             if (cmd->state == TPV_WAIT_REPLY) {
+                int result = false;
 #if 1
                 string serverReply = generateTestReply(cmd->cmdType);
 #else
@@ -135,14 +138,30 @@ xxx:
                 SYNC_PRINT(("TopViGrillInterface::CmdSpinThread(): server reply %s\n", serverReply.c_str()));
 
                 device->grillInterface.replyCallback(serverReply);
+                device->protectGrillReply.lock();
                 cmd->state = TPV_REPLY;
+                device->protectGrillReply.unlock();
+                SYNC_PRINT(("TopViGrillInterface::CmdSpinThread(): before callback cmdId = %d, cmdStatus = %s\n", cmd->cmdId, cmdStatusName(cmd->state).c_str()));
                 if (cmd->parent) {
-                    cmd->parent->replyCallback(cmd->reply->replyStr);
+                    result = cmd->parent->replyCallback(cmd->reply->replyStr);
                 }
                 else {
                     device->replyCallback(cmd);
+                    result = true;
                 }
-                cmd->state = TPV_OK;
+                SYNC_PRINT(("TopViGrillInterface::CmdSpinThread(): after callback cmdId = %d, cmdStatus = %s\n", cmd->cmdId, cmdStatusName(cmd->state).c_str()));
+                if (result) {
+                    device->protectGrillReply.lock();
+                    cmd->state = TPV_OK;
+                    device->protectGrillReply.unlock();
+                    SYNC_PRINT(("TopViGrillInterface::CmdSpinThread(): should be OK cmdId = %d, cmdStatus = %s\n", cmd->cmdId, cmdStatusName(cmd->state).c_str()));
+                }
+                else {
+                    device->protectGrillReply.lock();
+                    cmd->state = TPV_OK;
+                    device->protectGrillReply.unlock();
+                    SYNC_PRINT(("TopViGrillInterface::CmdSpinThread(): command doesn't resolve cmdId = %d, cmdStatus = %s\n", cmd->cmdId, cmdStatusName(cmd->state).c_str()));
+                }
              }
         }
         device->protectGrillRequest.unlock();
@@ -170,7 +189,9 @@ int TopViDeviceDescriptor::init(int _deviceId, TopViCaptureInterface *parent){
     this->deviceId = _deviceId;
     if (inited.testAndSetAcquire(0,1)) {
         this->deviceId = deviceId;
+        this->cmdSpinRunning.lock();
         this->shouldStopCmdSpinThread = false;
+        this->cmdSpinRunning.unlock();
         cmdSpin.device = this;
         cmdSpin.start();
         this->executeCommand(TPV_INIT, 0);
@@ -203,8 +224,7 @@ int TopViDeviceDescriptor::getCamerasSysId(vector<string> &camDesc)
 }
 
 void TopViDeviceDescriptor::replyCallback(TopViGrillCommand *cmd){
-  SYNC_PRINT(("TopViDeviceDescriptor: callback reply for command %s\n%s\n", cmdTypeName(cmd->cmdType).c_str(), cmd->reply->replyStr.c_str()));
-  cmd->state = TPV_OK;
+  SYNC_PRINT(("TopViDeviceDescriptor: callback reply for command %s(%d): %s\n", cmdTypeName(cmd->cmdType).c_str(), cmd->cmdId, cmd->reply->replyStr.c_str()));
 }
 
 void TopViDeviceDescriptor::executeCommand(TopViCmd cmdType, int camId, int value, int add_value, TopViCaptureInterface *parent)

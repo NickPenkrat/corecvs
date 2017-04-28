@@ -53,7 +53,7 @@ public:
     //OK
     static int topViTrace(int res, const char *prefix = NULL);
 
-    void replyCallback(string reply);
+    int replyCallback(string reply);
 
 private:
 
@@ -86,13 +86,14 @@ private:
 
     static TopViDeviceDescriptor device;
 
+    BufferDescriptorType *currentFrame;
+
     //void decodeData  (TopViCameraDescriptor *camera, BufferDescriptorType *buffer, G12Buffer **output);
     //void decodeData24(TopViCameraDescriptor *camera, BufferDescriptorType *buffer, RGB24Buffer **output);
 
-    FtpSpinThread ftpSpin;         /**< ftp spin thread that blocks waiting for the frames */
-    QMutex protectFrame;     /**< This mutex protects both buffers from concurrent reading/writind
-                              *  If somebody is reading of modifying the buffer it should look the mutex
-                              **/
+    FtpSpinThread ftpSpin;         /**< ftp spin thread that blocks waiting get file >**/
+    QMutex protectFrame;
+    QMutex protectActivate;
     QMutex ftpSpinRunning;
     volatile bool shouldStopFtpSpinThread;
     volatile bool shouldActivateFtpSpinThread;

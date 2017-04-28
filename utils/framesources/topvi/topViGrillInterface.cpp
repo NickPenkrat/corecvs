@@ -3,7 +3,6 @@
 
 string cmdTypeName(TopViCmd cmdType){
     switch (cmdType) {
-        case TPV_ERROR: return "TPV_ERROR";
         case TPV_INIT: return "TPV_INIT";
         case TPV_STATUS: return "TPV_STATUS";
         case TPV_GRAB: return "TPV_GRAB";
@@ -23,7 +22,6 @@ TopViCmdStatus cmdNeedReplay(TopViCmd cmdType){
         case TPV_FOCUS_MODE:
         case TPV_GRAB:
             return TPV_WAIT_REPLY;
-        case TPV_ERROR:
         case TPV_INIT:
         case TPV_SET_EXPOSURE:
         case TPV_SET_PREVIEW:
@@ -33,18 +31,28 @@ TopViCmdStatus cmdNeedReplay(TopViCmd cmdType){
     return TPV_UNKNOWN;
 }
 
+string cmdStatusName(TopViCmdStatus cmdStatus) {
+   switch (cmdStatus) {
+        case TPV_WAIT_REPLY: return "TPV_WAIT_REPLY";
+        case TPV_REPLY: return "TPV_REPLY";
+        case TPV_OK: return "TPV_OK";
+        case TPV_NO_REPLY: return "TPV_NO_REPLY";
+        case TPV_UNKNOWN: return "TPV_UNKNOWN";
+   }
+   return "Unknown cmd status";
+}
+
 string generateTestReply(TopViCmd cmdType) {
     switch (cmdType) {
-        case TPV_ERROR: return "ER";
-        case TPV_INIT: return "";
+        case TPV_INIT: return "REOO4<SU>";
         case TPV_STATUS: return "RE004<SU>";
         case TPV_GRAB:
-            return "RE023ftp://speedtest.tele2.net/1KB.zip";
-            //return "RE037ftp://193.232.110.156/tpv_20000101T010746_cam0_0.pgm";
+            //return "RE023ftp://speedtest.tele2.net/1KB.zip";
+            return "RE037ftp://193.232.110.156/tpv_20170425T212203_cam0_0.pgm";
         case TPV_SET_EXPOSURE: return "";
         case TPV_SET_PREVIEW: return "";
         case TPV_FOCUS_MODE: return "RE005{124}";
-        case TPV_GET_CONTROL: return "RE004{}";
+        case TPV_GET_CONTROL: return "RE004{,,}";
         case TPV_SET_CONTROL: return "";
     }
     return "TPV_UNKNOWN";
@@ -91,14 +99,14 @@ string generateCommandString(TopViCmd cmdType, int camId, int value, int additio
             }
         case TPV_GET_CONTROL:
             if (camId == 0) {
-                return "";
+                return "print,/par/dev/vi/" + to_string(value);
             }
             else {
                 return "print,/par/dev/vi/cam/" + to_string(camId) + "/" + to_string(value);
             }
         case TPV_SET_CONTROL:
             if (camId == 0) {
-                return "";
+                return "print,/par/dev/vi/"+ to_string(value) + "," + to_string(additional_value);
             }
             else {
                 return "set,/par/dev/vi/cam/" + to_string(camId) + "/" + to_string(value) + "," + to_string(additional_value);
@@ -151,9 +159,9 @@ void TopViGrillInterface::removeOldCommands(){
     QMutableListIterator<TopViGrillCommand*> it(commandList);
     while (it.hasNext()) {
          TopViGrillCommand *cmd = it.next();
-         SYNC_PRINT(("TopViGrillInterface::removeCommand: cmdId = %d, cmdType = %s\n", cmd->cmdId, cmdTypeName(cmd->cmdType).c_str()));
+         SYNC_PRINT(("TopViGrillInterface::removeCommand: cmdId = %d, cmdType = %s, cmdStatus = %s\n", cmd->cmdId, cmdTypeName(cmd->cmdType).c_str(), cmdStatusName(cmd->state).c_str()));
          if (cmd->state == TPV_OK || cmd->state == TPV_NO_REPLY) {
-             SYNC_PRINT(("Remove command %d\n", cmd->cmdId));
+             SYNC_PRINT(("Remove command %d with state %s\n", cmd->cmdId, cmdStatusName(cmd->state).c_str()));
              it.remove();
              delete cmd->request;
              delete cmd->reply;
@@ -171,7 +179,6 @@ void TopViGrillInterface::replyCallback(string reply){
          SYNC_PRINT(("TopViGrillInterface::replyCallback: cmdId = %d, cmdType = %s\n", cmd->cmdId, cmdTypeName(cmd->cmdType).c_str()));
          if (cmd->state == TPV_WAIT_REPLY /*&& greply->cmdId == cmd->cmdId*/) {
             cmd->reply = greply;
-            cmd->state = TPV_REPLY;
          }
     }
 }
