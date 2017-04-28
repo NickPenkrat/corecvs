@@ -11,13 +11,16 @@
 
   #define READ(s, buf, len)     read(s, buf, len)
   #define WRITE(s, buf, len)	write(s, buf, len)
+  #define closesocket(fd)       close(fd)
+  #define ERROR_TO_STR          gai_strerror
 #else
   #include <winsock2.h>
   #include <ws2tcpip.h>
 
-  #define READ(s, buf, len)	recv(s, (char*)(buf), len, 0)
-  #define WRITE(s, buf, len)	send(s, (char*)(buf), len, 0)
+  #define READ(s, buf, len)     recv(s, (char*)(buf), len, 0)
+  #define WRITE(s, buf, len)    send(s, (char*)(buf), len, 0)
   typedef int socklen_t;
+  #define ERROR_TO_STR          gai_strerrorA
 #endif
 
 void TopViDeviceDescriptor::CmdSpinThread::run()
@@ -36,13 +39,13 @@ void TopViDeviceDescriptor::CmdSpinThread::run()
     err = WSAStartup(wVersionRequested, &wsaData);
     if (err != 0){
             SYNC_PRINT(("WSAStartup failed with error: %d\n", err));
-            return 1;
+            return;
     }
 
     if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2){
             SYNC_PRINT(("Could not find a usable version of Winsock.dll\n"));
             WSACleanup();
-            return 1;
+            return;
     }
 #endif
 
@@ -57,21 +60,24 @@ xxx:
     int port = 8002;
 
     retval = getaddrinfo(addr.c_str(), to_string(port).c_str(), &hints, &result);
-    if (retval != 0) {
-       fprintf(stderr, "Incorrect address %s\n", gai_strerror(retval));
+    if (retval != 0)
+    {
+       fprintf(stderr, "Incorrect address %s\n", ERROR_TO_STR(retval));
        sleep(5);
        goto xxx;
     }
 
     for (rp = result; rp != NULL; rp = rp->ai_next) {
        fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-       if (fd == -1) continue;
-       if (::connect(fd, rp->ai_addr, rp->ai_addrlen) != -1) break;
-       close(fd);
+       if (fd == -1)
+           continue;
+       if (::connect(fd, rp->ai_addr, rp->ai_addrlen) != -1)
+           break;
+       closesocket(fd);
     }
 
     if (rp == NULL) {
-        fprintf(stderr, "Could not connect to %s. Waiting 5s  for power on\n", (addr + ":" + to_string(port)).c_str());
+        fprintf(stderr, "Could not connect to <%s>. Waiting 5s for power ON\n", (addr + ":" + to_string(port)).c_str());
         freeaddrinfo(result);
         sleep(5);
         goto xxx;
@@ -81,32 +87,35 @@ xxx:
 
     SYNC_PRINT(("TopViDeviceDescriptor::CmdSpinThread(): new command thread running\n"));
 
-    while (device->cmdSpinRunning.tryLock()) {
-
-        ssize_t	length = 0, retval = 0;
-        char s[0xFFF +1];
+    while (device->cmdSpinRunning.tryLock())
+    {
+        long long length = 0, retval = 0;
+        //char s[0xFFF +1];
 
         device->protectGrillRequest.lock();
 
         QMutableListIterator<TopViGrillCommand*> it(device->grillInterface.commandList);
-        while (it.hasNext()) {
+        while (it.hasNext())
+        {
             TopViGrillCommand *cmd = it.next();
 
-            if (cmd->state != TPV_UNKNOWN) continue;
+            if (cmd->state != TPV_UNKNOWN)
+                continue;
 
             SYNC_PRINT(("TopViGrillInterface::CmdSpinThread(): SEND cmdId = %d, cmdType = %s\n", cmd->cmdId, cmdTypeName(cmd->cmdType).c_str()));
 
             length = cmd->request->requestStr.length();
-            try{
+            try {
                 retval = WRITE(fd, cmd->request->requestStr.c_str(), length);
             }
-            catch(...){
+            catch(...) {
                 SYNC_PRINT(("Broken pipe\n"));
-                close(fd);
+                closesocket(fd);
                 goto xxx;
             }
 
-            if (retval != length){
+            if (retval != length)
+            {
                 if (retval < 0) SYNC_PRINT(("TopViGrillInterface::CmdSpinThread(): write error: %s\n", strerror(errno)));
                 break;
             }
@@ -179,15 +188,18 @@ xxx:
             break;
         }
     }
-    close(fd);
+    closesocket(fd);
     SYNC_PRINT(("TopViDeviceDescriptor::CmdSpinThread(): command thread finished\n"));
 }
 
 
-int TopViDeviceDescriptor::init(int _deviceId, TopViCaptureInterface *parent){
+int TopViDeviceDescriptor::init(int _deviceId, TopViCaptureInterface *parent)
+{
+    CORE_UNUSED(parent);
     SYNC_PRINT(("TopViDeviceDescriptor::init(): init called\n"));
     this->deviceId = _deviceId;
-    if (inited.testAndSetAcquire(0,1)) {
+    if (inited.testAndSetAcquire(0,1))
+    {
         this->deviceId = deviceId;
         this->cmdSpinRunning.lock();
         this->shouldStopCmdSpinThread = false;
@@ -198,7 +210,7 @@ int TopViDeviceDescriptor::init(int _deviceId, TopViCaptureInterface *parent){
     }
     //we assume that all objects with the type TopViCapture creation in the single thread
     this->executeCommand(TPV_STATUS, 0);
-
+    return 0;
 }
 
 int TopViDeviceDescriptor::getCamerasSysId(vector<string> &camDesc)

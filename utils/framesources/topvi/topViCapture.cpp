@@ -114,7 +114,7 @@ TopViCaptureInterface::~TopViCaptureInterface()
        ftpSpinRunning.lock();
        shouldStopFtpSpinThread = true;
        ftpSpinRunning.unlock();
-       usleep(200);
+       QThread::usleep(200);
     }
 
     printf("TopViCaptureInterface: Closing TopVi capture...\n");
@@ -143,10 +143,10 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getFormats(int *num, 
     SYNC_PRINT(("TopViCaptureInterface::getFormats()\n"));
     vector<ImageCaptureInterface::CameraFormat> cameraFormats;
 
-    cameraFormats.push_back(ImageCaptureInterface::CameraFormat(3840, 2748, 6));
+    cameraFormats.push_back(ImageCaptureInterface::CameraFormat(2748, 3840, 6));
     //TODO: add format for preview
 
-    *num = cameraFormats.size();
+    *num = (int)cameraFormats.size();
     formats = new ImageCaptureInterface::CameraFormat[cameraFormats.size()];
     for (unsigned i = 0; i < cameraFormats.size(); i ++)
     {
@@ -283,12 +283,15 @@ TopViCaptureInterface::FramePair  TopViCaptureInterface::getFrame(){
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters(CameraParameters &params)
 {
+    CORE_UNUSED(params);
     SYNC_PRINT(("TopViCaptureInterface: queryCameraParameters is not supported for TopVi interface yet.\n"));
     return ImageCaptureInterface::SUCCESS;
 }
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::setCaptureProperty(int id, int value)
 {
+    CORE_UNUSED(id);
+    CORE_UNUSED(value);
     SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty is not supported for TopVi interface yet.\n"));
     //TODO: may be good place for get output dir path
     return ImageCaptureInterface::FAILURE;
@@ -296,7 +299,8 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::setCaptureProperty(in
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getCaptureProperty(int id, int *value)
 {
+    CORE_UNUSED(id);
+    CORE_UNUSED(value);
     SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty is not supported for TopVi interface yet.\n"));
     return ImageCaptureInterface::FAILURE;
 }
-
