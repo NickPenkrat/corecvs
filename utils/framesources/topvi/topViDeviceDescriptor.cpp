@@ -19,7 +19,7 @@
 
   #define READ(s, buf, len)     recv(s, (char*)(buf), len, 0)
   #define WRITE(s, buf, len)    send(s, (char*)(buf), len, 0)
-  #defien CLOSE(s)              { shutdown(s, SD_BOTH); closesocket(s); }
+  #define CLOSE(s)              { shutdown(s, SD_BOTH); closesocket(s); }
   typedef int socklen_t;
   #define ERROR_TO_STR          gai_strerrorA                
 #endif
