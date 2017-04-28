@@ -26,7 +26,7 @@ class kde
         size_t  getDataSize() {return dataMatrix.size();}
 
         std::vector<double>
-                calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .3);
+                calcPDF(int testPointCountX = 10, int testPointCountY = 10, double passLevel = .01);
 
         std::vector<double>
                 calcPDF(
@@ -36,6 +36,8 @@ class kde
                 std::vector<double> min,
                 std::vector<double> max
                 );
+
+        double  calcCoverage(int w, int h, int gridSize = 10, double passLevel = 0.01);
 
     private:
         std::vector<std::vector<double> >   dataMatrix;

@@ -32,6 +32,11 @@ using namespace std;
 TEST(Cornerdetector, DISABLED_testCornerDetector)
 {
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/calib-object.bmp");
+    if (input == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     SpatialGradient *grad = new SpatialGradient(input);
     G12Buffer *corners = grad->findCornerPoints(180.0);
 
@@ -61,7 +66,11 @@ TEST(Cornerdetector, DISABLED_testCornerDetector)
 TEST(Cornerdetector, DISABLED_testChessCornerDetector)
 {
     unique_ptr<RGB24Buffer> input(BufferFactory::getInstance()->loadRGB24Bitmap("data/calib-object.bmp"));
-
+    if (input.get() == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
 
     DpImage grayscale(input->getSize());
     grayscale.binaryOperationInPlace(*input, [](const double & /*a*/, const corecvs::RGBColor &b) {

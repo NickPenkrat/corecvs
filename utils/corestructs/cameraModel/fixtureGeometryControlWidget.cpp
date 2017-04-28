@@ -122,13 +122,12 @@ void FixtureGeometryControlWidget::getParameters(FlatPolygon& params) const
             );
 
     params.polygon.resize(ui->polygonWidget->rowCount());
-    for (size_t i = 0; i < ui->polygonWidget->rowCount(); i++)
+    for (int i = 0; i < ui->polygonWidget->rowCount(); i++)
     {
         QDoubleSpinBox *xWidget = static_cast<QDoubleSpinBox *>(ui->polygonWidget->cellWidget(i,1));
         QDoubleSpinBox *yWidget = static_cast<QDoubleSpinBox *>(ui->polygonWidget->cellWidget(i,2));
         params.polygon[i] = Vector2dd(xWidget->value(), yWidget->value());
     }
-
 }
 
 FlatPolygon *FixtureGeometryControlWidget::createParameters() const
@@ -162,8 +161,8 @@ void FixtureGeometryControlWidget::setParameters(const FlatPolygon &input)
     ui->polygonWidget->clear();
     for (size_t i = 0; i < input.polygon.size(); i++)
     {
-        ui->polygonWidget->insertRow(i);
-        ui->polygonWidget->setItem(i, 0, new QTableWidgetItem(QString::number(i)));
+        ui->polygonWidget->insertRow((int)i);
+        ui->polygonWidget->setItem((int)i, 0, new QTableWidgetItem(QString::number(i)));
         {
             QDoubleSpinBox *widget = new QDoubleSpinBox;
             widget->show();
@@ -172,7 +171,7 @@ void FixtureGeometryControlWidget::setParameters(const FlatPolygon &input)
             widget->setDecimals(5);
             widget->setValue(input.polygon[i].x());
             connect(widget, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
-            ui->polygonWidget->setCellWidget(i, 1, widget);
+            ui->polygonWidget->setCellWidget((int)i, 1, widget);
         }
         {
             QDoubleSpinBox *widget = new QDoubleSpinBox;
@@ -182,7 +181,7 @@ void FixtureGeometryControlWidget::setParameters(const FlatPolygon &input)
             widget->setDecimals(5);
             widget->setValue(input.polygon[i].y());
             connect(widget, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
-            ui->polygonWidget->setCellWidget(i, 2, widget);
+            ui->polygonWidget->setCellWidget((int)i, 2, widget);
         }
     }
 

@@ -41,9 +41,10 @@ public:
     bool visible;
 
     /* This function sets common materials */
-    virtual void commonSetup(CloudViewDialog *dialog, const Draw3dParameters *parameters);
+    virtual void commonSetup   (CloudViewDialog *dialog, const Draw3dParameters *parameters);
     virtual void commonTierdown(CloudViewDialog *dialog, const Draw3dParameters *parameters);
 
+    /* Despite the fact all callers use this function to draw, */
     virtual void draw(CloudViewDialog *dialog);
 
     virtual void prepareMesh(CloudViewDialog *dialog);

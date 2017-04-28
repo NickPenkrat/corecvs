@@ -75,6 +75,8 @@ public:
 
     std::string                   relativeImageDataPath;
 
+    bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
+
     StatusTracker *               processState = nullptr;
 
     /* This is for future, when all the heap/memory will be completed */
@@ -292,6 +294,7 @@ public:
                 bool loadGeometry = true)
     {
         visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
+        visitor.visit(hasTargetCoordSystem, false, "hasTargetCoordSystem");
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;

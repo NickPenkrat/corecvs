@@ -506,7 +506,7 @@ bool FixtureScene::checkIntegrity()
             ok = false; SYNC_PRINT(("Geometry is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
         }
         if (geometry->ownerScene != this) {
-            ok = false; SYNC_PRINT(("Geometry form other scene: geometry:<%d> scene:<%s>\n", i, this->nameId.c_str()));
+            ok = false; SYNC_PRINT(("Geometry form other scene: geometry:<%" PRISIZE_T "> scene:<%s>\n", i, this->nameId.c_str()));
         }
 
         for (auto it = geometry->relatedPoints.begin(); it != geometry->relatedPoints.end(); ++it)
@@ -708,6 +708,7 @@ void FixtureScene::dumpInfo(ostream &out, bool brief)
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 #endif
+    out << "name: " << nameId << "\trelPath: " << relativeImageDataPath << "\thasTargetCoordSystem: " << hasTargetCoordSystem << endl;
 
     out << "Camera Prototypes: " << mCameraPrototypes.size() << endl;
     if (!brief)

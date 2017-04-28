@@ -295,6 +295,10 @@ public:
         }
     }
 
+    /* Helper functions */
+    PointPath getEpipath(FixtureCamera *camera1, FixtureCamera *camera2, int segments = 10);
+
+
 };
 
 

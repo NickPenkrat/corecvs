@@ -42,6 +42,11 @@ TEST(Deform, testFastDeform)
     ProjectiveTransform inverseLeft(inverseLeftMatrix);
 
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (image == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(image, "Could not open test image\n");
     CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
