@@ -154,7 +154,7 @@ void Int8x16::hexDump(ostream &out)
 
 unsigned int popcount_lookup(unsigned int a)
 {
-    static uint8_t lookup8bit[256] = { 
+    static unsigned char lookup8bit[256] = {
         /* 0 */ 0, /* 1 */ 1, /* 2 */ 1, /* 3 */ 2, 
         /* 4 */ 1, /* 5 */ 2, /* 6 */ 2, /* 7 */ 3, 
         /* 8 */ 1, /* 9 */ 2, /* a */ 2, /* b */ 3, 
