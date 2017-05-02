@@ -7,7 +7,8 @@ with_native {
     !win32 {
         CPU_FLAGS += $$system(cat /proc/cpuinfo | grep -m 1 "^flags")
     } else {
-        CPU_FLAGS_PATH=$$shell_path($$PWD/siblings/ckcpu/cpu_features.exe)
+        CPU_FLAGS_PATH=$$shell_path($$PWD/tools/ckcpu/cpu_features.exe)
+        !exists("$$CPU_FLAGS_PATH") : CPU_FLAGS_PATH=$$shell_path($$PWD/siblings/ckcpu/cpu_features.exe)
         exists("$$CPU_FLAGS_PATH") {
             CPU_FLAGS += $$system("$$CPU_FLAGS_PATH")
         } else {

@@ -20,7 +20,7 @@ CORECVS_INCLUDED +=  config.pri
 !gen_vsproj {
     CONFIG +=   \
                 \
-        debug \
+#        debug \
 #        release \
 
 }
