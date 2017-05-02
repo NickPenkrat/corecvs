@@ -6,9 +6,10 @@ CPU_FLAGS = ""
 with_native {
     !win32 {
         CPU_FLAGS += $$system(cat /proc/cpuinfo | grep -m 1 "^flags")
+        #message("STUPID QMAKE")
     } else {
         CPU_FLAGS_PATH=$$shell_path($$PWD/tools/ckcpu/cpu_features.exe)
-        !exists("$$CPU_FLAGS_PATH") : CPU_FLAGS_PATH=$$shell_path($$PWD/siblings/ckcpu/cpu_features.exe)
+        !exists("$$CPU_FLAGS_PATH") : CPU_FLAGS_PATH=$$shell_path($$PWD/src/open/tools/ckcpu/cpu_features.exe)
         exists("$$CPU_FLAGS_PATH") {
             CPU_FLAGS += $$system("$$CPU_FLAGS_PATH")
         } else {
