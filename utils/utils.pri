@@ -159,6 +159,25 @@ with_opencv {                                       # all this stuff was extract
     }
 }
 
+with_rapidjson {
+    RAPIDJSON_WRAPPER_DIR = $$UTILSDIR/../wrappers/rapidjson
+    include($$RAPIDJSON_WRAPPER_DIR/rapidjson.pri)
+
+    contains(DEFINES, WITH_RAPIDJSON) {
+       INCLUDEPATH += $$RAPIDJSON_WRAPPER_DIR
+    }
+}
+
+
+with_jsonmodern {
+    JSONMODERN_WRAPPER_DIR = $$UTILSDIR/../wrappers/jsonmodern
+    include($$JSONMODERN_WRAPPER_DIR/jsonmodern.pri)
+
+    contains(DEFINES, WITH_JSONMODERN) {
+       INCLUDEPATH += $$JSONMODERN_WRAPPER_DIR
+    }
+}
+
 with_siftgpu {
     SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
     DEFINES += WITH_SIFTGPU
@@ -224,26 +243,6 @@ with_synccam {
         #DEPENDPATH  += $$CYPRESS_DIR/include
     }
 }
-
-with_rapidjson {
-    RAPIDJSON_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/rapidjson
-    include($$RAPIDJSON_WRAPPER_DIR/rapidjson.pri)
-
-    contains(DEFINES, WITH_RAPIDJSON) {
-        INCLUDEPATH += $$RAPIDJSON_WRAPPER_DIR
-    }
-}
-
-
-with_jsonmodern {
-    JSONMODERN_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/jsonmodern
-    include($$JSONMODERN_WRAPPER_DIR/jsonmodern.pri)
-
-    contains(DEFINES, WITH_JSONMODERN) {
-        INCLUDEPATH += $$JSONMODERN_WRAPPER_DIR
-    }
-}
-
 
 ###############################################
 #   Useful common part for all cvs projects   #
