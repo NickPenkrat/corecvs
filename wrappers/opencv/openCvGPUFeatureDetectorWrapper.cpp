@@ -254,7 +254,16 @@ bool FindGPUDevice( bool& cudaApi )
         return true;
     }
 
-    const int numCudaDevices = getCudaEnabledDeviceCount();
+	int numCudaDevices = 0;
+	try 
+	{
+		numCudaDevices = getCudaEnabledDeviceCount();
+	}
+	catch (cv::Exception)
+	{
+		numCudaDevices = 0;
+	}
+		
     bool initProvider = false;
     for ( int idx = 0; idx < numCudaDevices; idx++ )
     {
