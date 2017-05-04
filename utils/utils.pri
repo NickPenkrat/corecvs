@@ -151,9 +151,9 @@ with_ueye {
 }
 
 with_topvi {
-    DEFINES     += WITH_TOPVI
+    DEFINES += WITH_TOPVI
+    CURL_DIR = $$(CURL_DIR)
     win32 {
-        CURL_DIR     = c:\curl
         INCLUDEPATH += $$CURL_DIR\include
         LIBS        += -L$$CURL_DIR\build\lib\Release -llibcurl -llibcurl_imp
         LIBS        += -lwsock32 -lws2_32
