@@ -57,7 +57,8 @@ void TopViDeviceDescriptor::CmdSpinThread::run()
     hints.ai_protocol = 0;           /* Any protocol */
 
 xxx:
-    string addr = "localhost";
+    //string addr = "localhost";
+    string addr = "193.232.110.156";
     int port = 8002;
 
     retval = getaddrinfo(addr.c_str(), to_string(port).c_str(), &hints, &result);
@@ -91,7 +92,7 @@ xxx:
     while (device->cmdSpinRunning.tryLock())
     {
         long long length = 0, retval = 0;
-        //char s[0xFFF +1];
+        char s[0xFFF +1];
 
         device->protectGrillRequest.lock();
 
@@ -129,7 +130,7 @@ xxx:
 
             if (cmd->state == TPV_WAIT_REPLY) {
                 int result = false;
-#if 1
+#if 0
                 string serverReply = generateTestReply(cmd->cmdType);
 #else
                 retval = READ(fd, s, sizeof(s) - 1);
