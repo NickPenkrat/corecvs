@@ -300,7 +300,7 @@ public:
     AbstractBuffer(const std::vector<std::vector<ElementType>> &vec, IndexType h, IndexType w, IndexType stride = STRIDE_AUTO)
     {
         std::vector<ElementType> el;
-        el.reserve(w * h);
+        el.reserve((size_t)w * h);
         for (IndexType i = 0; i < h; ++i)
         {
             for (IndexType j = 0; j < w; ++j)
@@ -440,15 +440,27 @@ template<typename ResultType>
      *
      * A common practice in this project is for the y coordinate to come first
      **/
+#if 1
     inline ElementType &element(const IndexType y, const IndexType x)
     {
-        return data[y * this->stride + x];
+        return data[(size_t)y * this->stride + x];
     }
 
     inline const ElementType &element(const IndexType y, const IndexType x) const
     {
+        return data[(size_t)y * this->stride + x];
+    }
+#else
+    inline ElementType &element(const size_t y, const size_t x)
+    {
         return data[y * this->stride + x];
     }
+
+    inline const ElementType &element(const size_t y, const size_t x) const
+    {
+        return data[y * this->stride + x];
+    }
+#endif
 
     /**
      * The element getter
@@ -553,9 +565,9 @@ template<typename ResultType>
         return data != NULL;
     }
 
-    inline int numElements() const
+    inline size_t numElements() const
     {
-        return this->h * this->stride;
+        return (size_t)this->h * this->stride;
     }
 
     /**
@@ -1229,7 +1241,7 @@ private:
          *
          *  TODO : should use pointer arithmetics instead
          * */
-        int strideGuess = w;
+        IndexType strideGuess = w;
         size_t lineLen  = strideGuess * sizeof(ElementType);
         while (lineLen & DATA_ALIGN_GRANULARITY)
         {
@@ -1267,7 +1279,7 @@ private:
     static void _copy(ElementType* dst, const ElementType* src, IndexType h, IndexType w, IndexType strideDst, IndexType strideSrc)
     {
         for (IndexType i = 0; i < h; ++i)
-            _copy(dst + i * strideDst, src + i * strideSrc, w);
+            _copy(dst + (size_t)i * strideDst, src + (size_t)i * strideSrc, w);
     }
     static void _del(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
@@ -1283,7 +1295,7 @@ private:
         {
             for (IndexType i = 0; i < h; ++i)
                 for (IndexType j = 0; j < w; ++j)
-                    ptr[i * stride + j].~ElementType();
+                    ptr[(size_t)i * stride + j].~ElementType();
         }
     }
 
@@ -1296,7 +1308,7 @@ private:
         {
             for (IndexType i = 0; i < h; ++i)
                 for (IndexType j = 0; j < w; ++j)
-                    new (ptr + i * stride + j) ElementType();
+                    new (ptr + (size_t)i * stride + j) ElementType();
         }
         else
         {
@@ -1310,7 +1322,7 @@ private:
         {
             for (IndexType j = 0; j < w; ++j)
             {
-                new (ptr + i * stride + j) ElementType(el);
+                new (ptr + (size_t)i * stride + j) ElementType(el);
             }
         }
     }
