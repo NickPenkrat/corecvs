@@ -1856,3 +1856,24 @@ TEST(Matrix, invPosdefSqrt)
         for (int j = 0; j < 3; ++j)
             ASSERT_NEAR(W.a(i, j), i == j ? 1.0 : 0.0, 6e-16);
 }
+
+TEST(Matrix, hugeMatrix)
+{
+    int sx = 65536, sy = 32768;
+
+    ASSERT_TRUE((sx * sy) < 0);
+#if 0
+    Matrix A(sy + 1, sx + 1, 0.);                         // it requires 16GB
+#else
+    AbstractBuffer<int, int32_t> A(sy + 1, sx + 1, 0);    // it requires 8GB
+#endif
+    for (int i = 0; i <= sy; i += sy/2)
+        for (int j = 0; j <= sx; j += sx/2)
+            A.element(i, j) = 1.;
+
+    ASSERT_NEAR(A.element(         0,              0), 1.0, 1e-16);
+    ASSERT_NEAR(A.element(        10,             10), 0.0, 1e-16);
+    ASSERT_NEAR(A.element(sy / 2    , sx / 2        ), 1.0, 1e-16);
+    ASSERT_NEAR(A.element(sy / 2 * 2, sx / 2 * 2    ), 1.0, 1e-16);
+    ASSERT_NEAR(A.element(sy / 2 * 2, sx / 2 * 2 - 1), 0.0, 1e-16);
+}

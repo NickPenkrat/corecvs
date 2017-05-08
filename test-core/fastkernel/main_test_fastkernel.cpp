@@ -194,6 +194,11 @@ void _profileManualAddStream (void)
 TEST(FastKernel, testEdgeDetector)
 {
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (input == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     BufferProcessor<G12Buffer, G12Buffer, EdgeMagnitude, G12BufferAlgebra> processor;
     G12Buffer *edges = new G12Buffer(input->h, input->w);
 
@@ -221,6 +226,11 @@ TEST(FastKernel, profileEdgeDetector)  // it could be moved to perf-tests...
     for (unsigned i = 0; i < LIMIT; i++)
     {
         inputs[i] = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+        if (inputs[i] == nullptr)
+        {
+            cout << "Could not open test image" << endl;
+            return;
+        }
     }
 
     BufferProcessor<G12Buffer, G12Buffer, EdgeMagnitude, G12BufferAlgebra> processor;

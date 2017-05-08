@@ -410,51 +410,51 @@ gcov {
 }
 
 with_tbb:!contains(DEFINES, WITH_TBB) {
-    TBB_PATH = $$(TBB_PATH)
+    TBB_PATH = "$$(TBB_PATH)"
     win32 {
         !isEmpty(TBB_PATH) {
             DEFINES += WITH_TBB
 
             win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {
                 win32-msvc2010 {
-                    TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc10
+                    TBB_LIBDIR = "$(TBB_PATH)"/lib/ia32/vc10
                 } else:win32-msvc2013 {
-                    TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc12
+                    TBB_LIBDIR = "$(TBB_PATH)"/lib/ia32/vc12
                 } else:win32-msvc* {
-                   TBB_LIBDIR = $(TBB_PATH)/lib/ia32/vc14
+                   TBB_LIBDIR = "$(TBB_PATH)"/lib/ia32/vc14
                 }
             } else:win32-msvc2010 {
-                TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc10
+                TBB_LIBDIR = "$(TBB_PATH)"/lib/intel64/vc10
             } else:win32-msvc2013 {
-                TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc12
+                TBB_LIBDIR = "$(TBB_PATH)"/lib/intel64/vc12
             } else:win32-msvc* {
-                TBB_LIBDIR = $(TBB_PATH)/lib/intel64/vc14
-            } else:exists($(TBB_PATH)/lib/tbb.dll) {
+                TBB_LIBDIR = "$(TBB_PATH)"/lib/intel64/vc14
+            } else:exists("$(TBB_PATH)"/lib/tbb.dll) {
                 # old config when TBB's bins&libs were placed at TBB's lib dir
-                TBB_LIBDIR = $(TBB_PATH)/lib
+                TBB_LIBDIR = "$(TBB_PATH)"/lib
             } else {
                 GCC_VER    = $$system(gcc -dumpversion)
-                TBB_LIBDIR = $(TBB_PATH)/lib/intel64/mingw$$GCC_VER
+                TBB_LIBDIR = "$(TBB_PATH)"/lib/intel64/mingw$$GCC_VER
                 # the "script/windows/.tbb_build_mingw.bat" places libs there
             }
-            INCLUDEPATH += $(TBB_PATH)/include
+            INCLUDEPATH += "$(TBB_PATH)"/include
             LIBS        += -L"$$TBB_LIBDIR" -ltbb
-            !build_pass: contains(TARGET, cvs_core): message(Using <$$TBB_LIBDIR>)
+            !build_pass: contains(TARGET, cvs_core): message(Using <"$$TBB_LIBDIR">)
         } else {
            !build_pass: message(TBB not found. Please set TBB_PATH system variable to a root folder of TBB to use it)
         }
     } else:macx {
-        #message (Using TBB at $$TBB_PATH)
+        #message (Using TBB at "$$TBB_PATH")
         DEFINES     += WITH_TBB
-        INCLUDEPATH += $$TBB_PATH/include
-        LIBS        += -L$$TBB_PATH/lib -ltbb
+        INCLUDEPATH += "$$TBB_PATH"/include
+        LIBS        += -L"$$TBB_PATH"/lib -ltbb
 
-        DEPENDPATH  += $$TBB_PATH/include
+        DEPENDPATH  += "$$TBB_PATH"/include
     } else {
         !isEmpty(TBB_PATH) {
-            #message (Using TBB at $$TBB_PATH)
-            INCLUDEPATH += $$TBB_PATH/include
-            LIBS        += -L$$TBB_PATH/lib/
+            #message (Using TBB at "$$TBB_PATH")
+            INCLUDEPATH += "$$TBB_PATH"/include
+            LIBS        += -L"$$TBB_PATH"/lib/
         }
         else {
             !build_pass: message (Using System TBB)

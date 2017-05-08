@@ -234,8 +234,13 @@ TEST(Buffer, testBilinearTransform)
     ProjectiveTransform inverseLeft(inverseLeftMatrix);
 
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    if (image == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
+
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
     CORE_ASSERT_TRUE(buffer1Transformed->verify(), "Result image is corrupted");
 
@@ -283,7 +288,11 @@ TEST(Buffer, testDerivative)
 TEST(Buffer, testNonMinimal)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    if (image == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
 
     DerivativeBuffer *result = new DerivativeBuffer(image);
@@ -305,6 +314,11 @@ TEST(Buffer, testBufferDifference)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     G12Buffer *input2 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0002_c0.pgm");
+    if (input1 == nullptr || input2 == nullptr)
+    {
+        cout << "Could not open test images" << endl;
+        return;
+    }
 
     G12Buffer *output1 = G12Buffer::difference(input1, input2);
     (BMPLoader()).save("difference.bmp", output1);
@@ -321,6 +335,11 @@ TEST(Buffer, testBufferDifference)
 TEST(Buffer, testBufferThreshold)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (input1 == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     int level = 1500;
     G12Buffer *output = input1->binarize(level);
     (BMPLoader()).save("threshold.bmp", output);

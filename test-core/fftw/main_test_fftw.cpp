@@ -17,14 +17,18 @@ using namespace corecvs;
 
 TEST(FFTWWrapper, doublePrecisionTest)
 {
-    PPMLoader *ppmLoader = new PPMLoader();
-    G12Buffer *ppm = ppmLoader->loadG12("data/testdata/test_debayer.pgm");
+    G12Buffer *ppm = PPMLoader().loadG12("data/testdata/test_debayer.pgm");
+    if (ppm == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
     CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     FFTW fftw;
 
-    fftw_complex *input = new fftw_complex[ppm->h * ppm->w];
-    fftw_complex *fft = new fftw_complex[ppm->h * ppm->w];
+    fftw_complex *input  = new fftw_complex[ppm->h * ppm->w];
+    fftw_complex *fft    = new fftw_complex[ppm->h * ppm->w];
     fftw_complex *output = new fftw_complex[ppm->h * ppm->w];
 
     for (int i = 0; i < ppm->h; i++) {
@@ -50,7 +54,6 @@ TEST(FFTWWrapper, doublePrecisionTest)
     CORE_ASSERT_TRUE(error < 1, "FFT Transform failed: error is too big");
 
     delete_safe(ppm);
-    delete_safe(ppmLoader);
     delete_safe(fftResult);
 
     deletearr_safe(input);

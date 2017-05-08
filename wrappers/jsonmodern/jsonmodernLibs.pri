@@ -9,7 +9,7 @@ with_jsonmodern {
     } else {
         !build_pass: message(Json for Modern C++ module is ready for use)
 
-        JSONMODERN_PATH = $$(JSONMODERN_PATH)
+        #JSONMODERN_PATH = $$(JSONMODERN_PATH)
         DEFINES += WITH_JSONMODERN
     }
 }

@@ -38,7 +38,7 @@ class AbstractBufferParams
 {
 public:
     /** Calculate number of elements in a buffer */
-    inline int numElements() const      { return h * stride; }
+    inline size_t numElements() const   { return (size_t)h * stride; }
 
 //private:
     IndexType     h;
@@ -196,4 +196,3 @@ bool_t AbstractBufferParams<IndexType>::read(istream& s, char* str, size_t size,
 } // namespace
 
 #endif // ABSTRACTBUFFERPARAMS_H
-

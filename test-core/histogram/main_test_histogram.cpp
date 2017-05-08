@@ -23,6 +23,11 @@ using namespace corecvs;
 TEST(Histogram, testBinarization)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (image == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(image != NULL, "missed testBinarization input data");
 
     Histogram *histogram = new Histogram(image);

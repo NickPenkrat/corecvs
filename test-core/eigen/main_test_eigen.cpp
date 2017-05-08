@@ -99,10 +99,11 @@ TEST(Eigen, testEllipse)
     }
 
     /* Straitforward so far*/
-    Matrix dD(inputs.size(), 6);
+    CORE_ASSERT_TRUE(((uint)inputs.size()) == inputs.size(), ("too much points in testEllipse"));
+    Matrix dD((uint)inputs.size(), 6);
     for (vector<Vector2dd>::size_type i = 0; i < inputs.size(); i++) {
         Vector2dd p = inputs[i];
-        dD.fillLineWithArgs(i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
+        dD.fillLineWithArgs((uint)i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
     }
 
     Matrix S = dD.t() * dD;
