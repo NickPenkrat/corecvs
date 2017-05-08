@@ -124,6 +124,8 @@ RuntimeTypeBuffer *BufferFactory::loadRuntimeTypeBitmap(std::string name)
     return NULL;
 }
 
+
+/* TODO: DELETE THIS. BURN IT WITH FIRE */
 G12Buffer *BufferFactory::loadG16Bitmap(string name)
 {
     if (name.rfind(".pgm") != string::npos)
@@ -178,6 +180,22 @@ exit:
         fclose(In);
     }
     return result;
+}
+
+std::vector<std::string> BufferFactory::resolutionsRGB24()
+{
+
+
+}
+
+std::vector<std::string> BufferFactory::resolutionsG12()
+{
+
+}
+
+std::vector<std::string> BufferFactory::resolutionsRuntimeType()
+{
+
 }
 
 BufferFactory::~BufferFactory()

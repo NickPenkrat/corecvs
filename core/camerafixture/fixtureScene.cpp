@@ -866,6 +866,23 @@ SceneFeaturePoint *FixtureScene::getPointByName(const std::string &name)
     return NULL;
 }
 
+FixtureCamera *FixtureScene::getCameraByNumber(int fixtureNumber, int cameraNumber)
+{
+    if (fixtureNumber == -1)
+    {
+        if (cameraNumber < (int)orphanCameras().size())
+            return orphanCameras()[cameraNumber];
+        return NULL;
+    }
+
+    if (fixtureNumber < (int)fixtures().size())
+    {
+        if (cameraNumber < (int)fixtures()[fixtureNumber]->cameras.size())
+            return fixtures()[fixtureNumber]->cameras[cameraNumber];
+    }
+    return NULL;
+}
+
 
 
 FixtureScene::~FixtureScene()

@@ -9,6 +9,7 @@ HEADERS += \
     rectification/ransac.h \
     rectification/multicameraEstimator.h \
     rectification/multicameraTriangulator.h \
+    $$PWD/sceneStereoAlignerBlock.h
 
 
 SOURCES += \
@@ -21,4 +22,5 @@ SOURCES += \
     rectification/triangulator.cpp \
     rectification/multicameraEstimator.cpp \
     rectification/multicameraTriangulator.cpp \
+    $$PWD/sceneStereoAlignerBlock.cpp
 

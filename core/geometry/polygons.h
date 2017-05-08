@@ -509,7 +509,7 @@ public:
 
     /** These structures store the common vertexes **/
     int intersectionNumber;
-    std::vector<std::pair<int, int>> intersections;
+    std::vector<std::pair<size_t, size_t>> intersections;
 
     /* Method that initialise internal data structures of the PoligonCombiner*/
     void prepare(void);

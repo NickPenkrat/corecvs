@@ -28,6 +28,7 @@
 #include "testNativeWidget.h"
 
 #include "homographyReconstructor.h"
+#include "sceneStereoAlignerBlock.h"
 
 int main(int argc, char **argv)
 {    
@@ -87,7 +88,8 @@ int main(int argc, char **argv)
 
     if (mode == "blocks") {
         cout << "The list of reflected blocks" << endl;
-        cout << "  -  homography" << endl;
+        cout << "  -  homography"     << endl;
+        cout << "  -  stereo_aligner" << endl;
         return 0;
     }
 
@@ -179,10 +181,16 @@ int main(int argc, char **argv)
             Reflection *widget_ref = &HomographyReconstructorBlock::reflection;
             aabWidget = new ReflectionWidget(widget_ref);
             aabWidget->show();
-
-
-
         }
+
+        if (blockName == "stereo_aligner") {
+            SceneStereoAlignerBlock block;
+
+            Reflection *widget_ref = &SceneStereoAlignerBlock::reflection;
+            aabWidget = new ReflectionWidget(widget_ref);
+            aabWidget->show();
+        }
+
 
     }
 

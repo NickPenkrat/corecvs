@@ -22,7 +22,7 @@ namespace corecvs
 {
 
 /**
- *  This class is overcompliced. Break it into several ones
+ *  This class is overcomplicated. Break it into several ones
  **/
 class Mesh3D {
 public:

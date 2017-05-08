@@ -68,7 +68,6 @@ RectifyParametersControlWidget::~RectifyParametersControlWidget()
 
 void RectifyParametersControlWidget::loadParamWidget(WidgetLoader &loader)
 {
-    SYNC_PRINT(("RectifyParametersControlWidget::loadParamWidget()"));
     std::unique_ptr<RectifyParameters> params(createParameters());
     loader.loadParameters(*params, rootPath);
     setParameters(*params);

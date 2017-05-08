@@ -7,7 +7,7 @@
 #include <QTextEdit>
 #include <QPushButton>
 
-
+#include "pointerFieldWidget.h"
 #include "reflection.h"
 #include "reflectionWidget.h"
 #include "vectorWidget.h"
@@ -210,6 +210,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
         /* Composite field */
         case BaseField::TYPE_POINTER:
         {
+#if 0
             const PointerField *pField = static_cast<const PointerField *>(field);
             QString targetName = pField->name.name;
 
@@ -217,8 +218,17 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
             layout->addWidget(buttonWidget, i, 1, 1, 1);
             buttonWidget->setEnabled(false);
             buttonWidget->setText(targetName);
+
             //connect(buttonWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
             widget = buttonWidget;
+#endif
+            const PointerField *pField = static_cast<const PointerField *>(field);
+            QString targetName = pField->name.name;
+
+            PointerFieldWidget *pointerWidget = new PointerFieldWidget(pField, this);
+            layout->addWidget(pointerWidget, i, 1, 1, 1);
+            pointerWidget->setValue(NULL);
+            widget = pointerWidget;
             break;
         }
 
@@ -241,10 +251,11 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection) :
         executeButton->setIcon(QIcon(":/new/prefix1/lightning.png"));
         executeButton->setText("Execute");
         layout->addWidget(executeButton, layout->rowCount(), 1, 1, 1);
-
+        connect(executeButton, SIGNAL(released()), this, SIGNAL(executeCalled()));
     }
 
     setLayout(layout);
+
 }
 
 bool ReflectionWidget::getParameters(void *param) const
@@ -330,6 +341,12 @@ bool ReflectionWidget::getParameters(void *param) const
                 } else {
                     qDebug() << "There is no widget for" << cField->getSimpleName();
                 }
+                break;
+            }
+
+            case BaseField::TYPE_POINTER:
+            {
+                const PointerField *pField = static_cast<const PointerField *>(field);
                 break;
             }
 
@@ -420,6 +437,16 @@ bool ReflectionWidget::setParameters(void *param) const
                 }
                 break;
             }
+
+            case BaseField::TYPE_POINTER:
+            {
+                const PointerField *pField = static_cast<const PointerField *>(field);
+                PointerFieldWidget *pointerWidget = static_cast<PointerFieldWidget *>(fieldToWidget[i]);
+                void *rawPointer = (void *)obj.getField<void *>(i);
+                pointerWidget->setValue(rawPointer);
+                break;
+            }
+
 
             /* Well something is not supported */
             default:

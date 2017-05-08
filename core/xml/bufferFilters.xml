@@ -112,4 +112,21 @@
      <field type="Homography Algorithm" name="algorithm" defaultValue="4" />
   </class>
 
+  <class name="SceneStereoAlignerBlockBase">
+      <field type="pointer"  target="corecvs::FixtureScene" name="inScene" />
+
+      <field type="int" name="inFixture1" comment="fixture1" />
+      <field type="int" name="inCamera1"  comment="camera1"  />
+
+      <field type="int" name="inFixture2" comment="fixture2" />
+      <field type="int" name="inCamera2"  comment="camera2"  />
+
+      <field type="pointer"  target="corecvs::RGB24Buffer" name="inImage1" />
+      <field type="pointer"  target="corecvs::RGB24Buffer" name="inImage2" />
+
+  </class>
+
+
+
+
 </poco>

@@ -117,9 +117,9 @@ public:
      *
      **/
 #if defined(WITH_SSE) /*|| defined(WITH_OPENCL)*/           // WITH_OPENCL is never defined for core projects to simplify projects deps
-    static const int DATA_ALIGN_GRANULARITY = 0xF;          // alignment by 16 bytes
+    static const size_t DATA_ALIGN_GRANULARITY = 0xF;          // alignment by 16 bytes
 #else
-    static const int DATA_ALIGN_GRANULARITY = 0xF;
+    static const size_t DATA_ALIGN_GRANULARITY = 0xF;
 #endif
 
     /**
@@ -327,6 +327,7 @@ public:
 
     /**
      * \attention YOU SHOULD NEVER USE IT FOR SERIALIZING HUGE DATA
+     * If you have such a need start casting h,w,stride etc to uint64_t
      **/
     template<typename V>
     void accept(V& visitor)
@@ -553,7 +554,7 @@ template<typename ResultType>
         return data != NULL;
     }
 
-    inline int numElements() const
+    inline size_t numElements() const
     {
         return this->h * this->stride;
     }
@@ -634,8 +635,8 @@ template<typename ResultType>
     **/
     inline void fillWith(const AbstractBuffer &other)
     {
-        int copyH = CORE_MIN(this->h, other.h);
-        int copyW = CORE_MIN(this->w, other.w);
+        IndexType copyH = CORE_MIN(this->h, other.h);
+        IndexType copyW = CORE_MIN(this->w, other.w);
 
         /* If buffers have same horizontal geometry use fast method*/
         if (TRIVIALLY_COPY_CONSTRUCTIBLE)
@@ -645,7 +646,7 @@ template<typename ResultType>
                 memcpy(this->data, other.data, sizeof(ElementType) * copyH * this->stride);
                 return;
             }
-            for (int i = 0; i < copyH; i++)
+            for (IndexType i = 0; i < copyH; i++)
             {
                 memcpy(&this->element(i, 0), &other.element(i, 0), sizeof(ElementType) * copyW);
             }
@@ -701,9 +702,9 @@ template<typename ResultType>
 
     void checkerBoard(IndexType square, ElementType valueMax /*= ElementType::max()*/, ElementType valueMin = ElementType(0))
     {
-        for (int i = 0; i < this->h; i++)
+        for (IndexType i = 0; i < this->h; i++)
         {
-            for (int j = 0; j < this->w; j++)
+            for (IndexType j = 0; j < this->w; j++)
             {
                 bool color = ((i / square) % 2) ^ ((j / square) % 2);
                 this->element(i,j) = color ?  valueMin : valueMax;
@@ -782,8 +783,8 @@ template<typename ResultType>
 
         void operator()(const BlockedRange<IndexType>& r) const
         {
-            int left =  onlyValid ? kernel->x : 0;
-            int right = onlyValid ? buffer->w + kernel->x - kernel->w + 1 : buffer->w;
+            IndexType left =  onlyValid ? kernel->x : 0;
+            IndexType right = onlyValid ? buffer->w + kernel->x - kernel->w + 1 : buffer->w;
             if (!onlyValid)
             {
                 for (IndexType i = r.begin(); i != r.end(); i++)
@@ -829,8 +830,8 @@ template<typename ResultType>
         if (output->h != this->h || output->w != this->w)
             return;
 
-        int top    = onlyValid ? kernel->y : 0;
-        int bottom = onlyValid ? this->h + kernel->y - kernel->h + 1 : this->h;
+        IndexType top    = onlyValid ? kernel->y : 0;
+        IndexType bottom = onlyValid ? this->h + kernel->y - kernel->h + 1 : this->h;
         parallelable_for(top, bottom, ParallelDoConvolve<ReturnType, AbstractBuffer<ElementType, IndexType>, ConvElementType, ConvIndexType>(output, this, kernel, onlyValid), parallel);
     }
 
@@ -895,11 +896,11 @@ template<typename ResultType>
     {
         if (that.h != this->h || that.w != this->w)
             return false;
-        for (int i = 0; i < this->h; i++)
+        for (IndexType i = 0; i < this->h; i++)
         {
             const ElementType *thisElemRunner = &(this->element(i, 0));
             const ElementType *thatElemRunner = &(that.element(i, 0));
-            for (int j = 0; j < this->w; j++)
+            for (IndexType j = 0; j < this->w; j++)
             {
                 if (*thatElemRunner != *thisElemRunner)
                 {
@@ -929,11 +930,11 @@ template<typename ResultType>
         if (that.h != this->h || that.w != this->w)
             return false;
         int diffs = 0;
-        for (int i = 0; i < this->h; i++)
+        for (IndexType i = 0; i < this->h; i++)
         {
             const ElementType *thisElemRunner = &(this->element(i, 0));
             const ElementType *thatElemRunner = &(that.element(i, 0));
-            for (int j = 0; j < this->w; j++)
+            for (IndexType j = 0; j < this->w; j++)
             {
                 if (*thatElemRunner != *thisElemRunner)
                 {

@@ -22,7 +22,8 @@ HEADERS += \
     geometry/twoViewOptimalTriangulation.h \
     geometry/ellipse.h \
     geometry/ellipseFit.h \
-    geometry/plane3dFit.h
+    geometry/plane3dFit.h \
+    $$PWD/meshClicker.h
 
 
 
@@ -46,5 +47,6 @@ SOURCES += \
     geometry/twoViewOptimalTriangulation.cpp \
     geometry/ellipse.cpp \
     geometry/ellipseFit.cpp \
-    geometry/plane3dFit.cpp
+    geometry/plane3dFit.cpp \
+    $$PWD/meshClicker.cpp
 

@@ -284,6 +284,9 @@ public:
 
     SceneFeaturePoint *getPointByName(const std::string &name);
 
+    /** This method is for convenience, generally pointer itself is a best way to reference **/
+    FixtureCamera *getCameraByNumber (int fixtureNumber, int cameraNumber);
+
 
     template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor,

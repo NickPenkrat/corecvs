@@ -47,6 +47,7 @@ public:
 
 class BMPLoaderBase
 {
+protected:
     static string prefix1;
 
 public:
@@ -87,6 +88,9 @@ public:
     }
 
     virtual std::string name() override { return "BMPLoaderG12"; }
+    virtual std::vector<std::string> resolutions() override {
+        return std::vector<std::string>({ BMPLoaderBase::prefix1 });
+    }
 };
 
 class BMPLoaderRGB24 : public BufferLoader<RGB24Buffer>, public BMPLoaderBase
@@ -103,6 +107,9 @@ public:
     }
 
     virtual std::string name() override { return "BMPLoaderRGB24"; }
+    virtual std::vector<std::string> resolutions() override {
+        return std::vector<std::string>({ BMPLoaderBase::prefix1 });
+    }
 };
 
 } //namespace corecvs

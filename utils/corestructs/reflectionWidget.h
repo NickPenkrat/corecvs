@@ -26,6 +26,11 @@ public slots:
     void inputTriggered(int inId);
     void outputTriggered(int outId);
 
+    /* Block related. Most probably should be brought to ancestor */
+signals:
+    void outerFilterRequest(int filter);
+    void executeCalled();
+
 
 
 };

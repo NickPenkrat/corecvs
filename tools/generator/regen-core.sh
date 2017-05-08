@@ -233,6 +233,7 @@ enums+=" bitcodeBoardOrientation"
 
 classes+=" lensDistortionModelParametersBase"
 classes+=" homorgaphyReconstructorBlockBase"
+classes+=" sceneStereoAlignerBlockBase"
 
 # We will try to use reflectionWidget
 classes+=" calibrationDrawHelpersParameters"

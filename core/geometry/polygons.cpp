@@ -216,12 +216,12 @@ void PolygonCombiner::prepare()
     std::sort(c[1].begin(), c[1].end(), comparator);
 
     intersections.resize(intersectionNumber);
-    for (int i = 0; i < (int)c[0].size(); i++)
+    for (size_t i = 0; i < c[0].size(); i++)
     {
         if (c[0][i].flag == COMMON)
             intersections[c[0][i].intersection].first = i;
     }
-    for (int i = 0; i < (int)c[1].size(); i++)
+    for (size_t i = 0; i < c[1].size(); i++)
     {
         if (c[1][i].flag == COMMON)
             intersections[c[1][i].intersection].second = i;
@@ -255,7 +255,7 @@ bool PolygonCombiner::validateState() const
             }
         }
 
-        if (start == -1)
+        if (start == (size_t)-1)
         {
             cout << "No inside or outside nodes... " << endl;
             ok = false;
@@ -354,7 +354,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
     const std::pair<int, int> &fst = intersections[startIntersection];
 
     int currentId = fst.first;
-    int currentChain = 0;
+    unsigned int currentChain = 0;
 
     SYNC_PRINT(("Exit condition A%d or B%d\n", fst.first, fst.second));
 

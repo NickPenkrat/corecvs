@@ -760,7 +760,7 @@ void corecvs::FlatPatternCalibrator::LMCostFunction::operator() (const double in
     calibrator->getFullReprojectionError(out);
 }
 
-Matrix corecvs::FlatPatternCalibrator::LMCostFunction::getJacobian(const double in[], double dlta)
+Matrix corecvs::FlatPatternCalibrator::LMCostFunction::getJacobian(const double in[], double /*dlta*/)
 {
     calibrator->readParams(in);
     return calibrator->getJacobian();
