@@ -9,8 +9,9 @@
 
 #include "global.h"
 
-#include "topViCameraDescriptor.h"
 #include "imageCaptureInterface.h"
+
+#include "tpv.h"
 
 using namespace std;
 
@@ -65,14 +66,13 @@ class TopViCameraDescriptor
 public:
     bool inited = false;
     int  camId = -1;       //actual
+    int  previewMode;  //actual
     int  toSkip = 0;
-
-    int  previewMode; //actual
 
     TopViCameraDescriptor() :
         inited(false),
         camId(-1),
-        previewMode(false),
+        previewMode(0),
         toSkip(0)
     {
     }
@@ -80,37 +80,11 @@ public:
     static const unsigned   IMAGE_BUFFER_COUNT = 3;
     BufferDescriptorType    images[IMAGE_BUFFER_COUNT];
 
-    //  <sk> structure
-    enum SK_STATE {
-        SK_UNKNOWN = -1,
-        SK_OK,
-        SK_ERROR
-    };
+    struct TopVi_SK *skParams;
+    ImageCaptureInterface::CameraFormat format;
 
-    SK_STATE statusCode = SK_UNKNOWN;
+    int init(struct TopVi_SK *sk);
 
-    // <pk> structure
-    enum ACTIVE_MODE {
-        PK_UNKNOWN = -1,
-        PK_SLEEP,
-        PK_LIVE,
-        PK_GRAB
-    };
-
-    enum BINNING_MODE {
-        PK_1X1,
-        PK_2X2,
-        PK_4X4
-    };
-
-    struct TopViCameraParam {
-        ACTIVE_MODE activeMode = PK_UNKNOWN;
-        ImageCaptureInterface::CameraFormat format;
-        BINNING_MODE binningMode = PK_1X1;
-        int exposure = 100000; //us
-    } currentParams;
-
-    int init(int cameraId);
     int grabFrame();
 
     int initBuffer();

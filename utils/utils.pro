@@ -118,7 +118,8 @@ HEADERS += \
     framesources/topvi/topViCameraDescriptor.h \
     framesources/topvi/topViCapture.h \
     framesources/topvi/topViDeviceDescriptor.h \
-    framesources/topvi/topViGrillInterface.h
+    framesources/topvi/topViGrillInterface.h \
+    framesources/topvi/tpv.h
 
 SOURCES += \
     frames.cpp \
@@ -206,7 +207,8 @@ SOURCES += \
     corestructs/reflectionWidget.cpp \
     3d/shadedSceneControlWidget.cpp \
     3d/billboardCaption3DScene.cpp \
-    framesources/topvi/topViGrillInterface.cpp
+    framesources/topvi/topViGrillInterface.cpp \
+    framesources/topvi/tpv.c
 
 FORMS += \
     widgets/vectorWidget.ui \

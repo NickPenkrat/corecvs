@@ -54,13 +54,28 @@ int FtpLoader::makeTest() {
     return res;
 }
 
-int FtpLoader::init(string _link) {
-    SYNC_PRINT(("FtpLoader::init() called with link = %s\n", _link.c_str()));
+int FtpLoader::init(string _addr, string _links) {
+    SYNC_PRINT(("FtpLoader::init() called for %s with links = %s\n", _addr.c_str(), _links.c_str()));
+    size_t prev = 0, pos = 0;
+    pos = _links.find_first_of(",");
+    while (pos != std::string::npos)
+    {
+      SYNC_PRINT(("found link = %s\n", _links.substr(prev, pos - prev).c_str()));
+      prev = pos;
+      pos = _links.find_first_of(",", pos + 1);
+    }
+    string _link = _links.substr(prev, pos - prev);
+    SYNC_PRINT(("Last link = %s\n", _addr.c_str(), _link.c_str()));
     if (_link != "") {
-        link = _link;
+        link = _addr + _link;
         inited = true;
     }
     return inited;
+}
+
+
+void FtpLoader::setAddr(string _addr) {
+    if (_addr != "") this->addr = _addr;
 }
 
 void FtpLoader::setOutput(string _outputDir) {
@@ -99,8 +114,10 @@ int FtpLoader::getFile()
         }
     }
 
-    if (ftpfile.stream != nullptr)
+    if (ftpfile.stream != nullptr) {
         fclose(ftpfile.stream);
+        activeFile = fname;
+    }
 
     curl_global_cleanup();
     return CURLE_OK == res ? 0 : -1;

@@ -8,11 +8,14 @@ class FtpLoader
 {
 public:
     bool inited = false;
+    string addr;
     string link;
     string outputDir;
+    string activeFile;
 
     FtpLoader():
         inited(false),
+        addr("ftp://193.232.110.156/"),
         link("unknown"),
         outputDir("")
     {
@@ -20,6 +23,7 @@ public:
 
     FtpLoader(string _outputDir):
         inited(false),
+        addr("ftp://193.232.110.156/"),
         link("unknown"),
         outputDir(_outputDir)
     {
@@ -27,7 +31,8 @@ public:
 
     int makeTest();
 
-    int init(string _link);
+    int init(string _addr, string _link);
+    void setAddr(string _addr);
     void setOutput(string _outputDir);
     int getFile();
 };

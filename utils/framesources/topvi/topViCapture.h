@@ -17,6 +17,10 @@ using namespace std;
 class TopViCaptureInterface : public virtual ImageCaptureInterface
 {
 public:
+
+    int fAuto = 0; //set auto exposure mode
+    int fClean = 0; //set auto clean mode
+
     //OK
     TopViCaptureInterface(string _devname);
     //OK
@@ -53,7 +57,12 @@ public:
     //OK
     static int topViTrace(int res, const char *prefix = NULL);
 
-    int replyCallback(string reply);
+    int activateFtpLoader(string links);
+    int replyCallback(TopViGrillCommand *cmd);
+
+    QString getActiveFileName() {
+        return QString(this->ftpSpin.ftpLoader.activeFile.c_str());
+    }
 
 private:
 
@@ -95,8 +104,8 @@ private:
     QMutex protectFrame;
     QMutex protectActivate;
     QMutex ftpSpinRunning;
-    volatile bool shouldStopFtpSpinThread;
-    volatile bool shouldActivateFtpSpinThread;
+    volatile bool shouldStopFtpSpinThread = false;
+    volatile bool shouldActivateFtpSpinThread = false;
 
 };
 

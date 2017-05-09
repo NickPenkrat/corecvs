@@ -1,9 +1,9 @@
 #include <iostream>
 #include "topViCameraDescriptor.h"
 
-int TopViCameraDescriptor::init(int cameraId)
+int TopViCameraDescriptor::init(struct TopVi_SK *sk)
 {
-    CORE_UNUSED(cameraId);
+    CORE_UNUSED(sk);
     return 0;
 }
 
@@ -24,7 +24,7 @@ int TopViCameraDescriptor::replyCallback(string reply)
 {
     CORE_UNUSED(reply);
     //TODO:
-    return SK_ERROR;
+    return TPV_SK_ERROR;
 }
 
 uint16_t* TopViCameraDescriptor::getFrame()

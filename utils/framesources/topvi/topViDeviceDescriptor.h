@@ -36,6 +36,8 @@ public:
 
 private:
 
+    struct TopVi_SU *deviceParams;
+
     int mCamerasNumber = 0;
     vector<TopViCameraDescriptor *>  mCameras;
 
@@ -63,7 +65,7 @@ private:
 
     void replyCallback(TopViGrillCommand *cmd);
     //This is a methods for GRILL API
-    void executeCommand(enum TopViCmd cmdType, int camId = 0, int value = 0, int add_value = 0, TopViCaptureInterface *parent = NULL);
+    void executeCommand(enum TopViCmdType cmdType, enum TopViCmdName cmdName, int camId = 0, string value = "", string add_value = "", TopViCaptureInterface *parent = NULL);
 
 };
 

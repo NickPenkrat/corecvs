@@ -41,6 +41,8 @@
 #define DEEP_TRACE(X)
 #endif
 
+static const char *errorFileName = "tpv_20170414T164331_cam0_0.pgm";
+
 TopViDeviceDescriptor TopViCaptureInterface::device;
 
 int TopViCaptureInterface::topViTrace(int result, const char *prefix)
@@ -76,12 +78,12 @@ TopViCaptureInterface::TopViCaptureInterface(string _devname, int /*h*/, int /*w
     device.init(0, this);
 }
 
-int TopViCaptureInterface::replyCallback(string reply){
+int TopViCaptureInterface::activateFtpLoader(string links) {
     int result = false;
-    SYNC_PRINT(("TopViCaptureInterface: replyCallback return answer for GUI: %s\n", reply.c_str()));
     protectActivate.lock();
     if (!shouldActivateFtpSpinThread) {
-        ftpSpin.ftpLoader.init(reply);
+        //TODO: address is hardcode!!!
+        ftpSpin.ftpLoader.init(ftpSpin.ftpLoader.addr, links);
         shouldActivateFtpSpinThread = true;
         SYNC_PRINT(("TopViCaptureInterface: replyCallback activate ftp loader success\n"));
         result = true;
@@ -94,12 +96,32 @@ int TopViCaptureInterface::replyCallback(string reply){
     return result;
 }
 
+int TopViCaptureInterface::replyCallback(TopViGrillCommand *cmd){
+
+    int result = false;
+
+    string reply(cmd->reply->replyStr);
+
+    SYNC_PRINT(("TopViCaptureInterface: replyCallback return answer for GUI: %s\n", cmd->reply->replyStr));
+
+    switch (cmd->reply->cmdName) {
+        case TPV_GRAB:
+            result = activateFtpLoader(reply);
+            break;
+        default:
+            SYNC_PRINT(("TopViCaptureInterface: do nothing, result is OK for %s\n", tpvCmdName(cmd->cmdName)));
+            result = true;
+    }
+
+    return result;
+}
+
 int TopViCaptureInterface::setConfigurationString(string _devname, bool isRgb)
 {
+    CORE_UNUSED(isRgb);
+
     interfaceName = _devname;
-
     SYNC_PRINT(("TopViCaptureInterface: configuration string is %s\n", _devname.c_str()));
-
     this->devname = _devname;
 
     return 0;
@@ -157,7 +179,8 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getFormats(int *num, 
 
 bool TopViCaptureInterface::getCurrentFormat(ImageCaptureInterface::CameraFormat &format)
 {
-    SYNC_PRINT(("TopViCaptureInterface::getFormat() is not supported\n"));
+    CORE_UNUSED(format);
+    SYNC_PRINT(("TopViCaptureInterface::getCurrentFormat() is not supported\n"));
     return ImageCaptureInterface::SUCCESS;
 }
 
@@ -189,18 +212,23 @@ void TopViCaptureInterface::FtpSpinThread::run()
     SYNC_PRINT(("TopViCaptureInterface::ftpSpinThread(): ftp loader thread running\n"));
 
     while (capInterface->ftpSpinRunning.tryLock()) {
-        if (ftpLoader.inited && capInterface->shouldActivateFtpSpinThread) {
-            SYNC_PRINT(("FtpSpinThread::run(): ftp get starting\n"));
-            //ftpLoader.makeTest();
-            ftpLoader.getFile();
-#if 1
-            /* Now exchange the buffer that is visible from */
-            capInterface->protectFrame.lock();
-            frame_data_t frameData;
-            frameData.timestamp = capInterface->currentFrame->usecsTimeStamp();
-            capInterface->notifyAboutNewFrame(frameData);
-            capInterface->protectFrame.unlock();
-#endif
+        if (capInterface->shouldActivateFtpSpinThread) {
+            if (ftpLoader.inited) {
+                SYNC_PRINT(("FtpSpinThread::run(): ftp get starting\n"));
+                //ftpLoader.makeTest();
+                ftpLoader.getFile();
+
+                /* Now exchange the buffer that is visible from */
+                capInterface->protectFrame.lock();
+                frame_data_t frameData;
+                frameData.timestamp = capInterface->currentFrame->usecsTimeStamp();
+                capInterface->notifyAboutNewFrame(frameData);
+                capInterface->protectFrame.unlock();
+            }
+            else {
+                SYNC_PRINT(("FtpSpinThread::run(): ftp not inited now, will try later\n"));
+            }
+
             capInterface->protectActivate.lock();
             capInterface->shouldActivateFtpSpinThread = false;
             capInterface->protectActivate.unlock();
@@ -236,8 +264,14 @@ TopViCaptureInterface::FramePair  TopViCaptureInterface::getFrame(){
     FramePair pair(NULL, NULL);
     SYNC_PRINT(("TopViCaptureInterface::getFrame(): called\n"));
 
-#if 1
-    QString name = "tpv_20170414T164331_cam0_0.pgm";
+    QString name = getActiveFileName();
+
+    SYNC_PRINT(("TopViCaptureInterface::getFrame(): show file %s\n", name.toLatin1().constData()));
+
+    if (name.isNull() || name.isEmpty()) {
+        name = QString(errorFileName);
+    }
+
     MetaData meta;
     G12Buffer *bayer = PPMLoader().g12BufferCreateFromPGM(name.toStdString(), &meta);
     if (bayer == NULL) {
@@ -276,7 +310,6 @@ TopViCaptureInterface::FramePair  TopViCaptureInterface::getFrame(){
         pair.rgbBufferLeft = result;
         delete_safe(input);
     }
-#endif
     SYNC_PRINT(("TopViCaptureInterface::getFrame(): finished\n"));
     return pair;
 }
