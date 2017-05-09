@@ -64,6 +64,8 @@ public:
         return QString(this->ftpSpin.ftpLoader.activeFile.c_str());
     }
 
+    static const double EXPOSURE_SCALER /*= 10.0*/;
+
 private:
 
     string interfaceName;  /**< Stores the camera name >**/

@@ -42,6 +42,7 @@
 #endif
 
 static const char *errorFileName = "tpv_20170414T164331_cam0_0.pgm";
+/*static*/ const double TopViCaptureInterface::EXPOSURE_SCALER = 16.0;
 
 TopViDeviceDescriptor TopViCaptureInterface::device;
 
@@ -316,24 +317,153 @@ TopViCaptureInterface::FramePair  TopViCaptureInterface::getFrame(){
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters(CameraParameters &params)
 {
-    CORE_UNUSED(params);
-    SYNC_PRINT(("TopViCaptureInterface: queryCameraParameters is not supported for TopVi interface yet.\n"));
+    SYNC_PRINT(("TopViCaptureInterface: queryCameraParameters for TopVi interface\n"));
+
+    /* Exposure */
+    double defaultExp = 20.0;
+    double minExp = 2.0;
+    double maxExp = 4000.0;
+    double stepExp = 16.;
+
+    CaptureParameter *param = &(params.mCameraControls[CameraParameters::EXPOSURE]);
+    param->setActive(true);
+    param->setDefaultValue(defaultExp * EXPOSURE_SCALER);
+    param->setMinimum     (minExp     * EXPOSURE_SCALER);
+    param->setMaximum     (maxExp     * EXPOSURE_SCALER);
+    param->setStep        (stepExp    * EXPOSURE_SCALER);
+
+    /* Exposure auto */
+    param = &(params.mCameraControls[CameraParameters::EXPOSURE_AUTO]);
+
+    *param = CaptureParameter();
+    param->setActive(true);
+    param->setDefaultValue(0);
+    param->setMinimum(0);
+    param->setMaximum(1);
+    param->setStep(1);
+    param->setIsMenu(true);
+    param->pushMenuItem(QString("False"), 0);
+    param->pushMenuItem(QString("True") , 1);
+
+    /* Global Gain */
+    int defaultGain = 1;
+    param = &(params.mCameraControls[CameraParameters::GAIN]);
+    *param = CaptureParameter();
+    param->setActive(true);
+    param->setDefaultValue(defaultGain);
+    param->setMinimum     (1);
+    param->setMaximum     (32);
+    param->setStep        (1);
+
+    /* Gain Auto */
+    param = &(params.mCameraControls[CameraParameters::GAIN_AUTO]);
+    *param = CaptureParameter();
+    param->setActive(true);
+    param->setDefaultValue(0);
+    param->setMinimum(0);
+    param->setMaximum(1);
+    param->setStep(1);
+    param->setIsMenu(true);
+    param->pushMenuItem(QString("False"), 0);
+    param->pushMenuItem(QString("True") , 1);
+
+    /* Gain Blue */
+    int defaultBlueGain = defaultGain;
+    param = &(params.mCameraControls[CameraParameters::GAIN_BLUE]);
+    *param = CaptureParameter();
+    param->setActive(true);
+    param->setDefaultValue(defaultGain);
+    param->setMinimum     (1);
+    param->setMaximum     (32);
+    param->setStep        (1);
+
+    /* Gain Red */
+    int defaultRedGain = defaultGain;
+    param = &(params.mCameraControls[CameraParameters::GAIN_RED]);
+    *param = CaptureParameter();
+    param->setActive(true);
+    param->setDefaultValue(defaultGain);
+    param->setMinimum(1);
+    param->setMaximum(32);
+    param->setStep(1);
+
     return ImageCaptureInterface::SUCCESS;
 }
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::setCaptureProperty(int id, int value)
 {
-    CORE_UNUSED(id);
     CORE_UNUSED(value);
-    SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty is not supported for TopVi interface yet.\n"));
+    SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty for TopVi interface\n"));
+    switch (id)
+    {
+        case (CameraParameters::EXPOSURE):
+            SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty(): try to set exposure value: %d\n", value));
+            device.setExposure(this, value);
+            return SUCCESS;
+        case (CameraParameters::GAIN):
+            SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty(): try to set global gain value: %d\n", value));
+            device.setGain(this, "global", value);
+            return SUCCESS;
+        case (CameraParameters::GAIN_BLUE):
+            SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty(): try to set blue gain value: %d\n", value));
+            device.setGain(this, "blue", value);
+            return SUCCESS;
+        case (CameraParameters::GAIN_RED):
+            SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty(): try to set red gain value: %d\n", value));
+            device.setGain(this, "red", value);
+            return SUCCESS;
+        default:
+        {
+            SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty(): set request for unknown parameter %s (%d)\n", CameraParameters::getName((CameraParameters::CameraControls) id), id));
+            return ImageCaptureInterface::FAILURE;
+        }
+    }
     //TODO: may be good place for get output dir path
     return ImageCaptureInterface::FAILURE;
 }
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getCaptureProperty(int id, int *value)
 {
-    CORE_UNUSED(id);
     CORE_UNUSED(value);
-    SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty is not supported for TopVi interface yet.\n"));
+    SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty() for TopVi interface\n"));
+    switch (id)
+    {
+        case (CameraParameters::EXPOSURE):
+        {
+            SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get exposure value\n"));
+            *value = 100 * EXPOSURE_SCALER;;
+            return SUCCESS;
+        }
+        case (CameraParameters::EXPOSURE_AUTO) :
+        {
+            SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get auto exposure value\n"));
+            *value = 15;
+            return SUCCESS;
+        }
+        case (CameraParameters::GAIN):
+        {
+            SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get global gain value\n"));
+            *value = 4;
+            return SUCCESS;
+        }
+        case (CameraParameters::GAIN_BLUE):
+        {
+            SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get blue gain value\n"));
+            *value = 4;
+            return SUCCESS;
+        }
+        case (CameraParameters::GAIN_RED):
+        {
+            SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get red gain value\n"));
+            *value = 4;
+            return SUCCESS;
+        }
+        case (CameraParameters::GAIN_AUTO) :
+        {
+            SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get auto wb value\n"));
+            *value = 2;
+            return SUCCESS;
+        }
+    }
     return ImageCaptureInterface::FAILURE;
 }

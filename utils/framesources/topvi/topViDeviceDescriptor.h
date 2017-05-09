@@ -34,6 +34,9 @@ public:
     void grab(TopViCaptureInterface *parent);
     void grabAll(TopViCaptureInterface *parent);
 
+    void setExposure(TopViCaptureInterface *parent, int value);
+    void setGain(TopViCaptureInterface *parent, string value, int add_value);
+
 private:
 
     struct TopVi_SU *deviceParams;
