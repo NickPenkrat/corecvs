@@ -7,8 +7,8 @@ SOURCES += \
     reflection/commandLineSetter.cpp \
     reflection/reflection.cpp \
     reflection/extendedVisitor.cpp \
-    $$PWD/commandLineGetter.cpp \
-    $$PWD/jsonPrinter.cpp
+    reflection/commandLineGetter.cpp \
+    reflection/jsonPrinter.cpp \
     
     
 HEADERS += \
@@ -20,5 +20,5 @@ HEADERS += \
     reflection/deserializerVisitor.h \
     reflection/commandLineSetter.h \
     reflection/extendedVisitor.h \
-    $$PWD/commandLineGetter.h \
-    $$PWD/jsonPrinter.h
+    reflection/commandLineGetter.h \
+    reflection/jsonPrinter.h \

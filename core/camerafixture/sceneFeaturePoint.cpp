@@ -237,12 +237,14 @@ PointPath SceneFeaturePoint::getEpipath(FixtureCamera *camera1, FixtureCamera *c
 
     //cout << "Ray" << ray << endl;
 
-    /* We go with ray analisys instead of essential matrix beacause it possibly gives
-     * more semanticly valuable info */
+    /* We go with ray analysis instead of essential matrix beacause it possibly gives
+     * more semanticly valuable info
+	 */
     double t1 = 0;
     double t2 = 0;
     bool hasIntersection = secondViewport.intersectWith(ray, t1, t2);
-    if (hasIntersection) {
+    if (hasIntersection)
+	{
         if (t1 < 0.0) t1 = 0.0;
 
         //cout << "t1 : " << t1 << " t2 : " << t2 << endl;
@@ -277,8 +279,6 @@ PointPath SceneFeaturePoint::getEpipath(FixtureCamera *camera1, FixtureCamera *c
     return result;
 }
 
-
-
 /*
 SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType id)
 {
@@ -288,4 +288,5 @@ SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType i
     return featurePoint->ownerScene->getCameraById(id);
 }
 */
+
 } //namespace corecvs
