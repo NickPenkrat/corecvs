@@ -10,13 +10,9 @@ isEmpty(JSONMODERN_WRAPPER_DIR) {
 
 contains(DEFINES, WITH_JSONMODERN) {                    # if it's installed properly with found path for lib
 
-    INCLUDEPATH += $$JSONMODERN_WRAPPER_DIR
+#   INCLUDEPATH += $$JSONMODERN_WRAPPER_DIR
     INCLUDEPATH += $$JSONMODERN_WRAPPER_DIR/sources/src/
 
-    HEADERS +=  $$JSONMODERN_WRAPPER_DIR/jsonModernReader.h
-    SOURCES +=  $$JSONMODERN_WRAPPER_DIR/jsonModernReader.cpp
-
-#    HEADERS +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONWriter.h
-#    SOURCES +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONWriter.cpp
-
+#   HEADERS +=  $$JSONMODERN_WRAPPER_DIR/jsonModernReader.h
+#   SOURCES +=  $$JSONMODERN_WRAPPER_DIR/jsonModernReader.cpp
 }

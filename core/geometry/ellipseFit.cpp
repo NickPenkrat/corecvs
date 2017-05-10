@@ -41,10 +41,11 @@ SecondOrderCurve EllipseFit::solveDummy()
     C.a(1,1) =-1;
     C.a(2,0) = 2;
 
-    Matrix dD(points.size(), 6);
+    CORE_ASSERT_TRUE(((uint)points.size()) == points.size(), ("too much points for EllipseFit"));
+    Matrix dD((uint)points.size(), 6);
     for (vector<Vector2dd>::size_type i = 0; i < points.size(); i++) {
         Vector2dd p = points[i];
-        dD.fillLineWithArgs(i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
+        dD.fillLineWithArgs((uint)i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
     }
 
     Matrix S = dD.t() * dD;
@@ -89,10 +90,11 @@ SecondOrderCurve EllipseFit::solveBLAS()
     C.a(1,1) =-1;
     C.a(2,0) = 2;
 
-    Matrix dD(points.size(), 6);
+    CORE_ASSERT_TRUE(((uint)points.size()) == points.size(), ("too much points for EllipseFit"));
+    Matrix dD((uint)points.size(), 6);
     for (vector<Vector2dd>::size_type i = 0; i < points.size(); i++) {
         Vector2dd p = points[i];
-        dD.fillLineWithArgs(i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
+        dD.fillLineWithArgs((uint)i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
     }
 
     Matrix S = dD.t() * dD;
@@ -172,10 +174,11 @@ SecondOrderCurve EllipseFit::solveBLAS()
 
 SecondOrderCurve EllipseFit::solveQuadricDummy()
 {
-    Matrix dD(points.size(), 6);
+    CORE_ASSERT_TRUE(((uint)points.size()) == points.size(), ("too much points for EllipseFit"));
+    Matrix dD((uint)points.size(), 6);
     for (vector<Vector2dd>::size_type i = 0; i < points.size(); i++) {
         Vector2dd p = points[i];
-        dD.fillLineWithArgs(i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
+        dD.fillLineWithArgs((uint)i, p.x() * p.x(), p.x() * p.y(), p.y() * p.y(), p.x(), p.y(), 1.0 );
     }
 
     Matrix S = dD.t() * dD;
