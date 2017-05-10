@@ -9,13 +9,13 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
-#include <QtCore/QMetaType>
+
+//#include <QtCore/QMetaType>
 
 #include "global.h"
 
 #include "imageCaptureInterface.h"
 #include "cameraControlParameters.h"
-
 #include "fileCapture.h"
 #include "precCapture.h"
 
@@ -210,13 +210,13 @@ ImageCaptureInterfaceQt *ImageCaptureInterfaceQtFactory::fabric(string input, in
 
 void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 {
-//    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewFrame()\n"));
+    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewFrame()\n"));
     if (imageInterfaceReceiver != NULL)
     {
         imageInterfaceReceiver->newFrameReadyCallback(frameData);
         imageInterfaceReceiver->newImageReadyCallback();
     } else {
-        SYNC_PRINT(("Warning:  V4L2CaptureInterface::notifyAboutNewFrame(): imageInterfaceReceiver is NULL\n"));
+        SYNC_PRINT(("Warning: ImageCaptureInterface::notifyAboutNewFrame(): imageInterfaceReceiver is NULL\n"));
     }
 }
 
