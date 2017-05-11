@@ -1061,6 +1061,7 @@ public:
         rawObject((void *) object)
     {}
 
+
     /**
      *   Please note due to stupid alignment issues on ARM there could be some problems
      **/

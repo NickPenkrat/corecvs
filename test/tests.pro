@@ -27,6 +27,8 @@ SUBDIRS +=       \
     raytracerender   \
     stereo_generator \
     widgets_test \
+    widget_harness \
+#    command_harness \
     example_scene \
 
 !win32 {
@@ -72,6 +74,8 @@ raytracerender.file                 = raytracerender/raytracerender.pro
 raytracerender.depends             -= utils
 
 widgets_test.file                   = widgets_test/widgets_test.pro
+widget_harness.file                 = widget_harness/widget_harness.pro
+command_harness.file                = command_harness/command_harness.pro
 
 new_board_detector	            = new_board_detector/new_board_detector.pro
 

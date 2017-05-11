@@ -1,17 +1,18 @@
 #ifndef SCENE_STEREO_ALIGNER_BLOCK_H
 #define SCENE_STEREO_ALIGNER_BLOCK_H
 
+#include "newStyleBlock.h"
 #include "sceneStereoAlignerBlockBase.h"
 
 namespace corecvs {
 
-class SceneStereoAlignerBlock : public SceneStereoAlignerBlockBase
+class SceneStereoAlignerBlock : public SceneStereoAlignerBlockBase, public NewStyleBlock
 {
 public:
     SceneStereoAlignerBlock();
 
 
-    virtual void operator ()();
+    virtual int operator ()();
 
     ~SceneStereoAlignerBlock() {
     }

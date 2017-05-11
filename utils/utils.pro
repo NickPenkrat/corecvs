@@ -114,7 +114,8 @@ HEADERS += \
     3d/billboardCaption3DScene.h \
     3d/gCodeScene.h \
     corestructs/cameraModel/fixtureGeometryControlWidget.h \
-    corestructs/pointerFieldWidget.h
+    corestructs/pointerFieldWidget.h \
+    corestructs/widgetBlockHarness.h
 
 SOURCES += \
     frames.cpp \
@@ -199,7 +200,8 @@ SOURCES += \
     3d/billboardCaption3DScene.cpp \
     3d/gCodeScene.cpp \
     corestructs/cameraModel/fixtureGeometryControlWidget.cpp \
-    corestructs/pointerFieldWidget.cpp
+    corestructs/pointerFieldWidget.cpp \
+    corestructs/widgetBlockHarness.cpp
 
 
 FORMS += \

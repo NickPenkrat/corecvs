@@ -20,6 +20,17 @@ PointerFieldWidget::PointerFieldWidget(const corecvs::PointerField *field, QWidg
 {
     ui->setupUi(this);
 
+    if (!fieldReflection->isInputPin()) {
+        ui->loadPushButton->setEnabled(false);
+        ui->loadPushButton->hide();
+    }
+
+    if (!fieldReflection->isOuputPin()) {
+        ui->savePushButton->setEnabled(false);
+        ui->savePushButton->hide();
+    }
+
+
     /* Ok so far this is how we roll */
     if (std::string(fieldReflection->targetClass) == "corecvs::RGB24Buffer" )
     {

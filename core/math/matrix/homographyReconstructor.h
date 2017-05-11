@@ -20,7 +20,7 @@
 #include "function.h"
 #include "line.h"
 #include "matrixOperations.h"
-
+#include "newStyleBlock.h"
 
 namespace corecvs {
 
@@ -236,17 +236,17 @@ public:
 };
 
 /* This part is an attempt to support an interface for a new block structure*/
-class HomographyReconstructorBlock : public HomorgaphyReconstructorBlockBase
+class HomographyReconstructorBlock : public HomorgaphyReconstructorBlockBase, public NewStyleBlock
 {
 public:
     HomographyReconstructor wrappee;
 
-    virtual void operator ()()
+    virtual int operator ()()
     {
         if (in0() == NULL)
         {
             SYNC_PRINT(("Fail. No input"));
-            return;
+            return 1;
         }
 
         wrappee.reset();
@@ -258,6 +258,7 @@ public:
         Matrix33 result = wrappee.getBestHomography(algorithm());
         setOut0(new Matrix33(result));
 
+        return 0;
     }
 
     ~HomographyReconstructorBlock() {

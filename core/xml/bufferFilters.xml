@@ -1,5 +1,6 @@
 <poco version="5.0">
   <include name="parameters.xml"/>
+  <include name="stereoAlign.xml"/>
 
   <enum name="Filter Blocks">
     <item name="Bit Selector"        id="0" />
@@ -121,11 +122,25 @@
       <field type="int" name="inFixture2" comment="fixture2" />
       <field type="int" name="inCamera2"  comment="camera2"  />
 
+      <field type="Stereo Align Parameters" name="parameters"   />
+
       <field type="pointer"  target="corecvs::RGB24Buffer" name="inImage1" />
       <field type="pointer"  target="corecvs::RGB24Buffer" name="inImage2" />
 
+      <field type="pointer"  target="corecvs::RGB24Buffer" name="outImage1" />
+      <field type="pointer"  target="corecvs::RGB24Buffer" name="outImage2" />
+
   </class>
 
+  <class name="Adder Substractor Parameters Base">
+    <field type="double"   name="input1"/>
+    <field type="double"   name="input2"/>
+
+    <field type="bool"     name="parameter"/>
+
+    <field type="double"   name="output1"/>
+    <field type="double"   name="output2"/>
+  </class>
 
 
 

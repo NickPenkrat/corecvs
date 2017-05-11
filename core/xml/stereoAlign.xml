@@ -1,0 +1,13 @@
+<poco version="5.0">
+  <class name="Stereo Align Parameters" description="Stereo Align Parameters">
+    <field type="double"   name="zdirX"   defaultValue="1"     min="-20"      max="20.0"    step="1"/>
+    <field type="double"   name="zdirY"   defaultValue="0"     min="-20"      max="20.0"    step="1"/>
+    <field type="double"   name="zdirZ"   defaultValue="0"     min="-20"      max="20.0"    step="1"/>
+
+    <field type="bool"   name="autoZ"    defaultValue="true"/>
+
+    <field type="bool"   name="autoShift"           defaultValue="true"/>
+    <field type="int"    name="preShift"            defaultValue="0"    min="-9999"  max="9999"  step="1"/>
+    <field type="int"    name="guessShiftThreshold" defaultValue="0"    min="0"      max="99999" step="1"/>
+  </class>
+</poco>
