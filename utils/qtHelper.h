@@ -100,25 +100,25 @@ QString printModelItemRole(int role);
 namespace
 {
 
-    QString addFileExtIfNotExist(const QString& fileName, const QString& ext)
+    inline QString addFileExtIfNotExist(const QString& fileName, const QString& ext)
     {
         return fileName.endsWith(ext) ? fileName : fileName + ext;
     }
 
-    QString getDirectory(const QString& absoluteFilePath)
+    inline QString getDirectory(const QString& absoluteFilePath)
     {
         Q_ASSERT(!absoluteFilePath.isEmpty());
         QFileInfo info(absoluteFilePath);
         return info.dir().absolutePath();
     }
 
-    QString getFileName(const QString& fileName)
+    inline QString getFileName(const QString& fileName)
     {
         QFileInfo info(fileName);
         return info.fileName();
     }
 
-    QString getFileNameIfExist(const QString& fileName, const QString& relativePath)
+    inline QString getFileNameIfExist(const QString& fileName, const QString& relativePath)
     {
         //std::cout << fileName.toStdString() << std::endl;
         QFileInfo info(fileName);
