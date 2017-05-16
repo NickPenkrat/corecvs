@@ -4,6 +4,7 @@
 #include <string.h>
 #include <curl/curl.h>
 
+#include "global.h"
 
 struct FtpFile {
     const char *filename;
@@ -54,25 +55,31 @@ int FtpLoader::makeTest() {
     return res;
 }
 
-int FtpLoader::init(string _addr, string _links) {
-    SYNC_PRINT(("FtpLoader::init() called for %s with links = %s\n", _addr.c_str(), _links.c_str()));
-    size_t prev = 0, pos = 0;
-    pos = _links.find_first_of(",");
-    while (pos != std::string::npos)
-    {
-      SYNC_PRINT(("found link = %s\n", _links.substr(prev, pos - prev).c_str()));
-      prev = pos;
-      pos = _links.find_first_of(",", pos + 1);
-    }
-    string _link = _links.substr(prev, pos - prev);
-    SYNC_PRINT(("Last link = %s\n", _addr.c_str(), _link.c_str()));
-    if (_link != "") {
-        link = _addr + _link;
+int FtpLoader::init(string _addr, string reply) {
+    setAddr(_addr);
+    SYNC_PRINT(("FtpLoader::init() called for %s with links = %s\n", _addr.c_str(), reply.c_str()));
+
+    size_t pos = 0;
+    string _link = "";
+    this->linksNumber = 0;
+    do {
+      pos = reply.find_first_of(",");
+      _link = reply.substr(0, pos);
+      if (_link != "") {
+          SYNC_PRINT(("links[%d] = %s\n", linksNumber, _link.c_str()));
+          _link = _addr + _link;
+          this->links.push_back(_link);
+          linksNumber++;
+      }
+      reply = reply.substr(pos + 1);
+      SYNC_PRINT(("[%d] rest of reply: ", linksNumber, reply.c_str()));
+    } while (pos != std::string::npos);
+
+    if (linksNumber > 0) {
         inited = true;
     }
     return inited;
 }
-
 
 void FtpLoader::setAddr(string _addr) {
     if (_addr != "") this->addr = _addr;
@@ -82,7 +89,7 @@ void FtpLoader::setOutput(string _outputDir) {
     if (_outputDir != "") this->outputDir = _outputDir;
 }
 
-int FtpLoader::getFile()
+int FtpLoader::getFile(string link)
 {
     string fname = link.substr(link.find_last_of("/\\") + 1);
     SYNC_PRINT(("FtpLoader::getFile() %s\n", fname.c_str()));

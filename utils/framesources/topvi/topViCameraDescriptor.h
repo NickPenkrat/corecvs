@@ -77,13 +77,35 @@ public:
     {
     }
 
+    ~TopViCameraDescriptor();
+
+    struct TopVi_SK *skCamera;
+
+    ImageCaptureInterface::CameraFormat format;
+
     static const unsigned   IMAGE_BUFFER_COUNT = 3;
     BufferDescriptorType    images[IMAGE_BUFFER_COUNT];
 
-    struct TopVi_SK *skParams;
-    ImageCaptureInterface::CameraFormat format;
+    int init(int camId, double global, double exposure);
 
-    int init(struct TopVi_SK *sk);
+    int fAutoExp;
+    double autoExpCoef;
+    double autoGlobalCoef;
+    int fAutoWB;
+    double autoRedCoef;
+    double autoBlueCoef;
+
+    double getExposure();
+    void setExposure(double exposure);
+
+    double getGlobalGain();
+    void setGlobalGain(double global);
+    double getRedGain();
+    void setRedGain(double red);
+    double getBlueGain();
+    void setBlueGain(double blue);
+
+    int getFrameSize(int &width, int &height) ;
 
     int grabFrame();
 

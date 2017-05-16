@@ -34,15 +34,18 @@ public:
     void grab(TopViCaptureInterface *parent);
     void grabAll(TopViCaptureInterface *parent);
 
+    void setCommonExposure(TopViCaptureInterface *parent, int value);
+    void setCommonGain(TopViCaptureInterface *parent,int value);
+
     void setExposure(TopViCaptureInterface *parent, int value);
-    void setGain(TopViCaptureInterface *parent, string value, int add_value);
+    void setGain(TopViCaptureInterface *parent, enum TopViGain gainType, int value);
+
+    int mCamerasNumber = 0;
+    vector<TopViCameraDescriptor *>  mCameras;
 
 private:
 
     struct TopVi_SU *deviceParams;
-
-    int mCamerasNumber = 0;
-    vector<TopViCameraDescriptor *>  mCameras;
 
     class CmdSpinThread : public QThread
     {

@@ -41,7 +41,7 @@
 #define DEEP_TRACE(X)
 #endif
 
-static const char *errorFileName = "tpv_20170414T164331_cam0_0.pgm";
+static const char *errorFileName = "tpv_nofile.pgm";
 /*static*/ const double TopViCaptureInterface::EXPOSURE_SCALER = 16.0;
 
 TopViDeviceDescriptor TopViCaptureInterface::device;
@@ -79,12 +79,12 @@ TopViCaptureInterface::TopViCaptureInterface(string _devname, int /*h*/, int /*w
     device.init(0, this);
 }
 
-int TopViCaptureInterface::activateFtpLoader(string links) {
+int TopViCaptureInterface::activateFtpLoader(string linkReply) {
     int result = false;
     protectActivate.lock();
     if (!shouldActivateFtpSpinThread) {
         //TODO: address is hardcode!!!
-        ftpSpin.ftpLoader.init(ftpSpin.ftpLoader.addr, links);
+        ftpSpin.ftpLoader.init(ftpSpin.ftpLoader.addr, linkReply);
         shouldActivateFtpSpinThread = true;
         SYNC_PRINT(("TopViCaptureInterface: replyCallback activate ftp loader success\n"));
         result = true;
@@ -156,7 +156,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::startCapture()
 
     SYNC_PRINT(("Ftp loader should be started\n"));
 
-    device.grab(this);
+    device.grabAll(this);
 
     return ImageCaptureInterface::SUCCESS;
 }
@@ -214,10 +214,17 @@ void TopViCaptureInterface::FtpSpinThread::run()
 
     while (capInterface->ftpSpinRunning.tryLock()) {
         if (capInterface->shouldActivateFtpSpinThread) {
+
             if (ftpLoader.inited) {
                 SYNC_PRINT(("FtpSpinThread::run(): ftp get starting\n"));
+
                 //ftpLoader.makeTest();
-                ftpLoader.getFile();
+
+                for (int i = 0; i < ftpLoader.linksNumber; i++)
+                {
+                    ftpLoader.getFile(ftpLoader.links[i]);
+                    SYNC_PRINT(("FtpSpinThread::run(): downloaded %s\n", ftpLoader.activeFile));
+                }
 
                 /* Now exchange the buffer that is visible from */
                 capInterface->protectFrame.lock();
@@ -402,15 +409,15 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::setCaptureProperty(in
             return SUCCESS;
         case (CameraParameters::GAIN):
             SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty(): try to set global gain value: %d\n", value));
-            device.setGain(this, "global", value);
+            device.setGain(this, TPV_GLOBAL, value);
             return SUCCESS;
         case (CameraParameters::GAIN_BLUE):
             SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty(): try to set blue gain value: %d\n", value));
-            device.setGain(this, "blue", value);
+            device.setGain(this, TPV_BLUE, value);
             return SUCCESS;
         case (CameraParameters::GAIN_RED):
             SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty(): try to set red gain value: %d\n", value));
-            device.setGain(this, "red", value);
+            device.setGain(this, TPV_RED, value);
             return SUCCESS;
         default:
         {
@@ -431,7 +438,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getCaptureProperty(in
         case (CameraParameters::EXPOSURE):
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get exposure value\n"));
-            *value = 100 * EXPOSURE_SCALER;;
+            *value = 100; //device.mCameras[id]->getExposure() * EXPOSURE_SCALER;;
             return SUCCESS;
         }
         case (CameraParameters::EXPOSURE_AUTO) :

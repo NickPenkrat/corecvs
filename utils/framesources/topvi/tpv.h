@@ -59,6 +59,17 @@ enum TopVi_ACTIVE {
     TPV_PK_GRAB
 };
 
+enum TopVi_SIZE {
+    TPV_PK_3840x2780,
+    TPV_PK_3664x2748,
+    TPV_PK_1920x1080,
+    TPV_PK_1408x792,
+    TPV_PK_1280x720,
+    TPV_PK_960x688,
+    TPV_PK_896x688,
+    TPV_PK_480x340
+};
+
 enum TopVi_BINNING {
     TPV_PK_1X1,
     TPV_PK_2X2,
@@ -68,11 +79,19 @@ enum TopVi_BINNING {
 struct TopVi_PK {
    enum TopVi_ACTIVE activeMode;
    enum TopVi_BINNING binningMode;
+   enum TopVi_SIZE size;
+   int width;
+   int height;
+   double exposure;
+   double globalGain;
+   double blueGain;
+   double redGain;
 };
 
 struct TopVi_SK {
     enum TopVi_STATE status;
     int camId;
+    struct TopVi_PK param;
 };
 
 struct TopVi_SU {

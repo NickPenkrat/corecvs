@@ -59,8 +59,9 @@ void TopViDeviceDescriptor::CmdSpinThread::run()
     hints.ai_protocol = 0;           /* Any protocol */
 
 xxx:
-    string addr = "localhost";
+    //string addr = "localhost";
     //string addr = "193.232.110.156";
+    string addr = "217.71.226.214";
     int port = 8002;
 
     retval = getaddrinfo(addr.c_str(), to_string(port).c_str(), &hints, &result);
@@ -207,9 +208,9 @@ int TopViDeviceDescriptor::init(int _deviceId, TopViCaptureInterface *parent)
         cmdSpin.device = this;
         cmdSpin.start();
         this->executeCommand(TPV_GET, TPV_INIT, 0, "", "", parent);
+        //we assume that all objects with the type TopViCapture creation in the single thread
+        this->executeCommand(TPV_GET, TPV_STATUS, 0, "", "", parent);
     }
-    //we assume that all objects with the type TopViCapture creation in the single thread
-    this->executeCommand(TPV_GET, TPV_STATUS, 0, "", "", parent);
     return 0;
 }
 
@@ -260,9 +261,13 @@ void TopViDeviceDescriptor::grabAll(TopViCaptureInterface *parent)
 {
     SYNC_PRINT(("TopViDeviceDescriptor::grabAll() called\n"));
     string sAuto = (parent->fAuto) ? "auto" : "";
+#if 0
     for (int i = 0; i < mCamerasNumber; i++) {
         executeCommand(TPV_GET, TPV_GRAB, i, "", sAuto, parent);
     }
+#else
+    executeCommand(TPV_GET, TPV_GRAB, 0, "", sAuto, parent);
+#endif
 }
 
 void TopViDeviceDescriptor::setExposure(TopViCaptureInterface *parent, int value) {
@@ -271,10 +276,20 @@ void TopViDeviceDescriptor::setExposure(TopViCaptureInterface *parent, int value
     executeCommand(TPV_SET, TPV_EXPOSURE, camId, "", to_string(value), parent);
 }
 
-void TopViDeviceDescriptor::setGain(TopViCaptureInterface *parent, string value, int add_value) {
+void TopViDeviceDescriptor::setGain(TopViCaptureInterface *parent, enum TopViGain gainType, int value) {
     int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
-    SYNC_PRINT(("TopViDeviceDescriptor::setGain() called for camera %d with parameter %s\n", camId, value.c_str()));
-    executeCommand(TPV_SET, TPV_GAIN, camId, value, to_string(add_value), parent);
+    SYNC_PRINT(("TopViDeviceDescriptor::setGain() called for camera %d with parameter %s\n", camId, tpvGetColorGain(gainType)));
+    executeCommand(TPV_SET, TPV_GAIN, camId, tpvGetColorGain(gainType), to_string(value), parent);
+}
+
+void TopViDeviceDescriptor::setCommonExposure(TopViCaptureInterface *parent, int value) {
+    SYNC_PRINT(("TopViDeviceDescriptor::setExposure() called for all cameras\n"));
+    executeCommand(TPV_SET, TPV_EXPOSURE, 0, "", to_string(value), parent);
+}
+
+void TopViDeviceDescriptor::setCommonGain(TopViCaptureInterface *parent, int value) {
+    SYNC_PRINT(("TopViDeviceDescriptor::setGain() called for all cameras with parameter %d\n", value));
+    executeCommand(TPV_SET, TPV_GAIN, 0, tpvGetColorGain(TPV_GLOBAL), to_string(value), parent);
 }
 
 
