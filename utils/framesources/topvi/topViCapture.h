@@ -57,16 +57,17 @@ public:
     //OK
     static int topViTrace(int res, const char *prefix = NULL);
 
-    int activateFtpLoader(string linkReply);
-    int replyCallback(TopViGrillCommand *cmd);
-
     QString getActiveFileName() {
         return QString(this->ftpSpin.ftpLoader.activeFile.c_str());
     }
 
-    void updateCamera(int camId);
-
     static const double EXPOSURE_SCALER;
+
+    TopViCameraDescriptor *camera;
+
+    int activateFtpLoader(string linkReply);
+
+    int replyCallback(TopViGrillCommand *cmd);
 
 private:
 

@@ -75,9 +75,13 @@ public:
         previewMode(0),
         toSkip(0)
     {
+        this->skCamera = new TopVi_SK;
+        skCamera->status = TPV_SK_OK;
     }
 
-    ~TopViCameraDescriptor();
+    ~TopViCameraDescriptor() {
+        delete_safe(skCamera);
+    }
 
     struct TopVi_SK *skCamera;
 
@@ -88,22 +92,22 @@ public:
 
     int init(int camId, double global, double exposure);
 
-    int fAutoExp;
-    double autoExpCoef;
-    double autoGlobalCoef;
-    int fAutoWB;
-    double autoRedCoef;
-    double autoBlueCoef;
+    int fAutoExp = false;
+    double autoExpCoef = 1.;
+    double autoGlobalCoef = 1.;
+    int fAutoWB = false;
+    double autoRedCoef = 1.;
+    double autoBlueCoef = 1.;
 
     double getExposure();
-    void setExposure(double exposure);
+    int setExposure(string reply);
 
     double getGlobalGain();
-    void setGlobalGain(double global);
+    int setGlobalGain(string reply);
     double getRedGain();
-    void setRedGain(double red);
+    int setRedGain(string reply);
     double getBlueGain();
-    void setBlueGain(double blue);
+    int setBlueGain(string reply);
 
     int getFrameSize(int &width, int &height) ;
 

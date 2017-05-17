@@ -109,6 +109,12 @@ int TopViCaptureInterface::replyCallback(TopViGrillCommand *cmd){
         case TPV_GRAB:
             result = activateFtpLoader(reply);
             break;
+        case TPV_EXPOSURE:
+            result = camera->setExposure(reply);
+            break;
+        case TPV_GAIN:
+            result = camera->setGlobalGain(reply);
+            break;
         default:
             SYNC_PRINT(("TopViCaptureInterface: do nothing, result is OK for %s\n", tpvCmdName(cmd->cmdName)));
             result = true;
@@ -156,7 +162,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::startCapture()
 
     SYNC_PRINT(("Ftp loader should be started\n"));
 
-    device.grabAll(this);
+    device.grab(this);
 
     return ImageCaptureInterface::SUCCESS;
 }
@@ -223,7 +229,7 @@ void TopViCaptureInterface::FtpSpinThread::run()
                 for (int i = 0; i < ftpLoader.linksNumber; i++)
                 {
                     ftpLoader.getFile(ftpLoader.links[i]);
-                    SYNC_PRINT(("FtpSpinThread::run(): downloaded %s\n", ftpLoader.activeFile));
+                    SYNC_PRINT(("FtpSpinThread::run(): downloaded %s\n", ftpLoader.activeFile.c_str()));
                 }
 
                 /* Now exchange the buffer that is visible from */
@@ -261,6 +267,11 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::initCapture()
     SYNC_PRINT(("TopViCaptureInterface::initCapture(): called\n"));
 
     int res = ImageCaptureInterface::SUCCESS_1CAM;
+
+    string camSysId = interfaceName.substr(interfaceName.find_first_of('_') + 1, 1);
+    int camId = QString(camSysId.c_str()).toInt();
+    this->camera = device.mCameras[camId - 1];
+    camera->init(camId, 1, 100);
 
     CapErrorCode result = (CapErrorCode)((bool) res);
 
@@ -330,7 +341,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters
     double defaultExp = 20.0;
     double minExp = 2.0;
     double maxExp = 4000.0;
-    double stepExp = 16.;
+    double stepExp = 1.;
 
     CaptureParameter *param = &(params.mCameraControls[CameraParameters::EXPOSURE]);
     param->setActive(true);
@@ -438,37 +449,37 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getCaptureProperty(in
         case (CameraParameters::EXPOSURE):
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get exposure value\n"));
-            *value = 100; //device.mCameras[id]->getExposure() * EXPOSURE_SCALER;;
+            *value = camera->getExposure() * EXPOSURE_SCALER;
             return SUCCESS;
         }
         case (CameraParameters::EXPOSURE_AUTO) :
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get auto exposure value\n"));
-            *value = 15;
+            *value = camera->getExposure() * camera->autoExpCoef * EXPOSURE_SCALER;
             return SUCCESS;
         }
         case (CameraParameters::GAIN):
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get global gain value\n"));
-            *value = 4;
+            *value = camera->getGlobalGain();
             return SUCCESS;
         }
         case (CameraParameters::GAIN_BLUE):
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get blue gain value\n"));
-            *value = 4;
+            *value = camera->getBlueGain();;
             return SUCCESS;
         }
         case (CameraParameters::GAIN_RED):
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get red gain value\n"));
-            *value = 4;
+            *value = camera->getRedGain();
             return SUCCESS;
         }
         case (CameraParameters::GAIN_AUTO) :
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get auto wb value\n"));
-            *value = 2;
+            *value = camera->getGlobalGain() * camera->autoGlobalCoef;
             return SUCCESS;
         }
     }

@@ -209,7 +209,9 @@ int TopViDeviceDescriptor::init(int _deviceId, TopViCaptureInterface *parent)
         cmdSpin.start();
         this->executeCommand(TPV_GET, TPV_INIT, 0, "", "", parent);
         //we assume that all objects with the type TopViCapture creation in the single thread
+#if 0
         this->executeCommand(TPV_GET, TPV_STATUS, 0, "", "", parent);
+#endif
     }
     return 0;
 }
@@ -268,6 +270,12 @@ void TopViDeviceDescriptor::grabAll(TopViCaptureInterface *parent)
 #else
     executeCommand(TPV_GET, TPV_GRAB, 0, "", sAuto, parent);
 #endif
+}
+
+void TopViDeviceDescriptor::getExposure(TopViCaptureInterface *parent) {
+    int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
+    SYNC_PRINT(("TopViDeviceDescriptor::setExposure() called for camera %d\n", camId));
+    executeCommand(TPV_SET, TPV_EXPOSURE, camId, "", "", parent);
 }
 
 void TopViDeviceDescriptor::setExposure(TopViCaptureInterface *parent, int value) {

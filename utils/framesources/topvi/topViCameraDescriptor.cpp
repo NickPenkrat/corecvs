@@ -1,13 +1,9 @@
 #include <iostream>
 #include "topViCameraDescriptor.h"
 
-TopViCameraDescriptor::~TopViCameraDescriptor() {
-    delete_safe(this->skCamera);
-}
-
 int TopViCameraDescriptor::init(int camId, double global, double exposure)
 {
-    this->skCamera = new TopVi_SK;
+    this->camId = camId;
     skCamera->camId = camId;
     skCamera->param.globalGain = global;
     skCamera->param.redGain = global;
@@ -20,32 +16,44 @@ double TopViCameraDescriptor::getExposure() {
     return this->skCamera->param.exposure;
 }
 
-void TopViCameraDescriptor::setExposure(double exposure) {
-    this->skCamera->param.exposure = exposure;
+int TopViCameraDescriptor::setExposure(string reply) {
+    string res = reply.substr(reply.find_last_of(':') + 1);
+    this->skCamera->param.exposure = stod(res);
+    SYNC_PRINT((" TopViCameraDescriptor: set exposure %.2lf to camera %d\n", skCamera->param.exposure, this->camId));
+    return true;
 }
 
 double TopViCameraDescriptor::getGlobalGain() {
     return this->skCamera->param.globalGain;
 }
 
-void TopViCameraDescriptor::setGlobalGain(double global){
-    this->skCamera->param.globalGain = global;
+int TopViCameraDescriptor::setGlobalGain(string reply){
+    string res = reply.substr(reply.find_last_of(':') + 1);
+    this->skCamera->param.globalGain = stod(res);
+    SYNC_PRINT((" TopViCameraDescriptor: set global gain %.2lf to camera %d\n", skCamera->param.globalGain, this->camId));
+    return true;
 }
 
 double TopViCameraDescriptor::getRedGain() {
     return this->skCamera->param.redGain;
 }
 
-void TopViCameraDescriptor::setRedGain(double red) {
-    this->skCamera->param.redGain = red;
+int TopViCameraDescriptor::setRedGain(string reply) {
+    string res = reply.substr(reply.find_last_of(':') + 1);
+    this->skCamera->param.redGain = stod(res);
+    SYNC_PRINT((" TopViCameraDescriptor: set red gain %.2lf to camera %d\n", skCamera->param.redGain, this->camId));
+    return true;
 }
 
 double TopViCameraDescriptor::getBlueGain() {
     return this->skCamera->param.blueGain;
 }
 
-void TopViCameraDescriptor::setBlueGain(double blue) {
-    this->skCamera->param.blueGain = blue;
+int TopViCameraDescriptor::setBlueGain(string reply) {
+    string res = reply.substr(reply.find_last_of(':') + 1);
+    this->skCamera->param.blueGain = stod(res);
+    SYNC_PRINT((" TopViCameraDescriptor: set blue gain %.2lf to camera %d\n", skCamera->param.blueGain, this->camId));
+    return true;
 }
 
 int TopViCameraDescriptor::getFrameSize(int &width, int &height){
