@@ -42,7 +42,7 @@
 #endif
 
 static const char *errorFileName = "tpv_nofile.pgm";
-/*static*/ const double TopViCaptureInterface::EXPOSURE_SCALER = 16.0;
+/*static*/ const double TopViCaptureInterface::EXPOSURE_SCALER = 1.0;
 
 TopViDeviceDescriptor TopViCaptureInterface::device;
 
@@ -114,6 +114,9 @@ int TopViCaptureInterface::replyCallback(TopViGrillCommand *cmd){
             break;
         case TPV_GAIN:
             result = camera->setGlobalGain(reply);
+            break;
+        case TPV_STATUS:
+            result = camera->setStatus(reply);
             break;
         default:
             SYNC_PRINT(("TopViCaptureInterface: do nothing, result is OK for %s\n", tpvCmdName(cmd->cmdName)));
@@ -271,8 +274,8 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::initCapture()
     string camSysId = interfaceName.substr(interfaceName.find_first_of('_') + 1, 1);
     int camId = QString(camSysId.c_str()).toInt();
     this->camera = device.mCameras[camId - 1];
-    camera->init(camId, 1, 100);
-
+    camera->init(camId, camera->getDefaultGain(), camera->getDefaultExposure());
+    //device.getStatus(this);
     CapErrorCode result = (CapErrorCode)((bool) res);
 
     SYNC_PRINT(("TopViCaptureInterface::initCapture(): returning %d\n", result));
@@ -337,11 +340,11 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters
 {
     SYNC_PRINT(("TopViCaptureInterface: queryCameraParameters for TopVi interface\n"));
 
-    /* Exposure */
-    double defaultExp = 20.0;
-    double minExp = 2.0;
-    double maxExp = 4000.0;
-    double stepExp = 1.;
+    /* Exposure, ms */
+    double defaultExp = camera->getExposure();
+    double minExp = camera->getMinExposure();
+    double maxExp = camera->getMaxExposure();
+    double stepExp = 1;
 
     CaptureParameter *param = &(params.mCameraControls[CameraParameters::EXPOSURE]);
     param->setActive(true);
@@ -355,7 +358,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters
 
     *param = CaptureParameter();
     param->setActive(true);
-    param->setDefaultValue(0);
+    param->setDefaultValue(camera->fAutoExp);
     param->setMinimum(0);
     param->setMaximum(1);
     param->setStep(1);
@@ -364,20 +367,20 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters
     param->pushMenuItem(QString("True") , 1);
 
     /* Global Gain */
-    int defaultGain = 1;
+    int defaultGain = camera->getGlobalGain();
     param = &(params.mCameraControls[CameraParameters::GAIN]);
     *param = CaptureParameter();
     param->setActive(true);
     param->setDefaultValue(defaultGain);
-    param->setMinimum     (1);
-    param->setMaximum     (32);
-    param->setStep        (1);
+    param->setMinimum(camera->getMinGain());
+    param->setMaximum(camera->getMaxGain());
+    param->setStep(1);
 
     /* Gain Auto */
     param = &(params.mCameraControls[CameraParameters::GAIN_AUTO]);
     *param = CaptureParameter();
     param->setActive(true);
-    param->setDefaultValue(0);
+    param->setDefaultValue(camera->fAutoWB);
     param->setMinimum(0);
     param->setMaximum(1);
     param->setStep(1);
@@ -386,23 +389,23 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters
     param->pushMenuItem(QString("True") , 1);
 
     /* Gain Blue */
-    int defaultBlueGain = defaultGain;
+    int defaultBlueGain = camera->getBlueGain();
     param = &(params.mCameraControls[CameraParameters::GAIN_BLUE]);
     *param = CaptureParameter();
     param->setActive(true);
     param->setDefaultValue(defaultGain);
-    param->setMinimum     (1);
-    param->setMaximum     (32);
-    param->setStep        (1);
+    param->setMinimum(camera->getMinGain());
+    param->setMaximum(camera->getMaxGain());
+    param->setStep(1);
 
     /* Gain Red */
-    int defaultRedGain = defaultGain;
+    int defaultRedGain = camera->getRedGain();
     param = &(params.mCameraControls[CameraParameters::GAIN_RED]);
     *param = CaptureParameter();
     param->setActive(true);
     param->setDefaultValue(defaultGain);
-    param->setMinimum(1);
-    param->setMaximum(32);
+    param->setMinimum(camera->getMinGain());
+    param->setMaximum(camera->getMaxGain());
     param->setStep(1);
 
     return ImageCaptureInterface::SUCCESS;
@@ -455,7 +458,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getCaptureProperty(in
         case (CameraParameters::EXPOSURE_AUTO) :
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get auto exposure value\n"));
-            *value = camera->getExposure() * camera->autoExpCoef * EXPOSURE_SCALER;
+            *value = camera->fAutoExp;
             return SUCCESS;
         }
         case (CameraParameters::GAIN):
@@ -479,7 +482,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getCaptureProperty(in
         case (CameraParameters::GAIN_AUTO) :
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get auto wb value\n"));
-            *value = camera->getGlobalGain() * camera->autoGlobalCoef;
+            *value = camera->fAutoWB;
             return SUCCESS;
         }
     }

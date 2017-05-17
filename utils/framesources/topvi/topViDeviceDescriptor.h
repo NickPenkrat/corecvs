@@ -37,6 +37,8 @@ public:
     void setCommonExposure(TopViCaptureInterface *parent, int value);
     void setCommonGain(TopViCaptureInterface *parent,int value);
 
+    void getStatus(TopViCaptureInterface *parent);
+
     void getExposure(TopViCaptureInterface *parent);
     void setExposure(TopViCaptureInterface *parent, int value);
     void setGain(TopViCaptureInterface *parent, enum TopViGain gainType, int value);

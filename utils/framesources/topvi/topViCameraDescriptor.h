@@ -99,9 +99,17 @@ public:
     double autoRedCoef = 1.;
     double autoBlueCoef = 1.;
 
+    int setStatus(string reply);
+
+    double getMinExposure();
+    double getMaxExposure();
+    double getDefaultExposure();
     double getExposure();
     int setExposure(string reply);
 
+    double getMinGain();
+    double getMaxGain();
+    double getDefaultGain();
     double getGlobalGain();
     int setGlobalGain(string reply);
     double getRedGain();

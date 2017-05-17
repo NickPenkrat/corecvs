@@ -4,6 +4,12 @@
 int TopViCameraDescriptor::init(int camId, double global, double exposure)
 {
     this->camId = camId;
+    fAutoExp = false;
+    fAutoWB = false;
+    autoExpCoef = 1;
+    autoGlobalCoef = 1;
+    autoBlueCoef = 1;
+    autoRedCoef = 1;
     skCamera->camId = camId;
     skCamera->param.globalGain = global;
     skCamera->param.redGain = global;
@@ -12,8 +18,32 @@ int TopViCameraDescriptor::init(int camId, double global, double exposure)
     return 0;
 }
 
+double TopViCameraDescriptor::getMinExposure() {
+    return 2.;
+}
+
+double TopViCameraDescriptor::getMaxExposure() {
+    return 4000.;
+}
+
+double TopViCameraDescriptor::getDefaultExposure() {
+    return 100; //ms
+}
+
 double TopViCameraDescriptor::getExposure() {
-    return this->skCamera->param.exposure;
+    if (fAutoExp) {
+        return this->skCamera->param.exposure * this->autoExpCoef;
+    }
+    else {
+        return this->skCamera->param.exposure;
+    }
+}
+
+int TopViCameraDescriptor::setStatus(string reply) {
+    string res = reply.substr(reply.find_last_of(':') + 1);
+    this->skCamera->param.exposure = stod(res);
+    SYNC_PRINT((" TopViCameraDescriptor: set status to camera %d: exp = %.2lf\n", this->camId, skCamera->param.exposure));
+    return true;
 }
 
 int TopViCameraDescriptor::setExposure(string reply) {
@@ -23,8 +53,25 @@ int TopViCameraDescriptor::setExposure(string reply) {
     return true;
 }
 
+double TopViCameraDescriptor::getMinGain() {
+    return 1;
+}
+
+double TopViCameraDescriptor::getMaxGain() {
+    return 32;
+}
+
+double TopViCameraDescriptor::getDefaultGain() {
+    return 1;
+}
+
 double TopViCameraDescriptor::getGlobalGain() {
-    return this->skCamera->param.globalGain;
+    if (fAutoExp || fAutoWB) {
+        return this->skCamera->param.globalGain * this->autoGlobalCoef;
+    }
+    else {
+        return this->skCamera->param.globalGain;
+    }
 }
 
 int TopViCameraDescriptor::setGlobalGain(string reply){
@@ -35,7 +82,12 @@ int TopViCameraDescriptor::setGlobalGain(string reply){
 }
 
 double TopViCameraDescriptor::getRedGain() {
-    return this->skCamera->param.redGain;
+    if (fAutoWB) {
+        return this->skCamera->param.redGain * this->autoRedCoef;
+    }
+    else {
+        return this->skCamera->param.redGain;
+    }
 }
 
 int TopViCameraDescriptor::setRedGain(string reply) {
@@ -46,7 +98,12 @@ int TopViCameraDescriptor::setRedGain(string reply) {
 }
 
 double TopViCameraDescriptor::getBlueGain() {
-    return this->skCamera->param.blueGain;
+    if (fAutoWB) {
+        return this->skCamera->param.blueGain * this->autoBlueCoef;
+    }
+    else {
+        return this->skCamera->param.blueGain;
+    }
 }
 
 int TopViCameraDescriptor::setBlueGain(string reply) {

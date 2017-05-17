@@ -272,6 +272,12 @@ void TopViDeviceDescriptor::grabAll(TopViCaptureInterface *parent)
 #endif
 }
 
+void TopViDeviceDescriptor::getStatus(TopViCaptureInterface *parent) {
+    int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
+    SYNC_PRINT(("TopViDeviceDescriptor::getStatus() called for camera %d\n", camId));
+    executeCommand(TPV_GET, TPV_STATUS, camId, "", "", parent);
+}
+
 void TopViDeviceDescriptor::getExposure(TopViCaptureInterface *parent) {
     int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
     SYNC_PRINT(("TopViDeviceDescriptor::setExposure() called for camera %d\n", camId));
