@@ -184,6 +184,9 @@ int OpenCVSGMParameters::staticInit()
     directory[std::string("OpenCV SGM Parameters")]= &reflection;
    return 0;
 }
+int OpenCVSGMParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

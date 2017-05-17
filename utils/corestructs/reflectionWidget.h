@@ -1,6 +1,7 @@
 #ifndef REFLECTIONWIDGET_H
 #define REFLECTIONWIDGET_H
 
+#include <QGridLayout>
 #include <vector>
 
 #include "parametersControlWidgetBase.h"
@@ -28,6 +29,8 @@ public:
         NAME_COLUMN,
         WIDGET_COLUMN
     };
+
+    QGridLayout *gridLayout = NULL;
 
 public:
     ReflectionWidget(const Reflection *reflection, FieldsType type = TYPE_ALL, QWidget *parent = NULL);

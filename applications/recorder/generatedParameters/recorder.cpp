@@ -68,6 +68,9 @@ int Recorder::staticInit()
     directory[std::string("Recorder")]= &reflection;
    return 0;
 }
+int Recorder::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

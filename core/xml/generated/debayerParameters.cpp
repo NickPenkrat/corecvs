@@ -78,6 +78,9 @@ int DebayerParameters::staticInit()
     directory[std::string("Debayer Parameters")]= &reflection;
    return 0;
 }
+int DebayerParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

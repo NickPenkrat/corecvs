@@ -12,6 +12,7 @@
 #include "quaternion.h"
 #include "line.h"
 #include "correspondenceList.h"
+#include "affine.h"
 
 namespace corecvs {
 
@@ -23,6 +24,8 @@ namespace corecvs {
  *  \f[
  *   (x_{2}, y_{2}, z_{2}) = T R (x_{2}, y_{2}, z_{2})^T
  *  \f]
+ *
+ *  Most probably it should be ansector to Affine3DQ
  *
  **/
 class EssentialDecomposition
@@ -192,6 +195,14 @@ template<class VisitorType>
 		return out;
     }
 
+
+    static EssentialDecomposition FromAffine(const Affine3DQ &affine )
+    {
+        EssentialDecomposition result;
+        result.direction = affine.shift;
+        result.rotation  = affine.rotor.toMatrix();
+        return result;
+    }
 
 };
 

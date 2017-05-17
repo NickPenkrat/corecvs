@@ -60,6 +60,9 @@ int BackgroundFilterParameters::staticInit()
     directory[std::string("Background Filter Parameters")]= &reflection;
    return 0;
 }
+int BackgroundFilterParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

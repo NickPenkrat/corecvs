@@ -46,7 +46,7 @@ int StereoAlignParameters::staticInit()
         (
           StereoAlignParameters::ZDIRX_ID,
           offsetof(StereoAlignParameters, mZdirX),
-          1,
+          0,
           "zdirX",
           "zdirX",
           "zdirX",
@@ -62,7 +62,7 @@ int StereoAlignParameters::staticInit()
         (
           StereoAlignParameters::ZDIRY_ID,
           offsetof(StereoAlignParameters, mZdirY),
-          0,
+          1,
           "zdirY",
           "zdirY",
           "zdirY",
@@ -145,6 +145,9 @@ int StereoAlignParameters::staticInit()
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Stereo Align Parameters")]= &reflection;
    return 0;
+}
+int StereoAlignParameters::relinkCompositeFields()
+{
 }
 
 SUPPRESS_OFFSET_WARNING_END

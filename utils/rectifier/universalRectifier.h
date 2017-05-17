@@ -108,7 +108,7 @@ public:
         zGraph(NULL),
         topView(NULL),
         code(0)
-    {};
+    {}
 
     void recalculate(void);
 

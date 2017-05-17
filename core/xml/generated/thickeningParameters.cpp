@@ -60,6 +60,9 @@ int ThickeningParameters::staticInit()
     directory[std::string("Thickening Parameters")]= &reflection;
    return 0;
 }
+int ThickeningParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

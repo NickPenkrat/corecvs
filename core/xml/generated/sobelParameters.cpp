@@ -86,6 +86,9 @@ int SobelParameters::staticInit()
     directory[std::string("Sobel Parameters")]= &reflection;
    return 0;
 }
+int SobelParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

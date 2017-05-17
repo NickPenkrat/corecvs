@@ -139,6 +139,9 @@ int LineDistortionEstimatorParameters::staticInit()
     directory[std::string("Line Distortion Estimator Parameters")]= &reflection;
    return 0;
 }
+int LineDistortionEstimatorParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

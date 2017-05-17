@@ -122,6 +122,9 @@ int HeadSearchParameters::staticInit()
     directory[std::string("Head Search Parameters")]= &reflection;
    return 0;
 }
+int HeadSearchParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

@@ -4,6 +4,8 @@
 #include "newStyleBlock.h"
 #include "sceneStereoAlignerBlockBase.h"
 
+#include <fixtureCamera.h>
+
 namespace corecvs {
 
 class SceneStereoAlignerBlock : public SceneStereoAlignerBlockBase, public NewStyleBlock
@@ -16,6 +18,9 @@ public:
 
     ~SceneStereoAlignerBlock() {
     }
+
+    FixtureCamera *camera1 = NULL;
+    FixtureCamera *camera2 = NULL;
 };
 
 } // namespace corecvs

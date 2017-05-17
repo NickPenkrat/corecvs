@@ -33,6 +33,9 @@ class FixtureScene;
 namespace corecvs {
 class RGB24Buffer;
 }
+namespace corecvs {
+class FixtureCamera;
+}
 // }
 /*
  *  Additional includes for enum section.
@@ -56,6 +59,8 @@ public:
         INIMAGE2_ID,
         OUTIMAGE1_ID,
         OUTIMAGE2_ID,
+        OUTCAMERA1_ID,
+        OUTCAMERA2_ID,
         SCENESTEREOALIGNERBLOCKBASE_FIELD_ID_NUM
     };
 
@@ -121,10 +126,22 @@ public:
      */
     corecvs::RGB24Buffer * mOutImage2;
 
+    /** 
+     * \brief outCamera1 
+     * outCamera1 
+     */
+    corecvs::FixtureCamera * mOutCamera1;
+
+    /** 
+     * \brief outCamera2 
+     * outCamera2 
+     */
+    corecvs::FixtureCamera * mOutCamera2;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
-    static int relinkCompositeFields();
 
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -181,6 +198,16 @@ public:
         return mOutImage2;
     }
 
+    corecvs::FixtureCamera * outCamera1() const
+    {
+        return mOutCamera1;
+    }
+
+    corecvs::FixtureCamera * outCamera2() const
+    {
+        return mOutCamera2;
+    }
+
     /* Section with setters */
     void setInScene(corecvs::FixtureScene * inScene)
     {
@@ -232,6 +259,16 @@ public:
         mOutImage2 = outImage2;
     }
 
+    void setOutCamera1(corecvs::FixtureCamera * outCamera1)
+    {
+        mOutCamera1 = outCamera1;
+    }
+
+    void setOutCamera2(corecvs::FixtureCamera * outCamera2)
+    {
+        mOutCamera2 = outCamera2;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -247,6 +284,8 @@ template<class VisitorType>
         visitor.visit((void * &)mInImage2,        static_cast<const corecvs::PointerField *>(fields()[INIMAGE2_ID]));
         visitor.visit((void * &)mOutImage1,       static_cast<const corecvs::PointerField *>(fields()[OUTIMAGE1_ID]));
         visitor.visit((void * &)mOutImage2,       static_cast<const corecvs::PointerField *>(fields()[OUTIMAGE2_ID]));
+        visitor.visit((void * &)mOutCamera1,      static_cast<const corecvs::PointerField *>(fields()[OUTCAMERA1_ID]));
+        visitor.visit((void * &)mOutCamera2,      static_cast<const corecvs::PointerField *>(fields()[OUTCAMERA2_ID]));
     }
 
     SceneStereoAlignerBlockBase()
@@ -266,6 +305,8 @@ template<class VisitorType>
         , corecvs::RGB24Buffer * inImage2
         , corecvs::RGB24Buffer * outImage1
         , corecvs::RGB24Buffer * outImage2
+        , corecvs::FixtureCamera * outCamera1
+        , corecvs::FixtureCamera * outCamera2
     )
     {
         mInScene = inScene;
@@ -278,6 +319,8 @@ template<class VisitorType>
         mInImage2 = inImage2;
         mOutImage1 = outImage1;
         mOutImage2 = outImage2;
+        mOutCamera1 = outCamera1;
+        mOutCamera2 = outCamera2;
     }
 
     friend std::ostream& operator << (std::ostream &out, SceneStereoAlignerBlockBase &toSave)

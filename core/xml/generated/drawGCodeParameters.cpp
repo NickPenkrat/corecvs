@@ -128,6 +128,9 @@ int DrawGCodeParameters::staticInit()
     directory[std::string("draw GCode Parameters")]= &reflection;
    return 0;
 }
+int DrawGCodeParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

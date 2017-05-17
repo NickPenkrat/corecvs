@@ -191,6 +191,9 @@ int PresentationParameters::staticInit()
     directory[std::string("Presentation Parameters")]= &reflection;
    return 0;
 }
+int PresentationParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

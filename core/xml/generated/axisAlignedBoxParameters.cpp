@@ -142,6 +142,9 @@ int AxisAlignedBoxParameters::staticInit()
     directory[std::string("Axis Aligned Box Parameters")]= &reflection;
    return 0;
 }
+int AxisAlignedBoxParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

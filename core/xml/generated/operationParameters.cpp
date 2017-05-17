@@ -66,6 +66,9 @@ int OperationParameters::staticInit()
     directory[std::string("Operation Parameters")]= &reflection;
    return 0;
 }
+int OperationParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

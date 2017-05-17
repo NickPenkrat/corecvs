@@ -54,6 +54,8 @@ bool startsWith(const string &str, const string &prefix)
 
 bool endsWith(const std::string &str, const std::string &postfix)
 {
+    if (str.length() < postfix.length())
+        return false;
     return (str.compare(str.length() - postfix.length(), postfix.length(), postfix) == 0);
 }
 

@@ -195,9 +195,9 @@ namespace corecvs {
  * Finally align transformations and there inverses are
  *
  * \f{eqnarray*}
- *   H_{G1}       &=& ({A^T}^{-1} H_{1}^T)^T = H_{1} A^{-1} \\
+ *   H_{G1}      &=& ({A^T}^{-1} H_{1}^T)^T = H_{1} A^{-1} \\
  *   H_{G2}      &=& H_{2} B^{-1} \\
- *   H_{G1}^{-1}  &=& A H_{1}^{-1} \\
+ *   H_{G1}^{-1} &=& A H_{1}^{-1} \\
  *   H_{G2}^{-1} &=& B H_{2}^{-1}
  *
  * \f}
@@ -234,10 +234,7 @@ void StereoAligner::getAlignmentTransformation(
 #endif
 
     /// \todo TODO In fact this vector should be guessed
-    //vector3Dd z = {-0.75,0.75,0};
-    //vector3Dd z = {0.75,-0.75,0};
-    //Vector3dd z1 = Vector3dd(1.,0.,0.);
-
+    ///
     Vector3dd w1 = z ^ E1;
     Vector3dd w2 = z * F;
 

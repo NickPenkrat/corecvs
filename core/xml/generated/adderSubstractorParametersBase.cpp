@@ -110,6 +110,9 @@ int AdderSubstractorParametersBase::staticInit()
     directory[std::string("Adder Substractor Parameters Base")]= &reflection;
    return 0;
 }
+int AdderSubstractorParametersBase::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

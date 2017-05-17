@@ -130,6 +130,9 @@
       <field type="pointer"  target="corecvs::RGB24Buffer" name="outImage1" />
       <field type="pointer"  target="corecvs::RGB24Buffer" name="outImage2" />
 
+      <field type="pointer"  target="corecvs::FixtureCamera" name="outCamera1" />
+      <field type="pointer"  target="corecvs::FixtureCamera" name="outCamera2" />
+
   </class>
 
   <class name="Adder Substractor Parameters Base">

@@ -23,9 +23,9 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
 
     setWindowTitle(reflection->name.name);
 
-    QGridLayout *layout = new QGridLayout(this);
-    layout->setSpacing(3);
-    layout->setContentsMargins(3, 3, 3, 3);
+    gridLayout = new QGridLayout(this);
+    gridLayout->setSpacing(3);
+    gridLayout->setContentsMargins(3, 3, 3, 3);
 
     fieldToPosition.resize(reflection->fields.size(), -1);
 
@@ -52,12 +52,12 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
         QLabel *markLabel = new QLabel(this);
         markLabel->setText(mark);
         markLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        layout->addWidget(markLabel, i, MARK_COLUMN, 1, 1);
+        gridLayout->addWidget(markLabel, i, MARK_COLUMN, 1, 1);
 
         QLabel *label = new QLabel(this);
         label->setText(QString(field->getSimpleName()));
         label->setToolTip(mark + QString(field->name.decription));
-        layout->addWidget(label, i, NAME_COLUMN, 1, 1);
+        gridLayout->addWidget(label, i, NAME_COLUMN, 1, 1);
         QWidget *widget = NULL;
 
         switch (field->type) {
@@ -82,7 +82,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                 if (iField->prefixHint != NULL)
                     spinBox->setPrefix(iField->prefixHint);
 
-                layout->addWidget(spinBox, i, WIDGET_COLUMN, 1, 1);
+                gridLayout->addWidget(spinBox, i, WIDGET_COLUMN, 1, 1);
                 connect(spinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
                 widget = spinBox;
                 break;
@@ -109,7 +109,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                         spinBox->setPrefix(dField->prefixHint);
 
                     spinBox->setValue(dField->defaultValue);
-                    layout->addWidget(spinBox, i, WIDGET_COLUMN, 1, 1);
+                    gridLayout->addWidget(spinBox, i, WIDGET_COLUMN, 1, 1);
                     connect(spinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
                     widget = spinBox;
                 } else {
@@ -119,7 +119,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                          expBox->setMaxZoom(dField->max);
                      }
                      expBox->setValue(dField->defaultValue);
-                     layout->addWidget(expBox, i, WIDGET_COLUMN, 1, 1);
+                     gridLayout->addWidget(expBox, i, WIDGET_COLUMN, 1, 1);
                      connect(expBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
                      widget = expBox;
                 }
@@ -130,7 +130,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                 const StringField *sField = static_cast<const StringField *>(field);
                 QTextEdit *textBox = new QTextEdit(this);
                 textBox->setText(QString::fromStdString(sField->defaultValue));
-                layout->addWidget(textBox, i, WIDGET_COLUMN, 1, 1);
+                gridLayout->addWidget(textBox, i, WIDGET_COLUMN, 1, 1);
                 connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
                 widget = textBox;
                 break;
@@ -140,7 +140,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                 const WStringField *sField = static_cast<const WStringField *>(field);
                 QTextEdit *textBox = new QTextEdit(this);
                 textBox->setText(QString::fromStdWString(sField->defaultValue));
-                layout->addWidget(textBox, i, WIDGET_COLUMN, 1, 1);
+                gridLayout->addWidget(textBox, i, WIDGET_COLUMN, 1, 1);
                 connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
                 widget = textBox;
                 break;
@@ -150,7 +150,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                 const BoolField *bField = static_cast<const BoolField *>(field);
                 QCheckBox *checkBox = new QCheckBox(this);
                 checkBox->setChecked(bField->defaultValue);
-                layout->addWidget(checkBox, i, WIDGET_COLUMN, 1, 1);
+                gridLayout->addWidget(checkBox, i, WIDGET_COLUMN, 1, 1);
                 connect(checkBox, SIGNAL(toggled(bool)), this, SIGNAL(paramsChanged()));
                 widget = checkBox;
                 break;
@@ -175,7 +175,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                     }
                 }
                 comboBox->setCurrentIndex(eField->defaultValue);
-                layout->addWidget(comboBox, i, WIDGET_COLUMN, 1, 1);
+                gridLayout->addWidget(comboBox, i, WIDGET_COLUMN, 1, 1);
                 connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
                 widget = comboBox;
                 break;
@@ -210,7 +210,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                     // spinBox->setDecimals(); /*Not supported so far*/
                 }
                 vectorWidget->setValue(dField->defaultValue);
-                layout->addWidget(vectorWidget, i, WIDGET_COLUMN, 1, 1);
+                gridLayout->addWidget(vectorWidget, i, WIDGET_COLUMN, 1, 1);
                 connect(vectorWidget, SIGNAL(valueChanged()), this, SIGNAL(paramsChanged()));
                 widget = vectorWidget;
                 break;
@@ -223,7 +223,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                 const Reflection *subReflection = cField->reflection;
                 if (subReflection != NULL) {
                     ReflectionWidget *refWidget = new ReflectionWidget(subReflection);
-                    layout->addWidget(refWidget, i, WIDGET_COLUMN, 1, 1);
+                    gridLayout->addWidget(refWidget, i, WIDGET_COLUMN, 1, 1);
                     connect(refWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
                     widget = refWidget;
                 } else {
@@ -251,7 +251,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                 QString targetName = pField->name.name;
 
                 PointerFieldWidget *pointerWidget = new PointerFieldWidget(pField, this);
-                layout->addWidget(pointerWidget, i, WIDGET_COLUMN, 1, 1);
+                gridLayout->addWidget(pointerWidget, i, WIDGET_COLUMN, 1, 1);
                 pointerWidget->setValue(NULL);
                 widget = pointerWidget;
                 break;
@@ -261,7 +261,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
             default:
                 QLabel *label = new QLabel(this);
                 label->setText(QString("NOT SUPPORTED"));
-                layout->addWidget(label, i, WIDGET_COLUMN, 1, 1);
+                gridLayout->addWidget(label, i, WIDGET_COLUMN, 1, 1);
                 break;
         }
 
@@ -273,7 +273,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
     }
 
     QSpacerItem *spacer = new QSpacerItem(0, 20, QSizePolicy::Expanding, QSizePolicy::Expanding);
-    layout->addItem(spacer, (int)reflection->fields.size(), 0, 1, 2);
+    gridLayout->addItem(spacer, (int)reflection->fields.size(), 0, 1, 2);
 
 /*    if (reflection->isActionBlock()) {
         QPushButton *executeButton = new QPushButton(this);
@@ -283,7 +283,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
         connect(executeButton, SIGNAL(released()), this, SIGNAL(executeCalled()));
     }*/
 
-    setLayout(layout);
+    setLayout(gridLayout);
     qDebug() << "Reflection had: " << reflection->fields.size();
     qDebug() << "Widget has positions: " << position;
 

@@ -168,23 +168,46 @@ int SceneStereoAlignerBlockBase::staticInit()
         );
     fields().push_back(field9);
     /*  */ 
+    PointerField* field10 = new PointerField
+        (
+          SceneStereoAlignerBlockBase::OUTCAMERA1_ID,
+          offsetof(SceneStereoAlignerBlockBase, mOutCamera1),
+          NULL,
+          "outCamera1",
+          "outCamera1",
+          "outCamera1",
+          "corecvs::FixtureCamera"
+        );
+    fields().push_back(field10);
+    /*  */ 
+    PointerField* field11 = new PointerField
+        (
+          SceneStereoAlignerBlockBase::OUTCAMERA2_ID,
+          offsetof(SceneStereoAlignerBlockBase, mOutCamera2),
+          NULL,
+          "outCamera2",
+          "outCamera2",
+          "outCamera2",
+          "corecvs::FixtureCamera"
+        );
+    fields().push_back(field11);
+    /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("SceneStereoAlignerBlockBase")]= &reflection;
    return 0;
 }
-
 int SceneStereoAlignerBlockBase::relinkCompositeFields()
 {
     {
-           ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
-           std::string name("Stereo Align Parameters");
-           ReflectionDirectory::iterator it = directory->find(name);
-           if(it != directory->end()) {
-                const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[5]);
-                const_cast<CompositeField*>(field)->reflection = it->second;
-           } else {
-                printf("Reflection SceneStereoAlignerBlockBase to the subclass Stereo Align Parameters can't be linked\n");
-           }
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("Stereo Align Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[5]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection SceneStereoAlignerBlockBase to the subclass Stereo Align Parameters can't be linked\n");
+        }
     }
 }
 

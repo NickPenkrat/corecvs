@@ -11,6 +11,7 @@
 #include <string>
 
 #include "global.h"
+#include "utils.h"
 
 #include "ppmLoader.h"
 
@@ -21,10 +22,11 @@ string PPMLoader::prefix2(".ppm");
 
 bool PPMLoader::acceptsFile(string name)
 {
-    return (
-        name.compare(name.length() - prefix1.length(), prefix1.length(), prefix1) == 0 ||
-        name.compare(name.length() - prefix2.length(), prefix2.length(), prefix2) == 0
-        );
+    if (HelperUtils::endsWith(name, prefix1))
+        return true;
+    if (HelperUtils::endsWith(name, prefix2))
+        return true;
+    return false;
 }
 
 G12Buffer* PPMLoader::loadG12(string name)

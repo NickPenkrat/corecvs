@@ -4,6 +4,7 @@
 #include "reflection.h"
 #include <QWidget>
 #include "advancedImageWidget.h"
+#include "cameraModelParametersControlWidget.h"
 
 namespace Ui {
 class PointerFieldWidget;
@@ -26,7 +27,8 @@ public:
     void *getValue();
 
     /* Temporary */
-    AdvancedImageWidget *image = NULL;
+    AdvancedImageWidget                *image         = NULL;
+    CameraModelParametersControlWidget *cameraControl = NULL;
 
 public slots:
     /* This should be done pluggable and a wrapper style around core structures */
@@ -39,6 +41,9 @@ public slots:
 
     void loadFixtureScene();
     void showFixtureScene();
+
+    void showFixtureCamera();
+    void saveFixtureCamera();
 
 
 private:

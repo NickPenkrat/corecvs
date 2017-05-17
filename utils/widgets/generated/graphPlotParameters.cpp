@@ -197,6 +197,9 @@ int GraphPlotParameters::staticInit()
     directory[std::string("Graph Plot Parameters")]= &reflection;
    return 0;
 }
+int GraphPlotParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

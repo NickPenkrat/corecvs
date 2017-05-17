@@ -8,6 +8,7 @@
 
 #include "g12Image.h"
 #include "rgb24Buffer.h"
+#include "fixtureCamera.h"
 #include "bufferFactory.h"
 
 using namespace corecvs;
@@ -31,7 +32,7 @@ PointerFieldWidget::PointerFieldWidget(const corecvs::PointerField *field, QWidg
     }
 
 
-    /* Ok so far this is how we roll */
+    /* Ok so far this is how we roll. This should be pluggable */
     if (std::string(fieldReflection->targetClass) == "corecvs::RGB24Buffer" )
     {
         connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadRGB24Buffer()));
@@ -43,6 +44,15 @@ PointerFieldWidget::PointerFieldWidget(const corecvs::PointerField *field, QWidg
         connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadG12Buffer()));
         connect(ui->showPushButton, SIGNAL(released()), this, SLOT(showG12Buffer()));
     }
+
+    if (std::string(fieldReflection->targetClass) == "corecvs::FixtureCamera" )
+    {
+        //connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadRGB24Buffer()));
+        connect(ui->showPushButton, SIGNAL(released()), this, SLOT(showFixtureCamera()));
+        connect(ui->savePushButton, SIGNAL(released()), this, SLOT(saveFixtureCamera()));
+
+    }
+
 
 
 }
@@ -62,6 +72,12 @@ void PointerFieldWidget::setValue(void *value)
        {
            RGB24Buffer *buffer = static_cast<RGB24Buffer *>(rawPointer);
            ui->isNull->setText(QString("Image [%1x%2]").arg(buffer->w).arg(buffer->h));
+           return;
+       }
+       if (std::string(fieldReflection->targetClass) == "corecvs::FixtureCamera" )
+       {
+           corecvs::FixtureCamera *camera = static_cast<corecvs::FixtureCamera *>(rawPointer);
+           ui->isNull->setText(QString("Camera [%1]").arg(QString::fromStdString(camera->nameId)));
            return;
        }
        ui->isNull->setText("Set");
@@ -94,7 +110,7 @@ void PointerFieldWidget::loadRGB24Buffer()
 
 void PointerFieldWidget::showRGB24Buffer()
 {
-    if (std::string(fieldReflection->targetClass) != "corecvs::RGB24Buffer" )
+    if (std::string(fieldReflection->targetClass) != "corecvs::RGB24Buffer" || rawPointer == NULL)
         return;
     if (image == NULL)
         image = new AdvancedImageWidget;
@@ -133,6 +149,25 @@ void PointerFieldWidget::loadFixtureScene()
 }
 
 void PointerFieldWidget::showFixtureScene()
+{
+
+}
+
+void PointerFieldWidget::showFixtureCamera()
+{
+    if (std::string(fieldReflection->targetClass) != "corecvs::FixtureCamera" || rawPointer == NULL )
+        return;
+    if (cameraControl == NULL)
+        cameraControl = new CameraModelParametersControlWidget;
+
+    corecvs::FixtureCamera *camera = static_cast<corecvs::FixtureCamera *>(rawPointer);
+
+    cameraControl->setParameters(*camera);
+    cameraControl->show();
+    cameraControl->raise();
+}
+
+void PointerFieldWidget::saveFixtureCamera()
 {
 
 }

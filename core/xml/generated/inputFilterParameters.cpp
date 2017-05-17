@@ -62,6 +62,9 @@ int InputFilterParameters::staticInit()
     directory[std::string("Input Filter Parameters")]= &reflection;
    return 0;
 }
+int InputFilterParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

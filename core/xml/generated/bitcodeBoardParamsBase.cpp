@@ -244,6 +244,9 @@ int BitcodeBoardParamsBase::staticInit()
     directory[std::string("Bitcode Board Params Base")]= &reflection;
    return 0;
 }
+int BitcodeBoardParamsBase::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

@@ -210,6 +210,9 @@ int CalibrationDrawHelpersParameters::staticInit()
     directory[std::string("Calibration Draw Helpers Parameters")]= &reflection;
    return 0;
 }
+int CalibrationDrawHelpersParameters::relinkCompositeFields()
+{
+}
 
 SUPPRESS_OFFSET_WARNING_END
 
