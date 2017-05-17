@@ -150,7 +150,6 @@ string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
 
 string escapeString(const string &s, const std::unordered_map<char, char> &symbols, const string &escape)
 {
-
      std::ostringstream out;
 
      for (const char &symbol : s)

@@ -25,7 +25,7 @@ struct SmartPtrDetectorHolder
         SIFT, SURF, STAR, FAST, BRISK, ORB, AKAZE
     } tag;
 
-#if 0
+#if 1    // EM/SF: opencv3.2 requires it?
     union {
 #else
     struct {

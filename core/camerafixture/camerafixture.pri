@@ -5,7 +5,7 @@ HEADERS += \
         camerafixture/sceneFeaturePoint.h \
         camerafixture/cameraPrototype.h   \
         camerafixture/fixtureScenePart.h  \
-    $$PWD/wildcardablePointerPair.h
+        camerafixture/wildcardablePointerPair.h \
 
 
 SOURCES += \
@@ -15,5 +15,5 @@ SOURCES += \
         camerafixture/cameraFixture.cpp     \
         camerafixture/cameraPrototype.cpp   \
         camerafixture/fixtureScenePart.cpp  \
-    $$PWD/wildcardablePointerPair.cpp
+        camerafixture/wildcardablePointerPair.cpp \
 

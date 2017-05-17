@@ -579,9 +579,7 @@ bool FixtureScene::integrityRelink()
     {
         FixtureSceneGeometry *geometry = mGeomtery[i];
         geometry->ownerScene = this;
-
     }
-
 
     return true;
 }
