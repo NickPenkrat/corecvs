@@ -184,18 +184,17 @@ exit:
 
 std::vector<std::string> BufferFactory::resolutionsRGB24()
 {
-
-
+    return std::vector<std::string>();
 }
 
 std::vector<std::string> BufferFactory::resolutionsG12()
 {
-
+    return std::vector<std::string>();
 }
 
 std::vector<std::string> BufferFactory::resolutionsRuntimeType()
 {
-
+    return std::vector<std::string>();
 }
 
 BufferFactory::~BufferFactory()
