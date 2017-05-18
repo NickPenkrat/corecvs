@@ -64,33 +64,37 @@ class TopViCameraDescriptor
 {
 
 public:
-    bool inited = false;
+    QAtomicInt inited = 0;
     int  camId = -1;       //actual
     int  previewMode;  //actual
     int  toSkip = 0;
 
     TopViCameraDescriptor() :
-        inited(false),
+        inited(0),
         camId(-1),
         previewMode(0),
         toSkip(0)
     {
-        this->skCamera = new TopVi_SK;
-        skCamera->status = TPV_SK_OK;
+        tpvInitSK(&skCamera);
     }
 
-    ~TopViCameraDescriptor() {
-        delete_safe(skCamera);
+
+    TopViCameraDescriptor(int _camId) :
+        inited(0),
+        camId(_camId),
+        previewMode(0),
+        toSkip(0)
+    {
+        tpvInitSK(&skCamera);
     }
 
-    struct TopVi_SK *skCamera;
+    ~TopViCameraDescriptor();
+    struct TopVi_SK skCamera;
 
     ImageCaptureInterface::CameraFormat format;
 
     static const unsigned   IMAGE_BUFFER_COUNT = 3;
     BufferDescriptorType    images[IMAGE_BUFFER_COUNT];
-
-    int init(int camId, double global, double exposure);
 
     int fAutoExp = false;
     double autoExpCoef = 1.;
@@ -125,7 +129,7 @@ public:
 
     string getSysId();
 
-    int replyCallback(string reply);
+    int replyCallback(enum TopViCmdName cmdName, string reply);
 
     uint16_t* getFrame();
     BufferDescriptorType* getDescriptorByAddress(char* pbuf);

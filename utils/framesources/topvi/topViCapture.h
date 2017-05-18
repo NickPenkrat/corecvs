@@ -63,10 +63,9 @@ public:
 
     static const double EXPOSURE_SCALER;
 
-    TopViCameraDescriptor *camera;
-
     int activateFtpLoader(string linkReply);
 
+    int getCamSysId();
     int replyCallback(TopViGrillCommand *cmd);
 
 private:

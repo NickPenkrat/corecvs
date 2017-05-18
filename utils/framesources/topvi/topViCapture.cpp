@@ -61,22 +61,29 @@ int TopViCaptureInterface::topViTrace(int result, const char *prefix)
     return result;
 }
 
+int TopViCaptureInterface::getCamSysId() {
+    string camSysId = interfaceName.substr(interfaceName.find_first_of('_') + 1, 1);
+    if (camSysId == "") return -1;
+    return QString(camSysId.c_str()).toInt();
+}
+
 TopViCaptureInterface::TopViCaptureInterface(string _devname) :
     sync(NO_SYNC),
     ftpSpin(this)
 {
     SYNC_PRINT(("TopViCaptureInterface: TopVi capture is using now\n"));
     setConfigurationString(_devname);
-    device.init(0, this);
+    device.init(0);
 }
 
 TopViCaptureInterface::TopViCaptureInterface(string _devname, int /*h*/, int /*w*/, int /*fps*/, bool isRgb) :
     sync(NO_SYNC),
     ftpSpin(this)
 {
-    SYNC_PRINT(("TopViCaptureInterface: TopVi capture is using now (constructor with parameters)\n"));
-    setConfigurationString(_devname, isRgb);
-    device.init(0, this);
+    CORE_UNUSED(isRgb);
+    SYNC_PRINT(("TopViCaptureInterface: TopVi capture with params is using now\n"));
+    setConfigurationString(_devname);
+    device.init(0);
 }
 
 int TopViCaptureInterface::activateFtpLoader(string linkReply) {
@@ -103,20 +110,16 @@ int TopViCaptureInterface::replyCallback(TopViGrillCommand *cmd){
 
     string reply(cmd->reply->replyStr);
 
-    SYNC_PRINT(("TopViCaptureInterface: replyCallback return answer for GUI: %s\n", cmd->reply->replyStr));
+    SYNC_PRINT(("TopViCaptureInterface: replyCallback return answer for GUI: [%d], %s\n", cmd->reply->replyResult, cmd->reply->replyStr));
+
+    if (cmd->reply->replyResult == GRILL_ERROR) {
+        SYNC_PRINT(("TopViCaptureInterface: ER answer, do nothing\n"));
+        return result;
+    }
 
     switch (cmd->reply->cmdName) {
         case TPV_GRAB:
             result = activateFtpLoader(reply);
-            break;
-        case TPV_EXPOSURE:
-            result = camera->setExposure(reply);
-            break;
-        case TPV_GAIN:
-            result = camera->setGlobalGain(reply);
-            break;
-        case TPV_STATUS:
-            result = camera->setStatus(reply);
             break;
         default:
             SYNC_PRINT(("TopViCaptureInterface: do nothing, result is OK for %s\n", tpvCmdName(cmd->cmdName)));
@@ -141,7 +144,7 @@ TopViCaptureInterface::~TopViCaptureInterface()
 {
     SYNC_PRINT(("TopViCaptureInterface(%s): request for killing the threads\n", QSTR_DATA_PTR(getInterfaceName())));
 
-     while (ftpSpin.isRunning()) {
+    while (ftpSpin.isRunning()) {
        SYNC_PRINT(("TopViCaptureInterface: waiting for the ftp thread cancelation...\n"));
        ftpSpinRunning.lock();
        shouldStopFtpSpinThread = true;
@@ -149,7 +152,7 @@ TopViCaptureInterface::~TopViCaptureInterface()
        QThread::usleep(200);
     }
 
-    printf("TopViCaptureInterface: Closing TopVi capture...\n");
+    SYNC_PRINT(("TopViCaptureInterface: Closing TopVi capture...\n"));
 }
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::startCapture()
@@ -207,12 +210,7 @@ QString TopViCaptureInterface::getInterfaceName()
 
 string TopViCaptureInterface::getDeviceSerial(int /*num*/)
 {
-    //SYNC_PRINT(("TopViCaptureInterface::getDeviceSerial():called\n"));
-    //TODO: doesn't better solution !!!
-    string camSysId = interfaceName.substr(interfaceName.find_first_of('_') + 1, 1);
-    int camId = QString(camSysId.c_str()).toInt();
-    std::string toReturn = to_string(camId);
-
+    string toReturn = to_string(this->getCamSysId());
     SYNC_PRINT(("TopviCaptureInterface::getDeviceSerial():returning <%s>\n", toReturn.c_str()));
     return toReturn;
 }
@@ -271,11 +269,8 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::initCapture()
 
     int res = ImageCaptureInterface::SUCCESS_1CAM;
 
-    string camSysId = interfaceName.substr(interfaceName.find_first_of('_') + 1, 1);
-    int camId = QString(camSysId.c_str()).toInt();
-    this->camera = device.mCameras[camId - 1];
-    camera->init(camId, camera->getDefaultGain(), camera->getDefaultExposure());
-    //device.getStatus(this);
+    device.getStatus(this);
+
     CapErrorCode result = (CapErrorCode)((bool) res);
 
     SYNC_PRINT(("TopViCaptureInterface::initCapture(): returning %d\n", result));
@@ -332,13 +327,17 @@ TopViCaptureInterface::FramePair  TopViCaptureInterface::getFrame(){
         pair.rgbBufferLeft = result;
         delete_safe(input);
     }
+    delete_safe(bayer);
     SYNC_PRINT(("TopViCaptureInterface::getFrame(): finished\n"));
     return pair;
 }
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters(CameraParameters &params)
 {
-    SYNC_PRINT(("TopViCaptureInterface: queryCameraParameters for TopVi interface\n"));
+    int camId =  this->getCamSysId();
+    SYNC_PRINT(("TopViCaptureInterface: queryCameraParameters for TopVi camera %d\n", camId));
+
+    TopViCameraDescriptor *camera = device.mCameras[camId - 1];
 
     /* Exposure, ms */
     double defaultExp = camera->getExposure();
@@ -393,7 +392,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters
     param = &(params.mCameraControls[CameraParameters::GAIN_BLUE]);
     *param = CaptureParameter();
     param->setActive(true);
-    param->setDefaultValue(defaultGain);
+    param->setDefaultValue(defaultBlueGain);
     param->setMinimum(camera->getMinGain());
     param->setMaximum(camera->getMaxGain());
     param->setStep(1);
@@ -403,7 +402,7 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters
     param = &(params.mCameraControls[CameraParameters::GAIN_RED]);
     *param = CaptureParameter();
     param->setActive(true);
-    param->setDefaultValue(defaultGain);
+    param->setDefaultValue(defaultRedGain);
     param->setMinimum(camera->getMinGain());
     param->setMaximum(camera->getMaxGain());
     param->setStep(1);
@@ -413,7 +412,6 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::queryCameraParameters
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::setCaptureProperty(int id, int value)
 {
-    CORE_UNUSED(value);
     SYNC_PRINT(("TopViCaptureInterface:: setCaptureProperty for TopVi interface\n"));
     switch (id)
     {
@@ -445,13 +443,15 @@ ImageCaptureInterface::CapErrorCode TopViCaptureInterface::setCaptureProperty(in
 
 ImageCaptureInterface::CapErrorCode TopViCaptureInterface::getCaptureProperty(int id, int *value)
 {
-    CORE_UNUSED(value);
-    SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty() for TopVi interface\n"));
+    int camId = this->getCamSysId();
+    SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty() for camera %d\n", camId));
+    TopViCameraDescriptor *camera = device.mCameras[camId - 1];
     switch (id)
     {
         case (CameraParameters::EXPOSURE):
         {
             SYNC_PRINT(("TopViCaptureInterface:: getCaptureProperty(): try to get exposure value\n"));
+
             *value = camera->getExposure() * EXPOSURE_SCALER;
             return SUCCESS;
         }

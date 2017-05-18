@@ -25,8 +25,8 @@ public:
 
     TopViDeviceDescriptor(){}
 
-    //IMPORTANT: we assume that all objects with the type TopViCapture creation in the single thread
-    int init(int deviceId, TopViCaptureInterface *parent);
+    int init(int deviceId);
+    int createAllCameras();
 
     //This is a wrappers for GRILL API
     int getCamerasSysId(vector<string> &camDesc);
@@ -34,14 +34,14 @@ public:
     void grab(TopViCaptureInterface *parent);
     void grabAll(TopViCaptureInterface *parent);
 
-    void setCommonExposure(TopViCaptureInterface *parent, int value);
-    void setCommonGain(TopViCaptureInterface *parent,int value);
+    void setCommonExposure(TopViCaptureInterface *parent, double value);
+    void setCommonGain(TopViCaptureInterface *parent, double value);
 
     void getStatus(TopViCaptureInterface *parent);
 
     void getExposure(TopViCaptureInterface *parent);
-    void setExposure(TopViCaptureInterface *parent, int value);
-    void setGain(TopViCaptureInterface *parent, enum TopViGain gainType, int value);
+    void setExposure(TopViCaptureInterface *parent, double value);
+    void setGain(TopViCaptureInterface *parent, enum TopViGain gainType, double value);
 
     int mCamerasNumber = 0;
     vector<TopViCameraDescriptor *>  mCameras;
@@ -72,7 +72,7 @@ private:
     QMutex protectGrillRequest;
     QMutex protectGrillReply;
 
-    void replyCallback(TopViGrillCommand *cmd);
+    int replyCallback(TopViGrillCommand *cmd);
     //This is a methods for GRILL API
     void executeCommand(enum TopViCmdType cmdType, enum TopViCmdName cmdName, int camId = 0, string value = "", string add_value = "", TopViCaptureInterface *parent = NULL);
 

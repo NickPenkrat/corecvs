@@ -165,13 +165,17 @@ xxx:
                result = cmd->parent->replyCallback(cmd);
             }
             else {
-               device->replyCallback(cmd);
-               result = true;
+               result = device->replyCallback(cmd);
             }
             if (result) {
                device->protectGrillReply.lock();
                cmd->state = TPV_OK;
                device->protectGrillReply.unlock();
+             }
+             else {
+                device->protectGrillReply.lock();
+                cmd->state = TPV_NO_REPLY;
+                device->protectGrillReply.unlock();
              }
              SYNC_PRINT(("TopViGrillInterface::CmdSpinThread(): after callback cmdId = %d, cmdStatus = %s\n", cmd->cmdId, tpvCmdStatus(cmd->state)));
         }
@@ -194,8 +198,7 @@ xxx:
     SYNC_PRINT(("TopViDeviceDescriptor::CmdSpinThread(): command thread finished\n"));
 }
 
-
-int TopViDeviceDescriptor::init(int _deviceId, TopViCaptureInterface *parent)
+int TopViDeviceDescriptor::init(int _deviceId)
 {
     SYNC_PRINT(("TopViDeviceDescriptor::init(): init called\n"));
     this->deviceId = _deviceId;
@@ -207,39 +210,83 @@ int TopViDeviceDescriptor::init(int _deviceId, TopViCaptureInterface *parent)
         this->cmdSpinRunning.unlock();
         cmdSpin.device = this;
         cmdSpin.start();
-        this->executeCommand(TPV_GET, TPV_INIT, 0, "", "", parent);
-        //we assume that all objects with the type TopViCapture creation in the single thread
-#if 0
-        this->executeCommand(TPV_GET, TPV_STATUS, 0, "", "", parent);
-#endif
+        this->createAllCameras();
+        this->executeCommand(TPV_SET, TPV_INIT, 0, "", "", NULL);
     }
     return 0;
 }
 
+int TopViDeviceDescriptor::createAllCameras()
+{
+    SYNC_PRINT(("TopViDeviceDescriptor: %d cameras was NOT inited\n", mCamerasNumber));
+    for (int i = 0; i < mCamerasNumber; i++ ) {
+        TopViCameraDescriptor *camera = new TopViCameraDescriptor(i+1);
+        if (camera->inited.testAndSetAcquire(0,1)) {
+            mCameras.push_back(camera);
+        }
+    }
+    SYNC_PRINT(("TopViDeviceDescriptor: cameras are inited now\n"));
+    this->executeCommand(TPV_GET, TPV_STATUS, 0, "", "", NULL);
+    return mCamerasNumber;
+}
+
 int TopViDeviceDescriptor::getCamerasSysId(vector<string> &camDesc)
 {
-    if (this->inited) {
+    if (inited) {
+        SYNC_PRINT(("TopViDeviceDescriptor: getCamerasSysId for inited\n"));
         for (int i = 0; i < mCamerasNumber; i++) {
             TopViCameraDescriptor *camera = mCameras[i];
             camDesc.push_back(camera->getSysId());
         }
     }
     else {
+        SYNC_PRINT(("TopViDeviceDescriptor: getCamerasSysId for NOT inited\n"));
         mCamerasNumber = 9;
         for (int i = 0; i < mCamerasNumber; i++ ) {
             std::stringstream ss;
             ss << "eTopVi_" << (i + 1);
             string dev = ss.str();
-            TopViCameraDescriptor *camera = new TopViCameraDescriptor();
-            mCameras.push_back(camera);
             camDesc.push_back(dev);
         }
     }
     return mCamerasNumber;
 }
 
-void TopViDeviceDescriptor::replyCallback(TopViGrillCommand *cmd){
-  SYNC_PRINT(("TopViDeviceDescriptor: callback reply for command %s(%d): %s\n", tpvCmdType(cmd->cmdType), cmd->cmdId, cmd->reply->replyStr));
+int TopViDeviceDescriptor::replyCallback(TopViGrillCommand *cmd){
+  SYNC_PRINT(("TopViDeviceDescriptor: replyCallback  return answer for DEVICE: [%d], %s\n", cmd->reply->replyResult, cmd->reply->replyStr));
+  int result = false;
+
+  string reply(cmd->reply->replyStr);
+
+  if (cmd->reply->replyResult == GRILL_ERROR) {
+      SYNC_PRINT(("TopViDeviceDescriptor: ER answer, do nothing\n"));
+      return result;
+  }
+
+  if (cmd->reply->cmdName == TPV_GRAB) {
+      SYNC_PRINT(("TopViDeviceDescriptor replyCallback: unknown interface for TPV_GRAB\n"));
+      SYNC_PRINT(("TopViDeviceDescriptor replyCallback: may be good place for TPV_GRAB 0\n"));
+      return false;
+  }
+
+  size_t pos = 0;
+  string answer = "";
+  int num = 0;
+  do {
+    pos = reply.find_first_of(",");
+    answer = reply.substr(0, pos);
+    if (answer != "") {
+        //SYNC_PRINT(("[%d] next answer: %s\n", num, answer.c_str()));
+        string id = answer.substr(0, 1);
+        TopViCameraDescriptor *camera = mCameras[QString(id.c_str()).toInt() - 1];
+        if (camera) camera->replyCallback(cmd->reply->cmdName, answer);
+        num++;
+    }
+    reply = reply.substr(pos + 1);
+    //SYNC_PRINT(("[%d] rest of reply: %s\n", num, reply.c_str()));
+  } while (pos != std::string::npos);
+
+  return result;
 }
 
 void TopViDeviceDescriptor::executeCommand(TopViCmdType cmdType, TopViCmdName cmdName, int camId, string value, string add_value, TopViCaptureInterface *parent)
@@ -253,7 +300,7 @@ void TopViDeviceDescriptor::executeCommand(TopViCmdType cmdType, TopViCmdName cm
 
 void TopViDeviceDescriptor::grab(TopViCaptureInterface *parent)
 {
-    int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
+    int camId = parent->getCamSysId();
     string sAuto = (parent->fAuto) ? "auto" : "";
     SYNC_PRINT(("TopViDeviceDescriptor::grab() called for camera %d\n", camId));
     executeCommand(TPV_GET, TPV_GRAB, camId, "", sAuto, parent);
@@ -273,37 +320,40 @@ void TopViDeviceDescriptor::grabAll(TopViCaptureInterface *parent)
 }
 
 void TopViDeviceDescriptor::getStatus(TopViCaptureInterface *parent) {
-    int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
+    int camId =  parent->getCamSysId();
     SYNC_PRINT(("TopViDeviceDescriptor::getStatus() called for camera %d\n", camId));
-    executeCommand(TPV_GET, TPV_STATUS, camId, "", "", parent);
+    executeCommand(TPV_GET, TPV_STATUS, camId, "", "", NULL);
 }
 
 void TopViDeviceDescriptor::getExposure(TopViCaptureInterface *parent) {
-    int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
+    int camId = parent->getCamSysId();
     SYNC_PRINT(("TopViDeviceDescriptor::setExposure() called for camera %d\n", camId));
-    executeCommand(TPV_SET, TPV_EXPOSURE, camId, "", "", parent);
+    executeCommand(TPV_SET, TPV_EXPOSURE, camId, "", "", NULL);
 }
 
-void TopViDeviceDescriptor::setExposure(TopViCaptureInterface *parent, int value) {
-    int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
+void TopViDeviceDescriptor::setExposure(TopViCaptureInterface *parent, double value) {
+    int camId = parent->getCamSysId();
     SYNC_PRINT(("TopViDeviceDescriptor::setExposure() called for camera %d\n", camId));
-    executeCommand(TPV_SET, TPV_EXPOSURE, camId, "", to_string(value), parent);
+    executeCommand(TPV_SET, TPV_EXPOSURE, camId, "", to_string(value), NULL);
 }
 
-void TopViDeviceDescriptor::setGain(TopViCaptureInterface *parent, enum TopViGain gainType, int value) {
-    int camId =  QString(parent->getDeviceSerial().c_str()).toInt();
+void TopViDeviceDescriptor::setGain(TopViCaptureInterface *parent, enum TopViGain gainType, double value) {
+    int camId = parent->getCamSysId();
     SYNC_PRINT(("TopViDeviceDescriptor::setGain() called for camera %d with parameter %s\n", camId, tpvGetColorGain(gainType)));
-    executeCommand(TPV_SET, TPV_GAIN, camId, tpvGetColorGain(gainType), to_string(value), parent);
+    executeCommand(TPV_SET, TPV_GAIN, camId, tpvGetColorGain(gainType), to_string(value), NULL);
+//    executeCommand(TPV_SET, TPV_GAIN, camId, tpvGetColorGain(gainType), to_string(tpvGetGainCode(value)), NULL);
 }
 
-void TopViDeviceDescriptor::setCommonExposure(TopViCaptureInterface *parent, int value) {
+void TopViDeviceDescriptor::setCommonExposure(TopViCaptureInterface *parent, double value) {
+    CORE_UNUSED(parent);
     SYNC_PRINT(("TopViDeviceDescriptor::setExposure() called for all cameras\n"));
-    executeCommand(TPV_SET, TPV_EXPOSURE, 0, "", to_string(value), parent);
+    executeCommand(TPV_SET, TPV_EXPOSURE, 0, "", to_string(value), NULL);
 }
 
-void TopViDeviceDescriptor::setCommonGain(TopViCaptureInterface *parent, int value) {
-    SYNC_PRINT(("TopViDeviceDescriptor::setGain() called for all cameras with parameter %d\n", value));
-    executeCommand(TPV_SET, TPV_GAIN, 0, tpvGetColorGain(TPV_GLOBAL), to_string(value), parent);
+void TopViDeviceDescriptor::setCommonGain(TopViCaptureInterface *parent, double value) {
+    CORE_UNUSED(parent);
+    SYNC_PRINT(("TopViDeviceDescriptor::setGain() called for all cameras with parameter %.2lf\n", value));
+    executeCommand(TPV_SET, TPV_GAIN, 0, tpvGetColorGain(TPV_GLOBAL), to_string(value), NULL);
+//    executeCommand(TPV_SET, TPV_GAIN, 0, tpvGetColorGain(TPV_GLOBAL), to_string(tpvGetGainCode(value)), NULL);
 }
-
 

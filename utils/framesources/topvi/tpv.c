@@ -4,6 +4,47 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define GAIN_1 0x1040
+#define GAIN_2 0x1840
+#define GAIN_4 0x1C40
+#define GAIN_8 0x1CC0
+#define GAIN_16 0x1DC0
+
+#define GAIN_INTERVAL 0x40
+
+int tpvGetGainCode(double g) {
+    int code, rem;
+    if (g < 1 || g > 32)
+        return -1;
+    code = GAIN_1;
+    if (g >= 2 && g < 4)  { g /= 2;  code = GAIN_2; }
+    if (g >= 4 && g < 8)  { g /= 4;  code = GAIN_4; }
+    if (g >= 8 && g < 16) { g /= 8;  code = GAIN_8; }
+    if (g >= 16 && g < 32){ g /= 16; code = GAIN_16; }
+    rem = (int)(g * GAIN_INTERVAL);
+    code |= rem;
+    return code;
+}
+
+double tpvGetGainValue(int code) {
+    int gains[5]={GAIN_1, GAIN_2, GAIN_4, GAIN_8, GAIN_16};
+    int i, j;
+    double g = 1, rem = 0, delta = 0;
+    //printf("code = 0x%x\n", code);
+    for (i = 0; i < 5; i++) {
+        if (code >= gains[i] && code < gains[i] + GAIN_INTERVAL) {
+            g = 1;
+            for (j = 0; j < i; j++) { g *= 2; }
+            delta = (g * 2 - g) / (double)GAIN_INTERVAL;
+            rem = (code - gains[i]) * delta;
+            //printf("res = %d g = %lf, delta = %lf, rem = %lf\n", code-gains[i], g, delta, rem);
+            g += rem;
+            return g;
+        }
+    }
+    return -1;
+}
+
 enum TopViGain tpvSetColorGain(const char *value) {
 #if 0
     return atoi(value);
@@ -13,6 +54,19 @@ enum TopViGain tpvSetColorGain(const char *value) {
     if (strncmp(value, "blue", strlen("blue")) == 0) return TPV_BLUE;
     return TPV_GLOBAL;
 #endif
+}
+
+int tpvInitSK(struct TopVi_SK *sk) {
+    sk->status = TPV_SK_UNKNOWN;
+    sk->camId = -1;
+    sk->param.activeMode = TPV_PK_UNKNOWN;
+    sk->param.binningMode = TPV_PK_1X1;
+    sk->param.size = TPV_PK_3840x2780;
+    sk->param.exposure = 100.;
+    sk->param.globalGain = 1;
+    sk->param.blueGain = 1;
+    sk->param.redGain = 1;
+    return sk->status;
 }
 
 const char* tpvGenerateTestReply(enum TopViCmdType cmdType, enum TopViCmdName cmdName) {
@@ -92,22 +146,22 @@ void tpvParseGrillReply(struct grill_reply *reply, const char *rstr){
     int errCode = 0;
     sscanf(rstr, "%2s%x{%d,%[^}]}", status, &reply->msgLength, &reply->cmdName, buf);
     reply->replyStr = strdup(buf);
-    if (strcmp(status, "OK") == 0){
+    if (strcmp(status, "RE") == 0){
         reply->replyResult = GRILL_OK;
+        switch (reply->cmdName) {
+            case TPV_GRAB: {
+                char *res = reply->replyStr;
+                sscanf(res, "%d:%s", &errCode, buf);
+                tpvFreeString(res);
+                reply->replyStr = strdup(buf);
+                break;
+            }
+            default:
+                errCode = 0;
+         }
     }
     else {
         reply->replyResult = GRILL_ERROR;
     }
-    switch (reply->cmdName) {
-        case TPV_GRAB: {
-            char *res = reply->replyStr;
-            sscanf(res, "%d:%s", &errCode, buf);
-            tpvFreeString(res);
-            reply->replyStr = strdup(buf);
-            break;
-        }
-        default:
-            errCode = 0;
-    }
-    printf("tpvParseReply() %s --> [RE%d,%s]:%s\n", rstr, reply->msgLength, tpvCmdName(reply->cmdName), reply->replyStr);
+    printf("tpvParseReply() %s --> [%d,%s]:%s\n", rstr, reply->msgLength, tpvCmdName(reply->cmdName), reply->replyStr);
 }

@@ -94,6 +94,8 @@ struct TopVi_SK {
     struct TopVi_PK param;
 };
 
+int tpvInitSK(struct TopVi_SK *sk);
+
 struct TopVi_SU {
     enum TopVi_STATE status;
     int camNumber;
@@ -146,6 +148,9 @@ static inline const char *tpvGetColorGain(enum TopViGain gain) {
     }
     return "GLOBAL";
 }
+
+int tpvGetGainCode(double g);
+double tpvGetGainValue(int code);
 
 void tpvParseGrillReply(struct grill_reply *reply, const char *rstr);
 const char *tpvGenerateCommandString(enum TopViCmdType cmdType, enum TopViCmdName cmdName, int camId, const char* value, const char* additional_value);
