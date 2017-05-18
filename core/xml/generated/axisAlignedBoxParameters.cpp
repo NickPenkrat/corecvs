@@ -144,6 +144,7 @@ int AxisAlignedBoxParameters::staticInit()
 }
 int AxisAlignedBoxParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

@@ -62,6 +62,7 @@ int BackgroundFilterParameters::staticInit()
 }
 int BackgroundFilterParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

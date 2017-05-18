@@ -60,6 +60,7 @@ int MaskingParameters::staticInit()
 }
 int MaskingParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

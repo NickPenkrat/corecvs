@@ -209,6 +209,7 @@ int SceneStereoAlignerBlockBase::relinkCompositeFields()
              printf("Reflection SceneStereoAlignerBlockBase to the subclass Stereo Align Parameters can't be linked\n");
         }
     }
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

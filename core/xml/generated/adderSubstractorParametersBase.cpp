@@ -112,6 +112,7 @@ int AdderSubstractorParametersBase::staticInit()
 }
 int AdderSubstractorParametersBase::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

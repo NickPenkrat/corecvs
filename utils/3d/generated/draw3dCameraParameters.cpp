@@ -480,6 +480,7 @@ int Draw3dCameraParameters::relinkCompositeFields()
              printf("Reflection Draw3dCameraParameters to the subclass rgb Color Parameters can't be linked\n");
         }
     }
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

@@ -416,6 +416,7 @@ int Draw3dParameters::relinkCompositeFields()
              printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
         }
     }
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

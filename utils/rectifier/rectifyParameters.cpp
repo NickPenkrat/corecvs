@@ -597,6 +597,7 @@ int RectifyParameters::staticInit()
 }
 int RectifyParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

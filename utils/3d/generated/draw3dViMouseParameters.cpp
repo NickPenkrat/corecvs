@@ -135,6 +135,7 @@ int Draw3dViMouseParameters::staticInit()
 }
 int Draw3dViMouseParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

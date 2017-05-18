@@ -88,6 +88,7 @@ int SobelParameters::staticInit()
 }
 int SobelParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

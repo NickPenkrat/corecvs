@@ -130,6 +130,7 @@ int DrawGCodeParameters::staticInit()
 }
 int DrawGCodeParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

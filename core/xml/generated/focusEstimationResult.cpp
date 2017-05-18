@@ -132,6 +132,7 @@ int FocusEstimationResult::staticInit()
 }
 int FocusEstimationResult::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

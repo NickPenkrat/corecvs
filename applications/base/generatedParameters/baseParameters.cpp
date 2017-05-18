@@ -228,6 +228,7 @@ int BaseParameters::staticInit()
 }
 int BaseParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

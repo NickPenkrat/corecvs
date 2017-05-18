@@ -254,6 +254,7 @@ int BitSelectorParameters::staticInit()
 }
 int BitSelectorParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

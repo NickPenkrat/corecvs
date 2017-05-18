@@ -91,6 +91,7 @@ int OpenCVFilterParameters::staticInit()
 }
 int OpenCVFilterParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

@@ -306,6 +306,7 @@ int ChessBoardCornerDetectorParamsBase::staticInit()
 }
 int ChessBoardCornerDetectorParamsBase::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

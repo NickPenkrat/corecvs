@@ -70,6 +70,7 @@ int Recorder::staticInit()
 }
 int Recorder::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

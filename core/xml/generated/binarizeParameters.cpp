@@ -62,6 +62,7 @@ int BinarizeParameters::staticInit()
 }
 int BinarizeParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

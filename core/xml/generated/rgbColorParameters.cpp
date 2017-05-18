@@ -90,6 +90,7 @@ int RgbColorParameters::staticInit()
 }
 int RgbColorParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

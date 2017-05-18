@@ -91,6 +91,7 @@ int HomorgaphyReconstructorBlockBase::staticInit()
 }
 int HomorgaphyReconstructorBlockBase::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

@@ -150,6 +150,7 @@ int MakePreciseParameters::staticInit()
 }
 int MakePreciseParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

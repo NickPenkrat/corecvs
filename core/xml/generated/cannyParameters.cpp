@@ -88,6 +88,7 @@ int CannyParameters::staticInit()
 }
 int CannyParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

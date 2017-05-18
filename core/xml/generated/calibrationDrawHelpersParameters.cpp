@@ -212,6 +212,7 @@ int CalibrationDrawHelpersParameters::staticInit()
 }
 int CalibrationDrawHelpersParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

@@ -174,6 +174,7 @@ int OpenCVBMParameters::staticInit()
 }
 int OpenCVBMParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

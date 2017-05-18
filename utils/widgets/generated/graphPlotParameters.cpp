@@ -199,6 +199,7 @@ int GraphPlotParameters::staticInit()
 }
 int GraphPlotParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

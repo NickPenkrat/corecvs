@@ -798,9 +798,10 @@ void PDOGenerator::generatePDOCpp()
     "        }\n"
     "    }\n";
 
-    }
+        }
     }
     result+=
+    "   return 0;\n"
     "}\n"
     "\n"
     "SUPPRESS_OFFSET_WARNING_END\n"

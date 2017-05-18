@@ -193,6 +193,7 @@ int PresentationParameters::staticInit()
 }
 int PresentationParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

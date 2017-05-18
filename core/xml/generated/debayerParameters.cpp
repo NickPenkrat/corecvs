@@ -80,6 +80,7 @@ int DebayerParameters::staticInit()
 }
 int DebayerParameters::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

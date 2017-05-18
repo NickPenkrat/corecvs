@@ -161,6 +161,7 @@ int ChessBoardAssemblerParamsBase::staticInit()
 }
 int ChessBoardAssemblerParamsBase::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END

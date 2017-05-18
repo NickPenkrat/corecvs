@@ -246,6 +246,7 @@ int BitcodeBoardParamsBase::staticInit()
 }
 int BitcodeBoardParamsBase::relinkCompositeFields()
 {
+   return 0;
 }
 
 SUPPRESS_OFFSET_WARNING_END
