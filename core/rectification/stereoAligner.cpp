@@ -203,8 +203,8 @@ namespace corecvs {
  * \f}
  *
  * \param[in]  F               input fundamental or essential matrix
- * \param[out] leftTransform   output left transform \f$H_{1}\f$
- * \param[out] rightTransform  output right transform \f$H_{2}\f$
+ * \param[out] firstTransform   output left transform \f$H_{1}\f$
+ * \param[out] secondTransform  output right transform \f$H_{2}\f$
  * \param[in]  z               free vector \f$z\f$
  *
  */
@@ -321,7 +321,7 @@ void StereoAligner::getAlignmentTransformation(
     printf("\n");
 
     if (Fprim.notTooFar(F, 1e-5) || Fprim.notTooFar(-F, 1e-5)) {
-        SYNC_PRINT(("Matrix reconstruction failed"));
+        SYNC_PRINT(("Matrix reconstruction failed\n"));
     }
 
     //CORE_ASSERT_TRUE(Fprim.notTooFar(F, 1e-5) || Fprim.notTooFar(-F, 1e-5), "Matrix reconstruction failed");

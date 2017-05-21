@@ -348,6 +348,16 @@ public:
         return result;
     }
 
+    ReturnType dotProduct(const RealType &other)
+    {
+        return (*this) & other;
+    }
+
+    friend ReturnType dotProduct(const RealType &V, const RealType &U)
+    {
+        return V & U;
+    }
+
     /**
      * returns l-inf on [min(abs(x_i), abs(x_i/y_i))]
      */

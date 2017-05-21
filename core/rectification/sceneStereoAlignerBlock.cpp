@@ -37,8 +37,8 @@ int SceneStereoAlignerBlock::operator ()()
 
     Affine3DQ relativeTransform = pos1.inverted() * pos2;
 
-    EssentialDecomposition decomposition = EssentialDecomposition::FromAffine(relativeTransform);
-    EssentialMatrix F = decomposition.operator Matrix33();
+    //EssentialDecomposition decomposition = EssentialDecomposition::FromAffine(relativeTransform);
+    Matrix33 F = camera1->fundamentalTo(*camera2);
 
     /* We would use existing code, though it is an inverse abstraction.
      * We already know all the geometry, but will be using code based on the Essential Matrix */
@@ -62,29 +62,41 @@ int SceneStereoAlignerBlock::operator ()()
 
     StereoAligner::getAlignmentTransformation(F, &leftTransform, &rightTransform, direction);
 
+    Vector2dd center = size / 2.0;
+    StereoAligner::getLateralCorrectionFixPoint(&leftTransform, &rightTransform, center);
+
+    cout << "LTransform:" << leftTransform << endl;
+    cout << "RTransform:" << rightTransform << endl;
+
+    cout << "Sanity check" << endl;
+    EssentialMatrix Ix;
+    cout << (rightTransform.transposed() * Ix * leftTransform) / F << endl;
+
 
     /*Forming new Fixture*/
     CameraFixture *fixture = inScene()->createCameraFixture();
-    fixture->name = "Stereo Fixture";
+    fixture->name = "Stereo";
     fixture->setLocation(pos1);
 
     FixtureCamera *cam1 = inScene()->createCamera();
-    cam1->nameId = "Stereo Camera 1";
+    cam1->nameId = "Stereo 1";
     FixtureCamera *cam2 = inScene()->createCamera();
-    cam2->nameId = "Stereo Camera 2";
+    cam2->nameId = "Stereo 2";
 
     inScene()->addCameraToFixture(cam1, fixture);
     inScene()->addCameraToFixture(cam2, fixture);
-    cam2->extrinsics = CameraLocationData(Affine3DQ::Identity());
+    cam1->extrinsics = CameraLocationData(Affine3DQ::Identity());
     cam2->extrinsics = CameraLocationData(relativeTransform);
 
     cam1->intrinsics = camera1->intrinsics;
     cam2->intrinsics = camera2->intrinsics;
 
     /* Forming new images*/
+    ProjectiveTransform  leftTransformInv =  leftTransform.inv();
+    ProjectiveTransform rightTransformInv = rightTransform.inv();
 
-    RGB24Buffer *resImage1 = inImage1()->doReverseDeformationBlTyped<ProjectiveTransform>(&leftTransform);
-    RGB24Buffer *resImage2 = inImage2()->doReverseDeformationBlTyped<ProjectiveTransform>(&rightTransform);
+    RGB24Buffer *resImage1 = inImage1()->doReverseDeformationBlTyped<ProjectiveTransform>(&leftTransformInv);
+    RGB24Buffer *resImage2 = inImage2()->doReverseDeformationBlTyped<ProjectiveTransform>(&rightTransformInv);
 
     setOutImage1(resImage1);
     setOutImage2(resImage2);

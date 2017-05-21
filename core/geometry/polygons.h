@@ -18,6 +18,7 @@
 #include "vector3d.h"
 #include "generated/axisAlignedBoxParameters.h"
 #include "line.h"
+#include "affine.h"
 #include "rectangle.h"
 
 namespace corecvs {
@@ -56,6 +57,23 @@ public:
     Vector3dd getPoint(const Vector2dd &txy) const
     {
         return getPoint(txy.x(), txy.y());
+    }
+
+    template <class Transformer>
+    void transform(const Transformer &M)
+    {
+        Vector3dd newP = M * p1;
+        e1 = M * (e1 + p1) - newP;
+        e2 = M * (e2 + p1) - newP;
+        p1 = newP;
+    }
+
+    template <class Transformer>
+    PlaneFrame transformed(const Transformer &M)
+    {
+        PlaneFrame toReturn;
+        toReturn.transform<Transformer> (M);
+        return toReturn;
     }
 
 
@@ -150,7 +168,36 @@ public:
         visitor.visit(e2, Vector3dd::OrtY() , "e2");
     }
 
+
+    static PlaneFrame PlaneXY() {
+        return PlaneFrame(Vector3dd::Zero(), Vector3dd::OrtX(), Vector3dd::OrtY());
+    }
+
+    static PlaneFrame PlaneYZ() {
+        return PlaneFrame(Vector3dd::Zero(), Vector3dd::OrtY(), Vector3dd::OrtZ());
+    }
+
+    static PlaneFrame PlaneXZ() {
+        return PlaneFrame(Vector3dd::Zero(), Vector3dd::OrtX(), Vector3dd::OrtZ());
+    }
+
+
+    friend ostream & operator <<(ostream &out, const PlaneFrame &frame)
+    {
+        out << "(" << frame.p1 << ") " << frame.e1 << " " << frame.e2;
+        return out;
+    }
 };
+
+
+template <>
+inline void PlaneFrame::transform<Affine3DQ>(const Affine3DQ &M)
+{
+    SYNC_PRINT(("PlaneFrame::transform<Affine3DQ>\n"));
+    p1 = M * p1;
+    e1 = M.rotor * e1;
+    e2 = M.rotor * e2;
+}
 
 
 template<typename PointType>

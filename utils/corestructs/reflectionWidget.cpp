@@ -298,7 +298,7 @@ bool ReflectionWidget::getParameters(void *param) const
     {
         int fieldId = positionToField[i];
         const BaseField *field = reflection->fields[fieldId];
-        qDebug() << "Processing field:" <<  field->getSimpleName() << " type " << field->type;
+        // qDebug() << "Processing field:" <<  field->getSimpleName() << " type " << field->type;
 
         switch (field->type) {
             case BaseField::TYPE_INT:
@@ -310,7 +310,7 @@ bool ReflectionWidget::getParameters(void *param) const
             }
             case BaseField::TYPE_DOUBLE:
             {
-                qDebug() << "Processing double field" << endl;
+                // qDebug() << "Processing double field" << endl;
                 const DoubleField *dField = static_cast<const DoubleField *>(field);
                 if (dField->widgetHint != BaseField::SLIDER)
                 {

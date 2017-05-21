@@ -21,6 +21,9 @@
 #include "ransacEstimator.h"
 #include "essentialEstimator.h"
 #include "calibrationCamera.h"
+#include "polygons.h"
+#include "mesh3d.h"
+#include "calibrationDrawHelpers.h"
 
 using namespace corecvs;
 
@@ -430,6 +433,49 @@ TEST(Rectification, testEssentialEstimator)
     for (auto&r : rmses)
         of << r << ",";
     of << "];";
+}
+
+
+TEST(Rectification, testRectifiedModel)
+{
+    /* Trivial camera */
+    CameraModel model;
+    model.setLocation(Affine3DQ::Identity());
+    model.intrinsics = PinholeCameraIntrinsics(Vector2dd(200,200), degToRad(60));
+
+    /* New Plane */
+    PlaneFrame xy = PlaneFrame::PlaneXY();
+
+    cout << "Original:" << xy << endl;    
+    Affine3DQ move = Affine3DQ(
+                Quaternion::RotationY(degToRad(10)) ^ Quaternion::RotationZ(degToRad(10)),
+                Vector3dd(0.0, 0.0, 1.0)
+                );
+    cout << "Move:" << move << endl;
+
+    xy.transform(move);
+    cout << "Transformed:" << xy << endl;
+
+
+    /* Carefully creating new camera and homography */
+    Vector3dd norm = xy.getNormal();
+
+    CameraModel model1;
+    Affine3DQ location;
+    location.shift = model.getAffine().shift;
+
+
+
+
+    /* Mesh3d */
+    Mesh3D mesh;
+    mesh.switchColor(true);
+    CalibrationDrawHelpers helpers;
+    mesh.setColor(RGBColor::White());
+    helpers.drawCamera(mesh, model, 1.0);
+    mesh.addPlaneFrame(xy, 3.0);
+    mesh.dumpPLY("debug.ply");
+
 }
 
 //int main (int /*argC*/, char ** /*argV*/)

@@ -65,7 +65,11 @@ public:
     Affine3DQ getWorldLocation();
     CameraModel getWorldCameraModel();
 
+
 };
+
+
+
 
 
 } // namespace corecvs

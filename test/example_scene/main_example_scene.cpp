@@ -166,15 +166,19 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 
     RGB24Buffer *image1 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(39));
     RGB24Buffer *image2 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(56));
+    RGB24Buffer *image3 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(75));
 
     image1->checkerBoard(20, RGBColor::Gray(50));
     image2->checkerBoard(20, RGBColor::Gray(50));
+    image3->checkerBoard(20, RGBColor::Gray(50));
 
     AbstractPainter<RGB24Buffer> painter1(image1);
     AbstractPainter<RGB24Buffer> painter2(image2);
+    AbstractPainter<RGB24Buffer> painter3(image3);
 
     painter1.drawCircle(10, 10, 5, RGBColor::White());
     painter2.drawCircle(10, 10, 7, RGBColor::White());
+    painter3.drawCircle(10, 10, 9, RGBColor::White());
 
 
     int count = 0;
@@ -246,21 +250,35 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
             Vector2dd p = point->getObservation(camera2)->observation;
             painter2.drawCircle(p.x(), p.y(), 3, point->color);
         }
+
+        if (point->getObservation(camera3) != NULL) {
+            Vector2dd p = point->getObservation(camera3)->observation;
+            painter2.drawCircle(p.x(), p.y(), 3, point->color);
+        }
     }
 
     std::string name1 = std::string("SP") +  fixture->name + camera1->nameId + ".bmp";
     std::string name2 = std::string("SP") +  fixture->name + camera2->nameId + ".bmp";
+    std::string name3 = std::string("SP") +  fixture->name + camera3->nameId + ".bmp";
 
     if (!useDistortion)
     {
         BMPLoader().save(name1, image1);
         BMPLoader().save(name2, image2);
+        BMPLoader().save(name3, image3);
+        SYNC_PRINT(("Saving ideal images\n"));
+
     } else {
         FixedPointDisplace displacer(model.distortion, model.intrinsics.h(), model.intrinsics.w());
         RGB24Buffer *dist1 = image1->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
         RGB24Buffer *dist2 = image2->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
+        RGB24Buffer *dist3 = image3->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
+
         BMPLoader().save(name1, dist1);
         BMPLoader().save(name2, dist2);
+        BMPLoader().save(name3, dist3);
+
+        SYNC_PRINT(("Saving distorted images\n"));
     }
 
 

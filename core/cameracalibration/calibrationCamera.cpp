@@ -41,7 +41,7 @@ Matrix33 CameraModel::Fundamental(const Matrix44 &L, const Matrix44 &R)
 
 Matrix33 CameraModel::fundamentalTo(const CameraModel &right) const
 {
-    Matrix33 K1 = intrinsics.getKMatrix33();
+    Matrix33 K1 =       intrinsics.getKMatrix33();
     Matrix33 K2 = right.intrinsics.getKMatrix33();
     return K1.inv().transposed() * essentialTo(right) * K2.inv();
 }
