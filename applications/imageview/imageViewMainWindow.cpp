@@ -112,6 +112,9 @@ void ImageViewMainWindow::loadImageAction()
                 ".",
                 "Images (*.pgm *.ppm)"
             );
+    if (name.isEmpty())
+        return;
+
     loadImage(name);
 }
 
