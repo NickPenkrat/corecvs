@@ -590,6 +590,15 @@ TEST(MatrixTest, testMatrix44)
     CORE_ASSERT_TRUE(a.notTooFar(ares, 1e-5), "Rotation problem\n");
 }
 
+TEST(MatrixTest, testMatrix44Assignment)
+{
+    Matrix44 mat = Matrix44::Shift(Vector3dd(10,20,30));
+    cout << "Before Assignment" << Matrix44::Shift(Vector3dd(10,20,30));
+    cout << "After Assignment" << mat;
+
+}
+
+
 TEST(MatrixTest, testMatrixVectorProduct)
 {
     Matrix33 a1 = Matrix33 (

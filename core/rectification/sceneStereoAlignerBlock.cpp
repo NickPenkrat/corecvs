@@ -15,7 +15,7 @@ int SceneStereoAlignerBlock::operator ()()
 {
     if (inScene() == NULL)
     {
-        SYNC_PRINT(("Fail. No input"));
+        SYNC_PRINT(("Fail. No input scene\n"));
         return 1;
     }
 
@@ -28,7 +28,7 @@ int SceneStereoAlignerBlock::operator ()()
 
     if (camera1 == NULL || camera2 == NULL)
     {
-        SYNC_PRINT(("Fail. No camera input"));
+        SYNC_PRINT(("Fail. No input camera"));
         return 2;
     }
 
@@ -101,6 +101,21 @@ int SceneStereoAlignerBlock::operator ()()
     setOutImage1(resImage1);
     setOutImage2(resImage2);
 
+    /* Making new observations */
+    for (size_t i = 0; i < inScene()->featurePoints().size(); i++)
+    {
+        SceneFeaturePoint *point = inScene()->featurePoints()[i];
+
+        SceneObservation *obs1 = point->getObservation(camera1);
+        SceneObservation *obs2 = point->getObservation(camera2);
+
+        if (obs1 != NULL)
+        {
+            point[camera1] = NULL;
+        }
+
+
+    }
 
     setOutCamera1(cam1);
     setOutCamera2(cam2);

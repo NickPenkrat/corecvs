@@ -2,6 +2,9 @@
 
 #include <QPushButton>
 #include <QFileDialog>
+#include <QMessageBox>
+
+
 
 #include "pointerFieldWidget.h"
 #include "ui_pointerFieldWidget.h"
@@ -10,6 +13,13 @@
 #include "rgb24Buffer.h"
 #include "fixtureCamera.h"
 #include "bufferFactory.h"
+#include "fixtureScene.h"
+
+#include "jsonGetter.h"
+#ifdef WITH_JSONMODERN
+#include "jsonModernReader.h"
+#endif
+
 
 using namespace corecvs;
 using namespace std;
@@ -43,6 +53,15 @@ PointerFieldWidget::PointerFieldWidget(const corecvs::PointerField *field, QWidg
     {
         connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadG12Buffer()));
         connect(ui->showPushButton, SIGNAL(released()), this, SLOT(showG12Buffer()));
+    }
+
+
+    if (std::string(fieldReflection->targetClass) == "corecvs::FixtureScene" )
+    {
+        connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadFixtureScene()));
+        connect(ui->showPushButton, SIGNAL(released()), this, SLOT(showFixtureScene()));
+        connect(ui->savePushButton, SIGNAL(released()), this, SLOT(saveFixtureScene()));
+
     }
 
     if (std::string(fieldReflection->targetClass) == "corecvs::FixtureCamera" )
@@ -134,7 +153,10 @@ void PointerFieldWidget::showG12Buffer()
 void PointerFieldWidget::loadFixtureScene()
 {
     if (std::string(fieldReflection->targetClass) != "corecvs::FixtureScene" )
+    {
+        SYNC_PRINT(("PointerFieldWidget::loadFixtureScene(): internal type error"));
         return;
+    }
 
     QString filename = QFileDialog::getOpenFileName(
                 this,
@@ -143,6 +165,30 @@ void PointerFieldWidget::loadFixtureScene()
                 "Scene (*.json)"
                 );
 
+    delete_safe(rawPointer);
+    corecvs::FixtureScene *pointer = new corecvs::FixtureScene;
+
+
+#ifdef WITH_JSONMODERN
+        {
+            JSONModernReader getter(filename.toStdString());
+            if (!getter.hasError())
+            {
+                getter.visit(*pointer, "scene");
+            } else {
+                QMessageBox::information(this, "Unable to parse json", "Unable to parse json. See log for details");
+            }
+        }
+#else
+        {
+            JSONGetter getter(filename);
+            getter.visit(*mDirectory, "scene");
+        }
+#endif
+
+    rawPointer = pointer;
+    setValue(rawPointer);
+
    /* BufferFactory *factory = BufferFactory::getInstance();
     rawPointer = factory->loadRGB24Bitmap(filename.toStdString());
     setValue(rawPointer);*/
@@ -150,6 +196,13 @@ void PointerFieldWidget::loadFixtureScene()
 
 void PointerFieldWidget::showFixtureScene()
 {
+    if (std::string(fieldReflection->targetClass) != "corecvs::FixtureScene" || rawPointer == NULL )
+    {
+        cout << "Nothing to show" << endl;
+        return;
+    }
+    corecvs::FixtureScene *scene = static_cast<corecvs::FixtureScene *>(rawPointer);
+    scene->dumpInfo();
 
 }
 

@@ -381,6 +381,8 @@ bool ReflectionWidget::getParameters(void *param) const
             case BaseField::TYPE_POINTER:
             {
                 const PointerField *pField = static_cast<const PointerField *>(field);
+                PointerFieldWidget *refWidget = static_cast<PointerFieldWidget *>(positionToWidget[i]);
+                *obj.getField<void *>(fieldId) = refWidget->rawPointer;
                 break;
             }
 
@@ -478,7 +480,7 @@ bool ReflectionWidget::setParameters(void *param) const
             {
                 const PointerField *pField = static_cast<const PointerField *>(field);
                 PointerFieldWidget *pointerWidget = static_cast<PointerFieldWidget *>(positionToWidget[i]);
-                void *rawPointer = (void *)obj.getField<void *>(fieldId);
+                void *rawPointer = (*obj.getField<void *>(fieldId));
                 pointerWidget->setValue(rawPointer);
                 break;
             }
