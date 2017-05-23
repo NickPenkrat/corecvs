@@ -394,8 +394,8 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
                 int pos;
             } candidates[2];
 
-            candidates[0] = {&c[currentChain][nextCurrent], currentChain, nextCurrent};
-            candidates[1] = {&c[otherChain  ][nextOther  ], otherChain  , nextOther  };
+            candidates[0] = {&c[currentChain][nextCurrent], (int)currentChain, nextCurrent};
+            candidates[1] = {&c[otherChain  ][nextOther  ],      otherChain  , nextOther  };
 
             printf("Branching (%c%d) (%c%d)\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
 
