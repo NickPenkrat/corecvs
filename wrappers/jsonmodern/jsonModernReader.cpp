@@ -151,7 +151,7 @@ void JSONModernReader::visit<double, DoubleVectorField>(std::vector<double> &fie
     nlohmann::json &arrayValue = (*mNodePath.back())[fieldDescriptor->name.name];
     if (arrayValue.is_array())
     {
-        for (int i = 0; i < arrayValue.size(); i++)
+        for (nlohmann::json::size_type i = 0; i < arrayValue.size(); i++)
         {
             nlohmann::json &value = arrayValue[i];
             if (value.is_number()) {

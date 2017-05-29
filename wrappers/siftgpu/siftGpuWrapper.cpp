@@ -196,6 +196,13 @@ bool SiftGpuFeatureDetectorProvider::provides(const DetectorType &type)
     return false;
 }
 
+std::vector<std::string> SiftGpuFeatureDetectorProvider::provideHints()
+{
+    std::vector<std::string> toReturn;
+    toReturn.push_back("SIFTGPU");
+    return toReturn;
+}
+
 void init_siftgpu_detector_provider()
 {
     FeatureDetectorProvider::getInstance().add(new SiftGpuFeatureDetectorProvider);

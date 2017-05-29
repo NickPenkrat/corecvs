@@ -145,6 +145,7 @@ TEST(multicamera, test702)
 
 }
 
+#if 0
 TEST(multicamera, test702draw)
 {
     MulticameraTriangulator M;
@@ -160,4 +161,4 @@ TEST(multicamera, test702draw)
     }
 
 }
-
+#endif

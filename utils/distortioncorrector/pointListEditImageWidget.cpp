@@ -402,7 +402,7 @@ void PointListEditImageWidgetUnited::paintTarget(QPainter &painter, Vector2dd im
 
 }
 
-void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *who)
+void PointListEditImageWidgetUnited::childRepaint(QPaintEvent * /*event*/, QWidget *who)
 {
     //AdvancedImageWidget::childRepaint(event, who);
     if (mImage.isNull())

@@ -42,7 +42,19 @@ int StereoAlignParameters::staticInit()
      getReflection()->objectSize = sizeof(StereoAlignParameters);
      
 
-    DoubleField* field0 = new DoubleField
+    BoolField* field0 = new BoolField
+        (
+          StereoAlignParameters::PRODUCE_CAMERAS_ID,
+          offsetof(StereoAlignParameters, mProduceCameras),
+          true,
+          "Produce Cameras",
+          "Produce Cameras",
+          "Produce Cameras"
+        );
+    field0->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field0);
+    /*  */ 
+    DoubleField* field1 = new DoubleField
         (
           StereoAlignParameters::ZDIRX_ID,
           offsetof(StereoAlignParameters, mZdirX),
@@ -54,11 +66,11 @@ int StereoAlignParameters::staticInit()
          -20,
          20
         );
-    field0->widgetHint=BaseField::SPIN_BOX;
-    field0->precision=2;
-    fields().push_back(field0);
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=2;
+    fields().push_back(field1);
     /*  */ 
-    DoubleField* field1 = new DoubleField
+    DoubleField* field2 = new DoubleField
         (
           StereoAlignParameters::ZDIRY_ID,
           offsetof(StereoAlignParameters, mZdirY),
@@ -70,11 +82,11 @@ int StereoAlignParameters::staticInit()
          -20,
          20
         );
-    field1->widgetHint=BaseField::SPIN_BOX;
-    field1->precision=2;
-    fields().push_back(field1);
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->precision=2;
+    fields().push_back(field2);
     /*  */ 
-    DoubleField* field2 = new DoubleField
+    DoubleField* field3 = new DoubleField
         (
           StereoAlignParameters::ZDIRZ_ID,
           offsetof(StereoAlignParameters, mZdirZ),
@@ -86,11 +98,11 @@ int StereoAlignParameters::staticInit()
          -20,
          20
         );
-    field2->widgetHint=BaseField::SPIN_BOX;
-    field2->precision=2;
-    fields().push_back(field2);
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=2;
+    fields().push_back(field3);
     /*  */ 
-    BoolField* field3 = new BoolField
+    BoolField* field4 = new BoolField
         (
           StereoAlignParameters::AUTOZ_ID,
           offsetof(StereoAlignParameters, mAutoZ),
@@ -99,10 +111,10 @@ int StereoAlignParameters::staticInit()
           "autoZ",
           "autoZ"
         );
-    field3->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field3);
+    field4->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field4);
     /*  */ 
-    BoolField* field4 = new BoolField
+    BoolField* field5 = new BoolField
         (
           StereoAlignParameters::AUTOSHIFT_ID,
           offsetof(StereoAlignParameters, mAutoShift),
@@ -111,10 +123,10 @@ int StereoAlignParameters::staticInit()
           "autoShift",
           "autoShift"
         );
-    field4->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field4);
+    field5->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field5);
     /*  */ 
-    IntField* field5 = new IntField
+    IntField* field6 = new IntField
         (
           StereoAlignParameters::PRESHIFT_ID,
           offsetof(StereoAlignParameters, mPreShift),
@@ -126,9 +138,9 @@ int StereoAlignParameters::staticInit()
          -9999,
          9999
         );
-    fields().push_back(field5);
+    fields().push_back(field6);
     /*  */ 
-    IntField* field6 = new IntField
+    IntField* field7 = new IntField
         (
           StereoAlignParameters::GUESSSHIFTTHRESHOLD_ID,
           offsetof(StereoAlignParameters, mGuessShiftThreshold),
@@ -140,7 +152,7 @@ int StereoAlignParameters::staticInit()
          0,
          99999
         );
-    fields().push_back(field6);
+    fields().push_back(field7);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Stereo Align Parameters")]= &reflection;

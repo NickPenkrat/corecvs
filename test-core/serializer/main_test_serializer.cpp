@@ -8,6 +8,7 @@
  * \ingroup autotest  
  */
 
+#include <unordered_map>
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -114,4 +115,19 @@ TEST(Serializer, testSerializer1)
     writerVisitor.visit(result, result, "RectificationResult");
 
     list.save(cout);
+}
+
+TEST(Serializer, printIterable)
+{
+    PrinterVisitor visitor;
+
+    std::vector<int>       vectorOfInt    = {1,2,3,4};
+    std::vector<Vector2dd> vectorOfVector = {Vector2dd::OrtX(), Vector2dd::OrtY()};
+
+    std::unordered_map<int, Vector2dd> mapIntToVec = {{1, Vector2dd::OrtX()}, {1, Vector2dd::OrtY()}};
+
+    visitor.visit(vectorOfInt, "vector of integers");
+    visitor.visit(vectorOfVector, "vector of vector2dd");
+
+    //visitor.visit(mapIntToVec, "vector of vector2dd");
 }

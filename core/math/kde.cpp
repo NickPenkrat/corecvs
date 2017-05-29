@@ -62,10 +62,10 @@ double kde::pdf(std::vector<double>& data)
 
     calcBandwidth();
     double d = 0.0;
-    for (int i = 0; i < dataMatrix[0].size(); i++)
+    for (size_t i = 0; i < dataMatrix[0].size(); i++)
     {
         double a = 1.0;
-        for (int currentVariable = 0; currentVariable < dataMatrix.size(); currentVariable++)
+        for (size_t currentVariable = 0; currentVariable < dataMatrix.size(); currentVariable++)
         {
             a *= gaussPDF(data[currentVariable], dataMatrix[currentVariable][i], bandwidthMap[currentVariable]);
         }
@@ -94,7 +94,7 @@ void kde::addData(std::vector<double>& x)
 {
     if (!dataMatrix.size())
     {
-        for (int i = 0; i < x.size(); i++)
+        for (size_t i = 0; i < x.size(); i++)
         {
             std::vector<double> tmp;
             tmp.push_back(x[i]);
@@ -115,7 +115,7 @@ void kde::addData(std::vector<double>& x)
         }
         else
         {
-            for (int i = 0; i < x.size(); i++)
+            for (size_t i = 0; i < x.size(); i++)
             {
                 dataMatrix[i].push_back(x[i]);
                 sumXMap[i] += x[i];

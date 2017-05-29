@@ -313,7 +313,7 @@ Matrix corecvs::FlatPatternCalibrator::getJacobian()
             auto K2RTX = K * RTX;
             auto  KRTX = Vector2dd(K2RTX[0], K2RTX[1]) / K2RTX[2];
             Vector2dd DKRTX;
-            Matrix22 DD;
+            Matrix22 DD = Matrix22::Identity(); /* Dead code should be elliminated after all */
 
             if (distorting)
             {

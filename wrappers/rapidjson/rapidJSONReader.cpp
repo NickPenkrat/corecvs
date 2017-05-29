@@ -42,7 +42,7 @@ void RapidJSONReader::visit<bool>(bool &boolField, bool defaultValue, const char
 template <>
 void RapidJSONReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName)
 {
-    CONDITIONAL_TRACE(("RapidJSONReader::visit<uint64_t>(_ , _ , %d)", fieldName));
+    CONDITIONAL_TRACE(("RapidJSONReader::visit<uint64_t>(_ , _ , %s)", fieldName));
     rapidjson::Value &value = (*mNodePath.back())[fieldName];
 
     intField = defaultValue;
@@ -61,7 +61,7 @@ void RapidJSONReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue,
                 intField = res;
                 CONDITIONAL_TRACE(( "RapidJSONReader::visit<uint64_t>() got %" PRIu64 "\n", intField ));
             } else {
-                SYNC_PRINT(( "RapidJSONReader::visit<uint64_t>() unable to parse %s \n", string));
+                SYNC_PRINT(( "RapidJSONReader::visit<uint64_t>() unable to parse %s \n", string.c_str()));
             }
         }
     }
@@ -147,7 +147,7 @@ void RapidJSONReader::visit<double, DoubleVectorField>(std::vector<double> &fiel
     rapidjson::Value &arrayValue = (*mNodePath.back())[fieldDescriptor->name.name];
     if (arrayValue.IsArray())
     {
-        for (int i = 0; i < arrayValue.Size(); i++)
+        for (rapidjson::SizeType i = 0; i < arrayValue.Size(); i++)
         {
             rapidjson::Value &value = arrayValue[i];
             if (value.IsNumber()) {

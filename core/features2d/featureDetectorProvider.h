@@ -20,6 +20,7 @@ public:
     virtual bool provides(const DetectorType &type) = 0;
 
     virtual std::string name() {return "unknown"; }
+    virtual std::vector<std::string> provideHints() {return std::vector<std::string>(); }
 
     virtual ~FeatureDetectorProviderImpl() {}
 };

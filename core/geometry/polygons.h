@@ -484,6 +484,11 @@ public:
     PlaneFrame frame;
     Polygon polygon;
 
+    template <class Transformer>
+    void transform(const Transformer &M)
+    {
+        frame.transform<Transformer>(M);
+    }
 
     template<class VisitorType>
     void accept(VisitorType &visitor)

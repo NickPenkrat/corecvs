@@ -122,7 +122,10 @@ void PointerFieldWidget::loadRGB24Buffer()
                 );
 
     BufferFactory *factory = BufferFactory::getInstance();
-    delete_safe(rawPointer);
+
+    /*TODO: This is a design flaw around this desctruction */
+    corecvs::RGB24Buffer *buffer = static_cast<corecvs::RGB24Buffer *>(rawPointer);
+    delete_safe(buffer);
     rawPointer = factory->loadRGB24Bitmap(filename.toStdString());
     setValue(rawPointer);
 }
@@ -165,9 +168,9 @@ void PointerFieldWidget::loadFixtureScene()
                 "Scene (*.json)"
                 );
 
-    delete_safe(rawPointer);
-    corecvs::FixtureScene *pointer = new corecvs::FixtureScene;
-
+    corecvs::FixtureScene *pointer = static_cast<corecvs::FixtureScene *>(rawPointer);
+    delete_safe(pointer);
+    pointer = new corecvs::FixtureScene;
 
 #ifdef WITH_JSONMODERN
         {

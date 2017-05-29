@@ -48,9 +48,13 @@ public:
         return std::string(indentation, ' ');
     }
 
-/* Generic Array support */
-    template <typename inputType, typename reflectionType>
-    void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
+
+    /**
+     * Generic Array support. New Style
+     **/
+    template <typename inputType, typename ReflectionType>
+    typename std::enable_if<!std::is_same<ReflectionType, char>::value >::type
+    visit(std::vector<inputType> &fields, const ReflectionType * /*fieldDescriptor*/)
     {
         indentation += dIndent;
         for (int i = 0; i < fields.size(); i++)
@@ -60,39 +64,72 @@ public:
         indentation -= dIndent;
     }
 
-    template <typename innerType>
-    void visit(std::vector<innerType> &field, const char* arrayName)
+    /**
+     * Generic Array support. Old Style
+     **/
+#if 1
+    template <typename InnerType>
+    void visit(std::vector<InnerType> &field, const char* arrayName)
     {
         indentation += dIndent;
         for (size_t i = 0; i < field.size(); i++)
         {
             std::ostringstream ss;
             ss << arrayName << "[" <<  i << "]";
-            visit<innerType>(field[i], innerType(), ss.str().c_str());
+            visit<InnerType>(field[i], InnerType(), ss.str().c_str());
         }
         indentation -= dIndent;
     }
+#endif
 
-template <typename inputType, typename reflectionType>
-    void visit(inputType &field, const reflectionType * fieldDescriptor)
+#if 0
+    /*Ok there seem to be no easy way to check for beeing a desent contanier */
+    template <template <typename> class ContainerType, typename ElementType>
+    typename std::enable_if< std::is_object<typename ContainerType<ElementType>::iterator>::value , void>::type
+    visit(ContainerType<ElementType> &field, const char* containerName)
     {
-        if (stream != NULL) {
-            *stream << indent() << fieldDescriptor->getSimpleName() << ":" << std::endl;
-        }
         indentation += dIndent;
-        field.accept(*this);
+
+        int i = 0;
+        for (auto &element: field)
+        {
+            std::ostringstream ss;
+            ss << containerName << "[" <<  i << "]";
+            visit(element, ss.str().c_str());
+            i++;
+        }
         indentation -= dIndent;
     }
+#endif
 
-template <class Type>
-    void visit(Type &field, const char * fieldName)
-    {
-        if (stream != NULL) {
-            *stream << indent() << fieldName << ":" << std::endl;
+    template <typename Type, class ReflectionType>
+    typename std::enable_if<!std::is_same<ReflectionType, char>::value >::type
+        visit(Type &field, const ReflectionType * fieldDescriptor)
+        {
+            if (stream != NULL) {
+                *stream << indent() << fieldDescriptor->getSimpleName() << ":" << std::endl;
+            }
+            indentation += dIndent;
+            field.accept(*this);
+            indentation -= dIndent;
         }
-        indentation += dIndent;
-        field.accept(*this);
-        indentation -= dIndent;
+
+    template <class Type>
+        void visit(Type &field, const char * fieldName)
+        {
+            if (stream != NULL) {
+                *stream << indent() << fieldName << ":" << std::endl;
+            }
+            indentation += dIndent;
+            field.accept(*this);
+            indentation -= dIndent;
+        }
+
+
+    template <typename FirstType, typename SecondType>
+    void visit(std::pair<FirstType, SecondType> &field, const char* name)
+    {
+        SYNC_PRINT(("void visit(std::pair<FirstType, SecondType> &field, const char* name): called"));
     }
 
     template <typename Type, typename std::enable_if<!(std::is_enum<Type>::value || (std::is_arithmetic<Type>::value && !std::is_same<bool, Type>::value)), int>::type foo = 0>

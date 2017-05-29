@@ -932,6 +932,13 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
         cf->location.shift = scale * (transformation * cf->location.shift);
         cf->location.rotor = transformation.rotor ^ cf->location.rotor;
     }
+
+    Matrix44 T = Matrix44::Scale(scale) * (Matrix44)transformation;
+
+    for (FixtureSceneGeometry *g: mGeomtery)
+    {
+        g->transform<Matrix44>(T);
+    }
 }
 
 std::unique_ptr<FixtureSceneFactory> FixtureSceneFactory::instance;

@@ -72,6 +72,7 @@ public:
 	FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string& params = "");
     virtual bool provides(const DetectorType &type) override;
     virtual std::string name()  override {return "SiftGpu"; }
+    virtual std::vector<std::string> provideHints();
 	~SiftGpuFeatureDetectorProvider() {}
 };
 

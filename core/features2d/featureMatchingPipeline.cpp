@@ -177,8 +177,8 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
 KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, int downsampleFactor, const std::string &params)
     : detectorType(type)
     , downsampleFactor(downsampleFactor)
-    , params(params)
     , maxFeatureCount(maxFeatureCount)
+    , params(params)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();
@@ -317,7 +317,11 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
     pipeline->toc(ss1.str(), ss2.str());
 }
 
-DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, int downsampleFactor, const std::string &params, bool keypointsColor) : descriptorType(type), downsampleFactor(downsampleFactor), params(params), keypointsColor(keypointsColor)
+DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, int downsampleFactor, const std::string &params, bool keypointsColor) :
+    descriptorType(type),
+    downsampleFactor(downsampleFactor),
+    keypointsColor(keypointsColor),
+    params(params)
 {
     DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType, params);
 	parallelable = extractor ? extractor->isParallelable() : false;
@@ -1480,10 +1484,10 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 DetectAndExtractStage::DetectAndExtractStage(DetectorType detectorType, DescriptorType descriptorType, int maxFeatureCount, int downsampleFactor, const std::string &params, bool keypointsColor)
     : detectorType(detectorType)
     , descriptorType(descriptorType)
-    , downsampleFactor(downsampleFactor)
     , maxFeatureCount(maxFeatureCount)
-    , params(params)
+    , downsampleFactor(downsampleFactor)
     , keypointsColor(keypointsColor)
+    , params(params)
 {
     DetectAndExtract* detector = DetectAndExtractProvider::getInstance().getDetector(detectorType, descriptorType);
     parallelable = detector ? detector->isParallelable() : false;
@@ -1584,8 +1588,8 @@ public:
         descriptorType(descriptorType),
         params(params), 
         maxFeatureCount(maxFeatureCount), 
-        keypointsColor(keypointsColor),
-        downsampleFactor(downsampleFactor)
+        downsampleFactor(downsampleFactor),
+        keypointsColor(keypointsColor)
     {}
 };
 

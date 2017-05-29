@@ -164,7 +164,7 @@ void SceneShaded::setParameters(void *params)
 }
 
 
-void SceneShaded::prepareMesh(CloudViewDialog * dialog)
+void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
 {
     SYNC_PRINT(("void SceneShaded::prepareMesh():called\n"));
     initializeOpenGLFunctions();

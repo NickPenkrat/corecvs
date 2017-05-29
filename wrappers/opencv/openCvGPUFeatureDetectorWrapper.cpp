@@ -417,7 +417,20 @@ bool OpenCvGPUFeatureDetectorProvider::provides( const DetectorType &type )
     else
         SWITCH_TYPE( SURF_GPU, return true; );
     
-	return false;
+    return false;
+}
+
+std::vector<string> OpenCvGPUFeatureDetectorProvider::provideHints()
+{
+    std::vector<std::string> toReturn;
+    if ( cudaApi )
+    {
+        toReturn.push_back("SURF_GPU");
+        toReturn.push_back("ORB_GPU");
+    } else {
+        toReturn.push_back("SURF_GPU");
+    }
+    return toReturn;
 }
 
 #undef SWITCH_TYPE

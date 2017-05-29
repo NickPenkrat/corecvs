@@ -39,6 +39,7 @@ class StereoAlignParameters : public corecvs::BaseReflection<StereoAlignParamete
 {
 public:
     enum FieldId {
+        PRODUCE_CAMERAS_ID,
         ZDIRX_ID,
         ZDIRY_ID,
         ZDIRZ_ID,
@@ -50,6 +51,12 @@ public:
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief Produce Cameras 
+     * Produce Cameras 
+     */
+    bool mProduceCameras;
 
     /** 
      * \brief zdirX 
@@ -103,6 +110,11 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    bool produceCameras() const
+    {
+        return mProduceCameras;
+    }
+
     double zdirX() const
     {
         return mZdirX;
@@ -139,6 +151,11 @@ public:
     }
 
     /* Section with setters */
+    void setProduceCameras(bool produceCameras)
+    {
+        mProduceCameras = produceCameras;
+    }
+
     void setZdirX(double zdirX)
     {
         mZdirX = zdirX;
@@ -179,6 +196,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mProduceCameras,            static_cast<const corecvs::BoolField *>(fields()[PRODUCE_CAMERAS_ID]));
         visitor.visit(mZdirX,                     static_cast<const corecvs::DoubleField *>(fields()[ZDIRX_ID]));
         visitor.visit(mZdirY,                     static_cast<const corecvs::DoubleField *>(fields()[ZDIRY_ID]));
         visitor.visit(mZdirZ,                     static_cast<const corecvs::DoubleField *>(fields()[ZDIRZ_ID]));
@@ -195,7 +213,8 @@ template<class VisitorType>
     }
 
     StereoAlignParameters(
-          double zdirX
+          bool produceCameras
+        , double zdirX
         , double zdirY
         , double zdirZ
         , bool autoZ
@@ -204,6 +223,7 @@ template<class VisitorType>
         , int guessShiftThreshold
     )
     {
+        mProduceCameras = produceCameras;
         mZdirX = zdirX;
         mZdirY = zdirY;
         mZdirZ = zdirZ;

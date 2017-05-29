@@ -52,7 +52,8 @@ class OpenCvFeatureDetectorProvider : public FeatureDetectorProviderImpl
 public:
     FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "");
     virtual bool provides(const DetectorType &type) override;
-    virtual std::string name()  override {return "OpenCv"; }
+    virtual std::string name()  override {return "OpenCV"; }
+    virtual std::vector<std::string> provideHints();
 
     ~OpenCvFeatureDetectorProvider() {}
 };

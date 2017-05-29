@@ -82,7 +82,7 @@ public:
             ModelType model = ModelType(samples);
 
             int inliers = 0;
-            for (int i = 0; i < data->size(); i++)
+            for (size_t i = 0; i < data->size(); i++)
             {
                 if (model.fits(*(data->at(i)), inlierThreshold))
                     inliers++;

@@ -162,16 +162,13 @@ Matrix22 LensDistortionModelParameters::jacobian(double x, double y) const
 
     auto dPhi = Matrix22(phi + dphidr*drddx,     dx*dphidr*drddy,
                             dy*dphidr*drddx,  phi + dphidr*drddy);
-    auto dPsi = Matrix22(2.0*mTangentialX*dy+6.0* mTangentialY*dx, 2.0*mTangentialX*dx+2.0*mTangentialY*dy,
-                            2.0*mTangentialX*dx+2.0*mTangentialY*dy, 6.0*mTangentialX*dy+2.0*mTangentialY*dx);
-    auto ddiff= Matrix22(1.0, 0.0,
-                            0.0, 1.0);
+    auto dPsi = Matrix22(2.0 * mTangentialX*dy + 6.0 * mTangentialY * dx, 2.0 * mTangentialX * dx + 2.0 * mTangentialY*dy,
+                         2.0 * mTangentialX*dx + 2.0 * mTangentialY * dy, 6.0 * mTangentialX * dy + 2.0 * mTangentialY*dx);
+    auto ddiff= Matrix22::Identity();
     auto dP1 = Matrix22(mNormalizingFocal / mAspect,               0.0,
                                                 0.0, mNormalizingFocal);
-    auto dP2 = mMapForward ? Matrix22(1.0, 0.0,
-                                        0.0, 1.0) :
-                            Matrix22(mScale,    0.0,
-                                        0.0, mScale);
+    auto dP2 = mMapForward ? Matrix22::Identity() :
+                             Matrix22::Scale2(mScale);
 
     return dP2 * dP1 * (ddiff + dPhi + dPsi) * dT2 * dT1;
 }

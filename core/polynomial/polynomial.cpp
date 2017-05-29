@@ -11,7 +11,7 @@ double corecvs::Polynomial::polishRoot(double x0, int N) const
     {
         double df = 0.0, d2f = 0.0;
         double v1 = 1.0, v2 = 0.0;
-        for (int i = 1; i <=degree(); ++i)
+        for (size_t i = 1; i <= degree(); ++i)
         {
             double c = (*this)[i];
             df += i * v1 * c;
