@@ -328,7 +328,7 @@ int main (void)
 
             SYNC_PRINT(("Computing derivative...\n"));
             stats.startInterval();
-            int j;
+            size_t j;
             for (j = i; j < i + reflushMem && j < aout.size(); j++)
             {
                 ASTNodeInt *toProcess = aout[j].p;

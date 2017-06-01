@@ -35,6 +35,8 @@ public:
     DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher, const std::string &params = "");
     virtual bool provides(const DescriptorType &descriptor, const MatcherType &matcher) override;
     virtual std::string name() override {return "OpenCV";}
+    //virtual std::vector<std::string> provideHints() override;
+
 
     ~OpenCvDescriptorMatcherProvider() {}
 };

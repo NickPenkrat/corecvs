@@ -77,9 +77,9 @@ void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, bo
 void FeatureMatchingPipeline::printCaps()
 {
     cout << "Current caps are: " << std::endl;
-    FeatureDetectorProvider::getInstance().print();
-    DescriptorExtractorProvider::getInstance().print();
-    DescriptorMatcherProvider::getInstance().print();
+    FeatureDetectorProvider::getInstance().print("FeatureDetectorProvider");
+    DescriptorExtractorProvider::getInstance().print("DescriptorExtractorProvider");
+    DescriptorMatcherProvider::getInstance().print("DescriptorMatcherProvider");
 }
 
 //---------------------------------------------------------------------------
@@ -136,8 +136,17 @@ public:
             cnt = 0;
         }
     }
-    ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType, int maxFeatureCount, int downsampleFactor, const std::string &params = "")
-        : pipeline(pipeline), detectorType(detectorType), params(params), maxFeatureCount(maxFeatureCount), downsampleFactor(downsampleFactor)
+    ParallelDetector(
+        FeatureMatchingPipeline* pipeline,
+        DetectorType detectorType,
+        int maxFeatureCount,
+        int downsampleFactor,
+        const std::string &params = "")
+    :    pipeline(pipeline)
+       , detectorType(detectorType)
+       , params(params)
+       , maxFeatureCount(maxFeatureCount)
+       , downsampleFactor(downsampleFactor)
     {}
 };
 
@@ -325,7 +334,7 @@ DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, int do
 {
     DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType, params);
 	parallelable = extractor ? extractor->isParallelable() : false;
-    delete extractor;
+    delete_safe(extractor);
 }
 
 //---------------------------------------------------------------------------
@@ -1639,9 +1648,9 @@ void DetectAndExtractStage::loadResults(FeatureMatchingPipeline *pipeline, const
 DetectExtractAndMatchStage::DetectExtractAndMatchStage(DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, int downsampleFactor, size_t responsesPerPoint, const std::string &params)
     : detectorType(detectorType)
     , descriptorType(descriptorType)
-    , matcherType(matcherType)
-    , downsampleFactor(downsampleFactor)
+    , matcherType(matcherType)   
     , maxFeatureCount(maxFeatureCount)
+    , downsampleFactor(downsampleFactor)
     , responsesPerPoint(responsesPerPoint)
     , params(params)
 {}
@@ -1704,9 +1713,9 @@ void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
 	DetectorType detectorType,
 	DescriptorType descriptorType,
 	int maxFeatureCount,
-    int downsampleFactor,
-	const std::string &params,
-    bool keypointsColor)
+        int downsampleFactor,
+        const std::string &params,
+        bool keypointsColor)
 {
 
 	if (std::string::npos != detectorType  .find("_GPU") &&

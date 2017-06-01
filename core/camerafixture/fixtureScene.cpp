@@ -504,8 +504,7 @@ bool FixtureScene::checkIntegrity()
         FixtureSceneGeometry *geometry = mGeomtery[i];
         if (geometry == NULL) {
             ok = false; SYNC_PRINT(("Geometry is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
-        }
-        if (geometry->ownerScene != this) {
+        } else if (geometry->ownerScene != this) {
             ok = false; SYNC_PRINT(("Geometry form other scene: geometry:<%" PRISIZE_T "> scene:<%s>\n", i, this->nameId.c_str()));
         }
 
@@ -514,8 +513,7 @@ bool FixtureScene::checkIntegrity()
             SceneFeaturePoint *point = *it;
             if (point == NULL) {
                 ok = false; SYNC_PRINT(("Related point is NULL: scene:<%s> geometry <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
-            }
-            if (point->ownerScene != this) {
+            } else if (point->ownerScene != this) {
                 ok = false; SYNC_PRINT(("Related Point form other scene: point:<%s> scene:<%s>\n", point->name.c_str(), this->nameId.c_str()));
             }
         }

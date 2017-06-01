@@ -111,7 +111,9 @@ bool OpenCvDescriptorMatcherProvider::provides(const DescriptorType &type, const
         SWITCH_TYPE(ORB, return true;)
         SWITCH_TYPE(AKAZE, return true;)
             )
-    return false;
+            return false;
 }
+
+
 
 #undef SWITCH_TYPE

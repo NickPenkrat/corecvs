@@ -351,12 +351,12 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
     VertexType flagToAvoid  = inner ? OUTSIDE : INSIDE ;
 
 
-    const std::pair<int, int> &fst = intersections[startIntersection];
+    const std::pair<size_t, size_t> &fst = intersections[startIntersection];
 
-    int currentId = fst.first;
+    size_t currentId = fst.first;
     unsigned int currentChain = 0;
 
-    SYNC_PRINT(("Exit condition A%d or B%d\n", fst.first, fst.second));
+    SYNC_PRINT(("Exit condition A%d or B%d\n", (int)fst.first, (int)fst.second));
 
     int limit = 0;
     while (limit ++ < 30 /*true*/) {
@@ -366,7 +366,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
         }
 
         result.push_back(v.pos);
-        printf("Adding vertex c: %c%d point: %" PRISIZE_T " (%lf %lf)\n", currentChain == 0 ? 'A' : 'B', currentId,
+        printf("Adding vertex c: %c%" PRISIZE_T " point: %" PRISIZE_T " (%lf %lf)\n", currentChain == 0 ? 'A' : 'B', currentId,
                v.orgId,
                c[currentChain][v.orgId].pos.x(),
                c[currentChain][v.orgId].pos.y());
@@ -384,20 +384,20 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
 
         if (v.flag == COMMON)
         {
-            int otherChain  = 1 - currentChain;
-            int nextCurrent = (int)((currentId  + 1) % c[currentChain].size());
-            int nextOther   = (int)((v.other    + 1) % c[otherChain  ].size());
+            unsigned int otherChain  = 1 - currentChain;
+            size_t nextCurrent = ((currentId  + 1) % c[currentChain].size());
+            size_t nextOther   = ((v.other    + 1) % c[otherChain  ].size());
 
             struct {
                 const VertexData *node;
-                int chain;
-                int pos;
+                size_t chain;
+                size_t pos;
             } candidates[2];
 
-            candidates[0] = {&c[currentChain][nextCurrent], (int)currentChain, nextCurrent};
-            candidates[1] = {&c[otherChain  ][nextOther  ],      otherChain  , nextOther  };
+            candidates[0] = {&c[currentChain][nextCurrent], currentChain, nextCurrent};
+            candidates[1] = {&c[otherChain  ][nextOther  ], otherChain  , nextOther  };
 
-            printf("Branching (%c%d) (%c%d)\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
+            printf("Branching (%c%" PRISIZE_T ") (%c%" PRISIZE_T ")\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
 
             /*if ( ( inner && (candidate1.flag != OUTSIDE)) ||
                  (!inner && (candidate1.flag == OUTSIDE)))*/
@@ -449,7 +449,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
         VertexData v1 = c[currentChain][currentId];
         if (v1.flag == COMMON)
         {
-            printf("Checking for exit on (%c%d)\n", currentChain == 0 ? 'A' : 'B' , currentId);
+            printf("Checking for exit on (%c%u)\n", currentChain == 0 ? 'A' : 'B' , currentId);
 
             if ((currentChain == 0) && (currentId == fst.first))
                 break;
@@ -509,7 +509,7 @@ vector<Polygon> PolygonCombiner::intersectionAll() const
 
     while (true) {
         int p0 = -1;
-        for (int v = 0; v < visited.size(); v++)
+        for (size_t v = 0; v < visited.size(); v++)
         {
             if (!visited[v]) {
                 p0 = v;
@@ -591,7 +591,7 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
     /* Wrap */
     do {
         Vector2dd next;
-        Vector2dd nextDir;
+        Vector2dd nextDir(0.0);
         double vmax = -std::numeric_limits<double>::max();
 
         for (const Vector2dd &point : list)

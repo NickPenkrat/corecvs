@@ -23,16 +23,7 @@ void DetectAndExtract::detectAndExtract(corecvs::RuntimeTypeBuffer &image, std::
 
 DetectAndExtractProvider::~DetectAndExtractProvider()
 {
-    for ( std::vector<DetectAndExtractProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p )
-	{
-		delete *p;
-	}
-	providers.clear();
-}
 
-void DetectAndExtractProvider::add( DetectAndExtractProviderImpl *provider )
-{
-	providers.push_back(provider);
 }
 
 DetectAndExtractProvider& DetectAndExtractProvider::getInstance()

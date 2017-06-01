@@ -77,7 +77,7 @@ RGB24Buffer *LibpngFileReader::load(string name)
 
 
     row_pointers = (png_byte **) png_malloc(png_ptr, height * sizeof (png_byte *));
-    for (int y = 0; y < height; y++)
+    for (png_uint_32 y = 0; y < height; y++)
         row_pointers[y] = (png_byte *) png_malloc (png_ptr, sizeof (uint8_t) * width * 3);
 
     png_read_image(png_ptr, row_pointers);

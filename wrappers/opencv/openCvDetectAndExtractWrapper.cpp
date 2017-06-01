@@ -16,19 +16,19 @@
 
 struct CvRemapCache
 {
-	cv::Mat mat0;
-	cv::Mat mat1;
+    cv::Mat mat0;
+    cv::Mat mat1;
 };
 
 struct DetectorHolder
 {
-    DetectorHolder() : tag( SIFT ), 
+    DetectorHolder() : tag( SIFT ),
 #ifdef WITH_OPENCV_3x
         sift() {}
     ~DetectorHolder() {}
 #else
         sift(0) {}
-    ~DetectorHolder() 
+    ~DetectorHolder()
     {
         switch ( tag ) {
         case SIFT:
@@ -44,10 +44,15 @@ struct DetectorHolder
 #endif
 
     enum {
-        SIFT, SURF, STAR, FAST, BRISK, ORB, AKAZE
+        SIFT, SURF, BRISK, ORB
+#ifdef WITH_OPENCV_3x
+        , STAR, FAST, AKAZE
+#endif
+
+
     } tag;
 
-    
+
 #ifdef WITH_OPENCV_3x
     struct {
         cv::Ptr< cv::xfeatures2d::SIFT >            sift;
@@ -139,7 +144,7 @@ struct DetectorHolder
 
 OpenCvDetectAndExtractWrapper::OpenCvDetectAndExtractWrapper(DetectorHolder *holder) : holder(holder)
 {
-    
+
 }
 
 OpenCvDetectAndExtractWrapper::~OpenCvDetectAndExtractWrapper()
@@ -164,14 +169,14 @@ void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(corecvs::RuntimeTypeBuf
     std::vector<cv::KeyPoint> kps;
     cv::Mat cv_descriptors;
     cv::Mat img = convert(image);
-	
-	if (pRemapCache)
-	{
-		cv::Mat remapped;
-		CvRemapCache* p = (CvRemapCache*)(pRemapCache);
-		cv::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
-		img = remapped;
-	}
+
+    if (pRemapCache)
+    {
+        cv::Mat remapped;
+        CvRemapCache* p = (CvRemapCache*)(pRemapCache);
+        cv::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
+        img = remapped;
+    }
 
 #ifdef WITH_OPENCV_3x
     holder->get()->detectAndCompute(img, cv::Mat(), kps, cv_descriptors);
@@ -198,7 +203,7 @@ void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(corecvs::RuntimeTypeBuf
     std::vector < std::pair< int, float > > sortingData;
     sortingData.resize(kps.size());
 
-    for (int i = 0; i < kps.size(); i++)
+    for (size_t i = 0; i < kps.size(); i++)
         sortingData[i] = std::pair< int, float >(i, kps[i].response);
 
     std::sort(sortingData.begin(), sortingData.end(), [](const std::pair< int, float > &l, const std::pair< int, float > &r) { return l.second > r.second; });
@@ -228,7 +233,7 @@ void init_opencv_detect_and_extract_provider()
 
 OpenCvDetectAndExtractProvider::OpenCvDetectAndExtractProvider() {}
 
-DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params)
+DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const PipelineAlgoType &detectorType, const PipelineAlgoType &descriptorType, const std::string &params)
 {
     if(detectorType != descriptorType)
         return nullptr;
@@ -251,8 +256,8 @@ DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const DetectorType
 #else
         cv::SIFT *ptr = new cv::SIFT( 0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma );
 #endif
-        holder->set( ptr ); 
-        p = ptr;   
+        holder->set( ptr );
+        p = ptr;
     }
 
     if (type == "SURF")
@@ -307,11 +312,11 @@ DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const DetectorType
     if (type == "AKAZE")
     {
         cv::Ptr< cv::AKAZE > ptr = cv::AKAZE::create(akazeParams.descriptorType, akazeParams.descriptorSize, akazeParams.descriptorChannels, akazeParams.threshold, akazeParams.octaves, akazeParams.octaveLayers, akazeParams.diffusivity);
-        holder->set(ptr); 
+        holder->set(ptr);
         p = ptr;
     }
 #endif
-    
+
     return p ? new OpenCvDetectAndExtractWrapper( holder ) : 0;
 }
 

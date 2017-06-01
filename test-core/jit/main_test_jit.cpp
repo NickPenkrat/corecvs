@@ -192,7 +192,7 @@ TEST(jit, DISABLED_testjit)
         {
             out[i].p->extractConstPool("c", constpool);
         }
-        SYNC_PRINT(("finished - size = %d\n", constpool.size()));
+        SYNC_PRINT(("finished - size = %d\n", (int)constpool.size()));
 
 
 #endif
@@ -204,7 +204,7 @@ TEST(jit, DISABLED_testjit)
     {
         cout << "PackedDerivative run.." << endl;
         PackedDerivative<8> in[8];
-        for (int i = 0; i < CORE_COUNT_OF(in); i++)
+        for (unsigned i = 0; i < CORE_COUNT_OF(in); i++)
         {
             in[i] = PackedDerivative<8>::ID(exampleM[i], i);
         }

@@ -6,9 +6,7 @@
 #include "runtimeTypeBuffer.h"
 #include "rgbColor.h"
 
-typedef std::string DescriptorType;
-typedef std::string DetectorType;
-typedef std::string MatcherType;
+#include "algoBase.h"
 
 struct KeyPointArea
 {

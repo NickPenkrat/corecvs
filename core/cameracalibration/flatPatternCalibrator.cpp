@@ -147,8 +147,9 @@ void corecvs::FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LM
             }
             solveInitialExtrinsics();
 
-            double projective, enforced, distorted;
+            double projective;
             projective = getRmseReprojectionError();
+            double enforced, distorted;
             enforceParams();
             enforced = getRmseReprojectionError();
 

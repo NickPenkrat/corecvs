@@ -14,6 +14,21 @@ using std::wstring;
 using std::ostream;
 using std::cout;
 
+
+/* In c++17 this is done in more compact and typesafe way */
+
+#define TR_ENABLE_IF(X)       typename std::enable_if<(X)>::type
+#define TR_ENABLE_IF_T(X , Y) typename std::enable_if<(X), (Y)>::type
+#define TR_ENABLE_IF_P(X)     typename std::enable_if<X,int>::type foo = 0
+
+
+#define TR_IS_BOOL(X)         std::is_same<X, bool>::value
+#define TR_IS_ENUM(X)         std::is_enum<X>::value
+
+#define TR_IS_SAME(X, Y)      std::is_same<X, Y>::value
+#define TR_IS_ARITHM(X)       std::is_arithmetic<(X), (Y)>::value
+
+
 class PrinterVisitor
 {
 public:
@@ -52,9 +67,8 @@ public:
     /**
      * Generic Array support. New Style
      **/
-    template <typename inputType, typename ReflectionType>
-    typename std::enable_if<!std::is_same<ReflectionType, char>::value >::type
-    visit(std::vector<inputType> &fields, const ReflectionType * /*fieldDescriptor*/)
+    template <typename inputType, typename ReflectionType, TR_ENABLE_IF_P(!TR_IS_SAME(ReflectionType, char))>
+    void visit(std::vector<inputType> &fields, const ReflectionType * /*fieldDescriptor*/)
     {
         indentation += dIndent;
         for (int i = 0; i < fields.size(); i++)
@@ -102,9 +116,8 @@ public:
     }
 #endif
 
-    template <typename Type, class ReflectionType>
-    typename std::enable_if<!std::is_same<ReflectionType, char>::value >::type
-        visit(Type &field, const ReflectionType * fieldDescriptor)
+    template <typename Type, class ReflectionType, TR_ENABLE_IF_P(!TR_IS_SAME(ReflectionType, char))>
+    void visit(Type &field, const ReflectionType * fieldDescriptor)
         {
             if (stream != NULL) {
                 *stream << indent() << fieldDescriptor->getSimpleName() << ":" << std::endl;
@@ -145,7 +158,7 @@ public:
         *stream << indent() << fieldName << "=" << field << std::endl;
     }
 
-    template <typename type, typename std::enable_if<std::is_enum<type>::value, int>::type foo = 0>
+    template <typename type, TR_ENABLE_IF_P(TR_IS_ENUM(type))>
     void visit(type &field, type defaultValue, const char *fieldName)
     {
         using U = typename std::underlying_type<type>::type;

@@ -129,5 +129,5 @@ TEST(Serializer, printIterable)
     visitor.visit(vectorOfInt, "vector of integers");
     visitor.visit(vectorOfVector, "vector of vector2dd");
 
-    //visitor.visit(mapIntToVec, "vector of vector2dd");
+    //visitor.visit(mapIntToVec, "map of int to vector2dd");
 }

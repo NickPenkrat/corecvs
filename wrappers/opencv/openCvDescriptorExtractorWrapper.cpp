@@ -235,4 +235,18 @@ bool OpenCvDescriptorExtractorProvider::provides(const DescriptorType &type)
     return false;
 }
 
+std::vector<std::string> OpenCvDescriptorExtractorProvider::provideHints()
+{
+    std::vector<std::string> result;
+
+    result.push_back("SIFT");
+    result.push_back("SURF");
+    result.push_back("BRISK");
+    result.push_back("ORB");
+#ifdef WITH_OPENCV_3x
+    result.push_back("AKAZE");
+#endif
+    return result;
+}
+
 #undef SWITCH_TYPE
