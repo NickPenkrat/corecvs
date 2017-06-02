@@ -28,9 +28,9 @@ void Plane3dFit::operator ()()
 {
     Ransac<Vector3dd, PlaneReconstructionModel> estimator(mParameters.sampleNumber);
 
-    estimator.inlierThreshold = mParameters.tolerance;
-    estimator.iterationsNumber = 1000;
-    estimator.inliersPercent   = 1.0;
+    estimator.setInlierThreshold  (mParameters.tolerance);
+    estimator.setIterationsNumber (1000);
+    estimator.setInliersPercent   (1.0);
     estimator.trace = true;
 
 

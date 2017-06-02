@@ -24,7 +24,7 @@
 using namespace corecvs;
 using namespace std;
 
-void asmF(double *in, double *out)
+void asmF(double */*in*/, double */*out*/)
 {
 #if defined (__GNUC__) && __x86_64
 
@@ -243,7 +243,7 @@ public:
         return "out[0] = in[0] * in[3] + in[1] * in[4] + in[2] * in[5]";
     }
 
-    virtual ASTNodeFunctionPayload *derivative(int input) override
+    virtual ASTNodeFunctionPayload *derivative(int /*input*/) override
     {
         return NULL;
     }

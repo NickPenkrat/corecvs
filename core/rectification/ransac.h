@@ -12,6 +12,8 @@
 #include <algorithm>
 
 #include "global.h"
+#include "ransacParameters.h"
+
 namespace corecvs {
 
 using std::vector;
@@ -23,12 +25,14 @@ using std::find;
  *
  *
  **/
+#if 0
 class RansacParameters {
 public:
     int iterationsNumber;
     double inliersPercent;
     double inlierThreshold;
 };
+#endif
 
 template<typename SampleType, typename ModelType>
 class Ransac : public RansacParameters {
@@ -46,7 +50,8 @@ public:
 
     bool trace = false;
 
-    Ransac(int _sampleNumber ) :
+    Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters()) :
+        RansacParameters(params),
         sampleNumber(_sampleNumber)
     {
         samples.reserve(sampleNumber);
@@ -84,7 +89,7 @@ public:
             int inliers = 0;
             for (size_t i = 0; i < data->size(); i++)
             {
-                if (model.fits(*(data->at(i)), inlierThreshold))
+                if (model.fits(*(data->at(i)), inlierThreshold()))
                     inliers++;
             }
 
@@ -97,8 +102,8 @@ public:
                 bestModel = model;
             }
 
-            if (bestInliers >  data->size() * inliersPercent ||
-                iteration >= iterationsNumber )
+            if (bestInliers >  data->size() * inliersPercent() ||
+                iteration >= iterationsNumber() )
             {
                 if (trace) {
                     std::cout << "Fininshing:" << std::endl;
@@ -107,6 +112,51 @@ public:
                 }
 
                 return bestModel;
+            }
+            iteration++;
+        }
+    }
+
+
+    ModelType getModelRansacMultimodel()
+    {
+        bestInliers = 0;
+        iteration = 0;
+
+        while (true)
+        {
+            randomSelect();
+            vector<ModelType> models = ModelType::getModels(samples);
+
+            int inliers = 0;
+            for (ModelType &model : models)
+            {
+                for (size_t i = 0; i < data->size(); i++)
+                {
+                    if (model.fits(*(data->at(i)), inlierThreshold()))
+                        inliers++;
+                }
+
+                if (trace) SYNC_PRINT(("iteration %d : %d inliers \n", iteration, inliers));
+
+                if (inliers > bestInliers)
+                {
+                    bestSamples = samples;
+                    bestInliers = inliers;
+                    bestModel = model;
+                }
+
+                if (bestInliers >  data->size() * inliersPercent() ||
+                    iteration >= iterationsNumber() )
+                {
+                    if (trace) {
+                        std::cout << "Fininshing:" << std::endl;
+                        std::cout << "BestInliers:" << bestInliers << std::endl;
+
+                    }
+
+                    return bestModel;
+                }
             }
             iteration++;
         }

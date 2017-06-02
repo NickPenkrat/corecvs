@@ -449,7 +449,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
         VertexData v1 = c[currentChain][currentId];
         if (v1.flag == COMMON)
         {
-            printf("Checking for exit on (%c%u)\n", currentChain == 0 ? 'A' : 'B' , currentId);
+            printf("Checking for exit on (%c%" PRISIZE_T ")\n", currentChain == 0 ? 'A' : 'B' , currentId);
 
             if ((currentChain == 0) && (currentId == fst.first))
                 break;

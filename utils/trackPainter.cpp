@@ -115,12 +115,20 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             AbstractPainter<RGB24Buffer> painter(&dst);
 
             //TODO: optimize speed to don't form the not needed image
+            // This most probably should be replaced with
+            //
+            // dst.fillWith(src, 0, 0);
+            // dst.fillWith(src, offH, 0);
+
+
             for (int y = 0; y < srcA.h; ++y)
                 for (int x = 0; x < srcA.w; ++x)
                     dst.element(y, x) = srcA.element(y, x);
             for (int y = 0; y < srcB.h; ++y)
                 for (int x = 0; x < srcB.w; ++x)
                     dst.element(y + offH, x) = srcB.element(y, x);
+
+
 
             bool painted = false;
             for (auto& tf: scene)

@@ -435,6 +435,7 @@ TEST(Rectification, testEssentialEstimator)
     of << "];";
 }
 
+#if 0
 
 TEST(Rectification, testRectifiedModel)
 {
@@ -477,6 +478,8 @@ TEST(Rectification, testRectifiedModel)
     mesh.dumpPLY("debug.ply");
 
 }
+
+#endif
 
 //int main (int /*argC*/, char ** /*argV*/)
 //{

@@ -129,7 +129,7 @@ TEST(Raytrace, DISABLED_testRaytraceBase)
     PreciseTimer timer;
     timer = PreciseTimer::currentTime();
     renderer.trace(buffer);
-    SYNC_PRINT(("Total time %lld us", timer.usecsToNow()));
+    SYNC_PRINT(("Total time %" PRIu64 " us", timer.usecsToNow()));
 
 
     BMPLoader().save("raytrace.bmp", buffer);
@@ -599,7 +599,7 @@ TEST(Raytrace, testCylinder)
         Ray3d(Vector3dd(0, -1, 1), Vector3dd(0, 240, 0)),
     };
 
-    for (int i = 0; i < CORE_COUNT_OF(rays); i++)
+    for (unsigned i = 0; i < CORE_COUNT_OF(rays); i++)
     {
         rays[i] = rays[i].normalised();
         RayIntersection ray;        

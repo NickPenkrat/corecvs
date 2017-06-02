@@ -199,7 +199,7 @@ void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
 
 }
 
-void SceneShaded::drawMyself(CloudViewDialog * dialog)
+void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
 {
     initializeOpenGLFunctions();
 /*    if (mProgram[] == NULL)
