@@ -167,7 +167,7 @@ Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
     return result.model;
 }
 
-EssentialMatrix RansacEstimatorScene::getEssentialRansac(FixtureScene *scene, FixtureCamera *camera1, FixtureCamera *camera2)
+EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *scene, FixtureCamera *camera1, FixtureCamera *camera2)
 {
     vector<Correspondence > data;
     vector<Correspondence *> dataPtr;
@@ -192,6 +192,12 @@ EssentialMatrix RansacEstimatorScene::getEssentialRansac(FixtureScene *scene, Fi
 
     ransac.data = &dataPtr;
     Model5Point result = ransac.getModelRansacMultimodel();
+
+    EssentialDecomposition variants[4];
+    EssentialDecomposition dec = result.model.decompose(&dataPtr, variants);
+
+    return dec;
+
 }
 
 

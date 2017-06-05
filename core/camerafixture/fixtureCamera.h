@@ -63,8 +63,9 @@ public:
     bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projectionPtr = NULL);
 
     Affine3DQ getWorldLocation();
-    CameraModel getWorldCameraModel();
+    void setWorldLocation(const Affine3DQ &location);
 
+    CameraModel getWorldCameraModel();
 
 };
 
