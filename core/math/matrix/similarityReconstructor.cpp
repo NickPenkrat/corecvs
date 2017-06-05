@@ -59,6 +59,185 @@ Matrix33 Similarity::getRotation()
     return rotation.toMatrix();
 }
 
+#if 1
+
+#define DECOMPOSE_EPSILON	0.000001
+#define RANKDECOMPOSE(a, b, c, x, y, z)      \
+    if ((x) < (y))                   \
+    {                               \
+        if ((y) < (z))               \
+        {                           \
+            (a) = 2;                \
+            (b) = 1;                \
+            (c) = 0;                \
+        }                           \
+        else                        \
+        {                           \
+            (a) = 1;                \
+                                    \
+            if ((x) < (z))           \
+            {                       \
+                (b) = 2;            \
+                (c) = 0;            \
+            }                       \
+            else                    \
+            {                       \
+                (b) = 0;            \
+                (c) = 2;            \
+            }                       \
+        }                           \
+    }                               \
+    else                            \
+    {                               \
+        if ((x) < (z))               \
+        {                           \
+            (a) = 2;                \
+            (b) = 0;                \
+            (c) = 1;                \
+        }                           \
+        else                        \
+        {                           \
+            (a) = 0;                \
+                                    \
+            if ((y) < (z))           \
+            {                       \
+                (b) = 2;            \
+                (c) = 1;            \
+            }                       \
+            else                    \
+            {                       \
+                (b) = 1;            \
+                (c) = 2;            \
+            }                       \
+        }                           \
+    }            
+
+bool			DecomposeTRS(const Matrix44& matrix, Vector3dd& scale, Vector3dd& translate, Quaternion& qRotate)
+{
+	double det;
+	double *pfScales;
+	Vector4dd *ppvBasis[3];
+	Vector4dd matTemp[4];
+
+	static const Vector4dd x4 = { 1, 0, 0, 0 };
+	static const Vector4dd y4 = { 0, 1, 0, 0 };
+	static const Vector4dd z4 = { 0, 0, 1, 0 };
+	static const Vector4dd w4 = { 0, 0, 0, 1 };
+
+	uint a, b, c;
+	static const Vector4dd *pvCanonicalBasis[3] = {
+		&x4,
+		&y4,
+		&z4
+	};
+
+	const Matrix44 m = matrix.transposed();
+
+	// Get the translation
+	translate = matrix.translationPart();
+
+	matTemp[0] = m.row(0);
+	matTemp[1] = m.row(1);
+	matTemp[2] = m.row(2);
+	matTemp[3] = w4;
+
+	ppvBasis[0] = &matTemp[0];
+	ppvBasis[1] = &matTemp[1];
+	ppvBasis[2] = &matTemp[2];
+
+	pfScales = scale.element;
+
+	pfScales[0] = sqrt(ppvBasis[0]->x * ppvBasis[0]->x + ppvBasis[0]->y * ppvBasis[0]->y + ppvBasis[0]->z * ppvBasis[0]->z);
+	pfScales[1] = sqrt(ppvBasis[1]->x * ppvBasis[1]->x + ppvBasis[1]->y * ppvBasis[1]->y + ppvBasis[1]->z * ppvBasis[1]->z);
+	pfScales[2] = sqrt(ppvBasis[2]->x * ppvBasis[2]->x + ppvBasis[2]->y * ppvBasis[2]->y + ppvBasis[2]->z * ppvBasis[2]->z);
+	
+	RANKDECOMPOSE(a, b, c, pfScales[0], pfScales[1], pfScales[2])
+	if (pfScales[a] < DECOMPOSE_EPSILON)
+	{
+		*ppvBasis[a] = *pvCanonicalBasis[a];
+	}
+
+	Vector3dd* pv3 = (Vector3dd*)ppvBasis[a];
+	*ppvBasis[a] = Vector4dd(pv3->normalised(), 0.0f);
+
+	if (pfScales[b] < DECOMPOSE_EPSILON)
+	{
+		uint aa, bb, cc;
+		double fAbsX, fAbsY, fAbsZ;
+
+		fAbsX = abs(ppvBasis[a]->x);
+		fAbsY = abs(ppvBasis[a]->y);
+		fAbsZ = abs(ppvBasis[a]->z);
+
+		RANKDECOMPOSE(aa, bb, cc, fAbsX, fAbsY, fAbsZ)
+
+		*ppvBasis[b] = Float4(cross(Vector3dd((double*)ppvBasis[a]->element) ^ Vector3dd((double*)pvCanonicalBasis[cc])));
+	}
+
+	pv3 = (float3*)ppvBasis[b];
+	*ppvBasis[b] = Float4(Normalize(*pv3));
+
+	if (pfScales[c] < DECOMPOSE_EPSILON)
+	{
+		*ppvBasis[c] = Float4(Cross(Float3(*ppvBasis[a]), Float3(*ppvBasis[b])));
+	}
+
+	pv3 = (float3*)ppvBasis[c];
+	*ppvBasis[c] = Float4(Normalize(*pv3));
+
+	fDet = Determinant(Matrix44(matTemp[0], matTemp[1], matTemp[2], matTemp[3]));
+
+	// use Kramer's rule to check for  handedness of coordinate system
+	if (fDet < 0.0f)
+	{
+		// switch coordinate system by negating the scale and inverting the basis vector on the x-axis
+		pfScales[a] = -pfScales[a];
+		*ppvBasis[a] = *ppvBasis[a] * -1.0f;
+
+		fDet = -fDet;
+	}
+
+	fDet -= 1.0f;
+	fDet *= fDet;
+
+	if (DECOMPOSE_EPSILON < fDet)
+	{
+		//		Non-SRT matrix encountered
+		return false;
+	}
+
+	// generate the quaternion from the matrix
+	qRotate = Quaternion::FromMatrix(Matrix44(matTemp[0], matTemp[1], matTemp[2], matTemp[3]).transposed().topLeft33());
+	return true;
+}
+
+#undef DECOMPOSE_EPSILON
+#undef RANKDECOMPOSE
+
+/**
+    X -> AX  - in space 1
+	
+	Similarity maps space1 to space2
+
+	SX -  position in space2
+	SAX - transformed position in space2
+
+	this funtion returns B : BSX = SAX
+	in operator form B = SAS^-1
+
+ **/
+Affine3DQ Similarity::transform(const Affine3DQ &A)
+{
+	Matrix44 result =
+		Matrix44::Shift(shiftR) * Matrix44::Scale(scaleR) * rotation.toMatrix() * Matrix44::Scale(1.0 / scaleL) * Matrix44::Shift(-shiftL) * // S
+		corecvs::Matrix44::Shift(A.shift[0], A.shift[1], A.shift[2]) * corecvs::Matrix44(A.rotor.toMatrix())
+		* Matrix44::Shift(shiftL) *  Matrix44::Scale(scaleL) * rotation.conjugated.toMatrix() * Matrix44::Scale(1.0 / scaleR) * Matrix44::Shift(-shiftR);
+
+    return Affi
+}
+
+#endif
+
 void Similarity::fillFunctionInput(double in[])
 {
     double scale    = getScale();
