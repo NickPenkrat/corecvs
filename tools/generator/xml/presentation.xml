@@ -41,6 +41,7 @@
     <field type="bool"         name="produce3D"             defaultValue="true"/>
     <field type="bool"         name="produce6D"             defaultValue="false" advanced="true" />
     <field type="bool"         name="dump3D"                defaultValue="false" advanced="true" />
+    <field type="bool"         name="dumpSceneJSON"         defaultValue="false" advanced="true" />
   </class>
 
 </poco>

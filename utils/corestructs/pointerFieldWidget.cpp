@@ -185,7 +185,7 @@ void PointerFieldWidget::loadFixtureScene()
 #else
         {
             JSONGetter getter(filename);
-            getter.visit(*mDirectory, "scene");
+            getter.visit(*pointer, "scene");
         }
 #endif
 
