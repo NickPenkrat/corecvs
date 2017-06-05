@@ -123,7 +123,7 @@ void codeGenerator(
         {
             elements[i].p->extractConstPool("c", constpool);
         }
-        SYNC_PRINT(("finished - size = %d\n", constpool.size()));
+        SYNC_PRINT(("finished - size = %" PRISIZE_T "\n", constpool.size()));
     }
 
     /*Compute hashes*/
@@ -152,7 +152,7 @@ void codeGenerator(
     std::sort(commonSubexpressions.begin(), commonSubexpressions.end(),
               [](ASTNodeInt *a, ASTNodeInt *b){return a->height < b->height;});
 
-    SYNC_PRINT(("finished - size = %d\n", commonSubexpressions.size() ));
+    SYNC_PRINT(("finished - size = %" PRISIZE_T "\n", commonSubexpressions.size() ));
 
     /** Generate **/
 

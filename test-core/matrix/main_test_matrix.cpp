@@ -1754,7 +1754,7 @@ TEST(EM, EM)
     m1[0] = 10.0, m1[1] = 10.0, m1[2] = 10.0;
     m2[0] =  0.0, m2[1] = -1.0, m2[2] = -2.0;
 
-    double p1 = 0.25, p2 = 0.75;
+    //double p1 = 0.25, p2 = 0.75;
 
     const int NCASES = 10000;
     corecvs::Matrix A(NCASES, NDIM);

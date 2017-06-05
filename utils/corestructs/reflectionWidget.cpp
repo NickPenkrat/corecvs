@@ -128,9 +128,12 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
             case BaseField::TYPE_STRING:
             {
                 const StringField *sField = static_cast<const StringField *>(field);
-                QTextEdit *textBox = new QTextEdit(this);
+                //QTextEdit *textBox = new QTextEdit(this);
+                QLineEdit *textBox = new QLineEdit(this);
+
                 textBox->setText(QString::fromStdString(sField->defaultValue));
                 gridLayout->addWidget(textBox, i, WIDGET_COLUMN, 1, 1);
+                textBox->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
                 connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
                 widget = textBox;
                 break;
@@ -138,7 +141,9 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
             case BaseField::TYPE_WSTRING:
             {
                 const WStringField *sField = static_cast<const WStringField *>(field);
-                QTextEdit *textBox = new QTextEdit(this);
+                //QTextEdit *textBox = new QTextEdit(this);
+                QLineEdit *textBox = new QLineEdit(this);
+
                 textBox->setText(QString::fromStdWString(sField->defaultValue));
                 gridLayout->addWidget(textBox, i, WIDGET_COLUMN, 1, 1);
                 connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
@@ -325,15 +330,22 @@ bool ReflectionWidget::getParameters(void *param) const
             case BaseField::TYPE_STRING:
             {
                 // const StringField *sField = static_cast<const StringField *>(field);
-                QTextEdit *textBox = static_cast<QTextEdit *>(positionToWidget[i]);
-                *obj.getField<std::string>(fieldId) = textBox->toPlainText().toStdString();
+                //QTextEdit *textBox = static_cast<QTextEdit *>(positionToWidget[i]);
+                //*obj.getField<std::string>(fieldId) = textBox->toPlainText().toStdString();
+
+                 QLineEdit *textBox = static_cast<QLineEdit *>(positionToWidget[i]);
+                *obj.getField<std::string>(fieldId) = textBox->text().toStdString();
                 break;
             }
             case BaseField::TYPE_WSTRING:
             {
                 // const StringField *sField = static_cast<const StringField *>(field);
-                QTextEdit *textBox = static_cast<QTextEdit *>(positionToWidget[i]);
-                *obj.getField<std::wstring>(fieldId) = textBox->toPlainText().toStdWString();
+                // QTextEdit *textBox = static_cast<QTextEdit *>(positionToWidget[i]);
+                // *obj.getField<std::wstring>(fieldId) = textBox->toPlainText().toStdWString();
+
+                QLineEdit *textBox = static_cast<QLineEdit *>(positionToWidget[i]);
+                *obj.getField<std::string>(fieldId) = textBox->text().toStdString();
+
                 break;
             }
             case BaseField::TYPE_BOOL:
@@ -380,7 +392,7 @@ bool ReflectionWidget::getParameters(void *param) const
 
             case BaseField::TYPE_POINTER:
             {
-                const PointerField *pField = static_cast<const PointerField *>(field);
+                // const PointerField *pField = static_cast<const PointerField *>(field);
                 PointerFieldWidget *refWidget = static_cast<PointerFieldWidget *>(positionToWidget[i]);
                 *obj.getField<void *>(fieldId) = refWidget->rawPointer;
                 break;
@@ -428,13 +440,15 @@ bool ReflectionWidget::setParameters(void *param) const
             }
             case BaseField::TYPE_STRING:
             {
-                QTextEdit *textBox = static_cast<QTextEdit *>(positionToWidget[i]);
+                //QTextEdit *textBox = static_cast<QTextEdit *>(positionToWidget[i]);
+                QLineEdit *textBox = static_cast<QLineEdit *>(positionToWidget[i]);
                 textBox->setText(QString::fromStdString(*obj.getField<std::string>(fieldId)));
                 break;
             }
             case BaseField::TYPE_WSTRING:
             {
-                QTextEdit *textBox = static_cast<QTextEdit *>(positionToWidget[i]);
+                //QTextEdit *textBox = static_cast<QTextEdit *>(positionToWidget[i]);
+                QLineEdit *textBox = static_cast<QLineEdit *>(positionToWidget[i]);
                 textBox->setText(QString::fromStdWString(*obj.getField<std::wstring>(fieldId)));
                 break;
             }
@@ -458,7 +472,7 @@ bool ReflectionWidget::setParameters(void *param) const
             }*/
             case BaseField::TYPE_DOUBLE | BaseField::TYPE_VECTOR_BIT:
             {
-                DoubleVectorWidget *vectorWidget = static_cast<DoubleVectorWidget *>(positionToWidget[i]);
+                //DoubleVectorWidget *vectorWidget = static_cast<DoubleVectorWidget *>(positionToWidget[i]);
 
                 break;
             }
@@ -478,7 +492,7 @@ bool ReflectionWidget::setParameters(void *param) const
 
             case BaseField::TYPE_POINTER:
             {
-                const PointerField *pField = static_cast<const PointerField *>(field);
+               // const PointerField *pField = static_cast<const PointerField *>(field);
                 PointerFieldWidget *pointerWidget = static_cast<PointerFieldWidget *>(positionToWidget[i]);
                 void *rawPointer = (*obj.getField<void *>(fieldId));
                 pointerWidget->setValue(rawPointer);

@@ -43,6 +43,41 @@ public:
     }
 };
 
+class Model5Point {
+public:
+    EssentialMatrix model;
+
+    Model5Point(const EssentialMatrix &m) :
+        model(m)
+    {
+    }
+
+    Model5Point()
+    {
+        model = Matrix33(1.0);
+    }
+
+    static vector<Model5Point> getModels(const vector<Correspondence *> &samples)
+    {
+        EssentialEstimator estimator;
+        vector<EssentialMatrix> ms = estimator.getEssential5point(samples);
+        vector<Model5Point> result;
+        result.reserve(ms.size());
+        for ( EssentialMatrix &m: ms)
+        {
+            result.push_back(m);
+        }
+        return result;
+
+    }
+
+    bool fits(const Correspondence &data, double fitTreshold)
+    {
+        return (model.epipolarDistance(data) < fitTreshold);
+    }
+};
+
+
 class ModelFundamental8Point : public Model8Point
 {
 public:
@@ -79,17 +114,14 @@ Matrix33 RansacEstimator::getFundamentalRansac1(CorrespondenceList *list)
 Matrix33 RansacEstimator::getFundamentalRansac(vector<Correspondence *> *data)
 {
     Ransac<Correspondence, ModelFundamental8Point>
-        ransac(trySize);
+        ransac(trySize, ransacParams);
 
     ransac.data = data;
-    ransac.inlierThreshold = treshold;
-    ransac.inliersPercent = 1.0;
-    ransac.iterationsNumber = maxIterations;
 
     ModelFundamental8Point result = ransac.getModelRansac();
     for (unsigned i = 0; i < data->size(); i++)
     {
-        bool fits = result.fits(*(data->operator[](i)), treshold);
+        bool fits = result.fits(*(data->operator[](i)), ransacParams.inlierThreshold());
         data->operator[](i)->flags |= (fits ? Correspondence::FLAG_PASSER : Correspondence::FLAG_FAILER);
     }
     for (unsigned i = 0; i < ransac.bestSamples.size(); i++)
@@ -116,18 +148,14 @@ Matrix33 RansacEstimator::getEssentialRansac1(CorrespondenceList *list)
 Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
 {
     Ransac<Correspondence, ModelEssential8Point>
-        ransac(trySize);
+        ransac(trySize, ransacParams);
 
     ransac.data = data;
-
-    ransac.inlierThreshold = treshold;
-    ransac.inliersPercent = 1.0;
-    ransac.iterationsNumber = maxIterations;
 
     ModelEssential8Point result = ransac.getModelRansac();
     for (unsigned i = 0; i < data->size(); i++)
     {
-        bool fits = result.fits(*(data->operator[](i)), treshold);
+        bool fits = result.fits(*(data->operator[](i)), ransacParams.inlierThreshold());
         data->operator[](i)->flags |= (fits ? Correspondence::FLAG_PASSER : Correspondence::FLAG_FAILER);
     }
 
@@ -137,6 +165,39 @@ Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
     }
 
     return result.model;
+}
+
+EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *scene, FixtureCamera *camera1, FixtureCamera *camera2)
+{
+    vector<Correspondence > data;
+    vector<Correspondence *> dataPtr;
+
+    for(SceneFeaturePoint *point: scene->featurePoints())
+    {
+        SceneObservation *obs1 = point->getObservation(camera1);
+        SceneObservation *obs2 = point->getObservation(camera2);
+
+        if (obs1 != NULL && obs2 != NULL)
+        {
+            Correspondence c;
+            c.start = obs1->getDistorted(false);
+            c.end   = obs2->getDistorted(false);
+            data.push_back(c);
+            dataPtr.push_back(&data.back());
+        }
+    }
+
+    Ransac<Correspondence, Model5Point>
+        ransac(5, params);
+
+    ransac.data = &dataPtr;
+    Model5Point result = ransac.getModelRansacMultimodel();
+
+    EssentialDecomposition variants[4];
+    EssentialDecomposition dec = result.model.decompose(&dataPtr, variants);
+
+    return dec;
+
 }
 
 

@@ -236,6 +236,8 @@ classes+=" homorgaphyReconstructorBlockBase"
 classes+=" sceneStereoAlignerBlockBase"
 classes+=" adderSubstractorParametersBase"
 
+classes+=" ransacParameters"
+
 
 # We will try to use reflectionWidget
 classes+=" calibrationDrawHelpersParameters"

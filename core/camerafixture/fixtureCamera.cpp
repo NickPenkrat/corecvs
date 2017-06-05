@@ -33,6 +33,14 @@ Affine3DQ FixtureCamera::getWorldLocation()
    return (cameraFixture->location * local);
 }
 
+void FixtureCamera::setWorldLocation(const Affine3DQ &location)
+{
+    if (cameraFixture == NULL) {
+        setLocation(location);
+    }
+    setLocation(cameraFixture->location.inverted() * location);
+}
+
 CameraModel FixtureCamera::getWorldCameraModel()
 {
     if (cameraFixture != NULL) {
@@ -41,6 +49,8 @@ CameraModel FixtureCamera::getWorldCameraModel()
 
     return *this;
 }
+
+
 
 
 } // namespace corecvs

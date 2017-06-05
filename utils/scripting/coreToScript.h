@@ -97,7 +97,7 @@ template<class ExposeType>
                   /* Composite field */
                   case corecvs::BaseField::TYPE_COMPOSITE:
                   {
-                      const corecvs::CompositeField *cField = static_cast<const corecvs::CompositeField *>(field);
+                      //const corecvs::CompositeField *cField = static_cast<const corecvs::CompositeField *>(field);
                       //const corecvs::Reflection *subReflection = cField->reflection;
                        /* NOT SUPPORTED */
                       break;
@@ -167,14 +167,14 @@ template<class ExposeType>
                 }
                 case corecvs::BaseField::TYPE_ENUM:
                 {
-                    const corecvs::EnumField *eField = static_cast<const corecvs::EnumField *>(field);
-                    const corecvs::EnumReflection *enumOptions = eField->enumReflection;
+                    // const corecvs::EnumField *eField = static_cast<const corecvs::EnumField *>(field);
+                    // const corecvs::EnumReflection *enumOptions = eField->enumReflection;
                     /* NOT SUPPORTED */
                     break;
                 }
                 case corecvs::BaseField::TYPE_DOUBLE | corecvs::BaseField::TYPE_VECTOR_BIT:
                 {
-                    const corecvs::DoubleVectorField *dField = static_cast<const corecvs::DoubleVectorField *>(field);
+                    // const corecvs::DoubleVectorField *dField = static_cast<const corecvs::DoubleVectorField *>(field);
                     //DoubleVectorWidget *vectorWidget = new DoubleVectorWidget(this);
                     /* NOT SUPPORTED */
                     break;
@@ -183,7 +183,7 @@ template<class ExposeType>
                 /* Composite field */
                 case corecvs::BaseField::TYPE_COMPOSITE:
                 {
-                    const corecvs::CompositeField *cField = static_cast<const corecvs::CompositeField *>(field);
+                    //const corecvs::CompositeField *cField = static_cast<const corecvs::CompositeField *>(field);
                     //const Reflection *subReflection = cField->reflection;
                      /* NOT SUPPORTED */
                     break;
