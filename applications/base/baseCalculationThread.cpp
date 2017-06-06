@@ -37,8 +37,8 @@ BaseCalculationThread::BaseCalculationThread()
         mFrameTransforms    [i] = Matrix33(1.0);
         mTransformationCache[i] = NULL;
 
-        mTransformedBuffers[i]  = NULL;
-        mFilterExecuter    [i]  = NULL;
+        mTransformedBuffers [i]  = NULL;
+        mFilterExecuter     [i]  = NULL;
 #ifdef WITH_HARDWARE
         if (i >= 2) {
             qDebug() << "We have only 2 hardware correctors!" << endl;

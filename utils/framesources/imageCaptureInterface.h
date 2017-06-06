@@ -96,6 +96,8 @@ public:
         LEFT_FRAME,
         DEFAULT_FRAME = LEFT_FRAME,
         RIGHT_FRAME,
+        THIRD_FRAME,
+        FOURTH_FRAME,
         MAX_INPUTS_NUMBER
     };
 
@@ -117,56 +119,85 @@ public:
     class FramePair
     {
     public:
-        G12Buffer   *bufferLeft;      /**< Pointer to left  gray scale buffer*/
-        G12Buffer   *bufferRight;     /**< Pointer to right gray scale buffer*/
-        RGB24Buffer *rgbBufferLeft;
-        RGB24Buffer *rgbBufferRight;
-        uint64_t     timeStampLeft;
-        uint64_t     timeStampRight;
+        struct FrameData {
+            G12Buffer    *g12Buffer = NULL;
+            RGB24Buffer  *rgbBuffer = NULL;
+            uint64_t     timeStamp = 0;
+        };
+
+        FrameData buffers[MAX_INPUTS_NUMBER];
+
+        G12Buffer   *bufferLeft()     const { return buffers[LEFT_FRAME  ].g12Buffer;} /**< Pointer to left  gray scale buffer*/
+        G12Buffer   *bufferRight()    const { return buffers[RIGHT_FRAME ].g12Buffer;} /**< Pointer to right gray scale buffer*/
+        RGB24Buffer *rgbBufferLeft()  const { return buffers[LEFT_FRAME  ].rgbBuffer;}
+        RGB24Buffer *rgbBufferRight() const { return buffers[RIGHT_FRAME ].rgbBuffer;}
+
+
+        void setBufferLeft    (G12Buffer   *buf)  {  buffers[LEFT_FRAME  ].g12Buffer = buf;} /**< Pointer to left  gray scale buffer*/
+        void setBufferRight   (G12Buffer   *buf)  {  buffers[RIGHT_FRAME ].g12Buffer = buf;} /**< Pointer to right gray scale buffer*/
+        void setRgbBufferLeft (RGB24Buffer *buf)  {  buffers[LEFT_FRAME  ].rgbBuffer = buf;}
+        void setRgbBufferRight(RGB24Buffer *buf)  {  buffers[RIGHT_FRAME ].rgbBuffer = buf;}
+
+
+        uint64_t     timeStampLeft()  { return buffers[LEFT_FRAME  ].timeStamp;}
+        uint64_t     timeStampRight() { return buffers[RIGHT_FRAME ].timeStamp;}
+        void setTimeStampLeft (uint64_t stamp)  { buffers[LEFT_FRAME ].timeStamp = stamp; }
+        void setTimeStampRight(uint64_t stamp)  { buffers[RIGHT_FRAME].timeStamp = stamp; }
+
+
+
 
         FramePair(G12Buffer   *_bufferLeft     = NULL
                 , G12Buffer   *_bufferRight    = NULL
                 , RGB24Buffer *_rgbBufferLeft  = NULL
-                , RGB24Buffer *_rgbBufferRight = NULL)
-            : bufferLeft (_bufferLeft )
-            , bufferRight(_bufferRight)
-            , rgbBufferLeft(_rgbBufferLeft)
-            , rgbBufferRight(_rgbBufferRight)
-            , timeStampLeft(0)
-            , timeStampRight(0)
-        {}
+                , RGB24Buffer *_rgbBufferRight = NULL)            
+        {
+            buffers[LEFT_FRAME ].g12Buffer = _bufferLeft ;
+            buffers[RIGHT_FRAME].g12Buffer = _bufferRight;
+
+            buffers[LEFT_FRAME ].rgbBuffer = _rgbBufferLeft ;
+            buffers[RIGHT_FRAME].rgbBuffer = _rgbBufferRight;
+        }
 
         bool allocBuffers(uint height, uint width, bool shouldInit = false)
         {
             freeBuffers();
-            bufferLeft  = new G12Buffer(height, width, shouldInit);
-            bufferRight = new G12Buffer(height, width, shouldInit);
+            for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
+            {
+                buffers[i].g12Buffer  = new G12Buffer(height, width, shouldInit);
+            }
             return hasBoth();
         }
 
         void freeBuffers()
         {
-            delete_safe(bufferLeft);
-            delete_safe(bufferRight);
-            delete_safe(rgbBufferLeft);
-            delete_safe(rgbBufferRight);
+            for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
+            {
+                delete_safe(buffers[i].g12Buffer);
+                delete_safe(buffers[i].rgbBuffer);
+            }
         }
 
         FramePair clone() const
         {
-            FramePair result(new G12Buffer(bufferLeft), new G12Buffer(bufferRight));
-            if (rgbBufferLeft != NULL)
-                result.rgbBufferLeft = new RGB24Buffer(rgbBufferLeft);
-            if (rgbBufferRight != NULL)
-                result.rgbBufferRight = new RGB24Buffer(rgbBufferRight);
-            result.timeStampLeft  = timeStampLeft;
-            result.timeStampRight = timeStampRight;
+            FramePair result(new G12Buffer(bufferLeft()), new G12Buffer(bufferRight()));
+
+            if (rgbBufferLeft() != NULL)
+                result.buffers[LEFT_FRAME ].rgbBuffer = new RGB24Buffer(buffers[LEFT_FRAME ].rgbBuffer);
+            if (buffers[RIGHT_FRAME].rgbBuffer != NULL)
+                result.buffers[RIGHT_FRAME].rgbBuffer = new RGB24Buffer(buffers[RIGHT_FRAME].rgbBuffer);
+
+            result.setTimeStampLeft (buffers[LEFT_FRAME ].timeStamp);
+            result.setTimeStampRight(buffers[RIGHT_FRAME].timeStamp);
             return result;
         }
 
-        bool        hasBoth() const         { return bufferLeft != NULL && bufferRight != NULL; }
-        uint64_t    timeStamp() const       { return timeStampLeft / 2 + timeStampRight / 2;    }
-        int64_t     diffTimeStamps() const  { return timeStampLeft     - timeStampRight;        }
+
+        bool        hasBoth() const         { return buffers[LEFT_FRAME].g12Buffer != NULL && buffers[RIGHT_FRAME].g12Buffer != NULL; }
+
+        /* This is still legacy */
+        uint64_t    timeStamp() const       { return buffers[LEFT_FRAME].timeStamp / 2 + buffers[RIGHT_FRAME].timeStamp / 2;    }
+        int64_t     diffTimeStamps() const  { return buffers[LEFT_FRAME].timeStamp     - buffers[RIGHT_FRAME].timeStamp;        }
     };
 
     bool mIsRgb;                                            // flag that camera supports colors

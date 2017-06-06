@@ -16,10 +16,15 @@
 
 #include "imageCaptureInterface.h"
 #include "cameraControlParameters.h"
+#ifdef WITH_FRAMESOURCE_FILE
 #include "fileCapture.h"
-#include "precCapture.h"
+#endif
 
-#ifdef Q_OS_LINUX
+#ifdef WITH_FRAMESOURCE_PREC
+#include "precCapture.h"
+#endif
+
+#ifdef WITH_FRAMESOURCE_V4L2
 # include "V4L2Capture.h"
 # include "V4L2CaptureDecouple.h"
 #endif
@@ -61,19 +66,23 @@ STATIC_ASSERT(CORE_COUNT_OF(CaptureStatistics::names) == CaptureStatistics::MAX_
 
 ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bool isRGB)
 {
+#ifdef WITH_FRAMESOURCE_FILE
     string file("file:");
     if (input.substr(0, file.size()).compare(file) == 0)
     {
         string tmp = input.substr(file.size());
         return new ImageCaptureInterfaceWrapper<FileCaptureInterface>(tmp);
     }
+#endif
 
+#ifdef WITH_FRAMESOURCE_PREC
     string prec("prec:");
     if (input.substr(0, prec.size()).compare(prec) == 0)
     {
         string tmp = input.substr(prec.size());
-        return new ImageCaptureInterfaceWrapper<FilePreciseCapture>(tmp, false, isRGB);
+        return new ImageCaptureInterfaceWrapper<FilePreciseCapture>(tmp, true, isRGB);
     }
+#endif
 
 #ifdef WITH_SYNCCAM
     string sync("sync:");
@@ -84,7 +93,7 @@ ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bo
     }
 #endif
 
-#ifdef Q_OS_LINUX
+#ifdef WITH_FRAMESOURCE_V4L2
     string v4l2("v4l2:");
     if (input.substr(0, v4l2.size()).compare(v4l2) == 0)
     {
@@ -178,7 +187,7 @@ ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bo
 
 ImageCaptureInterfaceQt *ImageCaptureInterfaceQtFactory::fabric(string input, int h, int w, int fps, bool isRgb)
 {
-#ifdef Q_OS_LINUX
+#ifdef WITH_FRAMESOURCE_V4L2
     string v4l2("v4l2:");
     if (input.substr(0, v4l2.size()).compare(v4l2) == 0)
     {
@@ -245,7 +254,7 @@ void ImageCaptureInterface::getAllCameras(vector<string> &cameras)
 # endif
 #endif
 
-#ifdef Q_OS_LINUX
+#ifdef WITH_FRAMESOURCE_V4L2
     vector<string> v4lcams;
     V4L2CaptureInterface::getAllCameras(v4lcams);
     for (string cam: v4lcams) {

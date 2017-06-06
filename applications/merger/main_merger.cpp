@@ -1,6 +1,6 @@
 /**
- * \file main_qt_recorder.cpp
- * \brief Entry point for the recorder application
+ * \file main_qt_merger.cpp
+ * \brief Entry point for the merger application
  *
  * \date Sep 17, 2010
  * \author Sergey Levi
@@ -16,7 +16,7 @@
 #include "global.h"
 
 #include "utils.h"
-#include "recorderDialog.h"
+#include "mergerDialog.h"
 #include "mainWindow.h"
 #include "configManager.h"
 #include "qtFileLoader.h"
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         source = QString(argv[1]);
     }
 
-    printf("Starting recorder...\n");
+    printf("Starting merger...\n");
 
     ConfigManager::setConfigName("cvs.conf");
     ConfigManager::setCamConfigName("cvs-camera.conf");
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    MainWindow mainWindow(new RecorderDialog(), source, params, true);
+    MainWindow mainWindow(new MergerDialog(), source, params, true);
 
     app.exec();
 
