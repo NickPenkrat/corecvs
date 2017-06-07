@@ -17,6 +17,7 @@
 #include "matrix.h"
 #include "quaternion.h"
 #include "function.h"
+#include "affine.h"
 
 namespace corecvs {
 
