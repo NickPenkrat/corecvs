@@ -108,6 +108,8 @@ void MergerDialog::createAdditionalWindows()
     qDebug("MergerDialog::createAdditionalWindows()");
 
     mAdditionalFeed = dynamic_cast<AdvancedImageWidget *>(createAdditionalWindow("Additional feed", imageWindow, QIcon(":/new/subwindows/film_add.png")));
+    mUnwarpedFeed   = dynamic_cast<AdvancedImageWidget *>(createAdditionalWindow("Unwarped   feed", imageWindow, QIcon(":/new/subwindows/film_add.png")));
+
     m3DView = dynamic_cast<CloudViewDialog *>(createAdditionalWindow("3D", oglWindow, QIcon(":/new/subwindows/flood_it.png")));
 }
 
@@ -153,11 +155,15 @@ void MergerDialog::processResult()
             if (fod->mainOutput) {
                 mAdditionalFeed->setImage(QSharedPointer<QImage>(new RGB24Image(fod->mainOutput)));
             }
+            if (fod->unwarpOutput) {
+                mUnwarpedFeed->setImage(QSharedPointer<QImage>(new RGB24Image(fod->unwarpOutput)));
+            }
 
             if (fod->visualisation != NULL)
             {
 
                 QSharedPointer<Mesh3DScene> mScene = QSharedPointer<Mesh3DScene>(new Mesh3DScene());
+                mScene->switchColor(true);
                 mScene->add(*fod->visualisation, true);
                 //fod->visualisation = NULL; /* transftering ownership */
                 m3DView->setNewScenePointer(mScene, CloudViewDialog::MAIN_SCENE);

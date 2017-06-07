@@ -70,15 +70,24 @@ public:
         unsigned n = 1;
 
         /* TODO: LUT??? FOR THIS LOOP? */
-        while ((n < LUT->size() - 1) && (LUT->at(n + 1).x() < rSquare))
+       /* while ((n + 1 < LUT->size()) && (LUT->operator[](n + 1).x() < rSquare))
         {
            n++;
+        }*/
+        for (; n + 2 < LUT->size(); n++)
+        {
+            if (LUT->operator[](n + 1).x() > rSquare)
+                break;
         }
 
-        double x0 = LUT->at(n - 1).x();
+       /* double x0 = LUT->at(n - 1).x();
         double x1 = LUT->at(n    ).x();
         double y0 = LUT->at(n - 1).y();
-        double y1 = LUT->at(n    ).y();
+        double y1 = LUT->at(n    ).y();*/
+        double x0 = LUT->operator[](n    ).x();
+        double x1 = LUT->operator[](n + 1).x();
+        double y0 = LUT->operator[](n    ).y();
+        double y1 = LUT->operator[](n + 1).y();
 
          /**
           * Liner interpolation
@@ -92,9 +101,10 @@ public:
           *  ------- * (r^2 - x1) + y1
           *  x2 - x1
           **/
-         return (1.0 / (x1 - x0)) * ((y1 - y0) * rSquare + y0 * x1 - y1 * x0);
+         //return (1.0 / (x1 - x0)) * ((y1 - y0) * rSquare + y0 * x1 - y1 * x0);
+         return lerpLimit(y0, y1, rSquare, x0, x1);
          //return ((y1 - y0) / (x1 - x0)) * (rSquare - x0) + y0;
-    };
+    }
 };
 
 class SphericalCorrectionLUT : public SphericalCorrection<RadiusCorrectionLUT>

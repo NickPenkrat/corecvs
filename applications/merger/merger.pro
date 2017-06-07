@@ -46,4 +46,8 @@ OTHER_FILES +=                                          \
 
 OTHER_FILES += legacy/*
 
+INCLUDEPATH += legacy
+HEADERS += legacy/spherical_lut.h
+SOURCES += legacy/spherical_lut.c
+
 #RESOURCES += ../../resources/main.qrc

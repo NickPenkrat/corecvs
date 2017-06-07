@@ -42,27 +42,132 @@ int Merger::staticInit()
      getReflection()->objectSize = sizeof(Merger);
      
 
-    StringField* field0 = new StringField
+    BoolField* field0 = new BoolField
         (
-          Merger::PATH_ID,
-          offsetof(Merger, mPath),
-          "",
-          "path",
-          "path",
-          "path"
+          Merger::UNDIST_ID,
+          offsetof(Merger, mUndist),
+          true,
+          "undist",
+          "undist",
+          "undist"
         );
+    field0->widgetHint=BaseField::CHECK_BOX;
     fields().push_back(field0);
     /*  */ 
-    StringField* field1 = new StringField
+    DoubleField* field1 = new DoubleField
         (
-          Merger::FILETEMPLATE_ID,
-          offsetof(Merger, mFileTemplate),
-          "sequence_%04d_c%d.pgm",
-          "fileTemplate",
-          "fileTemplate",
-          "fileTemplate"
+          Merger::FOV_ID,
+          offsetof(Merger, mFOV),
+          120,
+          "FOV",
+          "FOV",
+          "FOV",
+          true,
+         10,
+         360
         );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->suffixHint="deg";
+    field1->precision=2;
     fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
+        (
+          Merger::OUT_SIZE_ID,
+          offsetof(Merger, mOutSize),
+          1000,
+          "Out Size",
+          "Out Size",
+          "Out Size",
+          true,
+         100,
+         9999
+        );
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->suffixHint="px";
+    field2->precision=2;
+    fields().push_back(field2);
+    /*  */ 
+    DoubleField* field3 = new DoubleField
+        (
+          Merger::OUT_PHY_SIZE_ID,
+          offsetof(Merger, mOutPhySize),
+          200,
+          "Out Phy Size",
+          "Out Phy Size",
+          "Out Phy Size",
+          true,
+         100,
+         9999
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->suffixHint="px";
+    field3->precision=2;
+    fields().push_back(field3);
+    /*  */ 
+    DoubleField* field4 = new DoubleField
+        (
+          Merger::GROUND_Z_ID,
+          offsetof(Merger, mGroundZ),
+          -20,
+          "ground Z",
+          "ground Z",
+          "ground Z",
+          true,
+         -9999,
+         9999
+        );
+    field4->widgetHint=BaseField::SPIN_BOX;
+    field4->precision=2;
+    fields().push_back(field4);
+    /*  */ 
+    BoolField* field5 = new BoolField
+        (
+          Merger::SWITCH1_ID,
+          offsetof(Merger, mSwitch1),
+          true,
+          "switch1",
+          "switch1",
+          "switch1"
+        );
+    field5->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field5);
+    /*  */ 
+    BoolField* field6 = new BoolField
+        (
+          Merger::SWITCH2_ID,
+          offsetof(Merger, mSwitch2),
+          true,
+          "switch2",
+          "switch2",
+          "switch2"
+        );
+    field6->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field6);
+    /*  */ 
+    BoolField* field7 = new BoolField
+        (
+          Merger::SWITCH3_ID,
+          offsetof(Merger, mSwitch3),
+          true,
+          "switch3",
+          "switch3",
+          "switch3"
+        );
+    field7->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field7);
+    /*  */ 
+    BoolField* field8 = new BoolField
+        (
+          Merger::SWITCH4_ID,
+          offsetof(Merger, mSwitch4),
+          true,
+          "switch4",
+          "switch4",
+          "switch4"
+        );
+    field8->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field8);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Merger")]= &reflection;

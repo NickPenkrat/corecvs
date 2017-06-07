@@ -39,24 +39,73 @@ class Merger : public corecvs::BaseReflection<Merger>
 {
 public:
     enum FieldId {
-        PATH_ID,
-        FILETEMPLATE_ID,
+        UNDIST_ID,
+        FOV_ID,
+        OUT_SIZE_ID,
+        OUT_PHY_SIZE_ID,
+        GROUND_Z_ID,
+        SWITCH1_ID,
+        SWITCH2_ID,
+        SWITCH3_ID,
+        SWITCH4_ID,
         MERGER_FIELD_ID_NUM
     };
 
     /** Section with variables */
 
     /** 
-     * \brief path 
-     * path 
+     * \brief undist 
+     * undist 
      */
-    std::string mPath;
+    bool mUndist;
 
     /** 
-     * \brief fileTemplate 
-     * fileTemplate 
+     * \brief FOV 
+     * FOV 
      */
-    std::string mFileTemplate;
+    double mFOV;
+
+    /** 
+     * \brief Out Size 
+     * Out Size 
+     */
+    double mOutSize;
+
+    /** 
+     * \brief Out Phy Size 
+     * Out Phy Size 
+     */
+    double mOutPhySize;
+
+    /** 
+     * \brief ground Z 
+     * ground Z 
+     */
+    double mGroundZ;
+
+    /** 
+     * \brief switch1 
+     * switch1 
+     */
+    bool mSwitch1;
+
+    /** 
+     * \brief switch2 
+     * switch2 
+     */
+    bool mSwitch2;
+
+    /** 
+     * \brief switch3 
+     * switch3 
+     */
+    bool mSwitch3;
+
+    /** 
+     * \brief switch4 
+     * switch4 
+     */
+    bool mSwitch4;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -68,25 +117,95 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    std::string path() const
+    bool undist() const
     {
-        return mPath;
+        return mUndist;
     }
 
-    std::string fileTemplate() const
+    double fOV() const
     {
-        return mFileTemplate;
+        return mFOV;
+    }
+
+    double outSize() const
+    {
+        return mOutSize;
+    }
+
+    double outPhySize() const
+    {
+        return mOutPhySize;
+    }
+
+    double groundZ() const
+    {
+        return mGroundZ;
+    }
+
+    bool switch1() const
+    {
+        return mSwitch1;
+    }
+
+    bool switch2() const
+    {
+        return mSwitch2;
+    }
+
+    bool switch3() const
+    {
+        return mSwitch3;
+    }
+
+    bool switch4() const
+    {
+        return mSwitch4;
     }
 
     /* Section with setters */
-    void setPath(std::string path)
+    void setUndist(bool undist)
     {
-        mPath = path;
+        mUndist = undist;
     }
 
-    void setFileTemplate(std::string fileTemplate)
+    void setFOV(double fOV)
     {
-        mFileTemplate = fileTemplate;
+        mFOV = fOV;
+    }
+
+    void setOutSize(double outSize)
+    {
+        mOutSize = outSize;
+    }
+
+    void setOutPhySize(double outPhySize)
+    {
+        mOutPhySize = outPhySize;
+    }
+
+    void setGroundZ(double groundZ)
+    {
+        mGroundZ = groundZ;
+    }
+
+    void setSwitch1(bool switch1)
+    {
+        mSwitch1 = switch1;
+    }
+
+    void setSwitch2(bool switch2)
+    {
+        mSwitch2 = switch2;
+    }
+
+    void setSwitch3(bool switch3)
+    {
+        mSwitch3 = switch3;
+    }
+
+    void setSwitch4(bool switch4)
+    {
+        mSwitch4 = switch4;
     }
 
     /* Section with embedded classes */
@@ -94,8 +213,15 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mPath,                      static_cast<const corecvs::StringField *>(fields()[PATH_ID]));
-        visitor.visit(mFileTemplate,              static_cast<const corecvs::StringField *>(fields()[FILETEMPLATE_ID]));
+        visitor.visit(mUndist,                    static_cast<const corecvs::BoolField *>(fields()[UNDIST_ID]));
+        visitor.visit(mFOV,                       static_cast<const corecvs::DoubleField *>(fields()[FOV_ID]));
+        visitor.visit(mOutSize,                   static_cast<const corecvs::DoubleField *>(fields()[OUT_SIZE_ID]));
+        visitor.visit(mOutPhySize,                static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_ID]));
+        visitor.visit(mGroundZ,                   static_cast<const corecvs::DoubleField *>(fields()[GROUND_Z_ID]));
+        visitor.visit(mSwitch1,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH1_ID]));
+        visitor.visit(mSwitch2,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH2_ID]));
+        visitor.visit(mSwitch3,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH3_ID]));
+        visitor.visit(mSwitch4,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH4_ID]));
     }
 
     Merger()
@@ -105,12 +231,26 @@ template<class VisitorType>
     }
 
     Merger(
-          std::string path
-        , std::string fileTemplate
+          bool undist
+        , double fOV
+        , double outSize
+        , double outPhySize
+        , double groundZ
+        , bool switch1
+        , bool switch2
+        , bool switch3
+        , bool switch4
     )
     {
-        mPath = path;
-        mFileTemplate = fileTemplate;
+        mUndist = undist;
+        mFOV = fOV;
+        mOutSize = outSize;
+        mOutPhySize = outPhySize;
+        mGroundZ = groundZ;
+        mSwitch1 = switch1;
+        mSwitch2 = switch2;
+        mSwitch3 = switch3;
+        mSwitch4 = switch4;
     }
 
     friend std::ostream& operator << (std::ostream &out, Merger &toSave)

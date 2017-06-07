@@ -21,8 +21,15 @@ MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QStrin
 {
     mUi->setupUi(this);
 
-    QObject::connect(mUi->pathEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->fileTemplateEdit, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->undistCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->fOVSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->outSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->outPhySizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->groundZSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->switch1CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->switch2CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->switch3CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->switch4CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 MergerControlWidget::~MergerControlWidget()
@@ -58,8 +65,15 @@ Merger *MergerControlWidget::createParameters() const
 
 
     return new Merger(
-          mUi->pathEdit->text().toStdString()
-        , mUi->fileTemplateEdit->text().toStdString()
+          mUi->undistCheckBox->isChecked()
+        , mUi->fOVSpinBox->value()
+        , mUi->outSizeSpinBox->value()
+        , mUi->outPhySizeSpinBox->value()
+        , mUi->groundZSpinBox->value()
+        , mUi->switch1CheckBox->isChecked()
+        , mUi->switch2CheckBox->isChecked()
+        , mUi->switch3CheckBox->isChecked()
+        , mUi->switch4CheckBox->isChecked()
     );
 }
 
@@ -67,8 +81,15 @@ void MergerControlWidget::setParameters(const Merger &input)
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
-    mUi->pathEdit->setText(QString::fromStdString(input.path()));
-    mUi->fileTemplateEdit->setText(QString::fromStdString(input.fileTemplate()));
+    mUi->undistCheckBox->setChecked(input.undist());
+    mUi->fOVSpinBox->setValue(input.fOV());
+    mUi->outSizeSpinBox->setValue(input.outSize());
+    mUi->outPhySizeSpinBox->setValue(input.outPhySize());
+    mUi->groundZSpinBox->setValue(input.groundZ());
+    mUi->switch1CheckBox->setChecked(input.switch1());
+    mUi->switch2CheckBox->setChecked(input.switch2());
+    mUi->switch3CheckBox->setChecked(input.switch3());
+    mUi->switch4CheckBox->setChecked(input.switch4());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

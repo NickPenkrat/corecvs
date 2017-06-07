@@ -64,8 +64,9 @@ public slots:
 
 public:
 
-    AdvancedImageWidget *mAdditionalFeed;
-    CloudViewDialog *m3DView;
+    AdvancedImageWidget *mAdditionalFeed = NULL;
+    AdvancedImageWidget *mUnwarpedFeed   = NULL;
+    CloudViewDialog *m3DView             = NULL;
 
     virtual void createAdditionalWindows();
 };

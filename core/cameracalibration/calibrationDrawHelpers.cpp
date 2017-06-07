@@ -25,6 +25,9 @@ void CalibrationDrawHelpers::setParameters(const CalibrationDrawHelpersParameter
 
 void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double scale)
 {
+    SYNC_PRINT(("CalibrationDrawHelpers::drawCamera(): called \n"));
+    cout << "Camera color: " << mesh.currentColor << endl;
+
     double w = cam.intrinsics.w();
     double h = cam.intrinsics.h();
 
@@ -95,6 +98,7 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, doub
         for (size_t cam = 0; cam < ps.cameras.size(); cam++)
         {
             mesh.setColor(palette[colorId]);
+            SYNC_PRINT(("CalibrationDrawHelpers::drawPly color %d(%d)", colorId, CORE_COUNT_OF(palette)));
             colorId = (colorId + 1) % CORE_COUNT_OF(palette);
             drawCamera(mesh, ps.getRawCamera((int)cam), scale);
         }

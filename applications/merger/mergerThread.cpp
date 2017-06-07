@@ -12,11 +12,15 @@
 #include <QMetaType>
 #include <QMessageBox>
 
+
 #include "g12Image.h"
 #include "imageResultLayer.h"
 
 #include "fixtureScene.h"
 #include "calibrationDrawHelpers.h"
+
+#include "legacy/spherical_lut.h"
+#include "sphericalCorrectionLUT.h"
 
 // TEST
 // #include "viFlowStatisticsDescriptor.h"
@@ -108,44 +112,143 @@ AbstractOutputData* MergerThread::processNewData()
         }
     }
 
-    outputData->mainOutput = new RGB24Buffer(1000,1000);
+    outputData->mainOutput = new RGB24Buffer(mMergerParameters->outSize(), mMergerParameters->outSize());
     outputData->mainOutput->checkerBoard(20, RGBColor::Black(), RGBColor::White());
 
+    /* Unwrap */
+    //outputData->unwarpOutput = new RGB24Buffer(fstBuf->getSize());
+
+    vector<Vector2dd> lut;
+    for (unsigned i = 0; i < LUT_LEN; i++)
+    {
+        lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
+    }
+
+    RadiusCorrectionLUT radiusLUT(&lut);
+    for (int i = 0; i < 400; i++)
+    {
+        printf("%lf %lf\n", (double)i, (double)radiusLUT.transformRadiusSquare(i * i));
+    }
+
+    RGB24Buffer *input = mFrames.getCurrentRgbFrame(Frames::DEFAULT_FRAME);
+    Vector2dd center(input->w / 2.0, input->h / 2.0);
+    SphericalCorrectionLUT corrector(center, &radiusLUT);
+    //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);
+    outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&corrector, input->h, input->w);
+
+
     /* Scene */
+    SYNC_PRINT(("Forming scene\n"));
     FixtureScene *autoScene = new FixtureScene;
     CameraFixture *body = autoScene->createCameraFixture();
     body->setLocation(Affine3DQ::Identity());
     body->name = "Car Body";
 
-    PinholeCameraIntrinsics pinhole(Vector2dd(640, 480), degToRad(60));
+    G12Buffer *fstBuf = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
+    PinholeCameraIntrinsics pinhole(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV()));
 
+    FixtureCamera *frontCam = autoScene->createCamera(); autoScene->addCameraToFixture(frontCam, body);
+    FixtureCamera *rightCam = autoScene->createCamera(); autoScene->addCameraToFixture(rightCam, body);
+    FixtureCamera *backCam  = autoScene->createCamera(); autoScene->addCameraToFixture(backCam , body);
+    FixtureCamera *leftCam  = autoScene->createCamera(); autoScene->addCameraToFixture(leftCam , body);
 
-
-    FixtureCamera *frontCam = autoScene->createCamera();
-    FixtureCamera *rightCam = autoScene->createCamera();
-    FixtureCamera *backCam  = autoScene->createCamera();
-    FixtureCamera *leftCam  = autoScene->createCamera();
+    FixtureCamera *cams[] = {frontCam, rightCam, backCam, leftCam};
 
     frontCam->intrinsics = pinhole;
     rightCam->intrinsics = pinhole;
     backCam ->intrinsics = pinhole;
     leftCam ->intrinsics = pinhole;
 
-    double groundZ = 200;
+    frontCam->nameId = "Front";
+    rightCam->nameId = "Right";
+    backCam ->nameId = "Back";
+    leftCam ->nameId = "Left";
 
-    autoScene->positionCameraInFixture(body, frontCam, Affine3DQ::Shift(-8.57274,     0    , 37.30)                                          * Affine3DQ::RotationY(degToRad(25)));
-    autoScene->positionCameraInFixture(body, backCam , Affine3DQ::Shift(28.00267,  -3.00   , 91.0712)  * Affine3DQ::RotationZ(degToRad(180)) * Affine3DQ::RotationY(degToRad(45)));
-    autoScene->positionCameraInFixture(body, leftCam , Affine3DQ::Shift(18.88999, -10.37   , 81.20)    * Affine3DQ::RotationZ(degToRad( 90)));
-    autoScene->positionCameraInFixture(body, rightCam, Affine3DQ::Shift(18.88999,  10.37   , 81.20)    * Affine3DQ::RotationZ(degToRad(270)));
+    double groundZ = mMergerParameters->groundZ();
+
+#if 0
+    autoScene->positionCameraInFixture(body, frontCam, Affine3DQ::Shift(-8.57274,     0    , 37.30)                                        * Affine3DQ::RotationY(degToRad(25)));
+    autoScene->positionCameraInFixture(body, backCam , Affine3DQ::Shift(28.00267,  -3.00   , 91.07)  * Affine3DQ::RotationZ(degToRad(180)) * Affine3DQ::RotationY(degToRad(45)));
+    autoScene->positionCameraInFixture(body, leftCam , Affine3DQ::Shift(18.88999, -10.37   , 81.20)  * Affine3DQ::RotationZ(degToRad( 90)));
+    autoScene->positionCameraInFixture(body, rightCam, Affine3DQ::Shift(18.88999,  10.37   , 81.20)  * Affine3DQ::RotationZ(degToRad(270)));
+#endif
+
+    autoScene->positionCameraInFixture(body, frontCam, Affine3DQ::Shift(  8.57274,     0    , 3.730)                                         * Affine3DQ::RotationY(degToRad(25)) );
+    autoScene->positionCameraInFixture(body, backCam , Affine3DQ::Shift(-28.00267,  -3.00   , 9.107)  * Affine3DQ::RotationZ(degToRad(180))  * Affine3DQ::RotationY(degToRad(43)) );
+    autoScene->positionCameraInFixture(body, leftCam , Affine3DQ::Shift(-18.88999,  10.37   , 8.120)  * Affine3DQ::RotationZ(degToRad( 90))  * Affine3DQ::RotationY(degToRad(80)) );
+    autoScene->positionCameraInFixture(body, rightCam, Affine3DQ::Shift(-18.88999, -10.37   , 8.120)  * Affine3DQ::RotationZ(degToRad(270))  * Affine3DQ::RotationY(degToRad(80)) * Affine3DQ::RotationX(degToRad(180)));
+
+
+    PlaneFrame frame;
+    double l = mMergerParameters->outPhySize();
+    frame.p1 = Vector3dd( l/2, -l/2, groundZ);
+    frame.e1 = Vector3dd(  -l,    0,   0    );
+    frame.e2 = Vector3dd(   0,    l,   0    );
+
+    RGB24Buffer *out = outputData->mainOutput;
+    bool flags[4] = {
+        mMergerParameters->switch1(),
+        mMergerParameters->switch2(),
+        mMergerParameters->switch3(),
+        mMergerParameters->switch4()
+    };
+
+    for (int i = 0; i < out->h; i++)
+        for (int j = 0; j < out->w; j++)
+        {
+            Vector2dd p = Vector2dd( (double)j / out->w, (double)i / out->h);
+            Vector3dd pos = frame.getPoint(p);
+
+            Vector3dd color(0.0);
+            int count = 0;
+
+            for(int c = 0; c < 4; c++ )
+            {
+                if (!flags[c])
+                    continue;
+                RGB24Buffer *buffer = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)c);
+                Vector2dd prj;
+
+                if (!mMergerParameters->undist())
+                {
+                    bool visible = cams[c]->projectPointFromWorld(pos, &prj);
+                    if (!visible)
+                        continue;
+                } else {
+                    CameraModel m = cams[c]->getWorldCameraModel();
+                    Vector3dd relative   = m.extrinsics.project(pos);
+                    if (relative.z() < 0)
+                        continue;
+                    Vector2dd projection = m.intrinsics.project(relative);
+                    prj = corrector.map(projection);
+                }
+
+                if (buffer->isValidCoord(prj.y(), prj.x())) {
+                    color += buffer->element(prj.y(), prj.x()).toDouble();
+                    count++;
+                }
+            }
+
+            if (count != 0) {
+                out->element(i,j) = RGBColor::FromDouble(color / count);
+            }
+        }
+
 
     outputData->visualisation = new Mesh3DDecorated;
     outputData->visualisation->switchColor(true);
 
+
     CalibrationDrawHelpers drawer;
+    drawer.setPrintNames(true);
     drawer.drawScene(*outputData->visualisation, *autoScene, 3);
+
+    outputData->visualisation->addPlaneFrame(frame);
 
     outputData->frameCount = this->mFrameCount;
     outputData->stats = stats;
+
+
 
     delete_safe(autoScene);
     return outputData;
@@ -215,7 +318,6 @@ void MergerThread::mergerControlParametersChanged(QSharedPointer<Merger> mergerP
         return;
 
     mMergerParameters = mergerParameters;
-    mPath = QString(mergerParameters->path().c_str()) + "/" + QString(mergerParameters->fileTemplate().c_str());
 }
 
 void MergerThread::baseControlParametersChanged(QSharedPointer<BaseParameters> params)

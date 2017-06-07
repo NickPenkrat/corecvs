@@ -32,12 +32,14 @@ public:
     Statistics stats;
     unsigned frameCount;
 
+    RGB24Buffer     *unwarpOutput  = NULL;
     RGB24Buffer     *mainOutput    = NULL;
     Mesh3DDecorated *visualisation = NULL;
 
 
     virtual ~MergerOutputData()
     {
+        delete_safe(unwarpOutput);
         delete_safe(mainOutput);
         delete_safe(visualisation);
     }
