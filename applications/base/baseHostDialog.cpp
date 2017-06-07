@@ -666,7 +666,6 @@ CamerasConfigParameters * BaseHostDialog::getAdditionalParams() const
     fp->setInputsN(mUseOneCaptureDevice ? CamerasConfigParameters::OneCapDev : CamerasConfigParameters::TwoCapDev);
 
     fp->setRectifierData(mRectifierData);
-
     fp->setDistortionTransform(mDistortionTransform);
 
     return fp;

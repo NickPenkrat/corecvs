@@ -44,4 +44,6 @@ OTHER_FILES +=                                          \
     $$ROOT_DIR/src/open/tools/generator/regen-merger.sh
 
 
+OTHER_FILES += legacy/*
+
 #RESOURCES += ../../resources/main.qrc

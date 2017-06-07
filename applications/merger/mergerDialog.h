@@ -16,6 +16,8 @@
 #include "baseHostDialog.h"
 #include "mergerThread.h"
 #include "mergerControlWidget.h"
+#include "cloudViewDialog.h"
+
 
 #define UI_NAME_RECORDER "merger"
 
@@ -29,10 +31,12 @@ public:
     ~MergerDialog();
 
 
-    virtual void initParameterWidgets();
-    virtual void createCalculator();
+    virtual void initParameterWidgets() override;
+    virtual void initCommon() override;
+    virtual void createCalculator() override;
     virtual void connectFinishedRecalculation();
 
+    virtual CamerasConfigParameters *getAdditionalParams() const override;
 signals:
     void recordingTriggered();
     void recordingReset();
@@ -58,6 +62,12 @@ public slots:
     void doRectify();
     void resetRectification();
 
+public:
+
+    AdvancedImageWidget *mAdditionalFeed;
+    CloudViewDialog *m3DView;
+
+    virtual void createAdditionalWindows();
 };
 
 #endif // _RECORDER_DIALOG_H_

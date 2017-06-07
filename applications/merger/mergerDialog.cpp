@@ -14,7 +14,12 @@
 #include <QFileDialog>
 #include <QString>
 #include <QMessageBox>
+
 #include "parametersMapper/parametersMapperMerger.h"
+
+#include "sceneShaded.h"
+#include "mesh3DScene.h"
+
 
 MergerDialog::MergerDialog()
     : BaseHostDialog(),
@@ -40,11 +45,28 @@ void MergerDialog::initParameterWidgets()
     dockWidget()->layout()->addWidget(mMergerControlWidget);
     mSaveableWidgets.push_back(mMergerControlWidget);
 
-
-    //connect(mMergerControlWidget->ui()->choosePathButton, SIGNAL(clicked()), this, SLOT(openPathSelectDialog()));
-    //connect(mMergerControlWidget->ui()->recStartButton, SIGNAL(clicked()), this, SLOT(toggleRecording()));
-
 }
+
+void MergerDialog::initCommon()
+{
+    BaseHostDialog::initCommon();
+    createAdditionalWindows();
+}
+
+
+CamerasConfigParameters * MergerDialog::getAdditionalParams() const
+{
+    CamerasConfigParameters  *fp = new CamerasConfigParameters ();
+
+    fp->setInputsN((CamerasConfigParameters::CaptureDevicesNum) 4);
+
+    fp->setRectifierData(mRectifierData);
+
+    fp->setDistortionTransform(mDistortionTransform);
+
+    return fp;
+}
+
 
 void MergerDialog::createCalculator()
 {
@@ -76,18 +98,19 @@ void MergerDialog::createCalculator()
 
     mParamsMapper = mapper;
 
-    connect(this, SIGNAL(recordingTriggered()), mCalculator, SLOT(toggleRecording()), Qt::QueuedConnection);
-
-    //connect(mMergerControlWidget->ui()->recRestartButton, SIGNAL(released()), mCalculator, SLOT(resetRecording()), Qt::QueuedConnection);
-    //connect(mMergerControlWidget->ui()->recPauseButton, SIGNAL(released()), mCalculator, SLOT(toggleRecording()), Qt::QueuedConnection);
-
-    connect(mCalculator, SIGNAL(recordingStateChanged(MergerThread::RecordingState)), this,
-            SLOT(recordingStateChanged(MergerThread::RecordingState)), Qt::QueuedConnection);
-
     connect(mCalculator, SIGNAL(errorMessage(QString)),
             this,        SLOT  (errorMessage(QString)), Qt::BlockingQueuedConnection);
 
 }
+
+void MergerDialog::createAdditionalWindows()
+{
+    qDebug("MergerDialog::createAdditionalWindows()");
+
+    mAdditionalFeed = dynamic_cast<AdvancedImageWidget *>(createAdditionalWindow("Additional feed", imageWindow, QIcon(":/new/subwindows/film_add.png")));
+    m3DView = dynamic_cast<CloudViewDialog *>(createAdditionalWindow("3D", oglWindow, QIcon(":/new/subwindows/flood_it.png")));
+}
+
 
 
 void MergerDialog::mergerControlParametersChanged(QSharedPointer<Merger> params)
@@ -126,6 +149,20 @@ void MergerDialog::processResult()
         if (i == eventList.size() - 1) {
             mImage = QSharedPointer<QImage>(new QImage(fod->mMainImage.width(), fod->mMainImage.height(),  QImage::Format_RGB32));
             fod->mMainImage.drawImage(mImage.data());
+
+            if (fod->mainOutput) {
+                mAdditionalFeed->setImage(QSharedPointer<QImage>(new RGB24Image(fod->mainOutput)));
+            }
+
+            if (fod->visualisation != NULL)
+            {
+
+                QSharedPointer<Mesh3DScene> mScene = QSharedPointer<Mesh3DScene>(new Mesh3DScene());
+                mScene->add(*fod->visualisation, true);
+                //fod->visualisation = NULL; /* transftering ownership */
+                m3DView->setNewScenePointer(mScene, CloudViewDialog::MAIN_SCENE);
+
+            }
         }
 
         delete fod;

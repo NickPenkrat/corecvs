@@ -317,7 +317,7 @@ private slots:
     void handleMemoryOverflow();
     void distortionEstimationFinished();
 
-private:
+protected:
     AboutDialog mAboutDialog;
     InputSelectorWidget mInputSelectorDialog;
     QSharedPointer<DisplacementBuffer> mDistortionTransform;

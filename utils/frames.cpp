@@ -90,6 +90,21 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
 
     mDesyncTime = !mSwapped ? pair.diffTimeStamps() : -pair.diffTimeStamps();
     frameCount++;
+
+
+    SYNC_PRINT(("Frames::fetchNewFrames(): G12: ["));
+    for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
+    {
+         SYNC_PRINT(("%s", currentFrames[i] == NULL ? "-" : "+"));
+    }
+    SYNC_PRINT(("]\n"));
+    SYNC_PRINT(("Frames::fetchNewFrames(): RGB: ["));
+    for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
+    {
+         SYNC_PRINT(("%s", currentRgbFrames[i] == NULL ? "-" : "+"));
+    }
+    SYNC_PRINT(("]\n"));
+
 }
 
 void Frames::swapFrameSources(bool shouldSwap)

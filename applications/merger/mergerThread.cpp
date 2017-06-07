@@ -14,65 +14,27 @@
 
 #include "g12Image.h"
 #include "imageResultLayer.h"
+
+#include "fixtureScene.h"
+#include "calibrationDrawHelpers.h"
+
 // TEST
 // #include "viFlowStatisticsDescriptor.h"
 
 MergerThread::MergerThread() :
-   BaseCalculationThread()
-  , mRecordingStarted(false)
-  , mIsRecording(false)
-  , mFrameCount(0)
-  , mPath("")
+   BaseCalculationThread(Frames::MAX_INPUTS_NUMBER)
   , mMergerParameters(NULL)
 {
     qRegisterMetaType<MergerThread::RecordingState>("MergerThread::RecordingState");
     mIdleTimer = PreciseTimer::currentTime();
 }
 
-void MergerThread::toggleRecording()
-{
-    if (!mIsRecording)
-    {
-        if (mMergerParameters.isNull())
-        {
-            cout << "MergerThread: Internal error. Recording toggled but no parameters provided." << endl;
-        }
-
-        if (mMergerParameters->path().empty())
-        {
-            cout << "MergerThread: Path is empty" << endl;
-        }
-
-        if (mMergerParameters->fileTemplate().empty())
-        {
-            cout << "MergerThread: File template is empty\n";
-        }
-
-        if (!mRecordingStarted)
-        {
-            mRecordingStarted = true;
-            printf("Recording started.\n");
-        }
-        else
-        {
-            printf("Recording resumed.\n");
-        }
-        mIsRecording = true;
-        emit recordingStateChanged(StateRecordingActive);
-    }
-    else
-    {
-        mIsRecording = false;
-        printf("Recording paused.\n");
-        emit recordingStateChanged(StateRecordingPaused);
-    }
-}
 
 AbstractOutputData* MergerThread::processNewData()
 {
     Statistics stats;
 
-//    qDebug("MergerThread::processNewData(): called");
+   qDebug("MergerThread::processNewData(): called for %d inputs", mActiveInputsNumber);
 
 #if 0
     stats.setTime(ViFlowStatisticsDescriptor::IDLE_TIME, mIdleTimer.usecsToNow());
@@ -94,7 +56,10 @@ AbstractOutputData* MergerThread::processNewData()
 
     recalculateCache();
 
-    G12Buffer *result[Frames::MAX_INPUTS_NUMBER] = {NULL, NULL};
+    G12Buffer *result[Frames::MAX_INPUTS_NUMBER];
+    for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; ++i) {
+        result[i] = NULL;
+    }
 
     /*TODO: Logic here should be changed according to the host base change*/
     for (int id = 0; id < mActiveInputsNumber; id++)
@@ -105,35 +70,21 @@ AbstractOutputData* MergerThread::processNewData()
             buf = bufrgb->toG12Buffer();
         }
 
-
         //result[id] = mTransformationCache[id] ? mTransformationCache[id]->doDeformation(mBaseParams->interpolationType(), buf) : buf;
         result[id] = buf;
-
-        if (mIsRecording)
-        {
-            char currentPath[256];
-            if (two_frames)
-                snprintf2buf(currentPath, mPath.toStdString().c_str(), mFrameCount, id);
-            else
-                snprintf2buf(currentPath, mPath.toStdString().c_str(), mFrameCount);
-
-            if (mSaver.save(currentPath, result[id]))
-            {
-                resetRecording();
-                emit errorMessage(QString("Error writing frame to file") + currentPath);
-                emit recordingStateChanged(StateRecordingFailure);
-            }
-        }
-
     }
 #if 0
     stats.setTime(ViFlowStatisticsDescriptor::CORRECTON_TIME, startEl.usecsToNow());
 #endif
-    if (mIsRecording) {
-        mFrameCount++;
-    }
 
     MergerOutputData* outputData = new MergerOutputData();
+
+    SYNC_PRINT(("MergerThread::processNewData(): G12: ["));
+    for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
+    {
+         SYNC_PRINT(("%s", result[i] == NULL ? "-" : "+"));
+    }
+    SYNC_PRINT(("]\n"));
 
     outputData->mMainImage.addLayer(
             new ImageResultLayer(
@@ -157,20 +108,106 @@ AbstractOutputData* MergerThread::processNewData()
         }
     }
 
+    outputData->mainOutput = new RGB24Buffer(1000,1000);
+    outputData->mainOutput->checkerBoard(20, RGBColor::Black(), RGBColor::White());
+
+    /* Scene */
+    FixtureScene *autoScene = new FixtureScene;
+    CameraFixture *body = autoScene->createCameraFixture();
+    body->setLocation(Affine3DQ::Identity());
+    body->name = "Car Body";
+
+    PinholeCameraIntrinsics pinhole(Vector2dd(640, 480), degToRad(60));
+
+
+
+    FixtureCamera *frontCam = autoScene->createCamera();
+    FixtureCamera *rightCam = autoScene->createCamera();
+    FixtureCamera *backCam  = autoScene->createCamera();
+    FixtureCamera *leftCam  = autoScene->createCamera();
+
+    frontCam->intrinsics = pinhole;
+    rightCam->intrinsics = pinhole;
+    backCam ->intrinsics = pinhole;
+    leftCam ->intrinsics = pinhole;
+
+    double groundZ = 200;
+
+    autoScene->positionCameraInFixture(body, frontCam, Affine3DQ::Shift(-8.57274,     0    , 37.30)                                          * Affine3DQ::RotationY(degToRad(25)));
+    autoScene->positionCameraInFixture(body, backCam , Affine3DQ::Shift(28.00267,  -3.00   , 91.0712)  * Affine3DQ::RotationZ(degToRad(180)) * Affine3DQ::RotationY(degToRad(45)));
+    autoScene->positionCameraInFixture(body, leftCam , Affine3DQ::Shift(18.88999, -10.37   , 81.20)    * Affine3DQ::RotationZ(degToRad( 90)));
+    autoScene->positionCameraInFixture(body, rightCam, Affine3DQ::Shift(18.88999,  10.37   , 81.20)    * Affine3DQ::RotationZ(degToRad(270)));
+
+    outputData->visualisation = new Mesh3DDecorated;
+    outputData->visualisation->switchColor(true);
+
+    CalibrationDrawHelpers drawer;
+    drawer.drawScene(*outputData->visualisation, *autoScene, 3);
+
     outputData->frameCount = this->mFrameCount;
     outputData->stats = stats;
 
+    delete_safe(autoScene);
     return outputData;
 }
 
-void MergerThread::resetRecording()
-{
-    mIsRecording = false;
-    mRecordingStarted = false;
-    mPath = "";
-    mFrameCount = 0;
-    emit recordingStateChanged(StateRecordingReset);
-}
+/*
+
+  switch (id) {
+    case OC_E_FRONT_VIEW_CAMERA:
+    {
+      inputName = "front";
+
+      translate.tx = -3900.0;
+      translate.ty = 0.0;
+      translate.tz = groundZ;
+
+      cam.extrinsic.pos.tx = -857.274;
+      cam.extrinsic.pos.tz = 373.0;
+      cam.extrinsic.rot.alpha = (tFloat)-25.0 / 180.0 * c_D_PI_f32;
+    } break;
+    case OC_E_REAR_VIEW_CAMERA:
+    {
+      inputName = "rear";
+      translate.tx = 7000.0;
+      translate.ty = 0.0;
+      translate.tz = groundZ;
+
+      cam.extrinsic.pos.tx =  2800.267;
+      cam.extrinsic.pos.ty = -300.194;
+      cam.extrinsic.pos.tz =  910.712;
+      cam.extrinsic.rot.alpha = (tFloat)-43.0 / 180.0 * c_D_PI_f32;
+    } break;
+    case OC_E_LEFT_SIDE_VIEW_CAMERA:
+    {
+      inputName = "left";
+
+      translate.tx = 888.0;
+      translate.ty = -2300.0;
+      translate.tz = groundZ;
+
+      cam.extrinsic.pos.tx = 1888.999;
+      cam.extrinsic.pos.ty = -1037;
+      cam.extrinsic.pos.tz = 812.0;
+      cam.extrinsic.rot.alpha = (tFloat)-77.3 / 180.0 * c_D_PI_f32;
+      cam.extrinsic.rot.beta = (tFloat) -4.0 / 180.0 * c_D_PI_f32;
+    } break;
+    case OC_E_RIGHT_SIDE_VIEW_CAMERA:
+    {
+      inputName = "right";
+      translate.tx = 888.0;
+      translate.ty = 2300.0;
+      translate.tz = groundZ;
+
+      cam.extrinsic.pos.tx = 1888.999;
+      cam.extrinsic.pos.ty = 1037;
+      cam.extrinsic.pos.tz = 812.0;
+      cam.extrinsic.rot.alpha = (tFloat)-81.5 / 180.0 * c_D_PI_f32;
+
+    } break;
+
+*/
+
 
 void MergerThread::mergerControlParametersChanged(QSharedPointer<Merger> mergerParameters)
 {

@@ -25,7 +25,7 @@ public:
     double transformRadiusSquare(double /*rSquare*/) const
     {
         return 0.0;
-    };
+    }
 };
 
 
@@ -62,12 +62,14 @@ class RadiusCorrectionLUT : public GenericRadiusDeformer
 {
 public:
     const vector<Vector2dd> *LUT;
-    RadiusCorrectionLUT( const vector<Vector2dd> *_LUT) : LUT(_LUT) {};
+    RadiusCorrectionLUT( const vector<Vector2dd> *_LUT) : LUT(_LUT) {}
 
 
     inline double transformRadiusSquare(double rSquare) const
     {
         unsigned n = 1;
+
+        /* TODO: LUT??? FOR THIS LOOP? */
         while ((n < LUT->size() - 1) && (LUT->at(n + 1).x() < rSquare))
         {
            n++;

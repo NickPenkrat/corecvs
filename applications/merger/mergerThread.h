@@ -14,6 +14,7 @@
 #include <stdint.h>
 #include <QString>
 
+
 #include "global.h"
 
 #include "baseCalculationThread.h"
@@ -23,11 +24,25 @@
 #include "generatedParameters/merger.h"
 #include "calculationStats.h"
 
+#include "mesh3DDecorated.h"
+
 class MergerOutputData : public BaseOutputData
 {
 public:
     Statistics stats;
     unsigned frameCount;
+
+    RGB24Buffer     *mainOutput    = NULL;
+    Mesh3DDecorated *visualisation = NULL;
+
+
+    virtual ~MergerOutputData()
+    {
+        delete_safe(mainOutput);
+        delete_safe(visualisation);
+    }
+
+
 };
 
 class MergerThread : public BaseCalculationThread
@@ -46,24 +61,18 @@ public:
     MergerThread();
 
 public slots:
-    void toggleRecording();
-    void resetRecording();
-
     void mergerControlParametersChanged(QSharedPointer<Merger> params);
     void baseControlParametersChanged(QSharedPointer<BaseParameters> params);
     void camerasParametersChanged(QSharedPointer<CamerasConfigParameters> parameters);
 
 
 signals:
-    void recordingStateChanged(MergerThread::RecordingState state);
     void errorMessage(QString string);
 
 protected:
     virtual AbstractOutputData *processNewData();
 
-private:
-    bool mRecordingStarted;
-    bool mIsRecording;
+private: 
     PreciseTimer mIdleTimer;
 
     /* Might be misleading, but PPMLoader handles saving as well */
@@ -72,6 +81,10 @@ private:
     uint32_t mFrameCount;
     QString mPath;
     QSharedPointer<Merger> mMergerParameters;
+
+
+    //FixtureScene *scene = NULL;
+
 };
 
 #endif /* RECORDERTHREAD_H_ */

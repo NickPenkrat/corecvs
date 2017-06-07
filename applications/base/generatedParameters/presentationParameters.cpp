@@ -50,7 +50,7 @@ int PresentationParameters::staticInit()
           "Output",
           "Output",
           "View - views are more or less self-explenatory",
-          new EnumReflection(7
+          new EnumReflection(8
           , new EnumOption(0,"right Frame")
           , new EnumOption(1,"left Frame")
           , new EnumOption(2,"sidebyside stereo")
@@ -58,6 +58,7 @@ int PresentationParameters::staticInit()
           , new EnumOption(4,"anaglyph RC")
           , new EnumOption(5,"blend")
           , new EnumOption(6,"none")
+          , new EnumOption(7,"all")
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
@@ -186,6 +187,18 @@ int PresentationParameters::staticInit()
         );
     field9->widgetHint=BaseField::CHECK_BOX;
     fields().push_back(field9);
+    /*  */ 
+    BoolField* field10 = new BoolField
+        (
+          PresentationParameters::DUMPSCENEJSON_ID,
+          offsetof(PresentationParameters, mDumpSceneJSON),
+          false,
+          "dumpSceneJSON",
+          "dumpSceneJSON",
+          "dumpSceneJSON"
+        );
+    field10->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field10);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Presentation Parameters")]= &reflection;
