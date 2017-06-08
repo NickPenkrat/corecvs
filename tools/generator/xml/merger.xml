@@ -1,5 +1,7 @@
 <poco version="5.0">
   <include name="base.xml"/>
+  <include name="../../../core/xml/parameters.xml"/>
+
     
   <class name="Merger" description="Merger parameters">
     <field type="bool"   name="undist"        suffix="deg" defaultValue="true"  />
@@ -10,9 +12,16 @@
     <field type="double" name="ground Z"                   defaultValue="-20"  min="-9999" max="9999"/>
 
     <field type="bool"   name="switch1"  defaultValue="true"  />
+    <field type="Euclidian Move Parameters" name="pos1" />
+
     <field type="bool"   name="switch2"  defaultValue="true"  />
+    <field type="Euclidian Move Parameters" name="pos2" />
+
     <field type="bool"   name="switch3"  defaultValue="true"  />
+    <field type="Euclidian Move Parameters" name="pos3" />
+
     <field type="bool"   name="switch4"  defaultValue="true"  />
+    <field type="Euclidian Move Parameters" name="pos4" />
 
   </class> 
   

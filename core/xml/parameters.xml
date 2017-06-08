@@ -23,6 +23,17 @@
     <field type="int" name="B"  min="0" max="255" defaultValue="128"/>
   </class>  
 
+  <class name="Euclidian Move Parameters">
+    <field type="double" name="X"  defaultValue="0" min="-50000" max="50000"/>
+    <field type="double" name="Y"  defaultValue="0" min="-50000" max="50000"/>
+    <field type="double" name="Z"  defaultValue="0" min="-50000" max="50000"/>
+
+    <field type="double" name="alpha" suffix="deg" defaultValue="0" min="-50000" max="50000"/>
+    <field type="double" name="beta"  suffix="deg" defaultValue="0" min="-50000" max="50000"/>
+    <field type="double" name="gamma" suffix="deg" defaultValue="0" min="-50000" max="50000"/>
+
+  </class>
+
   <enum name="ImageChannel">
       <item name="R"          id="0" icon=":/new/colors/colors/color_red.png@main.qrc"/>
       <item name="G"          id="1" icon=":/new/colors/colors/color_green.png@main.qrc"/>

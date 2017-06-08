@@ -18,6 +18,7 @@
 /*
  *  Additional includes for Composite Types.
  */
+#include "euclidianMoveParameters.h"
 
 // using namespace corecvs;
 
@@ -45,9 +46,13 @@ public:
         OUT_PHY_SIZE_ID,
         GROUND_Z_ID,
         SWITCH1_ID,
+        POS1_ID,
         SWITCH2_ID,
+        POS2_ID,
         SWITCH3_ID,
+        POS3_ID,
         SWITCH4_ID,
+        POS4_ID,
         MERGER_FIELD_ID_NUM
     };
 
@@ -90,10 +95,22 @@ public:
     bool mSwitch1;
 
     /** 
+     * \brief pos1 
+     * pos1 
+     */
+    EuclidianMoveParameters mPos1;
+
+    /** 
      * \brief switch2 
      * switch2 
      */
     bool mSwitch2;
+
+    /** 
+     * \brief pos2 
+     * pos2 
+     */
+    EuclidianMoveParameters mPos2;
 
     /** 
      * \brief switch3 
@@ -102,10 +119,22 @@ public:
     bool mSwitch3;
 
     /** 
+     * \brief pos3 
+     * pos3 
+     */
+    EuclidianMoveParameters mPos3;
+
+    /** 
      * \brief switch4 
      * switch4 
      */
     bool mSwitch4;
+
+    /** 
+     * \brief pos4 
+     * pos4 
+     */
+    EuclidianMoveParameters mPos4;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -147,9 +176,19 @@ public:
         return mSwitch1;
     }
 
+    EuclidianMoveParameters pos1() const
+    {
+        return mPos1;
+    }
+
     bool switch2() const
     {
         return mSwitch2;
+    }
+
+    EuclidianMoveParameters pos2() const
+    {
+        return mPos2;
     }
 
     bool switch3() const
@@ -157,9 +196,19 @@ public:
         return mSwitch3;
     }
 
+    EuclidianMoveParameters pos3() const
+    {
+        return mPos3;
+    }
+
     bool switch4() const
     {
         return mSwitch4;
+    }
+
+    EuclidianMoveParameters pos4() const
+    {
+        return mPos4;
     }
 
     /* Section with setters */
@@ -193,9 +242,19 @@ public:
         mSwitch1 = switch1;
     }
 
+    void setPos1(EuclidianMoveParameters const &pos1)
+    {
+        mPos1 = pos1;
+    }
+
     void setSwitch2(bool switch2)
     {
         mSwitch2 = switch2;
+    }
+
+    void setPos2(EuclidianMoveParameters const &pos2)
+    {
+        mPos2 = pos2;
     }
 
     void setSwitch3(bool switch3)
@@ -203,9 +262,19 @@ public:
         mSwitch3 = switch3;
     }
 
+    void setPos3(EuclidianMoveParameters const &pos3)
+    {
+        mPos3 = pos3;
+    }
+
     void setSwitch4(bool switch4)
     {
         mSwitch4 = switch4;
+    }
+
+    void setPos4(EuclidianMoveParameters const &pos4)
+    {
+        mPos4 = pos4;
     }
 
     /* Section with embedded classes */
@@ -219,9 +288,13 @@ template<class VisitorType>
         visitor.visit(mOutPhySize,                static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_ID]));
         visitor.visit(mGroundZ,                   static_cast<const corecvs::DoubleField *>(fields()[GROUND_Z_ID]));
         visitor.visit(mSwitch1,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH1_ID]));
+        visitor.visit(mPos1,                      static_cast<const corecvs::CompositeField *>(fields()[POS1_ID]));
         visitor.visit(mSwitch2,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH2_ID]));
+        visitor.visit(mPos2,                      static_cast<const corecvs::CompositeField *>(fields()[POS2_ID]));
         visitor.visit(mSwitch3,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH3_ID]));
+        visitor.visit(mPos3,                      static_cast<const corecvs::CompositeField *>(fields()[POS3_ID]));
         visitor.visit(mSwitch4,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH4_ID]));
+        visitor.visit(mPos4,                      static_cast<const corecvs::CompositeField *>(fields()[POS4_ID]));
     }
 
     Merger()
@@ -237,9 +310,13 @@ template<class VisitorType>
         , double outPhySize
         , double groundZ
         , bool switch1
+        , EuclidianMoveParameters pos1
         , bool switch2
+        , EuclidianMoveParameters pos2
         , bool switch3
+        , EuclidianMoveParameters pos3
         , bool switch4
+        , EuclidianMoveParameters pos4
     )
     {
         mUndist = undist;
@@ -248,9 +325,13 @@ template<class VisitorType>
         mOutPhySize = outPhySize;
         mGroundZ = groundZ;
         mSwitch1 = switch1;
+        mPos1 = pos1;
         mSwitch2 = switch2;
+        mPos2 = pos2;
         mSwitch3 = switch3;
+        mPos3 = pos3;
         mSwitch4 = switch4;
+        mPos4 = pos4;
     }
 
     friend std::ostream& operator << (std::ostream &out, Merger &toSave)

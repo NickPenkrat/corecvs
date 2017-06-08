@@ -140,7 +140,7 @@ ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bo
     {
         SYNC_PRINT(("ImageCaptureInterface::fabric(): Creating avcodec input"));
         string tmp = input.substr(avcodec.size());
-        return new ImageCaptureInterfaceWrapper<AviCapture>(QString(tmp.c_str()));
+        return new ImageCaptureInterfaceWrapper<AviCapture>(tmp);
     }
 #if 0
     string rtsp("rtsp:");

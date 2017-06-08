@@ -34,6 +34,15 @@ MergerThread::MergerThread() :
 }
 
 
+Affine3DQ getTransform (const EuclidianMoveParameters &input)
+{
+    return Affine3DQ::Shift(input.x(),input.y(), input.z())
+            * Affine3DQ::RotationZ(degToRad(input.gamma()))
+            * Affine3DQ::RotationY(degToRad(input.beta()))
+            * Affine3DQ::RotationX(degToRad(input.alpha()));
+
+}
+
 AbstractOutputData* MergerThread::processNewData()
 {
     Statistics stats;
@@ -119,17 +128,10 @@ AbstractOutputData* MergerThread::processNewData()
     //outputData->unwarpOutput = new RGB24Buffer(fstBuf->getSize());
 
     vector<Vector2dd> lut;
-    for (unsigned i = 0; i < LUT_LEN; i++)
-    {
+    for (unsigned i = 0; i < LUT_LEN; i++) {
         lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
     }
-
     RadiusCorrectionLUT radiusLUT(&lut);
-    for (int i = 0; i < 400; i++)
-    {
-        printf("%lf %lf\n", (double)i, (double)radiusLUT.transformRadiusSquare(i * i));
-    }
-
     RGB24Buffer *input = mFrames.getCurrentRgbFrame(Frames::DEFAULT_FRAME);
     Vector2dd center(input->w / 2.0, input->h / 2.0);
     SphericalCorrectionLUT corrector(center, &radiusLUT);
@@ -173,11 +175,17 @@ AbstractOutputData* MergerThread::processNewData()
     autoScene->positionCameraInFixture(body, rightCam, Affine3DQ::Shift(18.88999,  10.37   , 81.20)  * Affine3DQ::RotationZ(degToRad(270)));
 #endif
 
+#if 0
     autoScene->positionCameraInFixture(body, frontCam, Affine3DQ::Shift(  8.57274,     0    , 3.730)                                         * Affine3DQ::RotationY(degToRad(25)) );
     autoScene->positionCameraInFixture(body, backCam , Affine3DQ::Shift(-28.00267,  -3.00   , 9.107)  * Affine3DQ::RotationZ(degToRad(180))  * Affine3DQ::RotationY(degToRad(43)) );
     autoScene->positionCameraInFixture(body, leftCam , Affine3DQ::Shift(-18.88999,  10.37   , 8.120)  * Affine3DQ::RotationZ(degToRad( 90))  * Affine3DQ::RotationY(degToRad(80)) );
     autoScene->positionCameraInFixture(body, rightCam, Affine3DQ::Shift(-18.88999, -10.37   , 8.120)  * Affine3DQ::RotationZ(degToRad(270))  * Affine3DQ::RotationY(degToRad(80)) * Affine3DQ::RotationX(degToRad(180)));
+#endif
 
+    autoScene->positionCameraInFixture(body, frontCam, getTransform(mMergerParameters->pos1()));
+    autoScene->positionCameraInFixture(body, rightCam, getTransform(mMergerParameters->pos2()));
+    autoScene->positionCameraInFixture(body, backCam , getTransform(mMergerParameters->pos3()));
+    autoScene->positionCameraInFixture(body, leftCam , getTransform(mMergerParameters->pos4()));
 
     PlaneFrame frame;
     double l = mMergerParameters->outPhySize();
@@ -190,7 +198,7 @@ AbstractOutputData* MergerThread::processNewData()
         mMergerParameters->switch1(),
         mMergerParameters->switch2(),
         mMergerParameters->switch3(),
-        mMergerParameters->switch4()
+        mMergerParameters->switch4(),
     };
 
     for (int i = 0; i < out->h; i++)

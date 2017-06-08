@@ -219,6 +219,7 @@ ui_classes="
        "
 
 full_ui_classes="
+        euclidianMoveParameters
         axisAlignedBoxParameters
         headSearchParameters
         makePreciseParameters

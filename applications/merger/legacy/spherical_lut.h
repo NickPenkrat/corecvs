@@ -19,9 +19,19 @@
 #ifndef SPHERICAL_LUT_H_
 #define SPHERICAL_LUT_H_
 
+#ifdef __cplusplus
+    extern "C" {
+#endif
+
+
 #define LUT_LEN 48
 
 extern double WarpToUnwarpLUT[LUT_LEN][2];
 extern double UnwarpToWarpLUT[LUT_LEN][2];
+
+#ifdef __cplusplus
+    } // extern "C"
+#endif
+
 
 #endif /* SPHERICAL_LUT_H_ */

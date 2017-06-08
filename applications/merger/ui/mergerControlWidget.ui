@@ -185,11 +185,25 @@
     <item row="6" column="0">
      <widget class="QLabel" name="label_6">
        <property name="text">
-         <string>switch2</string>
+         <string>pos1</string>
        </property>
      </widget>
     </item>
     <item row="6" column="1">
+     <widget class="EuclidianMoveParametersControlWidget" name="pos1ControlWidget">
+       <property name="toolTip">
+         <string>pos1</string>
+       </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_7">
+       <property name="text">
+         <string>switch2</string>
+       </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
      <widget class="QCheckBox" name="switch2CheckBox">
        <property name="toolTip">
          <string>switch2</string>
@@ -199,14 +213,28 @@
        </property>
      </widget>
     </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_7">
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_8">
+       <property name="text">
+         <string>pos2</string>
+       </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="EuclidianMoveParametersControlWidget" name="pos2ControlWidget">
+       <property name="toolTip">
+         <string>pos2</string>
+       </property>
+     </widget>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_9">
        <property name="text">
          <string>switch3</string>
        </property>
      </widget>
     </item>
-    <item row="7" column="1">
+    <item row="9" column="1">
      <widget class="QCheckBox" name="switch3CheckBox">
        <property name="toolTip">
          <string>switch3</string>
@@ -216,14 +244,28 @@
        </property>
      </widget>
     </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="label_8">
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_10">
+       <property name="text">
+         <string>pos3</string>
+       </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="EuclidianMoveParametersControlWidget" name="pos3ControlWidget">
+       <property name="toolTip">
+         <string>pos3</string>
+       </property>
+     </widget>
+    </item>
+    <item row="11" column="0">
+     <widget class="QLabel" name="label_11">
        <property name="text">
          <string>switch4</string>
        </property>
      </widget>
     </item>
-    <item row="8" column="1">
+    <item row="11" column="1">
      <widget class="QCheckBox" name="switch4CheckBox">
        <property name="toolTip">
          <string>switch4</string>
@@ -233,7 +275,21 @@
        </property>
      </widget>
     </item>
-   <item row="9" column="0">
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_12">
+       <property name="text">
+         <string>pos4</string>
+       </property>
+     </widget>
+    </item>
+    <item row="12" column="1">
+     <widget class="EuclidianMoveParametersControlWidget" name="pos4ControlWidget">
+       <property name="toolTip">
+         <string>pos4</string>
+       </property>
+     </widget>
+    </item>
+   <item row="13" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -246,7 +302,7 @@
      </property>
     </spacer>
    </item>
-   <item row="9" column="2">
+   <item row="13" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -301,8 +357,20 @@
    <slot>changeParameters()</slot>
   </connection>
   <connection>
+   <sender>pos1ControlWidget</sender>
+   <signal>paramsChanged()</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
    <sender>switch2CheckBox</sender>
    <signal>stateChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>pos2ControlWidget</sender>
+   <signal>paramsChanged()</signal>
    <receiver>MergerControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>
@@ -313,8 +381,20 @@
    <slot>changeParameters()</slot>
   </connection>
   <connection>
+   <sender>pos3ControlWidget</sender>
+   <signal>paramsChanged()</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
    <sender>switch4CheckBox</sender>
    <signal>stateChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>pos4ControlWidget</sender>
+   <signal>paramsChanged()</signal>
    <receiver>MergerControlWidget</receiver>
    <slot>changeParameters()</slot>
   </connection>
@@ -323,5 +403,29 @@
   <slot>changeParameters()</slot>
  </slots>
  <customwidgets>
+  <customwidget>
+   <class>EuclidianMoveParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>euclidianMoveParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EuclidianMoveParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>euclidianMoveParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EuclidianMoveParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>euclidianMoveParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EuclidianMoveParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>euclidianMoveParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
 </ui>
