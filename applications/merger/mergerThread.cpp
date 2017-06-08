@@ -132,7 +132,7 @@ AbstractOutputData* MergerThread::processNewData()
         lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
     }
     RadiusCorrectionLUT radiusLUT(&lut);
-    RGB24Buffer *input = mFrames.getCurrentRgbFrame(Frames::DEFAULT_FRAME);
+    RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
     Vector2dd center(input->w / 2.0, input->h / 2.0);
     SphericalCorrectionLUT corrector(center, &radiusLUT);
     //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);

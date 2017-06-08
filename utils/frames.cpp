@@ -98,7 +98,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
          SYNC_PRINT(("%s", currentFrames[i] == NULL ? "-" : "+"));
     }
     SYNC_PRINT(("]\n"));
-    SYNC_PRINT(("Frames::fetchNewFrames(): RGB: ["));
+    SYNC_PRINT(("Frames::fetchNewFrames(): RGB: %s [", input->mIsRgb ? "expected" : "off"));
     for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
     {
          SYNC_PRINT(("%s", currentRgbFrames[i] == NULL ? "-" : "+"));

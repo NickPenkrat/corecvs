@@ -97,7 +97,7 @@ public:
      *  should have ability to dock, and are brought outside of BaseHostDialog.
      *  They should be transfered in this constructor
      **/
-    void init(QWidget *parameterHolderWidget, QTextEdit *loggerWidget = NULL);
+    void init(bool isRGB, QWidget *parameterHolderWidget, QTextEdit *loggerWidget = NULL);
     void initGraphPresentation();
 
     /**
@@ -111,7 +111,7 @@ public:
      * and initializes inputs
      *
      **/
-    virtual void initCapture(QString const &initString = QString(), bool isRgb = false);
+    virtual void initCapture(QString const &initString = QString()/*, bool isRgb = false*/);
 
 
 
@@ -264,6 +264,7 @@ protected:
     CameraCalculatorWidget mCameraCalculatorWidget;
 
     /*TODO: Move this to ImageCaptureInterface*/
+    bool mIsRGB;
     bool mCameraStarted;
     ImageCaptureInterfaceQt *mCamera;
 

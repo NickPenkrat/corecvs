@@ -1573,7 +1573,11 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#	warning NIY
+#  if defined(_MSC_VER)
+#    #pragma message ("NIY")
+#  else
+#	 warning NIY
+#  endif
     return false;
 #else
     /*
@@ -1748,7 +1752,11 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#	warning NIY
+#  if defined(_MSC_VER)
+#    #pragma message ("NIY")
+#  else
+#	 warning NIY
+#  endif
     return false;
 #else
     /*
@@ -1991,7 +1999,11 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#	warning NIY
+#  if defined(_MSC_VER)
+#    #pragma message ("NIY")
+#  else
+#	 warning NIY
+#  endif
     return false;
 #else
     /*

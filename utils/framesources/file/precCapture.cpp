@@ -28,7 +28,11 @@ FilePreciseCapture::FilePreciseCapture(const std::string &params, bool isVerbose
 
     mSpin = new FileSpinThread(this, mDelay, mCurrent);
 
-    cout << "Starting prec: capture form file with pattern:" << mPathFmt << "\n";
+    SYNC_PRINT(( "FilePreciseCapture::FilePreciseCapture(%s, %s, rgb=%s): capture form pattern:%s",
+                 params.c_str(),
+                 isVerbose ? "true" : "false",
+                 isRGB ? "true" : "false",
+                 mPathFmt.c_str()));
 }
 
 FilePreciseCapture::FramePair FilePreciseCapture::getFrame()

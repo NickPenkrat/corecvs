@@ -41,6 +41,7 @@ class Merger : public corecvs::BaseReflection<Merger>
 public:
     enum FieldId {
         UNDIST_ID,
+        FRAMETOUNDIST_ID,
         FOV_ID,
         OUT_SIZE_ID,
         OUT_PHY_SIZE_ID,
@@ -63,6 +64,12 @@ public:
      * undist 
      */
     bool mUndist;
+
+    /** 
+     * \brief frameToUndist 
+     * frameToUndist 
+     */
+    int mFrameToUndist;
 
     /** 
      * \brief FOV 
@@ -151,6 +158,11 @@ public:
         return mUndist;
     }
 
+    int frameToUndist() const
+    {
+        return mFrameToUndist;
+    }
+
     double fOV() const
     {
         return mFOV;
@@ -215,6 +227,11 @@ public:
     void setUndist(bool undist)
     {
         mUndist = undist;
+    }
+
+    void setFrameToUndist(int frameToUndist)
+    {
+        mFrameToUndist = frameToUndist;
     }
 
     void setFOV(double fOV)
@@ -283,6 +300,7 @@ template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit(mUndist,                    static_cast<const corecvs::BoolField *>(fields()[UNDIST_ID]));
+        visitor.visit(mFrameToUndist,             static_cast<const corecvs::IntField *>(fields()[FRAMETOUNDIST_ID]));
         visitor.visit(mFOV,                       static_cast<const corecvs::DoubleField *>(fields()[FOV_ID]));
         visitor.visit(mOutSize,                   static_cast<const corecvs::DoubleField *>(fields()[OUT_SIZE_ID]));
         visitor.visit(mOutPhySize,                static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_ID]));
@@ -305,6 +323,7 @@ template<class VisitorType>
 
     Merger(
           bool undist
+        , int frameToUndist
         , double fOV
         , double outSize
         , double outPhySize
@@ -320,6 +339,7 @@ template<class VisitorType>
     )
     {
         mUndist = undist;
+        mFrameToUndist = frameToUndist;
         mFOV = fOV;
         mOutSize = outSize;
         mOutPhySize = outPhySize;

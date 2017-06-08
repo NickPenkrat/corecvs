@@ -66,6 +66,9 @@ STATIC_ASSERT(CORE_COUNT_OF(CaptureStatistics::names) == CaptureStatistics::MAX_
 
 ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bool isRGB)
 {
+    SYNC_PRINT(("ImageCaptureInterfaceQtFactory::fabric(%s, rgb=%s):called\n", input.c_str(), isRGB ? "true" : "false"));
+
+
 #ifdef WITH_FRAMESOURCE_FILE
     string file("file:");
     if (input.substr(0, file.size()).compare(file) == 0)
