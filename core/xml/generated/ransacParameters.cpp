@@ -60,7 +60,7 @@ int RansacParameters::staticInit()
         (
           RansacParameters::INLIERS_PERCENT_ID,
           offsetof(RansacParameters, mInliersPercent),
-          1,
+          98,
           "Inliers Percent",
           "Inliers Percent",
           "Inliers Percent",
@@ -69,6 +69,7 @@ int RansacParameters::staticInit()
          146
         );
     field1->widgetHint=BaseField::SPIN_BOX;
+    field1->suffixHint="%";
     field1->precision=2;
     fields().push_back(field1);
     /*  */ 
@@ -85,7 +86,7 @@ int RansacParameters::staticInit()
          999999
         );
     field2->widgetHint=BaseField::SPIN_BOX;
-    field2->precision=2;
+    field2->precision=5;
     fields().push_back(field2);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

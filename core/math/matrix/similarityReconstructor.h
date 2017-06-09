@@ -137,6 +137,54 @@ template<class VisitorType>
 
 };
 
+
+class SRTTransform {
+public:
+    double     scale;
+    Quaternion rotate;
+    Vector3dd  translate;
+
+    SRTTransform(double scale, const Quaternion &rotate, const Vector3dd  &translate) :
+        scale(scale),
+        rotate(rotate),
+        translate(translate)
+    {}
+
+    /**
+     *    To matrix transformation
+     **/
+    Matrix44 toMatrix() const;
+
+    /**
+     *    Transform
+     **/
+    Vector3dd transform (const Vector3dd &point) const;
+    Vector3dd operator *(const Vector3dd &point) const;
+
+    template<class VisitorType>
+        void accept(VisitorType &visitor)
+        {
+            visitor.visit(scale,     1.0,                    "scale");
+            visitor.visit(rotate,    Quaternion::Identity(), "rotate");
+            visitor.visit(translate, Vector3dd::Zero(),      "translate");
+        }
+
+        friend std::ostream& operator << (std::ostream &out, SRTTransform &toSave)
+        {
+            corecvs::PrinterVisitor printer(out);
+            toSave.accept<corecvs::PrinterVisitor>(printer);
+            return out;
+        }
+
+        void print()
+        {
+            std::cout << *this;
+        }
+
+
+
+};
+
 typedef PrimitiveCorrespondence<Vector3dd, Vector3dd> Correspondence3D;
 
 
