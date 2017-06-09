@@ -5,6 +5,7 @@ QT      -= gui
 CONFIG  += console
 CONFIG  -= app_bundle
 CONFIG  += debug
+CONFIG  += c++11
 
 ROOT_DIR=../../../..
 include($$ROOT_DIR/config.pri)
