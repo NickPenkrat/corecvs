@@ -216,7 +216,7 @@ AbstractOutputData* MergerThread::processNewData()
                     continue;
                 RGB24Buffer *buffer = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)c);
                 Vector2dd prj;
-
+                double weigth = 1;
                 if (!mMergerParameters->undist())
                 {
                     bool visible = cams[c]->projectPointFromWorld(pos, &prj);
@@ -229,10 +229,36 @@ AbstractOutputData* MergerThread::processNewData()
                         continue;
                     Vector2dd projection = m.intrinsics.project(relative);
                     prj = corrector.map(projection);
+                    double x_center = corrector.center.x();
+                    double y_center = corrector.center.y();
+                    double x = x_center - projection.x();
+                    double y = y_center - projection.y();
+                    if (x_center != 0 || y_center != 0)
+                    {
+                        double xx = (sqrt(x*x + y*y) / sqrt(x_center*x_center + y_center*y_center));
+                        //front
+                        if (c == 0)
+                            weigth = 1 - 0.0625*xx*xx;
+                        //right
+                        if (c == 1)
+                            weigth = 1 - 0.125*xx*xx;
+                        //rear
+                        if (c == 2)
+                            weigth = 1 - 0.0625*xx*xx;
+                        //left
+                        if (c == 3)
+                            weigth = 1 - 0.125*xx*xx;
+                        // c = 0 - front
+                        // c = 1 - right
+                        //c = 2 - rear
+                        //c = 3 - left
+                    }
+                 /*   printf(" /n!!!!!!!!!!! x_center = %f y_center = %f projection.x() =%f projection.y() = %f sqrt(x*x + y*y) = %f sqrt(x_center*x_center + y_center*y_center) = %fweight = %f", x_center, 
+                        y_center, projection.x(), projection.y(), sqrt(x*x + y*y), sqrt(x_center*x_center + y_center*y_center), weigth);*/
                 }
 
                 if (buffer->isValidCoord(prj.y(), prj.x())) {
-                    color += buffer->element(prj.y(), prj.x()).toDouble();
+                    color += weigth*buffer->element(prj.y(), prj.x()).toDouble();
                     count++;
                 }
             }
@@ -242,6 +268,20 @@ AbstractOutputData* MergerThread::processNewData()
             }
         }
 
+    for (int c = 0; c < 4; c++)
+    {
+        Vector2dd proj = frame.projectTo(cams[c]->getWorldLocation().shift);
+        cout << "PROJECTED:" << proj << endl;
+        proj = proj * Vector2dd(out->w, out->h);
+        out->drawCrosshare2(proj.x(), proj.y(), RGBColor::Red());
+        
+
+    }
+
+    corecvs::Vector2d<int32_t> sizeRect = { 400, 100 };
+    corecvs::Vector2d<int32_t> corner = { 200, 500 };
+        corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
+    out->drawRectangle(rect, { 0, 0, 0 }, 0);
 
     outputData->visualisation = new Mesh3DDecorated;
     outputData->visualisation->switchColor(true);
