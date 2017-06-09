@@ -668,9 +668,19 @@ void DrawKeypointAreaDelegate::drawAt(QPainter &painter, Vector2dd position, int
     if (observation == NULL)
         return;
 
-    painter.setPen(state ? Qt::blue : Qt::yellow);
-
     KeyPointArea &area = observation->keyPointArea;
+
+    if (state) {
+        painter.setPen(state ? Qt::blue : Qt::yellow);
+        painter.drawEllipse(
+            position.x() - area.size / 2 - 1,
+            position.y() - area.size / 2 - 1,
+            area.size + 2.0,
+            area.size + 2.0);
+    }
+
+    RGBColor color = RGBColor::rainbow1(observation->accuracy.x());
+    painter.setPen(color.color());
 
     painter.drawEllipse(
         position.x() - area.size / 2,
@@ -682,8 +692,7 @@ void DrawKeypointAreaDelegate::drawAt(QPainter &painter, Vector2dd position, int
         position.y(),
         cos(degToRad(area.angle)) * observation->keyPointArea.size / 2.0 + position.x(),
         sin(degToRad(area.angle)) * observation->keyPointArea.size / 2.0 + position.y()
-
-                     );
+    );
 
 
 }

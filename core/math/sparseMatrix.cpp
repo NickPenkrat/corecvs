@@ -1574,7 +1574,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
 
 #ifndef WITH_BLAS
 #  if defined(_MSC_VER)
-#    #pragma message ("NIY")
+#    pragma message ("NIY")
 #  else
 #	 warning NIY
 #  endif
@@ -1753,7 +1753,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
 
 #ifndef WITH_BLAS
 #  if defined(_MSC_VER)
-#    #pragma message ("NIY")
+#    pragma message ("NIY")
 #  else
 #	 warning NIY
 #  endif
@@ -2000,7 +2000,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
 
 #ifndef WITH_BLAS
 #  if defined(_MSC_VER)
-#    #pragma message ("NIY")
+#    pragma message ("NIY")
 #  else
 #	 warning NIY
 #  endif
