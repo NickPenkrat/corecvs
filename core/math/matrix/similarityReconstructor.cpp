@@ -340,5 +340,20 @@ void SimilarityReconstructor::CostFunctionToN::operator()(const double in[], dou
     }
 }
 
+Matrix44 SRTTransform::toMatrix() const
+{
+    return  Matrix44::Shift(translate) * rotate.toMatrix() * Matrix44::Scale(scale);
+}
+
+Vector3dd SRTTransform::transform(const Vector3dd &point) const
+{
+    return translate + rotate * (scale * point);
+}
+
+Vector3dd SRTTransform::operator *(const Vector3dd &point) const
+{
+    return transform(point);
+}
+
 
 } // namespace corecvs

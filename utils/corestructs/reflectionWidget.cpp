@@ -134,7 +134,8 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                 textBox->setText(QString::fromStdString(sField->defaultValue));
                 gridLayout->addWidget(textBox, i, WIDGET_COLUMN, 1, 1);
                 textBox->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-                connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
+                //connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
+                connect(textBox, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
                 widget = textBox;
                 break;
             }
@@ -146,7 +147,9 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
 
                 textBox->setText(QString::fromStdWString(sField->defaultValue));
                 gridLayout->addWidget(textBox, i, WIDGET_COLUMN, 1, 1);
-                connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
+                //connect(textBox, SIGNAL(textChanged()), this, SIGNAL(paramsChanged()));
+                connect(textBox, SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
+
                 widget = textBox;
                 break;
             }
