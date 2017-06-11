@@ -144,7 +144,19 @@ public:
    QToolButton               *mDeleteButton;
    QToolButton               *mAddInfoButton;
 
-   QComboBox *mDelegateStyleBox = NULL;
+   QPushButton *mDelegateStyleButton = NULL;
+
+   /* Parameters controlling observation presentation */
+
+   bool  mDecortatorAll      = false;
+   bool  mDecortatorMatched  = false;
+   bool  mDecortatorSelected = false;
+
+   bool  mMarkAll      = true;
+   bool  mMarkMatched  = false;
+   bool  mMarkSelected = false;
+
+
 
    PointListEditImageWidgetUnited(QWidget *parent = NULL, bool showHeader = true);
 
@@ -162,6 +174,7 @@ public slots:
 
    void         selectPoint(int id);
 
+   void         delegateMenuShow();
 protected:
    int          findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
 

@@ -925,10 +925,22 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
         pt->reprojectedPosition = scale * (transformation * pt->reprojectedPosition);
     }
 
-    for (auto& cf: mFixtures)
+    for (FixtureCamera* fc: mOrphanCameras)
+    {
+        fc->extrinsics.transform(transformation, scale);
+
+    }
+
+
+    for (CameraFixture* cf: mFixtures)
     {
         cf->location.shift = scale * (transformation * cf->location.shift);
         cf->location.rotor = transformation.rotor ^ cf->location.rotor;
+        for (FixtureCamera *fc : cf->cameras)
+        {
+            fc->extrinsics.transform(Affine3DQ::Identity(), scale);
+
+        }
     }
 
     Matrix44 T = Matrix44::Scale(scale) * (Matrix44)transformation;

@@ -1,6 +1,9 @@
+#include <QMenu>
+
 #include "pointListEditImageWidget.h"
 #include "painterHelpers.h"
 #include "qtHelper.h"
+
 
 PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHeader) :
     AdvancedImageWidget(parent, showHeader),
@@ -275,18 +278,14 @@ PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, 
     mAddInfoButton ->setCheckable(true);
 
     /*Delegate activity*/
-    mDelegateStyleBox = new QComboBox(this);
-    mDelegateStyleBox->addItem("No Delegate");
-    mDelegateStyleBox->addItem("Small");
-    mDelegateStyleBox->addItem("Selected");
-    mDelegateStyleBox->addItem("Only");
-    mDelegateStyleBox->addItem("All");
-
-    mDelegateStyleBox->setEnabled(true);
+    mDelegateStyleButton = new QPushButton(this);
+    mDelegateStyleButton->setText("Style");
+    mDelegateStyleButton->setEnabled(true);
+    connect(mDelegateStyleButton, SIGNAL(released()), this, SLOT(delegateMenuShow()));
 
     QWidget* holder = mUi->frame_2;
-    holder->layout()->addWidget(mDelegateStyleBox);
-    connect(mDelegateStyleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
+    holder->layout()->addWidget(mDelegateStyleButton);
+    //connect(mDelegateStyleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 
 }
 
@@ -342,6 +341,18 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
             selectionModel->clear();
         }
     }
+}
+
+void PointListEditImageWidgetUnited::delegateMenuShow()
+{
+    QMenu menu;
+    QAction *addFixture   = new QAction("Add Fixture"  , &menu);  menu.addAction(addFixture);
+    QAction *addGeometry  = new QAction("Add Geometry" , &menu);  menu.addAction(addGeometry);
+    QAction *addPrototype = new QAction("Add Prototype", &menu);  menu.addAction(addPrototype);
+
+
+    menu.exec();
+    update();
 }
 
 void PointListEditImageWidgetUnited::paintDirectionArrows(QPainter &painter, int type)
