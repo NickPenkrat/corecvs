@@ -6,6 +6,7 @@
  * \author Sergey Levi
  */
 
+#include <memory>
 #include "mergerThread.h"
 
 #include <stdio.h>
@@ -16,6 +17,7 @@
 #include "g12Image.h"
 #include "imageResultLayer.h"
 
+#include "bufferFactory.h"
 #include "fixtureScene.h"
 #include "calibrationDrawHelpers.h"
 
@@ -33,28 +35,33 @@ MergerThread::MergerThread() :
     mIdleTimer = PreciseTimer::currentTime();
 }
 
-
 Affine3DQ getTransform (const EuclidianMoveParameters &input)
 {
-    return Affine3DQ::Shift(input.x(),input.y(), input.z())
+    return    Affine3DQ::Shift(input.x(),input.y(), input.z())
             * Affine3DQ::RotationZ(degToRad(input.gamma()))
             * Affine3DQ::RotationY(degToRad(input.beta()))
             * Affine3DQ::RotationX(degToRad(input.alpha()));
+}
+
+
+void MergerThread::prepareMapping()
+{
 
 }
+
+
+
+
+
 
 AbstractOutputData* MergerThread::processNewData()
 {
     Statistics stats;
 
-   qDebug("MergerThread::processNewData(): called for %d inputs", mActiveInputsNumber);
+    qDebug("MergerThread::processNewData(): called for %d inputs", mActiveInputsNumber);
 
-#if 0
-    stats.setTime(ViFlowStatisticsDescriptor::IDLE_TIME, mIdleTimer.usecsToNow());
-#endif
-
-    PreciseTimer start = PreciseTimer::currentTime();
-//    PreciseTimer startEl = PreciseTimer::currentTime();
+    stats.setTime("Idle", mIdleTimer.usecsToNow());
+    stats.startInterval();
 
     bool have_params = !(mMergerParameters.isNull());
     bool two_frames = have_params && (CamerasConfigParameters::TwoCapDev == mActiveInputsNumber); // FIXME: additional params needed here
@@ -69,9 +76,9 @@ AbstractOutputData* MergerThread::processNewData()
 
     recalculateCache();
 
-    G12Buffer *result[Frames::MAX_INPUTS_NUMBER];
+    RGB24Buffer *inputRaw[Frames::MAX_INPUTS_NUMBER];
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; ++i) {
-        result[i] = NULL;
+        inputRaw[i] = NULL;
     }
 
     /*TODO: Logic here should be changed according to the host base change*/
@@ -79,64 +86,88 @@ AbstractOutputData* MergerThread::processNewData()
     {
         G12Buffer   *buf    = mFrames.getCurrentFrame   ((Frames::FrameSourceId)id);
         RGB24Buffer *bufrgb = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)id);
-        if (bufrgb != NULL) {
-            buf = bufrgb->toG12Buffer();
-        }
-
-        //result[id] = mTransformationCache[id] ? mTransformationCache[id]->doDeformation(mBaseParams->interpolationType(), buf) : buf;
-        result[id] = buf;
+        inputRaw[id] = bufrgb;
     }
-#if 0
-    stats.setTime(ViFlowStatisticsDescriptor::CORRECTON_TIME, startEl.usecsToNow());
-#endif
+
+    stats.resetInterval("Legacy Correction");
+
+
+    RGB24Buffer * mask[4] = {
+        BufferFactory::getInstance()->loadRGB24Bitmap("front-mask.bmp"),
+        BufferFactory::getInstance()->loadRGB24Bitmap("right-mask.bmp"),
+        BufferFactory::getInstance()->loadRGB24Bitmap("back-mask.bmp"),
+        BufferFactory::getInstance()->loadRGB24Bitmap("left-mask.bmp"),
+    };
+    for (int c = 0; c < 4; c++)
+    {
+        if (mask[c] == NULL) {
+            SYNC_PRINT(("Mask %d is zero. Setting blank\n", c));
+            mask[c] = new RGB24Buffer(mFrames.getCurrentFrame(Frames::DEFAULT_FRAME)->getSize(), RGBColor::White());
+        }
+    }
+
+    stats.resetInterval("Loading masks");
+
 
     MergerOutputData* outputData = new MergerOutputData();
 
     SYNC_PRINT(("MergerThread::processNewData(): G12: ["));
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
-         SYNC_PRINT(("%s", result[i] == NULL ? "-" : "+"));
+         SYNC_PRINT(("%s", inputRaw[i] == NULL ? "-" : "+"));
     }
     SYNC_PRINT(("]\n"));
+
+
 
     outputData->mMainImage.addLayer(
             new ImageResultLayer(
                     mPresentationParams->output(),
-                    result
+                    inputRaw
             )
     );
 
     outputData->mMainImage.setHeight(mBaseParams->h());
     outputData->mMainImage.setWidth (mBaseParams->w());
 
-#if 1
-    stats.setTime("Total time", start.usecsToNow());
-#endif
-    mIdleTimer = PreciseTimer::currentTime();
+    stats.resetInterval("Main Layout");
 
     for (int id = 0; id < mActiveInputsNumber; id++)
     {
-        if (result[id] != mFrames.getCurrentFrame((Frames::FrameSourceId)id)) {
-             delete_safe(result[id]);
+        if (inputRaw[id] != mFrames.getCurrentFrame((Frames::FrameSourceId)id)) {
+             delete_safe(inputRaw[id]);
         }
     }
 
-    outputData->mainOutput = new RGB24Buffer(mMergerParameters->outSize(), mMergerParameters->outSize());
-    outputData->mainOutput->checkerBoard(20, RGBColor::Black(), RGBColor::White());
+    int hSize = mMergerParameters->outSizeH();
+    int wSize = mMergerParameters->outSizeH() / mMergerParameters->outPhySizeW() * mMergerParameters->outPhySizeL();
+
+    outputData->mainOutput = new RGB24Buffer(hSize, wSize);
+    outputData->mainOutput->checkerBoard(20, RGBColor::Gray(), RGBColor::White());
+
+    stats.resetInterval("Canvas cleanup");
 
     /* Unwrap */
     //outputData->unwarpOutput = new RGB24Buffer(fstBuf->getSize());
+
+    RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
+    Vector2dd center(input->w / 2.0, input->h / 2.0);
 
     vector<Vector2dd> lut;
     for (unsigned i = 0; i < LUT_LEN; i++) {
         lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
     }
-    RadiusCorrectionLUT radiusLUT(&lut);
-    RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
-    Vector2dd center(input->w / 2.0, input->h / 2.0);
+    RadiusCorrectionLUTSq radiusLUTSq(&lut);
+    SphericalCorrectionLUTSq correctorSq(center, &radiusLUTSq);
+
+    RadiusCorrectionLUT radiusLUT(lut);
     SphericalCorrectionLUT corrector(center, &radiusLUT);
+
+
     //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);
     outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&corrector, input->h, input->w);
+
+    stats.resetInterval("Example unwrap");
 
 
     /* Scene */
@@ -168,30 +199,17 @@ AbstractOutputData* MergerThread::processNewData()
 
     double groundZ = mMergerParameters->groundZ();
 
-#if 0
-    autoScene->positionCameraInFixture(body, frontCam, Affine3DQ::Shift(-8.57274,     0    , 37.30)                                        * Affine3DQ::RotationY(degToRad(25)));
-    autoScene->positionCameraInFixture(body, backCam , Affine3DQ::Shift(28.00267,  -3.00   , 91.07)  * Affine3DQ::RotationZ(degToRad(180)) * Affine3DQ::RotationY(degToRad(45)));
-    autoScene->positionCameraInFixture(body, leftCam , Affine3DQ::Shift(18.88999, -10.37   , 81.20)  * Affine3DQ::RotationZ(degToRad( 90)));
-    autoScene->positionCameraInFixture(body, rightCam, Affine3DQ::Shift(18.88999,  10.37   , 81.20)  * Affine3DQ::RotationZ(degToRad(270)));
-#endif
-
-#if 0
-    autoScene->positionCameraInFixture(body, frontCam, Affine3DQ::Shift(  8.57274,     0    , 3.730)                                         * Affine3DQ::RotationY(degToRad(25)) );
-    autoScene->positionCameraInFixture(body, backCam , Affine3DQ::Shift(-28.00267,  -3.00   , 9.107)  * Affine3DQ::RotationZ(degToRad(180))  * Affine3DQ::RotationY(degToRad(43)) );
-    autoScene->positionCameraInFixture(body, leftCam , Affine3DQ::Shift(-18.88999,  10.37   , 8.120)  * Affine3DQ::RotationZ(degToRad( 90))  * Affine3DQ::RotationY(degToRad(80)) );
-    autoScene->positionCameraInFixture(body, rightCam, Affine3DQ::Shift(-18.88999, -10.37   , 8.120)  * Affine3DQ::RotationZ(degToRad(270))  * Affine3DQ::RotationY(degToRad(80)) * Affine3DQ::RotationX(degToRad(180)));
-#endif
-
     autoScene->positionCameraInFixture(body, frontCam, getTransform(mMergerParameters->pos1()));
     autoScene->positionCameraInFixture(body, rightCam, getTransform(mMergerParameters->pos2()));
     autoScene->positionCameraInFixture(body, backCam , getTransform(mMergerParameters->pos3()));
     autoScene->positionCameraInFixture(body, leftCam , getTransform(mMergerParameters->pos4()));
 
     PlaneFrame frame;
-    double l = mMergerParameters->outPhySize();
-    frame.p1 = Vector3dd( l/2, -l/2, groundZ);
+    double l = mMergerParameters->outPhySizeL();
+    double w = mMergerParameters->outPhySizeL();
+    frame.p1 = Vector3dd( l/2, -w/2, groundZ);
     frame.e1 = Vector3dd(  -l,    0,   0    );
-    frame.e2 = Vector3dd(   0,    l,   0    );
+    frame.e2 = Vector3dd(   0,    w,   0    );
 
     RGB24Buffer *out = outputData->mainOutput;
     bool flags[4] = {
@@ -201,6 +219,8 @@ AbstractOutputData* MergerThread::processNewData()
         mMergerParameters->switch4(),
     };
 
+    stats.resetInterval("Forming scene");
+
     for (int i = 0; i < out->h; i++)
         for (int j = 0; j < out->w; j++)
         {
@@ -208,65 +228,59 @@ AbstractOutputData* MergerThread::processNewData()
             Vector3dd pos = frame.getPoint(p);
 
             Vector3dd color(0.0);
-            int count = 0;
+            double sum = 0;
 
             for(int c = 0; c < 4; c++ )
             {
                 if (!flags[c])
                     continue;
                 RGB24Buffer *buffer = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)c);
-                Vector2dd prj;
-                double weigth = 1;
-                if (!mMergerParameters->undist())
+
+                Vector2dd prj;               
+                switch (mMergerParameters->undistMethod())
                 {
-                    bool visible = cams[c]->projectPointFromWorld(pos, &prj);
-                    if (!visible)
-                        continue;
-                } else {
-                    CameraModel m = cams[c]->getWorldCameraModel();
-                    Vector3dd relative   = m.extrinsics.project(pos);
-                    if (relative.z() < 0)
-                        continue;
-                    Vector2dd projection = m.intrinsics.project(relative);
-                    prj = corrector.map(projection);
-                    double x_center = corrector.center.x();
-                    double y_center = corrector.center.y();
-                    double x = x_center - projection.x();
-                    double y = y_center - projection.y();
-                    if (x_center != 0 || y_center != 0)
+                    case 0:
                     {
-                        double xx = (sqrt(x*x + y*y) / sqrt(x_center*x_center + y_center*y_center));
-                        //front
-                        if (c == 0)
-                            weigth = 1 - 0.0625*xx*xx;
-                        //right
-                        if (c == 1)
-                            weigth = 1 - 0.125*xx*xx;
-                        //rear
-                        if (c == 2)
-                            weigth = 1 - 0.0625*xx*xx;
-                        //left
-                        if (c == 3)
-                            weigth = 1 - 0.125*xx*xx;
-                        // c = 0 - front
-                        // c = 1 - right
-                        //c = 2 - rear
-                        //c = 3 - left
+                        bool visible = cams[c]->projectPointFromWorld(pos, &prj);
+                        if (!visible)
+                            continue;
+                        break;
                     }
-                 /*   printf(" /n!!!!!!!!!!! x_center = %f y_center = %f projection.x() =%f projection.y() = %f sqrt(x*x + y*y) = %f sqrt(x_center*x_center + y_center*y_center) = %fweight = %f", x_center, 
-                        y_center, projection.x(), projection.y(), sqrt(x*x + y*y), sqrt(x_center*x_center + y_center*y_center), weigth);*/
+                    case 1:
+                    {
+                        CameraModel m = cams[c]->getWorldCameraModel();
+                        Vector3dd relative   = m.extrinsics.project(pos);
+                        if (relative.z() < 0)
+                            continue;
+                        Vector2dd projection = m.intrinsics.project(relative);
+                        prj = correctorSq.map(projection);
+                        break;
+                    }
+                    case 2:
+                    {
+                        CameraModel m = cams[c]->getWorldCameraModel();
+                        Vector3dd relative   = m.extrinsics.project(pos);
+                        if (relative.z() < 0)
+                            continue;
+                        Vector2dd projection = m.intrinsics.project(relative);
+                        prj = corrector.map(projection);
+                        break;
+                    }
                 }
 
-                if (buffer->isValidCoord(prj.y(), prj.x())) {
-                    color += weigth*buffer->element(prj.y(), prj.x()).toDouble();
-                    count++;
+                if (buffer->isValidCoord(prj.y(), prj.x()) && mask[c]->isValidCoord(prj.y(), prj.x())) {
+                    double weight = mask[c]->element(prj.y(), prj.x()).r() / 255.0;
+                    color += weight * buffer->element(prj.y(), prj.x()).toDouble();
+                    sum += weight;
                 }
             }
 
-            if (count != 0) {
-                out->element(i,j) = RGBColor::FromDouble(color / count);
+            if (sum != 0) {
+                out->element(i,j) = RGBColor::FromDouble(color / sum);
             }
         }
+
+    stats.resetInterval("Reprojecting");
 
     for (int c = 0; c < 4; c++)
     {
@@ -278,9 +292,9 @@ AbstractOutputData* MergerThread::processNewData()
 
     }
 
-    corecvs::Vector2d<int32_t> sizeRect = { 400, 100 };
-    corecvs::Vector2d<int32_t> corner = { 200, 500 };
-        corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
+    Vector2d32 sizeRect = { 400, 100 };
+    Vector2d32 corner   = { 200, 500 };
+    Rectangle32 rect = Rectangle32(corner, sizeRect);
     out->drawRectangle(rect, { 0, 0, 0 }, 0);
 
     outputData->visualisation = new Mesh3DDecorated;
@@ -291,16 +305,53 @@ AbstractOutputData* MergerThread::processNewData()
     drawer.setPrintNames(true);
     drawer.drawScene(*outputData->visualisation, *autoScene, 3);
 
+
     outputData->visualisation->addPlaneFrame(frame);
 
     outputData->frameCount = this->mFrameCount;
+
+    stats.endInterval("Debug preparation");
+
     outputData->stats = stats;
 
 
-
+    for (int c = 0; c < 4; c++) {
+        delete_safe(mask[c]);
+    }
     delete_safe(autoScene);
     return outputData;
 }
+
+#if 0
+double x_center = corrector.center.x();
+double y_center = corrector.center.y();
+double x = x_center - projection.x();
+double y = y_center - projection.y();
+if (x_center != 0 || y_center != 0)
+{
+    double xx = (sqrt(x*x + y*y) / sqrt(x_center*x_center + y_center*y_center));
+    //front
+    if (c == 0)
+        weigth = 1 - 0.0625*xx*xx;
+    //right
+    if (c == 1)
+        weigth = 1 - 0.125*xx*xx;
+    //rear
+    if (c == 2)
+        weigth = 1 - 0.0625*xx*xx;
+    //left
+    if (c == 3)
+        weigth = 1 - 0.125*xx*xx;
+    // c = 0 - front
+    // c = 1 - right
+    //c = 2 - rear
+    //c = 3 - left
+}
+/*   printf(" /n!!!!!!!!!!! x_center = %f y_center = %f projection.x() =%f projection.y() = %f sqrt(x*x + y*y) = %f sqrt(x_center*x_center + y_center*y_center) = %fweight = %f", x_center,
+    y_center, projection.x(), projection.y(), sqrt(x*x + y*y), sqrt(x_center*x_center + y_center*y_center), weigth);*/
+
+
+#endif
 
 /*
 

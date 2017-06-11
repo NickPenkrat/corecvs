@@ -25,11 +25,12 @@ MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QStrin
 {
     mUi->setupUi(this);
 
-    QObject::connect(mUi->undistCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->undistMethodSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->frameToUndistSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->fOVSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->outSizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->outPhySizeSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->outSizeHSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->outPhySizeLSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->outPhySizeWSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->groundZSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->switch1CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->pos1ControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
@@ -74,11 +75,12 @@ Merger *MergerControlWidget::createParameters() const
 
 
     return new Merger(
-          mUi->undistCheckBox->isChecked()
+          mUi->undistMethodSpinBox->value()
         , mUi->frameToUndistSpinBox->value()
         , mUi->fOVSpinBox->value()
-        , mUi->outSizeSpinBox->value()
-        , mUi->outPhySizeSpinBox->value()
+        , mUi->outSizeHSpinBox->value()
+        , mUi->outPhySizeLSpinBox->value()
+        , mUi->outPhySizeWSpinBox->value()
         , mUi->groundZSpinBox->value()
         , mUi->switch1CheckBox->isChecked()
         , *std::unique_ptr<EuclidianMoveParameters>(mUi->pos1ControlWidget->createParameters())
@@ -95,11 +97,12 @@ void MergerControlWidget::setParameters(const Merger &input)
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
-    mUi->undistCheckBox->setChecked(input.undist());
+    mUi->undistMethodSpinBox->setValue(input.undistMethod());
     mUi->frameToUndistSpinBox->setValue(input.frameToUndist());
     mUi->fOVSpinBox->setValue(input.fOV());
-    mUi->outSizeSpinBox->setValue(input.outSize());
-    mUi->outPhySizeSpinBox->setValue(input.outPhySize());
+    mUi->outSizeHSpinBox->setValue(input.outSizeH());
+    mUi->outPhySizeLSpinBox->setValue(input.outPhySizeL());
+    mUi->outPhySizeWSpinBox->setValue(input.outPhySizeW());
     mUi->groundZSpinBox->setValue(input.groundZ());
     mUi->switch1CheckBox->setChecked(input.switch1());
     mUi->pos1ControlWidget->setParameters(input.pos1());

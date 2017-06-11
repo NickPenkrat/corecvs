@@ -47,6 +47,20 @@ public:
 
 };
 
+struct RequestEntry {
+    int sourceBuffer;
+    BilinearMapPoint sourcePos;
+    double weight;
+};
+
+class MultiewMapping : public AbstractBuffer<RequestEntry, int>
+{
+public:
+    Merger mMergerParameters; /* This is to check if update is needed*/
+
+
+};
+
 class MergerThread : public BaseCalculationThread
 {
     Q_OBJECT
@@ -61,6 +75,12 @@ public:
     };
 
     MergerThread();
+
+
+    FixtureScene  *mScene = NULL;
+    MultiewMapping mMapper;
+    void prepareMapping();
+
 
 public slots:
     void mergerControlParametersChanged(QSharedPointer<Merger> params);

@@ -4,15 +4,16 @@
 
     
   <class name="Merger" description="Merger parameters">
-    <field type="bool"   name="undist"        suffix="deg" defaultValue="true"  />
+    <field type="int"   name="undistMethod"   defaultValue="0"  min="0" max="2" />
 
     <field type="int"    name="frameToUndist" defaultValue="0"  min="0" max="3" />
 
     <field type="double" name="FOV"           suffix="deg" defaultValue="120"  min="10"    max="360"/>
-    <field type="double" name="Out Size"      suffix="px"  defaultValue="1000" min="100"   max="9999"/>
-    <field type="double" name="Out Phy Size"  suffix="px"  defaultValue="200"  min="100"   max="9999"/>
-    <field type="double" name="ground Z"                   defaultValue="-20"  min="-9999" max="9999"/>
+    <field type="double" name="Out Size H"      suffix="px"  defaultValue="1000" min="100"   max="9999"/>
+    <field type="double" name="Out Phy Size L"  suffix="dm"  defaultValue="200"  min="100"   max="9999"/>
+    <field type="double" name="Out Phy Size W"  suffix="dm"  defaultValue="200"  min="100"   max="9999"/>
 
+    <field type="double" name="ground Z"                   defaultValue="-20"  min="-9999" max="9999"/>
     <field type="bool"   name="switch1"  defaultValue="true"  />
     <field type="Euclidian Move Parameters" name="pos1" />
 

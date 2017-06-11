@@ -149,11 +149,14 @@ void MergerDialog::processResult()
 //        fod->mMainImage.print();
 
         if (i == eventList.size() - 1) {
-            mImage = QSharedPointer<QImage>(new QImage(fod->mMainImage.width(), fod->mMainImage.height(),  QImage::Format_RGB32));
-            fod->mMainImage.drawImage(mImage.data());
+
+
+            QSharedPointer<QImage> inputImages = QSharedPointer<QImage>(new QImage(fod->mMainImage.width(), fod->mMainImage.height(),  QImage::Format_RGB32));
+            fod->mMainImage.drawImage(inputImages.data());
+            mAdditionalFeed->setImage(inputImages);
 
             if (fod->mainOutput) {
-                mAdditionalFeed->setImage(QSharedPointer<QImage>(new RGB24Image(fod->mainOutput)));
+                mImage = QSharedPointer<QImage>(new RGB24Image(fod->mainOutput));
             }
             if (fod->unwarpOutput) {
                 mUnwarpedFeed->setImage(QSharedPointer<QImage>(new RGB24Image(fod->unwarpOutput)));

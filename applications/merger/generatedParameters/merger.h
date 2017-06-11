@@ -40,11 +40,12 @@ class Merger : public corecvs::BaseReflection<Merger>
 {
 public:
     enum FieldId {
-        UNDIST_ID,
+        UNDISTMETHOD_ID,
         FRAMETOUNDIST_ID,
         FOV_ID,
-        OUT_SIZE_ID,
-        OUT_PHY_SIZE_ID,
+        OUT_SIZE_H_ID,
+        OUT_PHY_SIZE_L_ID,
+        OUT_PHY_SIZE_W_ID,
         GROUND_Z_ID,
         SWITCH1_ID,
         POS1_ID,
@@ -60,10 +61,10 @@ public:
     /** Section with variables */
 
     /** 
-     * \brief undist 
-     * undist 
+     * \brief undistMethod 
+     * undistMethod 
      */
-    bool mUndist;
+    int mUndistMethod;
 
     /** 
      * \brief frameToUndist 
@@ -78,16 +79,22 @@ public:
     double mFOV;
 
     /** 
-     * \brief Out Size 
-     * Out Size 
+     * \brief Out Size H 
+     * Out Size H 
      */
-    double mOutSize;
+    double mOutSizeH;
 
     /** 
-     * \brief Out Phy Size 
-     * Out Phy Size 
+     * \brief Out Phy Size L 
+     * Out Phy Size L 
      */
-    double mOutPhySize;
+    double mOutPhySizeL;
+
+    /** 
+     * \brief Out Phy Size W 
+     * Out Phy Size W 
+     */
+    double mOutPhySizeW;
 
     /** 
      * \brief ground Z 
@@ -153,9 +160,9 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    bool undist() const
+    int undistMethod() const
     {
-        return mUndist;
+        return mUndistMethod;
     }
 
     int frameToUndist() const
@@ -168,14 +175,19 @@ public:
         return mFOV;
     }
 
-    double outSize() const
+    double outSizeH() const
     {
-        return mOutSize;
+        return mOutSizeH;
     }
 
-    double outPhySize() const
+    double outPhySizeL() const
     {
-        return mOutPhySize;
+        return mOutPhySizeL;
+    }
+
+    double outPhySizeW() const
+    {
+        return mOutPhySizeW;
     }
 
     double groundZ() const
@@ -224,9 +236,9 @@ public:
     }
 
     /* Section with setters */
-    void setUndist(bool undist)
+    void setUndistMethod(int undistMethod)
     {
-        mUndist = undist;
+        mUndistMethod = undistMethod;
     }
 
     void setFrameToUndist(int frameToUndist)
@@ -239,14 +251,19 @@ public:
         mFOV = fOV;
     }
 
-    void setOutSize(double outSize)
+    void setOutSizeH(double outSizeH)
     {
-        mOutSize = outSize;
+        mOutSizeH = outSizeH;
     }
 
-    void setOutPhySize(double outPhySize)
+    void setOutPhySizeL(double outPhySizeL)
     {
-        mOutPhySize = outPhySize;
+        mOutPhySizeL = outPhySizeL;
+    }
+
+    void setOutPhySizeW(double outPhySizeW)
+    {
+        mOutPhySizeW = outPhySizeW;
     }
 
     void setGroundZ(double groundZ)
@@ -299,11 +316,12 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mUndist,                    static_cast<const corecvs::BoolField *>(fields()[UNDIST_ID]));
+        visitor.visit(mUndistMethod,              static_cast<const corecvs::IntField *>(fields()[UNDISTMETHOD_ID]));
         visitor.visit(mFrameToUndist,             static_cast<const corecvs::IntField *>(fields()[FRAMETOUNDIST_ID]));
         visitor.visit(mFOV,                       static_cast<const corecvs::DoubleField *>(fields()[FOV_ID]));
-        visitor.visit(mOutSize,                   static_cast<const corecvs::DoubleField *>(fields()[OUT_SIZE_ID]));
-        visitor.visit(mOutPhySize,                static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_ID]));
+        visitor.visit(mOutSizeH,                  static_cast<const corecvs::DoubleField *>(fields()[OUT_SIZE_H_ID]));
+        visitor.visit(mOutPhySizeL,               static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_L_ID]));
+        visitor.visit(mOutPhySizeW,               static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_W_ID]));
         visitor.visit(mGroundZ,                   static_cast<const corecvs::DoubleField *>(fields()[GROUND_Z_ID]));
         visitor.visit(mSwitch1,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH1_ID]));
         visitor.visit(mPos1,                      static_cast<const corecvs::CompositeField *>(fields()[POS1_ID]));
@@ -322,11 +340,12 @@ template<class VisitorType>
     }
 
     Merger(
-          bool undist
+          int undistMethod
         , int frameToUndist
         , double fOV
-        , double outSize
-        , double outPhySize
+        , double outSizeH
+        , double outPhySizeL
+        , double outPhySizeW
         , double groundZ
         , bool switch1
         , EuclidianMoveParameters pos1
@@ -338,11 +357,12 @@ template<class VisitorType>
         , EuclidianMoveParameters pos4
     )
     {
-        mUndist = undist;
+        mUndistMethod = undistMethod;
         mFrameToUndist = frameToUndist;
         mFOV = fOV;
-        mOutSize = outSize;
-        mOutPhySize = outPhySize;
+        mOutSizeH = outSizeH;
+        mOutPhySizeL = outPhySizeL;
+        mOutPhySizeW = outPhySizeW;
         mGroundZ = groundZ;
         mSwitch1 = switch1;
         mPos1 = pos1;
