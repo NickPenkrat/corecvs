@@ -26,6 +26,7 @@ MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QStrin
     mUi->setupUi(this);
 
     QObject::connect(mUi->undistMethodSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->showMaskCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->frameToUndistSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->fOVSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->outSizeHSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -76,6 +77,7 @@ Merger *MergerControlWidget::createParameters() const
 
     return new Merger(
           mUi->undistMethodSpinBox->value()
+        , mUi->showMaskCheckBox->isChecked()
         , mUi->frameToUndistSpinBox->value()
         , mUi->fOVSpinBox->value()
         , mUi->outSizeHSpinBox->value()
@@ -98,6 +100,7 @@ void MergerControlWidget::setParameters(const Merger &input)
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
     mUi->undistMethodSpinBox->setValue(input.undistMethod());
+    mUi->showMaskCheckBox->setChecked(input.showMask());
     mUi->frameToUndistSpinBox->setValue(input.frameToUndist());
     mUi->fOVSpinBox->setValue(input.fOV());
     mUi->outSizeHSpinBox->setValue(input.outSizeH());

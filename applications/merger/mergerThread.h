@@ -75,12 +75,17 @@ public:
     };
 
     MergerThread();
+    virtual ~MergerThread();
 
+    bool recomputeMergerState = true;
 
-    FixtureScene  *mScene = NULL;
+    RGB24Buffer   *mMasks[4] = {NULL, NULL, NULL, NULL};
+    FixtureScene  *mCarScene = NULL;
     MultiewMapping mMapper;
     void prepareMapping();
 
+
+    void drawMaskOver(RGB24Buffer *inputRaw, RGB24Buffer *mMasks);
 
 public slots:
     void mergerControlParametersChanged(QSharedPointer<Merger> params);

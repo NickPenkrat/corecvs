@@ -35,6 +35,14 @@ MergerThread::MergerThread() :
     mIdleTimer = PreciseTimer::currentTime();
 }
 
+MergerThread::~MergerThread()
+{
+    for (int c = 0; c < 4; c++) {
+        delete_safe(mMasks[c]);
+    }
+    delete_safe(mCarScene);
+}
+
 Affine3DQ getTransform (const EuclidianMoveParameters &input)
 {
     return    Affine3DQ::Shift(input.x(),input.y(), input.z())
@@ -44,12 +52,88 @@ Affine3DQ getTransform (const EuclidianMoveParameters &input)
 }
 
 
+/**
+    This method processes changes when parameters have changed.
+    And updates data structures that do not depend on the frame itself
+ **/
 void MergerThread::prepareMapping()
 {
+    if (!recomputeMergerState)
+        return;
+
+    SYNC_PRINT(("MergerThread::prepareMapping(): Updating internal data structures\n"));
+    recomputeMergerState = false;
+
+    /* Loading masks */
+    for (int c = 0; c < 4; c++) {
+        delete_safe(mMasks[c]);
+    }
+    mMasks[0] = BufferFactory::getInstance()->loadRGB24Bitmap("front-mask.bmp");
+    mMasks[1] = BufferFactory::getInstance()->loadRGB24Bitmap("right-mask.bmp");
+    mMasks[2] = BufferFactory::getInstance()->loadRGB24Bitmap("back-mask.bmp");
+    mMasks[3] = BufferFactory::getInstance()->loadRGB24Bitmap("left-mask.bmp");
+
+    for (int c = 0; c < 4; c++)
+    {
+        if (mMasks[c] == NULL) {
+            SYNC_PRINT(("Mask %d is zero. Setting blank\n", c));
+            mMasks[c] = new RGB24Buffer(mFrames.getCurrentFrame(Frames::DEFAULT_FRAME)->getSize(), RGBColor::White());
+        }
+    }
+
+
+
+
+    /* Forming scene */
+    delete_safe(mCarScene);
+    mCarScene = new FixtureScene;
+
+    CameraFixture *body = mCarScene->createCameraFixture();
+    body->setLocation(Affine3DQ::Identity());
+    body->name = "Car Body";
+
+    G12Buffer *fstBuf = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
+    PinholeCameraIntrinsics pinhole(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV()));
+
+    FixtureCamera *frontCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(frontCam, body);
+    FixtureCamera *rightCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(rightCam, body);
+    FixtureCamera *backCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(backCam , body);
+    FixtureCamera *leftCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(leftCam , body);
+
+    frontCam->intrinsics = pinhole;
+    rightCam->intrinsics = pinhole;
+    backCam ->intrinsics = pinhole;
+    leftCam ->intrinsics = pinhole;
+
+    frontCam->nameId = "Front";
+    rightCam->nameId = "Right";
+    backCam ->nameId = "Back";
+    leftCam ->nameId = "Left";
+
+    mCarScene->positionCameraInFixture(body, frontCam, getTransform(mMergerParameters->pos1()));
+    mCarScene->positionCameraInFixture(body, rightCam, getTransform(mMergerParameters->pos2()));
+    mCarScene->positionCameraInFixture(body, backCam , getTransform(mMergerParameters->pos3()));
+    mCarScene->positionCameraInFixture(body, leftCam , getTransform(mMergerParameters->pos4()));
+
+
 
 }
 
 
+void MergerThread::drawMaskOver(RGB24Buffer *inputRaw, RGB24Buffer *mask)
+{
+    if (inputRaw == NULL || mask == NULL) {
+        return;
+    }
+    for (int i = 0; i < inputRaw->h; i++)
+        for (int j = 0; j < inputRaw->w; j++)
+        {
+            if (mask->isValidCoord(i,j))
+            {
+                inputRaw->element(i,j).r() = 255 - mask->element(i,j).r();
+            }
+        }
+}
 
 
 
@@ -75,6 +159,7 @@ AbstractOutputData* MergerThread::processNewData()
     }
 
     recalculateCache();
+    prepareMapping();
 
     RGB24Buffer *inputRaw[Frames::MAX_INPUTS_NUMBER];
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; ++i) {
@@ -86,29 +171,10 @@ AbstractOutputData* MergerThread::processNewData()
     {
         G12Buffer   *buf    = mFrames.getCurrentFrame   ((Frames::FrameSourceId)id);
         RGB24Buffer *bufrgb = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)id);
-        inputRaw[id] = bufrgb;
+        inputRaw[id] = new RGB24Buffer(bufrgb);
     }
 
     stats.resetInterval("Legacy Correction");
-
-
-    RGB24Buffer * mask[4] = {
-        BufferFactory::getInstance()->loadRGB24Bitmap("front-mask.bmp"),
-        BufferFactory::getInstance()->loadRGB24Bitmap("right-mask.bmp"),
-        BufferFactory::getInstance()->loadRGB24Bitmap("back-mask.bmp"),
-        BufferFactory::getInstance()->loadRGB24Bitmap("left-mask.bmp"),
-    };
-    for (int c = 0; c < 4; c++)
-    {
-        if (mask[c] == NULL) {
-            SYNC_PRINT(("Mask %d is zero. Setting blank\n", c));
-            mask[c] = new RGB24Buffer(mFrames.getCurrentFrame(Frames::DEFAULT_FRAME)->getSize(), RGBColor::White());
-        }
-    }
-
-    stats.resetInterval("Loading masks");
-
-
     MergerOutputData* outputData = new MergerOutputData();
 
     SYNC_PRINT(("MergerThread::processNewData(): G12: ["));
@@ -118,6 +184,13 @@ AbstractOutputData* MergerThread::processNewData()
     }
     SYNC_PRINT(("]\n"));
 
+    if (mMergerParameters->showMask())
+    {
+        for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
+        {
+            drawMaskOver(inputRaw[i], mMasks[i]);
+        }
+    }
 
 
     outputData->mMainImage.addLayer(
@@ -133,23 +206,19 @@ AbstractOutputData* MergerThread::processNewData()
     stats.resetInterval("Main Layout");
 
     for (int id = 0; id < mActiveInputsNumber; id++)
-    {
-        if (inputRaw[id] != mFrames.getCurrentFrame((Frames::FrameSourceId)id)) {
-             delete_safe(inputRaw[id]);
-        }
+    {       
+         delete_safe(inputRaw[id]);
     }
+
 
     int hSize = mMergerParameters->outSizeH();
     int wSize = mMergerParameters->outSizeH() / mMergerParameters->outPhySizeW() * mMergerParameters->outPhySizeL();
-
     outputData->mainOutput = new RGB24Buffer(hSize, wSize);
     outputData->mainOutput->checkerBoard(20, RGBColor::Gray(), RGBColor::White());
 
     stats.resetInterval("Canvas cleanup");
 
     /* Unwrap */
-    //outputData->unwarpOutput = new RGB24Buffer(fstBuf->getSize());
-
     RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
     Vector2dd center(input->w / 2.0, input->h / 2.0);
 
@@ -171,47 +240,9 @@ AbstractOutputData* MergerThread::processNewData()
 
 
     /* Scene */
-    SYNC_PRINT(("Forming scene\n"));
-    FixtureScene *autoScene = new FixtureScene;
-    CameraFixture *body = autoScene->createCameraFixture();
-    body->setLocation(Affine3DQ::Identity());
-    body->name = "Car Body";
+    CameraFixture *fixture= mCarScene->fixtures().front();
+    FixtureCamera *cams[] = {fixture->cameras[0], fixture->cameras[1], fixture->cameras[2], fixture->cameras[3]};
 
-    G12Buffer *fstBuf = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
-    PinholeCameraIntrinsics pinhole(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV()));
-
-    FixtureCamera *frontCam = autoScene->createCamera(); autoScene->addCameraToFixture(frontCam, body);
-    FixtureCamera *rightCam = autoScene->createCamera(); autoScene->addCameraToFixture(rightCam, body);
-    FixtureCamera *backCam  = autoScene->createCamera(); autoScene->addCameraToFixture(backCam , body);
-    FixtureCamera *leftCam  = autoScene->createCamera(); autoScene->addCameraToFixture(leftCam , body);
-
-    FixtureCamera *cams[] = {frontCam, rightCam, backCam, leftCam};
-
-    frontCam->intrinsics = pinhole;
-    rightCam->intrinsics = pinhole;
-    backCam ->intrinsics = pinhole;
-    leftCam ->intrinsics = pinhole;
-
-    frontCam->nameId = "Front";
-    rightCam->nameId = "Right";
-    backCam ->nameId = "Back";
-    leftCam ->nameId = "Left";
-
-    double groundZ = mMergerParameters->groundZ();
-
-    autoScene->positionCameraInFixture(body, frontCam, getTransform(mMergerParameters->pos1()));
-    autoScene->positionCameraInFixture(body, rightCam, getTransform(mMergerParameters->pos2()));
-    autoScene->positionCameraInFixture(body, backCam , getTransform(mMergerParameters->pos3()));
-    autoScene->positionCameraInFixture(body, leftCam , getTransform(mMergerParameters->pos4()));
-
-    PlaneFrame frame;
-    double l = mMergerParameters->outPhySizeL();
-    double w = mMergerParameters->outPhySizeL();
-    frame.p1 = Vector3dd( l/2, -w/2, groundZ);
-    frame.e1 = Vector3dd(  -l,    0,   0    );
-    frame.e2 = Vector3dd(   0,    w,   0    );
-
-    RGB24Buffer *out = outputData->mainOutput;
     bool flags[4] = {
         mMergerParameters->switch1(),
         mMergerParameters->switch2(),
@@ -220,8 +251,25 @@ AbstractOutputData* MergerThread::processNewData()
     };
 
     stats.resetInterval("Forming scene");
+    double groundZ = mMergerParameters->groundZ();
+    PlaneFrame frame;
+    double l = mMergerParameters->outPhySizeL();
+    double w = mMergerParameters->outPhySizeW();
+    frame.p1 = Vector3dd( l/2, -w/2, groundZ);
+    frame.e1 = Vector3dd(  -l,    0,   0    );
+    frame.e2 = Vector3dd(   0,    w,   0    );
 
-    for (int i = 0; i < out->h; i++)
+    CameraModel models[4];
+    for (int c = 0; c < 4; c++)
+    {
+        models[c] = cams[c]->getWorldCameraModel();
+    }
+
+    RGB24Buffer *out = outputData->mainOutput;
+
+    parallelable_for(0, out->h, [&](const BlockedRange<int>& r)
+    {
+    for(int i = r.begin(); i < r.end(); i++)
         for (int j = 0; j < out->w; j++)
         {
             Vector2dd p = Vector2dd( (double)j / out->w, (double)i / out->h);
@@ -248,28 +296,26 @@ AbstractOutputData* MergerThread::processNewData()
                     }
                     case 1:
                     {
-                        CameraModel m = cams[c]->getWorldCameraModel();
-                        Vector3dd relative   = m.extrinsics.project(pos);
+                         Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
                             continue;
-                        Vector2dd projection = m.intrinsics.project(relative);
+                        Vector2dd projection = models[c].intrinsics.project(relative);
                         prj = correctorSq.map(projection);
                         break;
                     }
                     case 2:
                     {
-                        CameraModel m = cams[c]->getWorldCameraModel();
-                        Vector3dd relative   = m.extrinsics.project(pos);
+                        Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
                             continue;
-                        Vector2dd projection = m.intrinsics.project(relative);
+                        Vector2dd projection = models[c].intrinsics.project(relative);
                         prj = corrector.map(projection);
                         break;
                     }
                 }
 
-                if (buffer->isValidCoord(prj.y(), prj.x()) && mask[c]->isValidCoord(prj.y(), prj.x())) {
-                    double weight = mask[c]->element(prj.y(), prj.x()).r() / 255.0;
+                if (buffer->isValidCoord(prj.y(), prj.x()) && mMasks[c]->isValidCoord(prj.y(), prj.x())) {
+                    double weight = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
                     color += weight * buffer->element(prj.y(), prj.x()).toDouble();
                     sum += weight;
                 }
@@ -279,6 +325,8 @@ AbstractOutputData* MergerThread::processNewData()
                 out->element(i,j) = RGBColor::FromDouble(color / sum);
             }
         }
+
+    });
 
     stats.resetInterval("Reprojecting");
 
@@ -303,7 +351,7 @@ AbstractOutputData* MergerThread::processNewData()
 
     CalibrationDrawHelpers drawer;
     drawer.setPrintNames(true);
-    drawer.drawScene(*outputData->visualisation, *autoScene, 3);
+    drawer.drawScene(*outputData->visualisation, *mCarScene, 3);
 
 
     outputData->visualisation->addPlaneFrame(frame);
@@ -313,12 +361,7 @@ AbstractOutputData* MergerThread::processNewData()
     stats.endInterval("Debug preparation");
 
     outputData->stats = stats;
-
-
-    for (int c = 0; c < 4; c++) {
-        delete_safe(mask[c]);
-    }
-    delete_safe(autoScene);
+    mIdleTimer = PreciseTimer::currentTime();
     return outputData;
 }
 
@@ -417,14 +460,17 @@ void MergerThread::mergerControlParametersChanged(QSharedPointer<Merger> mergerP
         return;
 
     mMergerParameters = mergerParameters;
+    recomputeMergerState = true;
 }
 
 void MergerThread::baseControlParametersChanged(QSharedPointer<BaseParameters> params)
 {
     BaseCalculationThread::baseControlParametersChanged(params);
+    recomputeMergerState = true;
 }
 
 void MergerThread::camerasParametersChanged(QSharedPointer<CamerasConfigParameters> parameters)
 {
     BaseCalculationThread::camerasParametersChanged(parameters);
+    recomputeMergerState = true;
 }

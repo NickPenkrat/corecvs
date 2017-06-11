@@ -3,8 +3,9 @@
   <include name="../../../core/xml/parameters.xml"/>
 
     
-  <class name="Merger" description="Merger parameters">
-    <field type="int"   name="undistMethod"   defaultValue="0"  min="0" max="2" />
+  <class name="Merger" description="Merger parameters">  
+    <field type="int"    name="undistMethod"  defaultValue="2"  min="0" max="2" />
+    <field type="bool"   name="showMask"      defaultValue="true"  />
 
     <field type="int"    name="frameToUndist" defaultValue="0"  min="0" max="3" />
 
