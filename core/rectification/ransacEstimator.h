@@ -45,8 +45,11 @@ class RansacEstimatorScene
 {
 public:
     RansacParameters params;
+    bool trace = true;
 
     EssentialDecomposition getEssentialRansac(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);
+    //EssentialDecomposition getEssentialRansac(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);
+
 };
 
 

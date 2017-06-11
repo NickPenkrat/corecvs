@@ -93,7 +93,8 @@ public:
                     inliers++;
             }
 
-            if (trace) SYNC_PRINT(("iteration %d : %d inliers \n", iteration, inliers));
+            if (trace) SYNC_PRINT(("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
+                                   iteration, inliers, bestInliers, data->size(), (double)100.0 * bestInliers / data->size() ));
 
             if (inliers > bestInliers)
             {
@@ -102,7 +103,7 @@ public:
                 bestModel = model;
             }
 
-            if (bestInliers >  data->size() * inliersPercent() ||
+            if (bestInliers >  data->size() * inliersPercent() / 100.0 ||
                 iteration >= iterationsNumber() )
             {
                 if (trace) {
@@ -128,16 +129,18 @@ public:
             randomSelect();
             vector<ModelType> models = ModelType::getModels(samples);
 
-            int inliers = 0;
             for (ModelType &model : models)
             {
+                int inliers = 0;
+
                 for (size_t i = 0; i < data->size(); i++)
                 {
                     if (model.fits(*(data->at(i)), inlierThreshold()))
                         inliers++;
                 }
 
-                if (trace) SYNC_PRINT(("iteration %d : %d inliers \n", iteration, inliers));
+                if (trace) SYNC_PRINT(("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
+                                       iteration, inliers, bestInliers, data->size(), (double)100.0 * bestInliers / data->size() ));
 
                 if (inliers > bestInliers)
                 {
@@ -146,7 +149,7 @@ public:
                     bestModel = model;
                 }
 
-                if (bestInliers >  data->size() * inliersPercent() ||
+                if (bestInliers >  data->size() * inliersPercent() / 100.0 ||
                     iteration >= iterationsNumber() )
                 {
                     if (trace) {

@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MergerControlWidget</class> 
+ <widget class="QWidget" name="MergerControlWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Merger</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <property name="margin">
+    <number>3</number>
+   </property>
+   <property name="spacing">
+    <number>3</number>
+   </property>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_0">
+       <property name="text">
+         <string>undist</string>
+       </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QCheckBox" name="undistCheckBox">
+       <property name="toolTip">
+         <string>undist</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_1">
+       <property name="text">
+         <string>frameToUndist</string>
+       </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="frameToUndistSpinBox">
+       <property name="toolTip">
+         <string>frameToUndist</string>
+       </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>3</number>
+       </property>
+       <property name="singleStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>0</number>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_2">
+       <property name="text">
+         <string>FOV</string>
+       </property>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QDoubleSpinBox" name="fOVSpinBox">
+       <property name="toolTip">
+         <string>FOV</string>
+       </property>
+       <property name="minimum">
+        <double>10</double>
+       </property>
+       <property name="maximum">
+        <double>360</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>120</double>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string>deg</string>
+       </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_3">
+       <property name="text">
+         <string>Out Size</string>
+       </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QDoubleSpinBox" name="outSizeSpinBox">
+       <property name="toolTip">
+         <string>Out Size</string>
+       </property>
+       <property name="minimum">
+        <double>100</double>
+       </property>
+       <property name="maximum">
+        <double>9999</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>1000</double>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string>px</string>
+       </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
+       <property name="text">
+         <string>Out Phy Size</string>
+       </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
+     <widget class="QDoubleSpinBox" name="outPhySizeSpinBox">
+       <property name="toolTip">
+         <string>Out Phy Size</string>
+       </property>
+       <property name="minimum">
+        <double>100</double>
+       </property>
+       <property name="maximum">
+        <double>9999</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>200</double>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string>px</string>
+       </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_5">
+       <property name="text">
+         <string>ground Z</string>
+       </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QDoubleSpinBox" name="groundZSpinBox">
+       <property name="toolTip">
+         <string>ground Z</string>
+       </property>
+       <property name="minimum">
+        <double>-9999</double>
+       </property>
+       <property name="maximum">
+        <double>9999</double>
+       </property>
+       <property name="singleStep">
+        <double>1</double>
+       </property>
+       <property name="value">
+        <double>-20</double>
+       </property>
+       <property name="prefix">
+        <string></string>
+       </property>
+       <property name="suffix">
+        <string></string>
+       </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_6">
+       <property name="text">
+         <string>switch1</string>
+       </property>
+     </widget>
+    </item>
+    <item row="6" column="1">
+     <widget class="QCheckBox" name="switch1CheckBox">
+       <property name="toolTip">
+         <string>switch1</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_7">
+       <property name="text">
+         <string>pos1</string>
+       </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="EuclidianMoveParametersControlWidget" name="pos1ControlWidget">
+       <property name="toolTip">
+         <string>pos1</string>
+       </property>
+     </widget>
+    </item>
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_8">
+       <property name="text">
+         <string>switch2</string>
+       </property>
+     </widget>
+    </item>
+    <item row="8" column="1">
+     <widget class="QCheckBox" name="switch2CheckBox">
+       <property name="toolTip">
+         <string>switch2</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_9">
+       <property name="text">
+         <string>pos2</string>
+       </property>
+     </widget>
+    </item>
+    <item row="9" column="1">
+     <widget class="EuclidianMoveParametersControlWidget" name="pos2ControlWidget">
+       <property name="toolTip">
+         <string>pos2</string>
+       </property>
+     </widget>
+    </item>
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_10">
+       <property name="text">
+         <string>switch3</string>
+       </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QCheckBox" name="switch3CheckBox">
+       <property name="toolTip">
+         <string>switch3</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="11" column="0">
+     <widget class="QLabel" name="label_11">
+       <property name="text">
+         <string>pos3</string>
+       </property>
+     </widget>
+    </item>
+    <item row="11" column="1">
+     <widget class="EuclidianMoveParametersControlWidget" name="pos3ControlWidget">
+       <property name="toolTip">
+         <string>pos3</string>
+       </property>
+     </widget>
+    </item>
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_12">
+       <property name="text">
+         <string>switch4</string>
+       </property>
+     </widget>
+    </item>
+    <item row="12" column="1">
+     <widget class="QCheckBox" name="switch4CheckBox">
+       <property name="toolTip">
+         <string>switch4</string>
+       </property>
+       <property name="checked">
+           <bool>1</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="13" column="0">
+     <widget class="QLabel" name="label_13">
+       <property name="text">
+         <string>pos4</string>
+       </property>
+     </widget>
+    </item>
+    <item row="13" column="1">
+     <widget class="EuclidianMoveParametersControlWidget" name="pos4ControlWidget">
+       <property name="toolTip">
+         <string>pos4</string>
+       </property>
+     </widget>
+    </item>
+   <item row="14" column="0">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="14" column="2">
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="3" margin="3"/>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>undistCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>frameToUndistSpinBox</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>fOVSpinBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>outSizeSpinBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>outPhySizeSpinBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>groundZSpinBox</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>switch1CheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>pos1ControlWidget</sender>
+   <signal>paramsChanged()</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>switch2CheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>pos2ControlWidget</sender>
+   <signal>paramsChanged()</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>switch3CheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>pos3ControlWidget</sender>
+   <signal>paramsChanged()</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>switch4CheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>pos4ControlWidget</sender>
+   <signal>paramsChanged()</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+ </connections>
+ <slots>
+  <slot>changeParameters()</slot>
+ </slots>
+ <customwidgets>
+  <customwidget>
+   <class>EuclidianMoveParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>euclidianMoveParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EuclidianMoveParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>euclidianMoveParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EuclidianMoveParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>euclidianMoveParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>EuclidianMoveParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header>euclidianMoveParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+</ui>

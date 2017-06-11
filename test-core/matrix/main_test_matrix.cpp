@@ -347,7 +347,7 @@ TEST(SparseMatrix, IncompleteCholesky)
 }
 
 
-#ifdef WITH_FMA
+#if defined(WITH_FMA) && defined(WITH_BLAS)
 TEST(Iterative, MinresQLPDaxpby)
 {
     std::mt19937 rng(SEED);

@@ -98,8 +98,12 @@ int SceneStereoAlignerBlock::operator ()()
 
         inScene()->addCameraToFixture(cam1, fixture);
         inScene()->addCameraToFixture(cam2, fixture);
+        //cam1->extrinsics = CameraLocationData(Affine3DQ::Identity());
+        //cam2->extrinsics = CameraLocationData(relativeTransform);
+
         cam1->extrinsics = CameraLocationData(Affine3DQ::Identity());
         cam2->extrinsics = CameraLocationData(relativeTransform);
+
 
         cam1->intrinsics = camera1->intrinsics;
         cam2->intrinsics = camera2->intrinsics;

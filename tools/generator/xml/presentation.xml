@@ -26,6 +26,8 @@
     <item name="anaglyph RC"         id="4" comment="!3d_glasses_rc.png! Red-Cyan Anaglyph view"/>
     <item name="blend"               id="5" comment="!2cam-blend.png! Blend two images"/>
     <item name="none"                id="6" comment="None. Show black output"/>
+    <item name="all"                 id="7" comment="All. Show all output"/>
+
   </enum>
 
   <class name="Presentation Parameters" description="Presentation parameters">
