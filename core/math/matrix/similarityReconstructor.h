@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 
+#include "affine.h"
 #include "vector2d.h"
 #include "matrix33.h"
 #include "correspondenceList.h"
@@ -138,50 +139,34 @@ template<class VisitorType>
 };
 
 
-class SRTTransform {
-public:
-    double     scale;
-    Quaternion rotate;
-    Vector3dd  translate;
+/**
+   Sim3 group
 
+   This class stores scale in quaternion
+
+ **/
+class SRTTransform : public Affine3D<Quaternion>{
+public:
     SRTTransform(double scale, const Quaternion &rotate, const Vector3dd  &translate) :
-        scale(scale),
-        rotate(rotate),
-        translate(translate)
+        Affine3D<Quaternion>(rotate * sqrt(scale), translate)
     {}
+
+
 
     /**
      *    To matrix transformation
      **/
     Matrix44 toMatrix() const;
 
-    /**
-     *    Transform
-     **/
-    Vector3dd transform (const Vector3dd &point) const;
-    Vector3dd operator *(const Vector3dd &point) const;
 
-    template<class VisitorType>
-        void accept(VisitorType &visitor)
-        {
-            visitor.visit(scale,     1.0,                    "scale");
-            visitor.visit(rotate,    Quaternion::Identity(), "rotate");
-            visitor.visit(translate, Vector3dd::Zero(),      "translate");
-        }
-
-        friend std::ostream& operator << (std::ostream &out, SRTTransform &toSave)
-        {
-            corecvs::PrinterVisitor printer(out);
-            toSave.accept<corecvs::PrinterVisitor>(printer);
-            return out;
-        }
-
-        void print()
-        {
-            std::cout << *this;
-        }
-
-
+    void print()
+    {
+        std::cout << *this;
+        std::cout << "Scale:" << rotor.l2Metric();
+        std::cout << "Rotation: ";
+        rotor.normalised().printAxisAndAngle();
+        std::cout << "Translate" << shift;
+    }
 
 };
 

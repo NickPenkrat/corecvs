@@ -100,7 +100,7 @@ public:
         size_t id = r.begin();
 
         std::stringstream ss1, ss2;
-        ss1 << "Detecting keypoints with " << detectorType << " on ";
+        ss1 << "Start detecting keypoints with " << detectorType << " on ";
         size_t cnt = 0;
         pipeline->tic(id, false);
         size_t kpt = 0;
@@ -159,7 +159,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     corecvs::parallelable_for((size_t)0, N, CORE_MAX(N / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline, detectorType, maxFeatureCount, downsampleFactor, params), parallelable);
 
-    ss1 << "Detecting keypoints with " << detectorType;
+    ss1 << "KeyPointDetectionStage::run(): Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
 }
 
@@ -1520,7 +1520,7 @@ public:
         size_t id = r.begin();
 
         std::stringstream ss1, ss2;
-        ss1 << "Detecting keypoints with " << detectorType << " on ";
+        ss1 << "Detecting/Extracting keypoints from" << detectorType << " on ";
         size_t cnt = 0;
         pipeline->tic(id, false);
         size_t kpt = 0;

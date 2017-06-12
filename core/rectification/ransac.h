@@ -8,6 +8,7 @@
  * \author alexander
  */
 
+#include <random>
 #include <vector>
 #include <algorithm>
 
@@ -50,22 +51,27 @@ public:
 
     bool trace = false;
 
+    /* */
+    std::mt19937 rng;
+
     Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters()) :
         RansacParameters(params),
         sampleNumber(_sampleNumber)
     {
         samples.reserve(sampleNumber);
+        rng.seed();
     }
 
     virtual void randomSelect ()
-    {
+    {        
+        std::uniform_int_distribution<int> uniform(0, data->size() - 1);
         samples.clear();
         for (int i = 0; i < sampleNumber; i++)
         {
             unsigned index;
             SampleType *element = NULL;
             do {
-                index = (rand() % data->size());
+                index = uniform(rng);
                 element = data->at(index);
 
                 if (find(samples.begin(), samples.end(), element) == samples.end())
@@ -94,7 +100,7 @@ public:
             }
 
             if (trace) SYNC_PRINT(("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
-                                   iteration, inliers, bestInliers, data->size(), (double)100.0 * bestInliers / data->size() ));
+                                   iteration, inliers, bestInliers, (int)data->size(), (double)100.0 * bestInliers / data->size() ));
 
             if (inliers > bestInliers)
             {

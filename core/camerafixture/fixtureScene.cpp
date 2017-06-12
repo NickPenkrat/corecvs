@@ -661,6 +661,8 @@ void FixtureScene::positionCameraInFixture(CameraFixture * /*fixture */, Fixture
 
 void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture)
 {
+    if (fixture == NULL)
+        return;
     auto it = std::find(mOrphanCameras.begin(), mOrphanCameras.end(), cam);
     if (it != mOrphanCameras.end()) {
         mOrphanCameras.erase(it);

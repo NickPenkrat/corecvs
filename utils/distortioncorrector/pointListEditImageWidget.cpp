@@ -281,6 +281,7 @@ PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, 
     mDelegateStyleButton = new QPushButton(this);
     mDelegateStyleButton->setText("Style");
     mDelegateStyleButton->setEnabled(true);
+    mDelegateStyleButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
     connect(mDelegateStyleButton, SIGNAL(released()), this, SLOT(delegateMenuShow()));
 
     QWidget* holder = mUi->frame_2;
@@ -343,20 +344,38 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
     }
 }
 
+static QAction * addCheckBoxAction(QString name, bool state, QMenu *menu)
+{
+    QAction *action = new QAction(name, menu);
+    action->setCheckable(true);
+    action->setChecked(state);
+    menu->addAction(action);
+    return action;
+}
+
+
 void PointListEditImageWidgetUnited::delegateMenuShow()
 {
+    QPoint p = QCursor::pos();
     QMenu menu;
-    QAction *actionDecAll      = new QAction("Show Decorator All"     , &menu);  menu.addAction(actionDecAll);
-    QAction *actionDecMatched  = new QAction("Show Decorator Matched" , &menu);  menu.addAction(actionDecMatched);
-    QAction *actionDecSelected = new QAction("Show Decorator Selected", &menu);  menu.addAction(actionDecSelected);
+    QAction *actionDecAll      = addCheckBoxAction("Show Decorator All"     , mDecortatorAll     , &menu);
+    QAction *actionDecMatched  = addCheckBoxAction("Show Decorator Matched" , mDecortatorMatched , &menu);
+    QAction *actionDecSelected = addCheckBoxAction("Show Decorator Selected", mDecortatorSelected, &menu);
+    QAction *actionAll         = addCheckBoxAction("Show All"               , mMarkAll, &menu);
+    QAction *actionMatched     = addCheckBoxAction("Show Matched"           , mMarkMatched, &menu);
+    QAction *actionSelected    = addCheckBoxAction("Show Selected"          , mMarkSelected, &menu);
+    QAction *actionFast        = addCheckBoxAction("Show Fast"              , mMarkFast, &menu);
 
-    QAction *actionAll      = new QAction("Show All"     , &menu);  menu.addAction(actionAll);
-    QAction *actionMatched  = new QAction("Show Matched" , &menu);  menu.addAction(actionMatched);
-    QAction *actionSelected = new QAction("Show Selected", &menu);  menu.addAction(actionSelected);
+    QAction* selectedItem = menu.exec(p);
 
-    QAction *actionFast     = new QAction("Show Fast"    , &menu);  menu.addAction(actionFast);
+    if (selectedItem == actionDecAll)      mDecortatorAll = selectedItem->isChecked();
+    if (selectedItem == actionDecMatched)  mDecortatorMatched = selectedItem->isChecked();
+    if (selectedItem == actionDecSelected) mDecortatorSelected = selectedItem->isChecked();
+    if (selectedItem == actionAll)         mMarkAll = selectedItem->isChecked();
+    if (selectedItem == actionMatched)     mMarkMatched = selectedItem->isChecked();
+    if (selectedItem == actionSelected)    mMarkSelected = selectedItem->isChecked();
+    if (selectedItem == actionFast)        mMarkFast = selectedItem->isChecked();
 
-    menu.exec();
     update();
 }
 

@@ -146,7 +146,7 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
 
     ui->spinBoxSkew->setValue(input.intrinsics.skew);
 
-    ui->infoLabel->setText(QString("Size(xy):[%1 x %2] dist:[%1 x %2]")
+    ui->infoLabel->setText(QString("Size(xy):[%1 x %2] dist:[%3 x %4]")
                 .arg(input.intrinsics.size.x()).arg(input.intrinsics.size.y())
                 .arg(input.intrinsics.distortedSize.x()).arg(input.intrinsics.distortedSize.y()));
 
