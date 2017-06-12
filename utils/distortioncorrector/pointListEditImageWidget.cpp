@@ -1,6 +1,9 @@
+#include <QMenu>
+
 #include "pointListEditImageWidget.h"
 #include "painterHelpers.h"
 #include "qtHelper.h"
+
 
 PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHeader) :
     AdvancedImageWidget(parent, showHeader),
@@ -275,18 +278,14 @@ PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, 
     mAddInfoButton ->setCheckable(true);
 
     /*Delegate activity*/
-    mDelegateStyleBox = new QComboBox(this);
-    mDelegateStyleBox->addItem("No Delegate");
-    mDelegateStyleBox->addItem("Small");
-    mDelegateStyleBox->addItem("Selected");
-    mDelegateStyleBox->addItem("Only");
-    mDelegateStyleBox->addItem("All");
-
-    mDelegateStyleBox->setEnabled(true);
+    mDelegateStyleButton = new QPushButton(this);
+    mDelegateStyleButton->setText("Style");
+    mDelegateStyleButton->setEnabled(true);
+    connect(mDelegateStyleButton, SIGNAL(released()), this, SLOT(delegateMenuShow()));
 
     QWidget* holder = mUi->frame_2;
-    holder->layout()->addWidget(mDelegateStyleBox);
-    connect(mDelegateStyleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
+    holder->layout()->addWidget(mDelegateStyleButton);
+    //connect(mDelegateStyleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 
 }
 
@@ -342,6 +341,23 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
             selectionModel->clear();
         }
     }
+}
+
+void PointListEditImageWidgetUnited::delegateMenuShow()
+{
+    QMenu menu;
+    QAction *actionDecAll      = new QAction("Show Decorator All"     , &menu);  menu.addAction(actionDecAll);
+    QAction *actionDecMatched  = new QAction("Show Decorator Matched" , &menu);  menu.addAction(actionDecMatched);
+    QAction *actionDecSelected = new QAction("Show Decorator Selected", &menu);  menu.addAction(actionDecSelected);
+
+    QAction *actionAll      = new QAction("Show All"     , &menu);  menu.addAction(actionAll);
+    QAction *actionMatched  = new QAction("Show Matched" , &menu);  menu.addAction(actionMatched);
+    QAction *actionSelected = new QAction("Show Selected", &menu);  menu.addAction(actionSelected);
+
+    QAction *actionFast     = new QAction("Show Fast"    , &menu);  menu.addAction(actionFast);
+
+    menu.exec();
+    update();
 }
 
 void PointListEditImageWidgetUnited::paintDirectionArrows(QPainter &painter, int type)
@@ -402,6 +418,8 @@ void PointListEditImageWidgetUnited::paintTarget(QPainter &painter, Vector2dd im
 
 }
 
+
+
 void PointListEditImageWidgetUnited::childRepaint(QPaintEvent * /*event*/, QWidget *who)
 {
     //AdvancedImageWidget::childRepaint(event, who);
@@ -417,8 +435,10 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent * /*event*/, QWidg
 
     int rows = (int)mObservationListModel->getPointCount();
 
+
+    bool shortCut = mMarkFast && mMarkAll;
     /* This is the fastest way to draw, even outer cycle is brought invards */
-    if (mDelegateStyleBox->currentIndex() == STYLE_NO_DELEGATE_SMALL)
+    if (shortCut)
     {
         PreciseTimer timer = PreciseTimer::currentTime();
         painter.setPen(Qt::yellow);
@@ -450,15 +470,7 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent * /*event*/, QWidg
                 isSelected = (i == mSelectedPoint);
             }
 
-            /* We should probably use our own mechnism */
-            bool drawDelegate = false;
-            if (mDelegateStyleBox->currentIndex() == STYLE_ONLY_DELEGATE ||
-                mDelegateStyleBox->currentIndex() == STYLE_ALL )
-                drawDelegate = true;
-            if (mDelegateStyleBox->currentIndex() == STYLE_SELECTED && isSelected)
-                drawDelegate = true;
-
-            if (drawDelegate)
+            if (mDecortatorAll || (isSelected && mDecortatorSelected))
             {
                 QTransform old = painter.transform();
                 Matrix33 matrix = currentTransformMatrix();
@@ -472,7 +484,7 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent * /*event*/, QWidg
                 painter.setTransform(old);
             }
 
-            if (mDelegateStyleBox->currentIndex() != STYLE_ONLY_DELEGATE)
+            if (mMarkAll)
             {
                 painter.setPen(Qt::yellow);
                 drawCircle(painter, imageCoords, 5);

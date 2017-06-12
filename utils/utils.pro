@@ -468,7 +468,7 @@ RESOURCES += \
    ../resources/main.qrc
 
 unix:!macx:!win32 {
-#    CONFIG += with_framesource_v4l2
+    CONFIG += with_framesource_v4l2
 }
 
 with_framesource_v4l2 {
