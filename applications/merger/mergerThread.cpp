@@ -31,6 +31,9 @@ MergerThread::MergerThread() :
    BaseCalculationThread(Frames::MAX_INPUTS_NUMBER)
   , mMergerParameters(NULL)
 {
+    for (int i = 0; i < 4;++i)
+      mMasks[i] = NULL;
+
     qRegisterMetaType<MergerThread::RecordingState>("MergerThread::RecordingState");
     mIdleTimer = PreciseTimer::currentTime();
 }
@@ -330,20 +333,39 @@ AbstractOutputData* MergerThread::processNewData()
 
     stats.resetInterval("Reprojecting");
 
+    //car simulation
+    {
+        //Get x
+        Vector2dd projX0 = frame.projectTo(cams[0]->getWorldLocation().shift);
+        projX0 = projX0 * Vector2dd(out->w, out->h);
+        Vector2dd projX2 = frame.projectTo(cams[2]->getWorldLocation().shift);
+        projX2 = projX2 * Vector2dd(out->w, out->h);
+        int32_t sizeX = projX2.x() - projX0.x();
+        //Get y
+        Vector2dd projY3 = frame.projectTo(cams[3]->getWorldLocation().shift);
+        projY3 = projY3 * Vector2dd(out->w, out->h);
+        Vector2dd projY1 = frame.projectTo(cams[1]->getWorldLocation().shift);
+        projY1 = projY1 * Vector2dd(out->w, out->h);
+        int32_t sizeY = projY3.y() - projY1.y();
+
+        //size of car
+        int X_car_picture = 70;
+        corecvs::Vector2d<int32_t> sizeRect = { sizeX + X_car_picture, sizeY };
+
+        //draw car
+        int shift_car_picture = 30;
+        corecvs::Vector2d<int32_t> corner = { (int32_t)projX0.x() - shift_car_picture, (int32_t)projY1.y() };
+        corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
+        out->drawRectangle(rect, RGBColor::Black(), 2);
+    }
+
+    //camera position
     for (int c = 0; c < 4; c++)
     {
         Vector2dd proj = frame.projectTo(cams[c]->getWorldLocation().shift);
-        cout << "PROJECTED:" << proj << endl;
         proj = proj * Vector2dd(out->w, out->h);
         out->drawCrosshare2(proj.x(), proj.y(), RGBColor::Red());
-        
-
     }
-
-    Vector2d32 sizeRect = { 400, 100 };
-    Vector2d32 corner   = { 200, 500 };
-    Rectangle32 rect = Rectangle32(corner, sizeRect);
-    out->drawRectangle(rect, { 0, 0, 0 }, 0);
 
     outputData->visualisation = new Mesh3DDecorated;
     outputData->visualisation->switchColor(true);
