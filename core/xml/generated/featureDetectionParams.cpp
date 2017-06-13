@@ -26,6 +26,9 @@ int BaseReflection<FeatureDetectionParams>::dummy = FeatureDetectionParams::stat
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
+
+using namespace corecvs;
+
 int FeatureDetectionParams::staticInit()
 {
 
@@ -43,7 +46,7 @@ int FeatureDetectionParams::staticInit()
         (
           FeatureDetectionParams::DETECTOR_ID,
           offsetof(FeatureDetectionParams, mDetector),
-          "ORB",
+          "SURF",
           "detector",
           "detector",
           "detector"
@@ -54,7 +57,7 @@ int FeatureDetectionParams::staticInit()
         (
           FeatureDetectionParams::DESCRIPTOR_ID,
           offsetof(FeatureDetectionParams, mDescriptor),
-          "ORB",
+          "SURF",
           "descriptor",
           "descriptor",
           "descriptor"
@@ -145,12 +148,28 @@ int FeatureDetectionParams::staticInit()
           "Max acceptable feature point count",
           true,
          0,
-         32768
+         100000000
         );
     fields().push_back(field8);
     /*  */ 
+    BoolField* field9 = new BoolField
+        (
+          FeatureDetectionParams::POSITIONFILTER_ID,
+          offsetof(FeatureDetectionParams, mPositionfilter),
+          false,
+          "positionfilter",
+          "positionfilter",
+          "positionfilter"
+        );
+    field9->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field9);
+    /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Feature Detection Params")]= &reflection;
+   return 0;
+}
+int FeatureDetectionParams::relinkCompositeFields()
+{
    return 0;
 }
 
