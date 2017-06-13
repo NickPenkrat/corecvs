@@ -570,6 +570,14 @@ void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::st
 
 //---------------------------------------------------------------------------
 
+
+static void combinationToIndex(size_t in, size_t &out1, size_t out2)
+{
+    double tt = -0.5 + sqrt(1.0 + 8.0 * in) / 2.0;
+    size_t J = 1+(size_t)tt;
+    size_t I = in - (J - 1) * J / 2;
+}
+
 class ParallelMatcherRefiner
 {
     FeatureMatchingPipeline* pipeline;
@@ -625,7 +633,7 @@ public:
                 size_t s = reqs[si];
                 size_t Is = matchPlan.plan[s].queryImg;
                 size_t Js = matchPlan.plan[s].trainImg;
-                auto &query = matchPlan.plan[s];
+                MatchPlanEntry &query = matchPlan.plan[s];
 
                 CORE_ASSERT_TRUE_S(Is < N && Js < N);
 
@@ -677,7 +685,7 @@ public:
             {
                 size_t s = reqs[si];
                 size_t query = matchPlan.plan[s].queryImg;
-                query = query == I ? 0 : 1;
+                query = (query == I) ? 0 : 1;
 
                 for (size_t i = 0; i < rawMatches.matches[s].size(); ++i)
                 {

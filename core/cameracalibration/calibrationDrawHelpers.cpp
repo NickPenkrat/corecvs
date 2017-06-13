@@ -25,8 +25,8 @@ void CalibrationDrawHelpers::setParameters(const CalibrationDrawHelpersParameter
 
 void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, double scale)
 {
-    SYNC_PRINT(("CalibrationDrawHelpers::drawCamera(): called \n"));
-    cout << "Camera color: " << mesh.currentColor << endl;
+    //SYNC_PRINT(("CalibrationDrawHelpers::drawCamera(): called \n"));
+    //cout << "Camera color: " << mesh.currentColor << endl;
 
     double w = cam.intrinsics.w();
     double h = cam.intrinsics.h();
