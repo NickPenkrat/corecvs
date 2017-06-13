@@ -653,6 +653,8 @@ public:
 				if (matcher)
 					matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
+                SYNC_PRINT(("Matcher implementation returned %d\n", ml.size()));
+
                 for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
                 {
                     std::vector<RawMatch>& v = *it;
