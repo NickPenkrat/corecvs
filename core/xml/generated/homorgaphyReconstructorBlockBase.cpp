@@ -89,6 +89,10 @@ int HomorgaphyReconstructorBlockBase::staticInit()
     directory[std::string("HomorgaphyReconstructorBlockBase")]= &reflection;
    return 0;
 }
+int HomorgaphyReconstructorBlockBase::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

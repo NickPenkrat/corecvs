@@ -37,7 +37,7 @@ private:
     cv::DescriptorExtractor *extractor;
 
 #ifdef WITH_OPENCV_3x
-    SmartPtrHolder* holder;
+    SmartPtrExtractorHolder /*SmartPtrHolder*/ * holder;   // EM/SF: opencv3.2 requires it?
 #endif
 };
 

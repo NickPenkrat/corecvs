@@ -233,12 +233,16 @@ enums+=" bitcodeBoardOrientation"
 
 classes+=" lensDistortionModelParametersBase"
 classes+=" homorgaphyReconstructorBlockBase"
+classes+=" sceneStereoAlignerBlockBase"
+classes+=" adderSubstractorParametersBase"
+
 
 # We will try to use reflectionWidget
 classes+=" calibrationDrawHelpersParameters"
 classes+=" focusEstimationParameters"
 classes+=" focusEstimationResult"
 classes+=" drawGCodeParameters"
+classes+=" stereoAlignParameters"
 
 
 full_ui_classes+=" checkerboardDetectionParameters"

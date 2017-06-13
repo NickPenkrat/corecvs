@@ -43,8 +43,18 @@ public:
     void            setCollapseTitle(bool collapse);
 
 public slots:
+    /**
+     * Actual repaint is broken down in two calls repaint of the background (image itself)
+     * and the top - tools etc.
+     **/
     virtual void    childRepaint(QPaintEvent *event, QWidget *who);
+    virtual void    repaintImage(QPainter &p);
+    virtual void    repaintTools(QPainter &p);
+
+
     void            freezeImage();
+
+
 
    /**
     *   This could be reimplemented to add additional tools

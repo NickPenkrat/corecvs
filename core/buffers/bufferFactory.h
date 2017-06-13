@@ -70,6 +70,12 @@ public:
      */
     virtual G12Buffer* loadG16Bitmap(string name);
 
+    /**
+     **/
+    virtual std::vector<std::string> resolutionsRGB24();
+    virtual std::vector<std::string> resolutionsG12();
+    virtual std::vector<std::string> resolutionsRuntimeType();
+
 
 private:
     friend class CountedPtr<BufferFactory>;                 // this class will create/destroy the factory indeed

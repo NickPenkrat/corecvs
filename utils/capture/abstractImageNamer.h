@@ -40,13 +40,13 @@ public:
         return "";
     }
 
-    virtual string nameForImage(const string &stName
-        , int       camId
-        , string    metaInfo
-        , FileType  type
-        , string    *path = NULL
-        , string    prefix = ""
-        , bool      unique = true) const = 0;
+    virtual string nameForImage(const string &stId
+        , const string &camId
+        , string        metaInfo
+        , FileType      type
+        , string       *path = NULL
+        , string        prefix = ""
+        , bool          unique = true) const = 0;
 };
 
 #endif // ABSTRACTIMAGENAMER_H

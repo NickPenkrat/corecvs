@@ -110,6 +110,14 @@ void Mesh3D::addOrts(double length, bool captions)
 
 }
 
+void Mesh3D::addPlaneFrame(const PlaneFrame &frame, double length)
+{
+    setColor(RGBColor::Red());
+    addLine(frame.p1, frame.p1 + frame.e1 * length);
+    setColor(RGBColor::Green());
+    addLine(frame.p1, frame.p1 + frame.e2 * length);
+}
+
 void Mesh3D::addAOB(const Vector3dd &c1, const Vector3dd &c2, bool addFaces)
 {
     int vectorIndex = (int)vertexes.size();

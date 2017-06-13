@@ -228,7 +228,7 @@ FileLogDrain::~FileLogDrain()
     mFile.flush();
     mFile.close();
 
-    SYNC_PRINT(("log <%s> saved", mPath.c_str()));
+    SYNC_PRINT(("log <%s> saved\n", mPath.c_str()));
 }
 
 void FileLogDrain::drain(Log::Message &message)

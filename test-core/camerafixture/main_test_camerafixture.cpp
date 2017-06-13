@@ -33,6 +33,30 @@ TEST(Fixture, testAllocations)
 
     scene->dumpInfo(cout);
 
+    delete_safe(scene);
+}
+
+/**
+ *  In general it is possible for one camera to belong to several fixtures.
+ *
+ *  It violates the invariant, but fixture scene should not crash
+ **/
+TEST(Fixture, testSceneWithCams)
+{
+    FixtureScene *scene = new FixtureScene();
+    CameraFixture *fixture1 = scene->createCameraFixture();
+    fixture1->name = "Fixture1";
+
+    CameraFixture *fixture2 = scene->createCameraFixture();
+    fixture2->name = "Fixture2";
+
+    FixtureCamera *camera1 = scene->createCamera();
+    camera1->nameId = "Camera1";
+
+    scene->addCameraToFixture(camera1, fixture1);
+    scene->addCameraToFixture(camera1, fixture2);
+
+    scene->dumpInfo(cout);
 
     delete_safe(scene);
 }

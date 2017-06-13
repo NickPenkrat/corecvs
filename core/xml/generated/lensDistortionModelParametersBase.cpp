@@ -188,6 +188,10 @@ int LensDistortionModelParametersBase::staticInit()
     directory[std::string("Lens Distortion Model Parameters Base")]= &reflection;
    return 0;
 }
+int LensDistortionModelParametersBase::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

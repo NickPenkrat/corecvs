@@ -7,6 +7,7 @@
  * \author alexander
  */
 #include <string>
+
 #include <QtCore/QObject>
 
 #include "g12Buffer.h"
@@ -76,7 +77,6 @@ public:
     virtual void newImageReadyCallback() = 0;
     virtual void newStatisticsReadyCallback(CaptureStatistics stats) = 0;
     virtual void streamPausedCallback() = 0;
-
 };
 
 class ImageCaptureInterface
@@ -227,7 +227,7 @@ public:
      *
      *  \return  true if the reuslt is valid, false othervize;
      **/
-    virtual bool getCurrentFormat(CameraFormat &format);
+    virtual bool         getCurrentFormat(CameraFormat &format);
 
     /**
      * Return the interface device string

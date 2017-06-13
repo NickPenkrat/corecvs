@@ -23,6 +23,7 @@ public:
 
     static bool isDir(const string &path);
 
+    static bool createDir(const string &path);
 };
 
 } // namespace corecvs

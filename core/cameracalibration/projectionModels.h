@@ -13,7 +13,7 @@ public:
     virtual Vector3dd   reverse(const Vector2dd &p) const = 0;
     virtual bool      isVisible(const Vector3dd &p) const = 0;
 
-    static double rayToangle(const Vector3dd &ray)
+    static double rayToAngle(const Vector3dd &ray)
     {
         return atan2(ray.xy().l2Metric(), ray.z());
     }
@@ -37,7 +37,7 @@ public:
     virtual Vector2dd project(const Vector3dd &p) const override
     {
 
-        double tau = rayToangle(p);
+        double tau = rayToAngle(p);
         Vector2dd dir = p.xy().normalised();
         return dir * 2 * focal * tan(tau / 2);
     }
@@ -74,7 +74,7 @@ public:
 public:
     virtual Vector2dd project(const Vector3dd &p) const override
     {
-        double tau = rayToangle(p);
+        double tau = rayToAngle(p);
         Vector2dd dir = p.xy().normalised();
         return dir * focal * tau;
     }
@@ -111,7 +111,7 @@ public:
 public:
     virtual Vector2dd project(const Vector3dd &p) const override
     {
-        double tau = rayToangle(p);
+        double tau = rayToAngle(p);
         Vector2dd dir = p.xy().normalised();
         return dir * 2 * focal * sin(tau / 2);
     }
@@ -147,7 +147,7 @@ public:
 public:
     virtual Vector2dd project(const Vector3dd &p) const override
     {
-        double tau = rayToangle(p);
+        double tau = rayToAngle(p);
         Vector2dd dir = p.xy().normalised();
         return dir * focal * sin(tau);
     }

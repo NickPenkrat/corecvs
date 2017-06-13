@@ -195,16 +195,16 @@ namespace corecvs {
  * Finally align transformations and there inverses are
  *
  * \f{eqnarray*}
- *   H_{G1}       &=& ({A^T}^{-1} H_{1}^T)^T = H_{1} A^{-1} \\
+ *   H_{G1}      &=& ({A^T}^{-1} H_{1}^T)^T = H_{1} A^{-1} \\
  *   H_{G2}      &=& H_{2} B^{-1} \\
- *   H_{G1}^{-1}  &=& A H_{1}^{-1} \\
+ *   H_{G1}^{-1} &=& A H_{1}^{-1} \\
  *   H_{G2}^{-1} &=& B H_{2}^{-1}
  *
  * \f}
  *
  * \param[in]  F               input fundamental or essential matrix
- * \param[out] leftTransform   output left transform \f$H_{1}\f$
- * \param[out] rightTransform  output right transform \f$H_{2}\f$
+ * \param[out] firstTransform   output left transform \f$H_{1}\f$
+ * \param[out] secondTransform  output right transform \f$H_{2}\f$
  * \param[in]  z               free vector \f$z\f$
  *
  */
@@ -234,10 +234,7 @@ void StereoAligner::getAlignmentTransformation(
 #endif
 
     /// \todo TODO In fact this vector should be guessed
-    //vector3Dd z = {-0.75,0.75,0};
-    //vector3Dd z = {0.75,-0.75,0};
-    //Vector3dd z1 = Vector3dd(1.,0.,0.);
-
+    ///
     Vector3dd w1 = z ^ E1;
     Vector3dd w2 = z * F;
 
@@ -308,7 +305,7 @@ void StereoAligner::getAlignmentTransformation(
     Matrix33 second =  rotationalPartSecond * projectivePartSecond;
 
 
-//#ifdef ASSERTS
+#ifdef ASSERTS
     Matrix33 Ix(
              0,  0,  0,
              0,  0, -1,
@@ -322,8 +319,13 @@ void StereoAligner::getAlignmentTransformation(
     printf("Old Matrix was\n");
     F.print();
     printf("\n");
-    CORE_ASSERT_TRUE(Fprim.notTooFar(F, 1e-5) || Fprim.notTooFar(-F, 1e-5), "Matrix reconstruction failed");
-//#endif // ASSERTS
+
+    if (Fprim.notTooFar(F, 1e-5) || Fprim.notTooFar(-F, 1e-5)) {
+        SYNC_PRINT(("Matrix reconstruction failed\n"));
+    }
+
+    //CORE_ASSERT_TRUE(Fprim.notTooFar(F, 1e-5) || Fprim.notTooFar(-F, 1e-5), "Matrix reconstruction failed");
+#endif // ASSERTS
 
     double det1 = rotationalPartFirst .det();
     double det2 = rotationalPartSecond.det();

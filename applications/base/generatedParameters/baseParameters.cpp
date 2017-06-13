@@ -226,6 +226,10 @@ int BaseParameters::staticInit()
     directory[std::string("Base Parameters")]= &reflection;
    return 0;
 }
+int BaseParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

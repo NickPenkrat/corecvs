@@ -72,7 +72,7 @@ public:
     virtual void setParameters(void * params)  override;
 
     virtual void prepareMesh(CloudViewDialog *dialog) override;
-    virtual void drawMyself(CloudViewDialog *dialog)  override;
+    virtual void drawMyself (CloudViewDialog *dialog)  override;
 
     virtual ~SceneShaded();
     void addTexture(GLuint texId, RGB24Buffer *input);

@@ -172,6 +172,10 @@ int OpenCVBMParameters::staticInit()
     directory[std::string("OpenCV BM Parameters")]= &reflection;
    return 0;
 }
+int OpenCVBMParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

@@ -159,6 +159,10 @@ int ChessBoardAssemblerParamsBase::staticInit()
     directory[std::string("Chess Board Assembler Params Base")]= &reflection;
    return 0;
 }
+int ChessBoardAssemblerParamsBase::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

@@ -19,14 +19,14 @@ void kde::defaultBandwidth(int currentVariable)
     double sigma = sqrt(x2 - (x * x));
     double b = sigma * (pow((3.0 * countMap[currentVariable] / 4.0), (-1.0 / 5.0)));
 
-    L_INFO << "Bandwidth " << currentVariable << " = " << b;
+    //L_INFO << "Bandwidth " << currentVariable << " = " << b;
 
     bandwidthMap[currentVariable] = b;
 }
 
 void kde::calcBandwidth()
 {
-    for (int currentVariable = 0; currentVariable < dataMatrix.size(); currentVariable++)
+    for (int currentVariable = 0; currentVariable < (int)dataMatrix.size(); currentVariable++)
     {
         if (bandwidthMap[currentVariable] == -1.0)
         {
@@ -129,14 +129,13 @@ void kde::addData(std::vector<double>& x)
     }
 }
 
-std::vector<double>
-        corecvs::kde::calcPDF(
-        int testPointCountX,
-        int testPointCountY,
-        double passLevel,
-        std::vector<double> minXY,
-        std::vector<double> maxXY
-        )
+std::vector<double> kde::calcPDF(
+    int testPointCountX,
+    int testPointCountY,
+    double passLevel,
+    std::vector<double> minXY,
+    std::vector<double> maxXY
+    )
 {
     CORE_ASSERT_TRUE_S(dataMatrix.size());
 
@@ -192,9 +191,8 @@ std::vector<double>
             double norm = (def[index] - min) / (max - min);
             if (norm < passLevel)
                 underPass++;
-            def[index] = norm;
-            ss << ((int) norm < passLevel) << "\t" ;
-            index++;
+            def[index++] = norm;
+            ss << (norm < passLevel ? 0 : 1) << "\t";
         }
         L_INFO << ss.str();
     }
@@ -204,7 +202,7 @@ std::vector<double>
     return def;
 }
 
-std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel)
+std::vector<double> kde::calcPDF(int testPointCountX, int testPointCountY, double passLevel)
 {
     CORE_ASSERT_TRUE_S(dataMatrix.size());
 
@@ -219,6 +217,32 @@ std::vector<double> corecvs::kde::calcPDF(int testPointCountX, int testPointCoun
                    std::vector<double>({minX, minY}),
                    std::vector<double>({maxX, maxY})
                    );
+}
+
+double kde::calcCoverage(int w, int h, int gridSize, double passLevel)
+{
+    if (!getDataSize() || gridSize <= 0)
+        return 0.;
+
+    double wKde = w;
+    double hKde = h;
+    double s = std::sqrt(wKde * hKde);
+
+    int numX = std::ceil(wKde / s * gridSize) + 1;
+    int numY = std::ceil(hKde / s * gridSize) + 1;
+    L_INFO_P("image %dx%d is divided onto %dx%d parts", w, h, numX, numY);
+
+    std::vector<double> kdeResult = calcPDF(numX, numY, passLevel
+        , std::vector<double>({ 0.0, 0.0 })
+        , std::vector<double>({ wKde, hKde }));
+
+    int underPass = 0;
+    for (double d : kdeResult)
+    {
+        if (d < passLevel) underPass++;
+    }
+
+    return 100 - 100.0 * underPass / (numX * numY);     // in percent
 }
 
 } // namespace corecvs

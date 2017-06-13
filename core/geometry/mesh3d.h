@@ -22,7 +22,7 @@ namespace corecvs
 {
 
 /**
- *  This class is overcompliced. Break it into several ones
+ *  This class is overcomplicated. Break it into several ones
  **/
 class Mesh3D {
 public:
@@ -77,7 +77,8 @@ public:
 
     void setCentral(Vector3dd _central);
 
-    void addOrts(double length = 1.0, bool captions = false);
+    void addOrts      (double length = 1.0, bool captions = false);
+    void addPlaneFrame(const PlaneFrame &frame, double length = 1.0);
 
 
     virtual void addAOB(const Vector3dd &corner1, const Vector3dd &corner2, bool addFaces = true);

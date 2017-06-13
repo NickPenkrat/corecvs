@@ -13,7 +13,10 @@
 #include <stdint.h>
 
 #include "global.h"
+
 #include "fixedVector.h"
+#include "sseInteger.h"
+
 namespace corecvs {
 
 class ALIGN_DATA(16) Int64x2 : public SSEInteger<Int64x2>

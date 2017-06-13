@@ -46,10 +46,10 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
             corecvs::Vector3dd pt(unif(rng), unif(rng), unif(rng));
             if (camera1.isVisible(pt) && camera2.isVisible(pt))
             {
-                auto p1 = camera1.project(pt);
-                auto p2 = camera2.project(pt);
-                corecvs::Vector3dd L(p1[0], p1[1], 1.0);
-                corecvs::Vector3dd R(p2[0], p2[1], 1.0);
+                Vector2dd p1 = camera1.project(pt);
+                Vector2dd p2 = camera2.project(pt);
+                Vector3dd L(p1.x(), p1.y(), 1.0);
+                Vector3dd R(p2.x(), p2.y(), 1.0);
 
                 auto el = E * R;
                 auto fl = F * R;

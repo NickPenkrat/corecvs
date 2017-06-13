@@ -41,7 +41,8 @@ public:
 
     bool trace;
 
-    static bool endsWith(const std::string &fileName, const char *extention);
+    // Depricated
+    //static bool endsWith(const std::string &fileName, const char *extention);
 
     MeshLoader();
     bool load(Mesh3D *mesh, const std::string &fileName);

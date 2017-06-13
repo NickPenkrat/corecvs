@@ -216,12 +216,12 @@ void PolygonCombiner::prepare()
     std::sort(c[1].begin(), c[1].end(), comparator);
 
     intersections.resize(intersectionNumber);
-    for (int i = 0; i < (int)c[0].size(); i++)
+    for (size_t i = 0; i < c[0].size(); i++)
     {
         if (c[0][i].flag == COMMON)
             intersections[c[0][i].intersection].first = i;
     }
-    for (int i = 0; i < (int)c[1].size(); i++)
+    for (size_t i = 0; i < c[1].size(); i++)
     {
         if (c[1][i].flag == COMMON)
             intersections[c[1][i].intersection].second = i;
@@ -255,7 +255,7 @@ bool PolygonCombiner::validateState() const
             }
         }
 
-        if (start == -1)
+        if (start == (size_t)-1)
         {
             cout << "No inside or outside nodes... " << endl;
             ok = false;
@@ -354,7 +354,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
     const std::pair<int, int> &fst = intersections[startIntersection];
 
     int currentId = fst.first;
-    int currentChain = 0;
+    unsigned int currentChain = 0;
 
     SYNC_PRINT(("Exit condition A%d or B%d\n", fst.first, fst.second));
 
@@ -394,8 +394,8 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
                 int pos;
             } candidates[2];
 
-            candidates[0] = {&c[currentChain][nextCurrent], currentChain, nextCurrent};
-            candidates[1] = {&c[otherChain  ][nextOther  ], otherChain  , nextOther  };
+            candidates[0] = {&c[currentChain][nextCurrent], (int)currentChain, nextCurrent};
+            candidates[1] = {&c[otherChain  ][nextOther  ],      otherChain  , nextOther  };
 
             printf("Branching (%c%d) (%c%d)\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
 
@@ -556,14 +556,17 @@ Vector2dd PointPath::center()
 
 Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
 {
+
     Polygon toReturn;
     if (list.empty())
     {
+        // SYNC_PRINT(("ConvexHull::GiftWrap(): Input list in empty"));
         return toReturn;
     }
 
     if (list.size() == 1)
     {
+        // SYNC_PRINT(("ConvexHull::GiftWrap(): Input list has only one point"));
         toReturn.push_back(list[0]);
         return toReturn;
     }
@@ -579,14 +582,17 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
             minYId = i;
         }
     }
+
+    // SYNC_PRINT(("ConvexHull::GiftWrap(): starting with point %i (%lf %lf)\n", minYId, list[minYId].x(), list[minYId].y() ));
     toReturn.push_back(list[minYId]);
     Vector2dd direction = Vector2dd::OrtX();
     Vector2dd current = list[minYId];
+
     /* Wrap */
     do {
         Vector2dd next;
         Vector2dd nextDir;
-        double vmin = std::numeric_limits<double>::max();
+        double vmax = -std::numeric_limits<double>::max();
 
         for (const Vector2dd &point : list)
         {
@@ -594,9 +600,10 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
                 continue;
 
             Vector2dd dir1 = (point - current).normalised();
-            double v = direction.azimuthTo(dir1);
-            if (v < vmin) {
-                vmin = v;
+            double v = direction & dir1;
+            // SYNC_PRINT(("Checking asimuth %lf\n", v));
+            if (v > vmax) {
+                vmax = v;
                 next = point;
                 nextDir = dir1;
             }
@@ -608,11 +615,13 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
             break;
         }
 
+        // SYNC_PRINT(("ConvexHull::GiftWrap(): next point (%lf %lf) with azimuth %lf\n", next.x(), next.y(), vmax));
+
         toReturn.push_back(next);
         current = next;
         direction = nextDir;
 
-    } while (true);
+    } while (/*toReturn.size() < 10*/true);
 
 
     return toReturn;

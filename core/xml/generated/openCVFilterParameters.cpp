@@ -89,6 +89,10 @@ int OpenCVFilterParameters::staticInit()
     directory[std::string("OpenCV Filter Parameters")]= &reflection;
    return 0;
 }
+int OpenCVFilterParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

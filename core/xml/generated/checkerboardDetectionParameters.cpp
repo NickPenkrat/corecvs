@@ -254,6 +254,10 @@ int CheckerboardDetectionParameters::staticInit()
     directory[std::string("Checkerboard Detection Parameters")]= &reflection;
    return 0;
 }
+int CheckerboardDetectionParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

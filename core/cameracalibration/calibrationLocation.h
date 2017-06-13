@@ -224,7 +224,7 @@ public:
      *
      *  X' = CR * X  + (- CR * CT)
      *
-     *  \attention Generally you don't need to use this function, untill you know exactly that you need it
+     *  \attention Generally you don't need to use this function, until you know exactly that you need it
      *
      **/
     Affine3DQ toMockAffine3D() const

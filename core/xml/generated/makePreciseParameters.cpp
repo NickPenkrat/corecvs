@@ -148,6 +148,10 @@ int MakePreciseParameters::staticInit()
     directory[std::string("Make Precise Parameters")]= &reflection;
    return 0;
 }
+int MakePreciseParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

@@ -125,6 +125,10 @@ int FocusEstimationParameters::staticInit()
     directory[std::string("Focus Estimation Parameters")]= &reflection;
    return 0;
 }
+int FocusEstimationParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

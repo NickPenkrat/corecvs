@@ -370,6 +370,54 @@ int Draw3dParameters::staticInit()
     directory[std::string("draw 3d Parameters")]= &reflection;
    return 0;
 }
+int Draw3dParameters::relinkCompositeFields()
+{
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[1]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[4]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[7]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[12]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

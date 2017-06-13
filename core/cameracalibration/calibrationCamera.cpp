@@ -41,7 +41,7 @@ Matrix33 CameraModel::Fundamental(const Matrix44 &L, const Matrix44 &R)
 
 Matrix33 CameraModel::fundamentalTo(const CameraModel &right) const
 {
-    Matrix33 K1 = intrinsics.getKMatrix33();
+    Matrix33 K1 =       intrinsics.getKMatrix33();
     Matrix33 K2 = right.intrinsics.getKMatrix33();
     return K1.inv().transposed() * essentialTo(right) * K2.inv();
 }
@@ -147,7 +147,7 @@ double PinholeCameraIntrinsics::getHFov() const
 
 /**
  * Returns a ray in a world coordinate system that originates at the camera position and goes through
- * given pixel
+ * given pixel. This method ignores distortion.
  *
  *  \param point - a point in image coorinates
  *
@@ -222,6 +222,13 @@ ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &
 
     return toReturn;
 }
+
+ConvexPolyhedron  CameraModel::getCameraViewport()
+{
+    return getViewport(Vector2dd::Zero(), intrinsics.size);
+}
+
+
 
 #ifndef Rect
 typedef std::array<corecvs::Vector2dd, 2> Rect;

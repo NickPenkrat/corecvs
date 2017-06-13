@@ -33,7 +33,7 @@ public:
         trySize(_trySize),
         maxIterations(_maxIterations),
         treshold(_treshold)
-    {};
+    {}
 
     Matrix33 getFundamentalRansac1(CorrespondenceList *list);
     Matrix33 getEssentialRansac1  (CorrespondenceList *list);

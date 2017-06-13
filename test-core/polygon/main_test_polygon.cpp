@@ -131,6 +131,56 @@ TEST(polygon, testGiftWrap)
     }
 }
 
+TEST(polygon, DISABLED_testGiftWrap1)
+{
+    Polygon  p;
+    std::mt19937 rnd;
+    uniform_int_distribution<int> dist(0, 10);
+
+    static const int ITERATIONS = 10;
+
+    for (int count = 0; count < ITERATIONS; count++)
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            p.push_back(Vector2dd(dist(rnd), dist(rnd)));
+        }
+
+        cout << "Input:" << p << endl;
+
+        Polygon result = ConvexHull::GiftWrap(p);
+        cout << "Output:" << result << endl;
+
+        for (size_t i = 0; i < p.size(); i++)
+        {
+            Vector2dd point = p[i];
+            bool hasPoint = result.isInside(point) || result.hasVertex(point);
+
+            if (!hasPoint)
+            {
+                cout << "Point :" << point << " is not in hull" << flush;
+                RGB24Buffer debug(120, 120);
+
+                for (unsigned j = 0; j < result.size(); j++)
+                {
+                    debug.drawLine(result.getPoint(j) * 10 + Vector2dd(10,10), result.getNextPoint(j) * 10 + Vector2dd(10,10), RGBColor::Yellow());
+                }
+
+                for (size_t j = 0; j < p.size(); j++)
+                {
+                    debug.drawCrosshare3(p[j] * 10 + Vector2dd(10,10), RGBColor::Green());
+                }
+
+                debug.drawCrosshare3(p[i] * 10 + Vector2dd(10,10), RGBColor::Red());
+
+                BMPLoader().save("output.bmp", &debug);
+
+            }
+            CORE_ASSERT_TRUE(hasPoint, "Convex hull is wrong");
+        }
+    }
+}
+
 TEST(polygon, testRayIntersection)
 {
 

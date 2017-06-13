@@ -204,7 +204,7 @@ TEST(jit, DISABLED_testjit)
     {
         cout << "PackedDerivative run.." << endl;
         PackedDerivative<8> in[8];
-        for (size_t i = 0; i < CORE_COUNT_OF(in); i++ )
+        for (int i = 0; i < CORE_COUNT_OF(in); i++)
         {
             in[i] = PackedDerivative<8>::ID(exampleM[i], i);
         }

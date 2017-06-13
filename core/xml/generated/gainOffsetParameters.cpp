@@ -78,6 +78,10 @@ int GainOffsetParameters::staticInit()
     directory[std::string("Gain Offset Parameters")]= &reflection;
    return 0;
 }
+int GainOffsetParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

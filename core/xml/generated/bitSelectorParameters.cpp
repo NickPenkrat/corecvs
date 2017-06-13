@@ -252,6 +252,10 @@ int BitSelectorParameters::staticInit()
     directory[std::string("Bit Selector Parameters")]= &reflection;
    return 0;
 }
+int BitSelectorParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

@@ -171,6 +171,17 @@ public:
         return Vector3d(x, y, z);
     }
 
+    Vector3d crossProduct(const Vector3d &other)
+    {
+        return (*this) ^ other;
+    }
+
+    friend Vector3d crossProduct(const Vector3d &V, const Vector3d &U)
+    {
+        return V ^ U;
+    }
+
+
     double sineTo(const Vector3d &other) const
     {
         double thisLength  = !(*this);

@@ -116,9 +116,12 @@ void testJSON_FixtureScene()
     cout << "================================" << endl;
 }
 
-void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
+void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 {
     cout << "----------------Running the test-------------" << std::endl;
+    if (useDistortion) {
+        cout << "Distortion would be applied" << endl;
+    }
     FixtureScene *scene = new FixtureScene();
 
     CameraFixture *fixture = scene->createCameraFixture();
@@ -132,6 +135,18 @@ void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
     model.intrinsics.focal.y() = 589;
     model.intrinsics.size = Vector2dd(640, 480);
     model.distortion.mKoeff = std::vector<double>({std::numeric_limits<double>::min()});
+
+    if (useDistortion)
+    {
+        model.distortion.setPrincipalPoint(Vector2dd(400, 150));
+        model.distortion.setShift(Vector2dd(6, 8));
+
+        model.distortion.setTangentialX(0.01);
+        model.distortion.setTangentialY(0.01);
+        model.distortion.mKoeff.push_back(0.5);
+        model.distortion.setNormalizingFocal(model.intrinsics.size.l2Metric());
+    }
+
 
 
     FixtureCamera *camera1 = scene->createCamera();
@@ -151,12 +166,19 @@ void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
 
     RGB24Buffer *image1 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(39));
     RGB24Buffer *image2 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(56));
+    RGB24Buffer *image3 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(75));
+
+    image1->checkerBoard(20, RGBColor::Gray(50));
+    image2->checkerBoard(20, RGBColor::Gray(50));
+    image3->checkerBoard(20, RGBColor::Gray(50));
 
     AbstractPainter<RGB24Buffer> painter1(image1);
     AbstractPainter<RGB24Buffer> painter2(image2);
+    AbstractPainter<RGB24Buffer> painter3(image3);
 
     painter1.drawCircle(10, 10, 5, RGBColor::White());
     painter2.drawCircle(10, 10, 7, RGBColor::White());
+    painter3.drawCircle(10, 10, 9, RGBColor::White());
 
 
     int count = 0;
@@ -228,13 +250,37 @@ void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
             Vector2dd p = point->getObservation(camera2)->observation;
             painter2.drawCircle(p.x(), p.y(), 3, point->color);
         }
+
+        if (point->getObservation(camera3) != NULL) {
+            Vector2dd p = point->getObservation(camera3)->observation;
+            painter2.drawCircle(p.x(), p.y(), 3, point->color);
+        }
     }
 
     std::string name1 = std::string("SP") +  fixture->name + camera1->nameId + ".bmp";
     std::string name2 = std::string("SP") +  fixture->name + camera2->nameId + ".bmp";
+    std::string name3 = std::string("SP") +  fixture->name + camera3->nameId + ".bmp";
 
-    BMPLoader().save(name1, image1);
-    BMPLoader().save(name2, image2);
+    if (!useDistortion)
+    {
+        BMPLoader().save(name1, image1);
+        BMPLoader().save(name2, image2);
+        BMPLoader().save(name3, image3);
+        SYNC_PRINT(("Saving ideal images\n"));
+
+    } else {
+        FixedPointDisplace displacer(model.distortion, model.intrinsics.h(), model.intrinsics.w());
+        RGB24Buffer *dist1 = image1->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
+        RGB24Buffer *dist2 = image2->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
+        RGB24Buffer *dist3 = image3->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
+
+        BMPLoader().save(name1, dist1);
+        BMPLoader().save(name2, dist2);
+        BMPLoader().save(name3, dist3);
+
+        SYNC_PRINT(("Saving distorted images\n"));
+    }
+
 
     /**
      *  Camera prototype
@@ -242,6 +288,15 @@ void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
     CameraPrototype *testProto = scene->createCameraPrototype();
     testProto->nameId = "Test Prototype";
     testProto->copyModelFrom(model);
+
+    /** Geometry **/
+    FixtureSceneGeometry *geometry = scene->createSceneGeometry();
+    geometry->frame   = PlaneFrame(Vector3dd(100,0,0), Vector3dd(0,1,0), Vector3dd(0,0,1));
+    geometry->polygon = Polygon::RegularPolygon(5, Vector2dd::Zero(), 50, 0);
+    geometry->relatedPoints.push_back(scene->featurePoints()[0]);
+    geometry->relatedPoints.push_back(scene->featurePoints()[1]);
+    geometry->relatedPoints.push_back(scene->featurePoints()[2]);
+
 
 
     cout << "Original scene:" << endl;
@@ -262,7 +317,6 @@ void testJSON_StereoScene(int targetSize = 3, bool useHomebrewSaver = false )
         } // Stream would be finalised on JSONPrinter destructor
         file.close();
     }
-
 
     delete_safe(scene);
 
@@ -289,15 +343,24 @@ int main (int argc, char ** argv)
     printf("Generate some test scenes\n");
 
     int size = 3;
-    bool custom = false;
-    if (argc == 2) {
+    bool custom     = false;
+    bool distorting = false;
+    if (argc == 2 || argc == 3) {
         size = std::stoi(argv[1]);
         custom = true;
         SYNC_PRINT(("We will create scene of custom size %d\n", size));
+        if (argc == 3)
+        {
+            if (string("true") == string(argv[2]))
+            {
+                distorting = true;
+                SYNC_PRINT(("We will create scene with distortion\n"));
+            }
+        }
     }
 
 //    testJSON_FixtureScene();
-    testJSON_StereoScene(size, true);
+    testJSON_StereoScene(size, distorting);
 
     if (!custom) {
         testJSON_StereoRecheck();

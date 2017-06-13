@@ -35,7 +35,7 @@ int RectifyParameters::staticInit()
     ReflectionNaming &nameing = naming();
     nameing = ReflectionNaming(
         "Rectify Parameters",
-        "osd parameters",
+        "Rectify Parameters",
         ""
     );
 
@@ -593,6 +593,10 @@ int RectifyParameters::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Rectify Parameters")]= &reflection;
+   return 0;
+}
+int RectifyParameters::relinkCompositeFields()
+{
    return 0;
 }
 

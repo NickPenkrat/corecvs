@@ -133,6 +133,10 @@ int Draw3dViMouseParameters::staticInit()
     directory[std::string("draw 3d ViMouse Parameters")]= &reflection;
    return 0;
 }
+int Draw3dViMouseParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

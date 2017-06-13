@@ -140,6 +140,8 @@ public:
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
+    static int relinkCompositeFields();
+
     /** Section with getters */
     const void *getPtrById(int fieldId) const
     {

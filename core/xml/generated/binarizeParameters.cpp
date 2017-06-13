@@ -60,6 +60,10 @@ int BinarizeParameters::staticInit()
     directory[std::string("Binarize Parameters")]= &reflection;
    return 0;
 }
+int BinarizeParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

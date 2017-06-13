@@ -28,6 +28,11 @@ using namespace corecvs;
 TEST(Convolve, DISABLED_main)
 {
     G12Buffer *buffer = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (buffer == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
 
 /*    int numLevels = 4;
     AbstractMidmapPyramid<G12Buffer> *pyr = new AbstractMidmapPyramid<G12Buffer>(buffer, numLevels);

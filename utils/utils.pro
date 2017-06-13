@@ -112,7 +112,10 @@ HEADERS += \
     3d/shadedSceneControlWidget.h \
     scripting/coreToScript.h \
     3d/billboardCaption3DScene.h \
-    3d/gCodeScene.h
+    3d/gCodeScene.h \
+    corestructs/cameraModel/fixtureGeometryControlWidget.h \
+    corestructs/pointerFieldWidget.h \
+    corestructs/widgetBlockHarness.h
 
 SOURCES += \
     frames.cpp \
@@ -195,7 +198,10 @@ SOURCES += \
     corestructs/reflectionWidget.cpp \
     3d/shadedSceneControlWidget.cpp \
     3d/billboardCaption3DScene.cpp \
-    3d/gCodeScene.cpp
+    3d/gCodeScene.cpp \
+    corestructs/cameraModel/fixtureGeometryControlWidget.cpp \
+    corestructs/pointerFieldWidget.cpp \
+    corestructs/widgetBlockHarness.cpp
 
 
 FORMS += \
@@ -208,7 +214,9 @@ FORMS += \
     corestructs/cameraModel/affine3dControlWidget.ui \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui \
-    3d/shadedSceneControlWidget.ui
+    3d/shadedSceneControlWidget.ui \
+    corestructs/cameraModel/fixtureGeometryControlWidget.ui \
+    corestructs/pointerFieldWidget.ui
 
 
 # =============================================================
@@ -545,6 +553,28 @@ with_opencv {
     }
 }
 
+with_rapidjson {
+    RAPIDJSON_WRAPPER_DIR = $$UTILSDIR/../wrappers/rapidjson
+    include($$RAPIDJSON_WRAPPER_DIR/rapidjson.pri)
+
+    contains(DEFINES, WITH_RAPIDJSON) {
+        HEADERS +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONReader.h
+        SOURCES +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONReader.cpp
+       #HEADERS +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONWriter.h
+       #SOURCES +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONWriter.cpp
+    }
+}
+
+with_jsonmodern {
+    JSONMODERN_WRAPPER_DIR = $$UTILSDIR/../wrappers/jsonmodern
+    include($$JSONMODERN_WRAPPER_DIR/jsonmodern.pri)
+
+    contains(DEFINES, WITH_JSONMODERN) {
+         HEADERS += $$JSONMODERN_WRAPPER_DIR/jsonModernReader.h
+         SOURCES += $$JSONMODERN_WRAPPER_DIR/jsonModernReader.cpp
+    }
+}
+
 with_siftgpu {
         DEFINES += WITH_SIFTGPU
         SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
@@ -579,11 +609,8 @@ with_avcodec {
 }
 
 with_synccam {
-    HEADERS += \
-        framesources/syncCam/syncCamerasCaptureInterface.h \
-
-    SOURCES += \
-        framesources/syncCam/syncCamerasCaptureInterface.cpp \
+    HEADERS += framesources/syncCam/syncCamerasCaptureInterface.h
+    SOURCES += framesources/syncCam/syncCamerasCaptureInterface.cpp
 
     DEFINES += WITH_SYNCCAM
 }
@@ -594,6 +621,5 @@ with_qscript {
     HEADERS += scripting/scriptWindow.h
     FORMS   += scripting/scriptWindow.ui
 }
-
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml

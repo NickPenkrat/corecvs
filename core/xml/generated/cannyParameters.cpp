@@ -86,6 +86,10 @@ int CannyParameters::staticInit()
     directory[std::string("Canny Parameters")]= &reflection;
    return 0;
 }
+int CannyParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

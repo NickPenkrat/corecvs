@@ -52,6 +52,8 @@ OTHER_FILES +=              \
     xml/distortion.xml      \
     xml/patternDetector.xml \
     xml/reconstruction.xml  \
+    xml/calibration.xml     \
+    xml/stereoAlign.xml     \
 
 
 OTHER_FILES +=            \
@@ -67,5 +69,3 @@ win32-msvc* {
     QMAKE_CXXFLAGS += /fp:strict
 }
 
-DISTFILES += \
-    xml/calibration.xml
