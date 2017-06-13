@@ -96,17 +96,20 @@ void MergerThread::prepareMapping()
     body->name = "Car Body";
 
     G12Buffer *fstBuf = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
-    PinholeCameraIntrinsics pinhole(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV()));
+    PinholeCameraIntrinsics pinhole1(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV1()));
+    PinholeCameraIntrinsics pinhole2(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV2()));
+    PinholeCameraIntrinsics pinhole3(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV3()));
+    PinholeCameraIntrinsics pinhole4(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV4()));
 
     FixtureCamera *frontCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(frontCam, body);
     FixtureCamera *rightCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(rightCam, body);
     FixtureCamera *backCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(backCam , body);
     FixtureCamera *leftCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(leftCam , body);
 
-    frontCam->intrinsics = pinhole;
-    rightCam->intrinsics = pinhole;
-    backCam ->intrinsics = pinhole;
-    leftCam ->intrinsics = pinhole;
+    frontCam->intrinsics = pinhole1;
+    rightCam->intrinsics = pinhole2;
+    backCam ->intrinsics = pinhole3;
+    leftCam ->intrinsics = pinhole4;
 
     frontCam->nameId = "Front";
     rightCam->nameId = "Right";
