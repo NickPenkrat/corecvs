@@ -42,6 +42,7 @@ public:
     enum FieldId {
         UNDISTMETHOD_ID,
         SHOWMASK_ID,
+        BILINEAR_ID,
         SEPARATE_VIEW_ID,
         FRAMETOUNDIST_ID,
         OUT_SIZE_H_ID,
@@ -76,6 +77,12 @@ public:
      * showMask 
      */
     bool mShowMask;
+
+    /** 
+     * \brief bilinear 
+     * bilinear 
+     */
+    bool mBilinear;
 
     /** 
      * \brief Separate View 
@@ -205,6 +212,11 @@ public:
         return mShowMask;
     }
 
+    bool bilinear() const
+    {
+        return mBilinear;
+    }
+
     bool separateView() const
     {
         return mSeparateView;
@@ -306,6 +318,11 @@ public:
         mShowMask = showMask;
     }
 
+    void setBilinear(bool bilinear)
+    {
+        mBilinear = bilinear;
+    }
+
     void setSeparateView(bool separateView)
     {
         mSeparateView = separateView;
@@ -403,6 +420,7 @@ template<class VisitorType>
     {
         visitor.visit(mUndistMethod,              static_cast<const corecvs::IntField *>(fields()[UNDISTMETHOD_ID]));
         visitor.visit(mShowMask,                  static_cast<const corecvs::BoolField *>(fields()[SHOWMASK_ID]));
+        visitor.visit(mBilinear,                  static_cast<const corecvs::BoolField *>(fields()[BILINEAR_ID]));
         visitor.visit(mSeparateView,              static_cast<const corecvs::BoolField *>(fields()[SEPARATE_VIEW_ID]));
         visitor.visit(mFrameToUndist,             static_cast<const corecvs::IntField *>(fields()[FRAMETOUNDIST_ID]));
         visitor.visit(mOutSizeH,                  static_cast<const corecvs::DoubleField *>(fields()[OUT_SIZE_H_ID]));
@@ -432,6 +450,7 @@ template<class VisitorType>
     Merger(
           int undistMethod
         , bool showMask
+        , bool bilinear
         , bool separateView
         , int frameToUndist
         , double outSizeH
@@ -454,6 +473,7 @@ template<class VisitorType>
     {
         mUndistMethod = undistMethod;
         mShowMask = showMask;
+        mBilinear = bilinear;
         mSeparateView = separateView;
         mFrameToUndist = frameToUndist;
         mOutSizeH = outSizeH;

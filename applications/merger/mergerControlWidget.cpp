@@ -27,6 +27,7 @@ MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QStrin
 
     QObject::connect(mUi->undistMethodSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->showMaskCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->bilinearCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->separateViewCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->frameToUndistSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->outSizeHSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -82,6 +83,7 @@ Merger *MergerControlWidget::createParameters() const
     return new Merger(
           mUi->undistMethodSpinBox->value()
         , mUi->showMaskCheckBox->isChecked()
+        , mUi->bilinearCheckBox->isChecked()
         , mUi->separateViewCheckBox->isChecked()
         , mUi->frameToUndistSpinBox->value()
         , mUi->outSizeHSpinBox->value()
@@ -109,6 +111,7 @@ void MergerControlWidget::setParameters(const Merger &input)
     bool wasBlocked = blockSignals(true);
     mUi->undistMethodSpinBox->setValue(input.undistMethod());
     mUi->showMaskCheckBox->setChecked(input.showMask());
+    mUi->bilinearCheckBox->setChecked(input.bilinear());
     mUi->separateViewCheckBox->setChecked(input.separateView());
     mUi->frameToUndistSpinBox->setValue(input.frameToUndist());
     mUi->outSizeHSpinBox->setValue(input.outSizeH());

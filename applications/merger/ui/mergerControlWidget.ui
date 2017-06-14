@@ -72,14 +72,14 @@
     <item row="2" column="0">
      <widget class="QLabel" name="label_2">
        <property name="text">
-         <string>Separate View</string>
+         <string>bilinear</string>
        </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QCheckBox" name="separateViewCheckBox">
+     <widget class="QCheckBox" name="bilinearCheckBox">
        <property name="toolTip">
-         <string>Separate View</string>
+         <string>bilinear</string>
        </property>
        <property name="checked">
            <bool>0</bool>
@@ -89,11 +89,28 @@
     <item row="3" column="0">
      <widget class="QLabel" name="label_3">
        <property name="text">
-         <string>frameToUndist</string>
+         <string>Separate View</string>
        </property>
      </widget>
     </item>
     <item row="3" column="1">
+     <widget class="QCheckBox" name="separateViewCheckBox">
+       <property name="toolTip">
+         <string>Separate View</string>
+       </property>
+       <property name="checked">
+           <bool>0</bool>
+       </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_4">
+       <property name="text">
+         <string>frameToUndist</string>
+       </property>
+     </widget>
+    </item>
+    <item row="4" column="1">
      <widget class="QSpinBox" name="frameToUndistSpinBox">
        <property name="toolTip">
          <string>frameToUndist</string>
@@ -118,14 +135,14 @@
        </property>
      </widget>
     </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label_4">
+    <item row="5" column="0">
+     <widget class="QLabel" name="label_5">
        <property name="text">
          <string>Out Size H</string>
        </property>
      </widget>
     </item>
-    <item row="4" column="1">
+    <item row="5" column="1">
      <widget class="QDoubleSpinBox" name="outSizeHSpinBox">
        <property name="toolTip">
          <string>Out Size H</string>
@@ -150,14 +167,14 @@
        </property>
      </widget>
     </item>
-    <item row="5" column="0">
-     <widget class="QLabel" name="label_5">
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_6">
        <property name="text">
          <string>Out Phy Size L</string>
        </property>
      </widget>
     </item>
-    <item row="5" column="1">
+    <item row="6" column="1">
      <widget class="QDoubleSpinBox" name="outPhySizeLSpinBox">
        <property name="toolTip">
          <string>Out Phy Size L</string>
@@ -182,14 +199,14 @@
        </property>
      </widget>
     </item>
-    <item row="6" column="0">
-     <widget class="QLabel" name="label_6">
+    <item row="7" column="0">
+     <widget class="QLabel" name="label_7">
        <property name="text">
          <string>Out Phy Size W</string>
        </property>
      </widget>
     </item>
-    <item row="6" column="1">
+    <item row="7" column="1">
      <widget class="QDoubleSpinBox" name="outPhySizeWSpinBox">
        <property name="toolTip">
          <string>Out Phy Size W</string>
@@ -214,14 +231,14 @@
        </property>
      </widget>
     </item>
-    <item row="7" column="0">
-     <widget class="QLabel" name="label_7">
+    <item row="8" column="0">
+     <widget class="QLabel" name="label_8">
        <property name="text">
          <string>ground Z</string>
        </property>
      </widget>
     </item>
-    <item row="7" column="1">
+    <item row="8" column="1">
      <widget class="QDoubleSpinBox" name="groundZSpinBox">
        <property name="toolTip">
          <string>ground Z</string>
@@ -246,14 +263,14 @@
        </property>
      </widget>
     </item>
-    <item row="8" column="0">
-     <widget class="QLabel" name="label_8">
+    <item row="9" column="0">
+     <widget class="QLabel" name="label_9">
        <property name="text">
          <string>FOV1</string>
        </property>
      </widget>
     </item>
-    <item row="8" column="1">
+    <item row="9" column="1">
      <widget class="QDoubleSpinBox" name="fOV1SpinBox">
        <property name="toolTip">
          <string>FOV1</string>
@@ -278,14 +295,14 @@
        </property>
      </widget>
     </item>
-    <item row="9" column="0">
-     <widget class="QLabel" name="label_9">
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_10">
        <property name="text">
          <string>switch1</string>
        </property>
      </widget>
     </item>
-    <item row="9" column="1">
+    <item row="10" column="1">
      <widget class="QCheckBox" name="switch1CheckBox">
        <property name="toolTip">
          <string>switch1</string>
@@ -295,28 +312,28 @@
        </property>
      </widget>
     </item>
-    <item row="10" column="0">
-     <widget class="QLabel" name="label_10">
+    <item row="11" column="0">
+     <widget class="QLabel" name="label_11">
        <property name="text">
          <string>pos1</string>
        </property>
      </widget>
     </item>
-    <item row="10" column="1">
+    <item row="11" column="1">
      <widget class="EuclidianMoveParametersControlWidget" name="pos1ControlWidget">
        <property name="toolTip">
          <string>pos1</string>
        </property>
      </widget>
     </item>
-    <item row="11" column="0">
-     <widget class="QLabel" name="label_11">
+    <item row="12" column="0">
+     <widget class="QLabel" name="label_12">
        <property name="text">
          <string>FOV2</string>
        </property>
      </widget>
     </item>
-    <item row="11" column="1">
+    <item row="12" column="1">
      <widget class="QDoubleSpinBox" name="fOV2SpinBox">
        <property name="toolTip">
          <string>FOV2</string>
@@ -341,14 +358,14 @@
        </property>
      </widget>
     </item>
-    <item row="12" column="0">
-     <widget class="QLabel" name="label_12">
+    <item row="13" column="0">
+     <widget class="QLabel" name="label_13">
        <property name="text">
          <string>switch2</string>
        </property>
      </widget>
     </item>
-    <item row="12" column="1">
+    <item row="13" column="1">
      <widget class="QCheckBox" name="switch2CheckBox">
        <property name="toolTip">
          <string>switch2</string>
@@ -358,28 +375,28 @@
        </property>
      </widget>
     </item>
-    <item row="13" column="0">
-     <widget class="QLabel" name="label_13">
+    <item row="14" column="0">
+     <widget class="QLabel" name="label_14">
        <property name="text">
          <string>pos2</string>
        </property>
      </widget>
     </item>
-    <item row="13" column="1">
+    <item row="14" column="1">
      <widget class="EuclidianMoveParametersControlWidget" name="pos2ControlWidget">
        <property name="toolTip">
          <string>pos2</string>
        </property>
      </widget>
     </item>
-    <item row="14" column="0">
-     <widget class="QLabel" name="label_14">
+    <item row="15" column="0">
+     <widget class="QLabel" name="label_15">
        <property name="text">
          <string>FOV3</string>
        </property>
      </widget>
     </item>
-    <item row="14" column="1">
+    <item row="15" column="1">
      <widget class="QDoubleSpinBox" name="fOV3SpinBox">
        <property name="toolTip">
          <string>FOV3</string>
@@ -404,14 +421,14 @@
        </property>
      </widget>
     </item>
-    <item row="15" column="0">
-     <widget class="QLabel" name="label_15">
+    <item row="16" column="0">
+     <widget class="QLabel" name="label_16">
        <property name="text">
          <string>switch3</string>
        </property>
      </widget>
     </item>
-    <item row="15" column="1">
+    <item row="16" column="1">
      <widget class="QCheckBox" name="switch3CheckBox">
        <property name="toolTip">
          <string>switch3</string>
@@ -421,28 +438,28 @@
        </property>
      </widget>
     </item>
-    <item row="16" column="0">
-     <widget class="QLabel" name="label_16">
+    <item row="17" column="0">
+     <widget class="QLabel" name="label_17">
        <property name="text">
          <string>pos3</string>
        </property>
      </widget>
     </item>
-    <item row="16" column="1">
+    <item row="17" column="1">
      <widget class="EuclidianMoveParametersControlWidget" name="pos3ControlWidget">
        <property name="toolTip">
          <string>pos3</string>
        </property>
      </widget>
     </item>
-    <item row="17" column="0">
-     <widget class="QLabel" name="label_17">
+    <item row="18" column="0">
+     <widget class="QLabel" name="label_18">
        <property name="text">
          <string>FOV4</string>
        </property>
      </widget>
     </item>
-    <item row="17" column="1">
+    <item row="18" column="1">
      <widget class="QDoubleSpinBox" name="fOV4SpinBox">
        <property name="toolTip">
          <string>FOV4</string>
@@ -467,14 +484,14 @@
        </property>
      </widget>
     </item>
-    <item row="18" column="0">
-     <widget class="QLabel" name="label_18">
+    <item row="19" column="0">
+     <widget class="QLabel" name="label_19">
        <property name="text">
          <string>switch4</string>
        </property>
      </widget>
     </item>
-    <item row="18" column="1">
+    <item row="19" column="1">
      <widget class="QCheckBox" name="switch4CheckBox">
        <property name="toolTip">
          <string>switch4</string>
@@ -484,21 +501,21 @@
        </property>
      </widget>
     </item>
-    <item row="19" column="0">
-     <widget class="QLabel" name="label_19">
+    <item row="20" column="0">
+     <widget class="QLabel" name="label_20">
        <property name="text">
          <string>pos4</string>
        </property>
      </widget>
     </item>
-    <item row="19" column="1">
+    <item row="20" column="1">
      <widget class="EuclidianMoveParametersControlWidget" name="pos4ControlWidget">
        <property name="toolTip">
          <string>pos4</string>
        </property>
      </widget>
     </item>
-   <item row="20" column="0">
+   <item row="21" column="0">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -511,7 +528,7 @@
      </property>
     </spacer>
    </item>
-   <item row="20" column="2">
+   <item row="21" column="2">
     <spacer name="horizontalSpacer">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -537,6 +554,12 @@
   </connection>
   <connection>
    <sender>showMaskCheckBox</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>MergerControlWidget</receiver>
+   <slot>changeParameters()</slot>
+  </connection>
+  <connection>
+   <sender>bilinearCheckBox</sender>
    <signal>stateChanged(int)</signal>
    <receiver>MergerControlWidget</receiver>
    <slot>changeParameters()</slot>

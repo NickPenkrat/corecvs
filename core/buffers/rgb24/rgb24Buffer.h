@@ -85,6 +85,7 @@ public:
      **/
     void drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style = 0);
     void drawRectangle(int x, int y, int w, int h, RGBColor color, int style = 0);
+    void drawRectangle(const Rectangled &rect, RGBColor color, int style = 0);
 
     //void drawDisplacementBuffer(DisplacementBuffer *src, double step);
 

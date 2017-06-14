@@ -296,7 +296,7 @@ AbstractOutputData* MergerThread::processNewData()
     //draw car
     int shift_car_picture = 30;
     corecvs::Vector2d<int32_t> corner = { (int32_t)projX0.x() - shift_car_picture, (int32_t)projY1.y() };
-    corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
+    corecvs::Rectangled rect = corecvs::Rectangled(corner.x(), corner.y(), sizeRect.x(), sizeRect.y());
 
     Vector2dd v1 = { 0, 0 };
     Vector2dd v1_end = rect.ulCorner();
@@ -394,10 +394,20 @@ AbstractOutputData* MergerThread::processNewData()
                     }
                 }
 
-                if (buffer->isValidCoord(prj.y(), prj.x()) && mMasks[c]->isValidCoord(prj.y(), prj.x())) {
-                    double weight = weigth_separated_view * mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
-                    color += weight * buffer->element(prj.y(), prj.x()).toDouble();
-                    sum += weight;
+                if (!mMergerParameters->bilinear()) {
+                    if ( buffer   ->isValidCoord(prj.y(), prj.x()) &&
+                         mMasks[c]->isValidCoord(prj.y(), prj.x())) {
+                        double weight = weigth_separated_view * mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+                        color += weight * buffer->element(prj.y(), prj.x()).toDouble();
+                        sum += weight;
+                    }
+                } else {
+                    if ( buffer   ->isValidCoordBl(prj.y(), prj.x()) &&
+                         mMasks[c]->isValidCoord(prj.y(), prj.x())) {
+                        double weight = weigth_separated_view * mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+                        color += weight * buffer->elementBl(prj.y(), prj.x()).toDouble();
+                        sum += weight;
+                    }
                 }
             }
 
