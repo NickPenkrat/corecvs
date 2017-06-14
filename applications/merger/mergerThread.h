@@ -110,7 +110,7 @@ private:
     QString mPath;
     QSharedPointer<Merger> mMergerParameters;
 
-
+    bool isUnderLine(Vector2dd point, Vector2dd point1, Vector2dd point2);
     //FixtureScene *scene = NULL;
 
 };

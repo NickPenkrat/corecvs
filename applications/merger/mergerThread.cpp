@@ -272,9 +272,50 @@ AbstractOutputData* MergerThread::processNewData()
     }
 
     RGB24Buffer *out = outputData->mainOutput;
+ 
+    //precalculations
+    //car simulation
+    //{
+    //Get x
+    Vector2dd projX0 = frame.projectTo(cams[0]->getWorldLocation().shift);
+    projX0 = projX0 * Vector2dd(out->w, out->h);
+    Vector2dd projX2 = frame.projectTo(cams[2]->getWorldLocation().shift);
+    projX2 = projX2 * Vector2dd(out->w, out->h);
+    int32_t sizeX = projX2.x() - projX0.x();
+    //Get y
+    Vector2dd projY3 = frame.projectTo(cams[3]->getWorldLocation().shift);
+    projY3 = projY3 * Vector2dd(out->w, out->h);
+    Vector2dd projY1 = frame.projectTo(cams[1]->getWorldLocation().shift);
+    projY1 = projY1 * Vector2dd(out->w, out->h);
+    int32_t sizeY = projY3.y() - projY1.y();
+
+    //size of car
+    int X_car_picture = 80;
+    corecvs::Vector2d<int32_t> sizeRect = { sizeX + X_car_picture, sizeY };
+
+    //draw car
+    int shift_car_picture = 30;
+    corecvs::Vector2d<int32_t> corner = { (int32_t)projX0.x() - shift_car_picture, (int32_t)projY1.y() };
+    corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
+
+    Vector2dd v1 = { 0, 0 };
+    Vector2dd v1_end = rect.ulCorner();
+
+    Vector2dd v2 = { 0, (double)out->h };
+    Vector2dd v2_end = rect.llCorner();
+
+    Vector2dd v3 = { (double)out->w, 0 };
+    Vector2dd v3_end = rect.urCorner();
+
+    Vector2dd v4 = { (double)out->w, (double)out->h };
+    Vector2dd v4_end = rect.lrCorner();
+
+
+    //}
 
     parallelable_for(0, out->h, [&](const BlockedRange<int>& r)
     {
+
     for(int i = r.begin(); i < r.end(); i++)
         for (int j = 0; j < out->w; j++)
         {
@@ -319,9 +360,42 @@ AbstractOutputData* MergerThread::processNewData()
                         break;
                     }
                 }
+                double weigth_separated_view = 1;
+
+                if (mMergerParameters->mSeparateView)
+                {
+                    //front  // swith 1
+                    if (c == 0) 
+                    {
+                        Vector2dd v_out = { (double)j, (double)i };
+                        if (isUnderLine(v_out, v1, v1_end) || !isUnderLine(v_out, v2, v2_end))
+                            weigth_separated_view = 0;
+                    } 
+                    //rigth // swith 2
+                    else if (c == 1)
+                    {
+                        Vector2dd v_out = { (double)j, (double)i };
+                        if (!isUnderLine(v_out, v1, v1_end) || !isUnderLine(v_out, v3, v3_end))
+                            weigth_separated_view = 0;
+                    }
+                    //rear // swith 3
+                    else if (c == 2)
+                    {
+                        Vector2dd v_out = { (double)j, (double)i };
+                        if (isUnderLine(v_out, v3, v3_end) || !isUnderLine(v_out, v4, v4_end))
+                            weigth_separated_view = 0;
+                    }
+                    //left // swith 4
+                    else if (c == 3)
+                    {
+                        Vector2dd v_out = { (double)j, (double)i };
+                        if (isUnderLine(v_out, v2, v2_end) || isUnderLine(v_out, v4, v4_end))
+                            weigth_separated_view = 0;
+                    }
+                }
 
                 if (buffer->isValidCoord(prj.y(), prj.x()) && mMasks[c]->isValidCoord(prj.y(), prj.x())) {
-                    double weight = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+                    double weight = weigth_separated_view * mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
                     color += weight * buffer->element(prj.y(), prj.x()).toDouble();
                     sum += weight;
                 }
@@ -338,28 +412,16 @@ AbstractOutputData* MergerThread::processNewData()
 
     //car simulation
     {
-        //Get x
-        Vector2dd projX0 = frame.projectTo(cams[0]->getWorldLocation().shift);
-        projX0 = projX0 * Vector2dd(out->w, out->h);
-        Vector2dd projX2 = frame.projectTo(cams[2]->getWorldLocation().shift);
-        projX2 = projX2 * Vector2dd(out->w, out->h);
-        int32_t sizeX = projX2.x() - projX0.x();
-        //Get y
-        Vector2dd projY3 = frame.projectTo(cams[3]->getWorldLocation().shift);
-        projY3 = projY3 * Vector2dd(out->w, out->h);
-        Vector2dd projY1 = frame.projectTo(cams[1]->getWorldLocation().shift);
-        projY1 = projY1 * Vector2dd(out->w, out->h);
-        int32_t sizeY = projY3.y() - projY1.y();
-
-        //size of car
-        int X_car_picture = 70;
-        corecvs::Vector2d<int32_t> sizeRect = { sizeX + X_car_picture, sizeY };
-
-        //draw car
-        int shift_car_picture = 30;
-        corecvs::Vector2d<int32_t> corner = { (int32_t)projX0.x() - shift_car_picture, (int32_t)projY1.y() };
-        corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
         out->drawRectangle(rect, RGBColor::Black(), 2);
+
+        //draw lines
+        if (mMergerParameters->mSeparateView)
+        {
+            out->drawLine(v1, v1_end, RGBColor::Black());
+            out->drawLine(v2, v2_end, RGBColor::Black());
+            out->drawLine(v3, v3_end, RGBColor::Black());
+            out->drawLine(v4, v4_end, RGBColor::Black()); 
+        }
     }
 
     //camera position
@@ -478,6 +540,19 @@ if (x_center != 0 || y_center != 0)
 
 */
 
+bool MergerThread::isUnderLine(Vector2dd point, Vector2dd point1, Vector2dd point2)
+{
+    double y = point.y();
+    if (point2.x() != point1.x())
+    {
+        double k = ((point2.y() - point1.y()) / (point2.x() - point1.x()));
+        double b = point1.y() - k * point1.x();
+        double value_y = k * point.x() + b;
+        if (y < value_y)
+            return true;
+    }
+    return false;
+}
 
 void MergerThread::mergerControlParametersChanged(QSharedPointer<Merger> mergerParameters)
 {
