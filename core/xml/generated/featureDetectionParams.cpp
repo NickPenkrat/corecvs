@@ -46,7 +46,7 @@ int FeatureDetectionParams::staticInit()
         (
           FeatureDetectionParams::DETECTOR_ID,
           offsetof(FeatureDetectionParams, mDetector),
-          "SURF",
+          "ORB",
           "detector",
           "detector",
           "detector"
@@ -57,7 +57,7 @@ int FeatureDetectionParams::staticInit()
         (
           FeatureDetectionParams::DESCRIPTOR_ID,
           offsetof(FeatureDetectionParams, mDescriptor),
-          "SURF",
+          "ORB",
           "descriptor",
           "descriptor",
           "descriptor"
@@ -148,7 +148,7 @@ int FeatureDetectionParams::staticInit()
           "Max acceptable feature point count",
           true,
          0,
-         100000000
+         32768
         );
     fields().push_back(field8);
     /*  */ 
