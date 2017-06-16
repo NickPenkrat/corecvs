@@ -108,31 +108,33 @@ int SceneStereoAlignerBlock::operator ()()
         cam1->intrinsics = camera1->intrinsics;
         cam2->intrinsics = camera2->intrinsics;
 
-        /* Making new observations */
-        for (size_t i = 0; i < inScene()->featurePoints().size(); i++)
+        if (mParameters.produceObservations())
         {
-            SceneFeaturePoint *point = inScene()->featurePoints()[i];
-
-            SceneObservation *obs1 = point->getObservation(camera1);
-            SceneObservation *obs2 = point->getObservation(camera2);
-
-            if (obs1 != NULL)
+            /* Making new observations */
+            for (size_t i = 0; i < inScene()->featurePoints().size(); i++)
             {
-                Vector2dd pos1 = leftTransform * obs1->observation;
-                SceneObservation observation(cam1, point, pos1, fixture);
-                point->observations[camera1] = observation;
+                SceneFeaturePoint *point = inScene()->featurePoints()[i];
+
+                SceneObservation *obs1 = point->getObservation(camera1);
+                SceneObservation *obs2 = point->getObservation(camera2);
+
+                if (obs1 != NULL)
+                {
+                    Vector2dd pos1 = leftTransform * obs1->observation;
+                    SceneObservation observation(cam1, point, pos1, fixture);
+                    point->observations[cam1] = observation;
+                }
+
+                if (obs2 != NULL)
+                {
+                    Vector2dd pos2 = rightTransform * obs2->observation;
+                    SceneObservation observation(cam2, point, pos2, fixture);
+                    point->observations[cam2] = observation;
+                }
+
+
             }
-
-            if (obs2 != NULL)
-            {
-                Vector2dd pos2 = rightTransform * obs2->observation;
-                SceneObservation observation(cam2, point, pos2, fixture);
-                point->observations[camera2] = observation;
-            }
-
-
         }
-
         setOutCamera1(cam1);
         setOutCamera2(cam2);
     }

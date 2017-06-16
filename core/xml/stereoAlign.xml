@@ -7,7 +7,8 @@
 
   <class name="Stereo Align Parameters" description="Stereo Align Parameters">
 
-    <field type="bool"   name="Produce Cameras"    defaultValue="true"/>
+    <field type="bool"   name="Produce Cameras"      defaultValue="true"/>
+    <field type="bool"   name="Produce Observations" defaultValue="true"/>
 
     <field type="double"   name="zdirX"   defaultValue="0"     min="-20"      max="20.0"    step="1"/>
     <field type="double"   name="zdirY"   defaultValue="1"     min="-20"      max="20.0"    step="1"/>
