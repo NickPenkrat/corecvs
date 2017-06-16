@@ -235,6 +235,8 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
 
             double cost = result.getCost(data[count]);
             obs1->accuracy = Vector2dd(cost / params.inlierThreshold());
+            obs2->accuracy = Vector2dd(cost / params.inlierThreshold());
+
 #if 0
             if (flag & Correspondence::FLAG_PASSER) {
                 obs1->accuracy = Vector2dd(0.5);
