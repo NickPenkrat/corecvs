@@ -26,9 +26,6 @@ int BaseReflection<FeatureDetectionParams>::dummy = FeatureDetectionParams::stat
 
 SUPPRESS_OFFSET_WARNING_BEGIN
 
-
-using namespace corecvs;
-
 int FeatureDetectionParams::staticInit()
 {
 
@@ -152,24 +149,8 @@ int FeatureDetectionParams::staticInit()
         );
     fields().push_back(field8);
     /*  */ 
-    BoolField* field9 = new BoolField
-        (
-          FeatureDetectionParams::POSITIONFILTER_ID,
-          offsetof(FeatureDetectionParams, mPositionfilter),
-          false,
-          "positionfilter",
-          "positionfilter",
-          "positionfilter"
-        );
-    field9->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field9);
-    /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Feature Detection Params")]= &reflection;
-   return 0;
-}
-int FeatureDetectionParams::relinkCompositeFields()
-{
    return 0;
 }
 
