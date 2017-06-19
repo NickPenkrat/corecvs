@@ -16,6 +16,8 @@
  *
  *  Also it's not clear why removing "= Reflection()" breaks the code;
  **/
+ 
+ /*this line should not be here*/
 
 namespace corecvs {
 template<>
