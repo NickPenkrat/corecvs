@@ -30,7 +30,7 @@ struct PinholeCameraIntrinsics : public CameraProjection
     Vector2dd focal;            /**< Focal length (in px) in two directions */
     Vector2dd principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
     double    skew;             /**< Skew parameter to compensate for optical axis tilt */
-    Vector2dd size;             /**< Imager resolution (in pixel) */
+    Vector2dd size;             /**< Model image resolution (in pixel) */
     Vector2dd distortedSize;    /**< Source image resolution (FIXME: probably should move it somewhere) */
 
 
