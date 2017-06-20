@@ -229,8 +229,8 @@ AbstractOutputData* MergerThread::processNewData()
     Vector2dd center(input->w / 2.0, input->h / 2.0);
 
     vector<Vector2dd> lut;
-    for (unsigned i = 0; i < LUT_LEN; i++) {
-        lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
+    for (unsigned i = 0; i < LUT_LEN_HD; i++) {
+        lut.push_back(Vector2dd(UnwarpToWarpLUT_HD[i][0], UnwarpToWarpLUT_HD[i][1]));
     }
     RadiusCorrectionLUTSq radiusLUTSq(&lut);
     SphericalCorrectionLUTSq correctorSq(center, &radiusLUTSq);
@@ -296,8 +296,8 @@ AbstractOutputData* MergerThread::processNewData()
     //draw car
     int shift_car_picture = 30;
     corecvs::Vector2d<int32_t> corner = { (int32_t)projX0.x() - shift_car_picture, (int32_t)projY1.y() };
-    corecvs::Rectangled rect = corecvs::Rectangled(corner.x(), corner.y(), sizeRect.x(), sizeRect.y());
-
+    //corecvs::Rectangled rect = corecvs::Rectangled(corner.x(), corner.y(), sizeRect.x(), sizeRect.y());
+    corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
     Vector2dd v1 = { 0, 0 };
     Vector2dd v1_end = rect.ulCorner();
 
