@@ -70,6 +70,7 @@ public:
              double _a30, double _a31, double _a32, double _a33
              );
 
+	Matrix44(const Vector4dd& row0, const Vector4dd& row1, const Vector4dd& row2, const Vector4dd& row3);
 
     Matrix44(const Matrix33 &_m, const Vector3dd &_shift = Vector3dd(0,0,0));
     static void FillWithArgs(
@@ -98,6 +99,15 @@ public:
 
     Matrix33 topLeft33() const;
     Vector3dd translationPart() const;
+	Vector4dd row(int i) const
+	{
+		return Vector4dd(a(i, 0), a(i, 1), a(i, 2), a(i, 3));
+	}
+
+	Vector4dd column(int i) const
+	{
+		return Vector4dd(a(0, i), a(1, i), a(2, i), a(3, i));
+	}
 
     double &a(int i,int j);
     const double &a(int i,int j) const;
@@ -108,6 +118,9 @@ public:
     void transpose();
     Matrix44 transposed() const;
     Matrix44 t() const;
+
+	// if successful, returns 4x4 matrix decomposion [ Matrix = Translation * Rotation * Scale ]
+	bool Matrix44::decomposeTRS(Vector3dd& scale, Vector3dd& translate, Matrix33& rotate);
 
     Matrix44 inverted() const;
     double trace() const;
@@ -233,6 +246,14 @@ inline Matrix44::Matrix44(
     a(1,0) = _a10;   a(1,1) = _a11;   a(1,2) = _a12;   a(1,3) = _a13;
     a(2,0) = _a20;   a(2,1) = _a21;   a(2,2) = _a22;   a(2,3) = _a23;
     a(3,0) = _a30;   a(3,1) = _a31;   a(3,2) = _a32;   a(3,3) = _a33;
+}
+
+inline Matrix44::Matrix44(const Vector4dd& row0, const Vector4dd& row1, const Vector4dd& row2, const Vector4dd& row3)
+{
+	a(0, 0) = row0.x();   a(0, 1) = row0.y();   a(0, 2) = row0.z();   a(0, 3) = row0.w();
+	a(1, 0) = row1.x();   a(1, 1) = row1.y();   a(1, 2) = row1.z();   a(1, 3) = row1.w();
+	a(2, 0) = row2.x();   a(2, 1) = row2.y();   a(2, 2) = row2.z();   a(2, 3) = row2.w();
+	a(3, 0) = row3.x();   a(3, 1) = row3.y();   a(3, 2) = row3.z();   a(3, 3) = row3.w();
 }
 
 /**

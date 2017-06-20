@@ -42,5 +42,4 @@ CameraModel FixtureCamera::getWorldCameraModel()
     return *this;
 }
 
-
 } // namespace corecvs

@@ -519,7 +519,6 @@ public:
         return result;
     }
 
-
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {

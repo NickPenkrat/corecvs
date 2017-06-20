@@ -59,6 +59,41 @@ Matrix33 Similarity::getRotation()
     return rotation.toMatrix();
 }
 
+
+#if 0
+
+/**
+    X -> AX  - in space 1
+	
+	Similarity maps space1 to space2
+
+	SX -  position in space2
+	SAX - transformed position in space2
+
+	this funtion returns B : BSX = SAX
+	in operator form B = SAS^-1
+
+ **/
+Affine3DQ Similarity::transform(const Affine3DQ &A)
+{
+	Matrix44 result =
+		Matrix44::Shift(shiftR) * Matrix44::Scale(scaleR) * Matrix44(rotation.toMatrix()) * Matrix44::Scale(1.0 / scaleL) * Matrix44::Shift(-shiftL) * // S
+		corecvs::Matrix44::Shift(A.shift[0], A.shift[1], A.shift[2]) * corecvs::Matrix44(A.rotor.toMatrix())
+		* Matrix44::Shift(shiftL) *  Matrix44::Scale(scaleL) * Matrix44(rotation.conjugated().toMatrix()) * Matrix44::Scale(1.0 / scaleR) * Matrix44::Shift(-shiftR);
+
+	Vector3dd translation;
+	Vector3dd scale;
+	Matrix33  rotation;
+
+	Affine3DQ qResult;
+	result.decomposeTRS(scale, translation, rotation);
+	qResult.shift = translation;
+	qResult.rotor = Quaternion::FromMatrix(rotation);
+	return qResult;
+}
+
+#endif
+
 void Similarity::fillFunctionInput(double in[])
 {
     double scale    = getScale();
