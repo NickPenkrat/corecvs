@@ -17,6 +17,7 @@
 #include "matrix.h"
 #include "quaternion.h"
 #include "function.h"
+#include "affine.h"
 
 namespace corecvs {
 
@@ -50,6 +51,8 @@ public:
      *    To matrix transformation
      **/
     Matrix44 toMatrix() const;
+
+	Affine3DQ transform(const Affine3DQ &input);
 
     /**
      *    Transform
