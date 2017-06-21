@@ -33,6 +33,9 @@ extern double UnwarpToWarpLUT[LUT_LEN][2];
 extern double WarpToUnwarpLUT_HD[LUT_LEN_HD][2];
 extern double UnwarpToWarpLUT_HD[LUT_LEN_HD][2];
 
+extern double AngleToShiftLUT_HD[LUT_LEN_HD][2];
+
+
 #ifdef __cplusplus
     } // extern "C"
 #endif

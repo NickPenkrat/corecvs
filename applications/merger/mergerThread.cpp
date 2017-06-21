@@ -229,18 +229,35 @@ AbstractOutputData* MergerThread::processNewData()
     Vector2dd center(input->w / 2.0, input->h / 2.0);
 
     vector<Vector2dd> lut;
-    for (unsigned i = 0; i < LUT_LEN_HD; i++) {
-        lut.push_back(Vector2dd(UnwarpToWarpLUT_HD[i][0], UnwarpToWarpLUT_HD[i][1]));
+    for (unsigned i = 0; i < LUT_LEN; i++) {
+        lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
     }
     RadiusCorrectionLUTSq radiusLUTSq(&lut);
     SphericalCorrectionLUTSq correctorSq(center, &radiusLUTSq);
 
-    RadiusCorrectionLUT radiusLUT(lut);
+    RadiusCorrectionLUT radiusLUT = RadiusCorrectionLUT::FromSquareToSquare(lut);
     SphericalCorrectionLUT corrector(center, &radiusLUT);
+
+    vector<Vector2dd> luthd;
+    for (unsigned i = 0; i < LUT_LEN_HD; i++) {
+        luthd.push_back(Vector2dd(AngleToShiftLUT_HD[i][0], AngleToShiftLUT_HD[i][1]));
+    }
+
+    RadiusCorrectionLUT radiusLUTHd = RadiusCorrectionLUT::FromAngleAndProjection(luthd, mMergerParameters->mMToPixel(), mMergerParameters->undistFocal());
+    SphericalCorrectionLUT correctorHD(center, &radiusLUTHd);
+
+    for (unsigned i = 0; i < radiusLUTHd.LUT.size(); i++) {
+        cout << "Table for HD " << i  << " - " << radiusLUTHd.LUT[i]  << endl;
+    }
 
 
     //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);
-    outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&corrector, input->h, input->w);
+
+    if (mMergerParameters->undistMethod() == MergerUndistMethod::HD_TABLE) {
+        outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&correctorHD, input->h, input->w);
+    } else {
+        outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&corrector, input->h, input->w);
+    }
 
     stats.resetInterval("Example unwrap");
 
@@ -296,8 +313,8 @@ AbstractOutputData* MergerThread::processNewData()
     //draw car
     int shift_car_picture = 30;
     corecvs::Vector2d<int32_t> corner = { (int32_t)projX0.x() - shift_car_picture, (int32_t)projY1.y() };
-    //corecvs::Rectangled rect = corecvs::Rectangled(corner.x(), corner.y(), sizeRect.x(), sizeRect.y());
-    corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
+    corecvs::Rectangled rect = corecvs::Rectangled(corner.x(), corner.y(), sizeRect.x(), sizeRect.y());
+    //corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
     Vector2dd v1 = { 0, 0 };
     Vector2dd v1_end = rect.ulCorner();
 
@@ -334,14 +351,14 @@ AbstractOutputData* MergerThread::processNewData()
                 Vector2dd prj;               
                 switch (mMergerParameters->undistMethod())
                 {
-                    case 0:
+                    case MergerUndistMethod::NONE:
                     {
                         bool visible = cams[c]->projectPointFromWorld(pos, &prj);
                         if (!visible)
                             continue;
                         break;
                     }
-                    case 1:
+                    case MergerUndistMethod::SQUARE_TABLE:
                     {
                          Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
@@ -350,13 +367,22 @@ AbstractOutputData* MergerThread::processNewData()
                         prj = correctorSq.map(projection);
                         break;
                     }
-                    case 2:
+                    case MergerUndistMethod::RADIAL_TABLE:
                     {
                         Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
                             continue;
                         Vector2dd projection = models[c].intrinsics.project(relative);
                         prj = corrector.map(projection);
+                        break;
+                    }
+                    case MergerUndistMethod::HD_TABLE:
+                    {
+                        Vector3dd relative   = models[c].extrinsics.project(pos);
+                        if (relative.z() < 0)
+                            continue;
+                        Vector2dd projection = models[c].intrinsics.project(relative);
+                        prj = correctorHD.map(projection);
                         break;
                     }
                 }

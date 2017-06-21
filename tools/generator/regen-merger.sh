@@ -23,6 +23,9 @@ copy_if_different Generated/mergerControlWidget.ui      $merger/ui
 copy_if_different Generated/merger.cpp                  $merger/generatedParameters
 copy_if_different Generated/merger.h                    $merger/generatedParameters
 
+copy_if_different Generated/mergerUndistMethod.h        $merger/generatedParameters
+
+
 copy_if_different Generated/parametersMapperMerger.cpp  $merger/parametersMapper
 copy_if_different Generated/parametersMapperMerger.h    $merger/parametersMapper
 

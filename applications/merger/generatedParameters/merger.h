@@ -31,6 +31,7 @@
 /*
  *  Additional includes for enum section.
  */
+#include "mergerUndistMethod.h"
 
 /**
  * \brief Merger parameters 
@@ -41,6 +42,8 @@ class Merger : public corecvs::BaseReflection<Merger>
 public:
     enum FieldId {
         UNDISTMETHOD_ID,
+        UNDIST_FOCAL_ID,
+        MM_TO_PIXEL_ID,
         SHOWMASK_ID,
         BILINEAR_ID,
         SEPARATE_VIEW_ID,
@@ -71,6 +74,18 @@ public:
      * undistMethod 
      */
     int mUndistMethod;
+
+    /** 
+     * \brief Undist Focal 
+     * Undist Focal 
+     */
+    double mUndistFocal;
+
+    /** 
+     * \brief MM to Pixel 
+     * MM to Pixel 
+     */
+    double mMMToPixel;
 
     /** 
      * \brief showMask 
@@ -202,9 +217,19 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    int undistMethod() const
+    MergerUndistMethod::MergerUndistMethod undistMethod() const
     {
-        return mUndistMethod;
+        return static_cast<MergerUndistMethod::MergerUndistMethod>(mUndistMethod);
+    }
+
+    double undistFocal() const
+    {
+        return mUndistFocal;
+    }
+
+    double mMToPixel() const
+    {
+        return mMMToPixel;
     }
 
     bool showMask() const
@@ -308,9 +333,19 @@ public:
     }
 
     /* Section with setters */
-    void setUndistMethod(int undistMethod)
+    void setUndistMethod(MergerUndistMethod::MergerUndistMethod undistMethod)
     {
         mUndistMethod = undistMethod;
+    }
+
+    void setUndistFocal(double undistFocal)
+    {
+        mUndistFocal = undistFocal;
+    }
+
+    void setMMToPixel(double mMToPixel)
+    {
+        mMMToPixel = mMToPixel;
     }
 
     void setShowMask(bool showMask)
@@ -418,7 +453,9 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mUndistMethod,              static_cast<const corecvs::IntField *>(fields()[UNDISTMETHOD_ID]));
+        visitor.visit((int &)mUndistMethod,       static_cast<const corecvs::EnumField *>(fields()[UNDISTMETHOD_ID]));
+        visitor.visit(mUndistFocal,               static_cast<const corecvs::DoubleField *>(fields()[UNDIST_FOCAL_ID]));
+        visitor.visit(mMMToPixel,                 static_cast<const corecvs::DoubleField *>(fields()[MM_TO_PIXEL_ID]));
         visitor.visit(mShowMask,                  static_cast<const corecvs::BoolField *>(fields()[SHOWMASK_ID]));
         visitor.visit(mBilinear,                  static_cast<const corecvs::BoolField *>(fields()[BILINEAR_ID]));
         visitor.visit(mSeparateView,              static_cast<const corecvs::BoolField *>(fields()[SEPARATE_VIEW_ID]));
@@ -448,7 +485,9 @@ template<class VisitorType>
     }
 
     Merger(
-          int undistMethod
+          MergerUndistMethod::MergerUndistMethod undistMethod
+        , double undistFocal
+        , double mMToPixel
         , bool showMask
         , bool bilinear
         , bool separateView
@@ -472,6 +511,8 @@ template<class VisitorType>
     )
     {
         mUndistMethod = undistMethod;
+        mUndistFocal = undistFocal;
+        mMMToPixel = mMToPixel;
         mShowMask = showMask;
         mBilinear = bilinear;
         mSeparateView = separateView;
