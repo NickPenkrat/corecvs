@@ -378,14 +378,14 @@ ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrame()
         FramePair result;
         if (mCameras[0].buffer != NULL)
         {
-            result.bufferLeft = new G12Buffer(mCameras[0].buffer);
+            result.setBufferLeft(new G12Buffer(mCameras[0].buffer));
         }
         if (mCameras[1].buffer != NULL)
         {
-            result.bufferRight = new G12Buffer(mCameras[1].buffer);
+            result.setBufferRight(new G12Buffer(mCameras[1].buffer));
         }
-        result.timeStampLeft  = mCameras[0].timestamp;
-        result.timeStampRight = mCameras[1].timestamp;
+        result.setTimeStampLeft (mCameras[0].timestamp);
+        result.setTimeStampRight(mCameras[1].timestamp);
     mProtectFrame.unlock();
     return result;
 }
@@ -396,22 +396,22 @@ ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrameRGB24()
         FramePair result;
         if (mCameras[0].buffer != NULL)
         {
-            result.bufferLeft = new G12Buffer(mCameras[0].buffer);
+            result.setBufferLeft(new G12Buffer(mCameras[0].buffer));
         }
         if (mCameras[1].buffer != NULL)
         {
-            result.bufferRight = new G12Buffer(mCameras[1].buffer);
+            result.setBufferRight(new G12Buffer(mCameras[1].buffer));
         }
         if (mCameras[0].buffer24 != NULL)
         {
-            result.rgbBufferLeft = new RGB24Buffer(mCameras[0].buffer24);
+            result.setRgbBufferLeft(new RGB24Buffer(mCameras[0].buffer24));
         }
         if (mCameras[1].buffer24 != NULL)
         {
-            result.rgbBufferRight = new RGB24Buffer(mCameras[1].buffer24);
+            result.setRgbBufferRight(new RGB24Buffer(mCameras[1].buffer24));
         }
-        result.timeStampLeft  = mCameras[0].timestamp;
-        result.timeStampRight = mCameras[1].timestamp;
+        result.setTimeStampLeft (mCameras[0].timestamp);
+        result.setTimeStampRight(mCameras[1].timestamp);
     mProtectFrame.unlock();
     return result;
 }
