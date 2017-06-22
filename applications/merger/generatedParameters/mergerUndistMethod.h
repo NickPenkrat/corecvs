@@ -40,6 +40,11 @@ enum MergerUndistMethod {
      */
     HD_TABLE = 3,
     /** 
+     * \brief Loaded Camera 
+     * Loaded Camera 
+     */
+    LOADED_CAMERA = 4,
+    /** 
      * \brief Last virtual option to run cycles to
      */
     MERGER_UNDIST_METHOD_LAST
@@ -54,6 +59,7 @@ static inline const char *getName(const MergerUndistMethod &value)
      case SQUARE_TABLE : return "SQUARE_TABLE"; break ;
      case RADIAL_TABLE : return "RADIAL_TABLE"; break ;
      case HD_TABLE : return "HD_TABLE"; break ;
+     case LOADED_CAMERA : return "LOADED_CAMERA"; break ;
      default : return "Not in range"; break ;
      
     }

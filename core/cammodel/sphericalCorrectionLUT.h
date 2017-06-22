@@ -120,6 +120,8 @@ class RadiusCorrectionLUT
 {
 public:
     vector<double> LUT;
+    static const size_t LUT_SIZE_LIMIT = 100000;
+
     RadiusCorrectionLUT( /*const vector<Vector2dd> &_LUT*/)
     {
 /*       double last = sqrt(_LUT.back().x());
@@ -142,11 +144,11 @@ public:
     static RadiusCorrectionLUT FromSquareToSquare(const vector<Vector2dd> &_LUT)
     {
         RadiusCorrectionLUT result;
-        double last = sqrt(_LUT.back().x());
-        if (last > 100000) last = 100000;
+        size_t last = sqrt(_LUT.back().x());
+        last = std::min(LUT_SIZE_LIMIT, last);
 
         result.LUT.reserve(last + 1);
-        for (int i = 0; i < last; i++)
+        for (size_t i = 0; i < last; i++)
         {
             double val = i;
             double rSquare = val * val;
@@ -168,28 +170,30 @@ public:
         vector<Vector2dd> lut;
         lut.reserve(_AngleLUT.size());
 
+        /* We create a temporary lut that maps pixels to pixels */
         for (size_t i = 0; i < _AngleLUT.size(); i++)
         {
             double original = tan(degToRad(_AngleLUT[i].x())) * focalInMM * mmToPixel;
             double result   = _AngleLUT[i].y() * mmToPixel;
 
-            double koef = original / result;
-            cout << "Shift " <<  original << "  -> " << result  << "(" << koef << ")" << endl;
-            lut.push_back(Vector2dd(result, koef));
+            double koef = result / original;
+            // cout << "RadiusCorrectionLUT FromAngleAndProjection(): Shift " <<  original << "  -> " << result  << "(" << koef << ")" << endl;
+            lut.push_back(Vector2dd(original, koef));
         }
 
-        int last = 0;
+        /* Now we will create a dense lut that works for every integer distance */
+        /* This makes lookup fast */
+        size_t last = 0;
         for (size_t i = 0; i < lut.size(); i++)
         {
             if (lut[i].x() > last)  last = lut[i].x();
         }
-
-        if (last > 100000) last = 100000;
+        last = std::min(LUT_SIZE_LIMIT, last);
 
         result.LUT.reserve(last + 1);
 
-        SYNC_PRINT(("RadiusCorrectionLUT FromAngleAndProjection(): %d table size\n", last));
-        for (int i = 0; i < last; i++)
+        SYNC_PRINT(("RadiusCorrectionLUT FromAngleAndProjection(): %d table size\n", (int)last));
+        for (size_t i = 0; i < last; i++)
         {
             double val = i;
             size_t n = 1;

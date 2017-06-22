@@ -50,11 +50,12 @@ int Merger::staticInit()
           "undistMethod",
           "undistMethod",
           "undistMethod",
-          new EnumReflection(4
+          new EnumReflection(5
           , new EnumOption(0,"None")
           , new EnumOption(1,"Square Table")
           , new EnumOption(2,"Radial Table")
           , new EnumOption(3,"HD Table")
+          , new EnumOption(4,"Loaded Camera")
           )
         );
     field0->widgetHint=BaseField::COMBO_BOX;
@@ -94,7 +95,22 @@ int Merger::staticInit()
     field2->precision=3;
     fields().push_back(field2);
     /*  */ 
-    BoolField* field3 = new BoolField
+    IntField* field3 = new IntField
+        (
+          Merger::DISTORTION_OVERSHOOT_ID,
+          offsetof(Merger, mDistortionOvershoot),
+          0,
+          "Distortion Overshoot",
+          "Distortion Overshoot",
+          "Distortion Overshoot",
+          true,
+         0,
+         99999
+        );
+    field3->suffixHint="pix";
+    fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
         (
           Merger::SHOWMASK_ID,
           offsetof(Merger, mShowMask),
@@ -103,10 +119,10 @@ int Merger::staticInit()
           "showMask",
           "showMask"
         );
-    field3->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field3);
+    field4->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field4);
     /*  */ 
-    BoolField* field4 = new BoolField
+    BoolField* field5 = new BoolField
         (
           Merger::BILINEAR_ID,
           offsetof(Merger, mBilinear),
@@ -115,10 +131,10 @@ int Merger::staticInit()
           "bilinear",
           "bilinear"
         );
-    field4->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field4);
+    field5->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field5);
     /*  */ 
-    BoolField* field5 = new BoolField
+    BoolField* field6 = new BoolField
         (
           Merger::SEPARATE_VIEW_ID,
           offsetof(Merger, mSeparateView),
@@ -127,10 +143,22 @@ int Merger::staticInit()
           "Separate View",
           "Separate View"
         );
-    field5->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field5);
+    field6->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field6);
     /*  */ 
-    IntField* field6 = new IntField
+    BoolField* field7 = new BoolField
+        (
+          Merger::DRAW_CAR_ID,
+          offsetof(Merger, mDrawCar),
+          true,
+          "Draw Car",
+          "Draw Car",
+          "Draw Car"
+        );
+    field7->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field7);
+    /*  */ 
+    IntField* field8 = new IntField
         (
           Merger::FRAMETOUNDIST_ID,
           offsetof(Merger, mFrameToUndist),
@@ -142,9 +170,9 @@ int Merger::staticInit()
          0,
          3
         );
-    fields().push_back(field6);
+    fields().push_back(field8);
     /*  */ 
-    DoubleField* field7 = new DoubleField
+    DoubleField* field9 = new DoubleField
         (
           Merger::OUT_SIZE_H_ID,
           offsetof(Merger, mOutSizeH),
@@ -156,12 +184,12 @@ int Merger::staticInit()
          10,
          99999
         );
-    field7->widgetHint=BaseField::SPIN_BOX;
-    field7->suffixHint="px";
-    field7->precision=2;
-    fields().push_back(field7);
+    field9->widgetHint=BaseField::SPIN_BOX;
+    field9->suffixHint="px";
+    field9->precision=2;
+    fields().push_back(field9);
     /*  */ 
-    DoubleField* field8 = new DoubleField
+    DoubleField* field10 = new DoubleField
         (
           Merger::OUT_PHY_SIZE_L_ID,
           offsetof(Merger, mOutPhySizeL),
@@ -173,12 +201,12 @@ int Merger::staticInit()
          1,
          99999
         );
-    field8->widgetHint=BaseField::SPIN_BOX;
-    field8->suffixHint="dm";
-    field8->precision=2;
-    fields().push_back(field8);
+    field10->widgetHint=BaseField::SPIN_BOX;
+    field10->suffixHint="dm";
+    field10->precision=2;
+    fields().push_back(field10);
     /*  */ 
-    DoubleField* field9 = new DoubleField
+    DoubleField* field11 = new DoubleField
         (
           Merger::OUT_PHY_SIZE_W_ID,
           offsetof(Merger, mOutPhySizeW),
@@ -190,12 +218,12 @@ int Merger::staticInit()
          1,
          99999
         );
-    field9->widgetHint=BaseField::SPIN_BOX;
-    field9->suffixHint="dm";
-    field9->precision=2;
-    fields().push_back(field9);
+    field11->widgetHint=BaseField::SPIN_BOX;
+    field11->suffixHint="dm";
+    field11->precision=2;
+    fields().push_back(field11);
     /*  */ 
-    DoubleField* field10 = new DoubleField
+    DoubleField* field12 = new DoubleField
         (
           Merger::GROUND_Z_ID,
           offsetof(Merger, mGroundZ),
@@ -207,11 +235,11 @@ int Merger::staticInit()
          -99999,
          99999
         );
-    field10->widgetHint=BaseField::SPIN_BOX;
-    field10->precision=2;
-    fields().push_back(field10);
+    field12->widgetHint=BaseField::SPIN_BOX;
+    field12->precision=2;
+    fields().push_back(field12);
     /*  */ 
-    DoubleField* field11 = new DoubleField
+    DoubleField* field13 = new DoubleField
         (
           Merger::FOV1_ID,
           offsetof(Merger, mFOV1),
@@ -223,12 +251,12 @@ int Merger::staticInit()
          1,
          360
         );
-    field11->widgetHint=BaseField::SPIN_BOX;
-    field11->suffixHint="deg";
-    field11->precision=2;
-    fields().push_back(field11);
+    field13->widgetHint=BaseField::SPIN_BOX;
+    field13->suffixHint="deg";
+    field13->precision=2;
+    fields().push_back(field13);
     /*  */ 
-    BoolField* field12 = new BoolField
+    BoolField* field14 = new BoolField
         (
           Merger::SWITCH1_ID,
           offsetof(Merger, mSwitch1),
@@ -237,10 +265,10 @@ int Merger::staticInit()
           "switch1",
           "switch1"
         );
-    field12->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field12);
+    field14->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field14);
     /*  */ 
-    CompositeField* field13 = new CompositeField
+    CompositeField* field15 = new CompositeField
         (
           Merger::POS1_ID,
           offsetof(Merger, mPos1),
@@ -255,14 +283,14 @@ int Merger::staticInit()
         std::string name("Euclidian Move Parameters");
         ReflectionDirectory::iterator it = directory->find(name);
         if(it != directory->end()) {
-             field13->reflection = it->second;
+             field15->reflection = it->second;
         } else {
              printf("Reflection Merger to the subclass Euclidian Move Parameters can't be linked\n");
         }
     }
-    fields().push_back(field13);
+    fields().push_back(field15);
     /*  */ 
-    DoubleField* field14 = new DoubleField
+    DoubleField* field16 = new DoubleField
         (
           Merger::FOV2_ID,
           offsetof(Merger, mFOV2),
@@ -274,12 +302,12 @@ int Merger::staticInit()
          1,
          360
         );
-    field14->widgetHint=BaseField::SPIN_BOX;
-    field14->suffixHint="deg";
-    field14->precision=2;
-    fields().push_back(field14);
+    field16->widgetHint=BaseField::SPIN_BOX;
+    field16->suffixHint="deg";
+    field16->precision=2;
+    fields().push_back(field16);
     /*  */ 
-    BoolField* field15 = new BoolField
+    BoolField* field17 = new BoolField
         (
           Merger::SWITCH2_ID,
           offsetof(Merger, mSwitch2),
@@ -288,10 +316,10 @@ int Merger::staticInit()
           "switch2",
           "switch2"
         );
-    field15->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field15);
+    field17->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field17);
     /*  */ 
-    CompositeField* field16 = new CompositeField
+    CompositeField* field18 = new CompositeField
         (
           Merger::POS2_ID,
           offsetof(Merger, mPos2),
@@ -306,14 +334,14 @@ int Merger::staticInit()
         std::string name("Euclidian Move Parameters");
         ReflectionDirectory::iterator it = directory->find(name);
         if(it != directory->end()) {
-             field16->reflection = it->second;
+             field18->reflection = it->second;
         } else {
              printf("Reflection Merger to the subclass Euclidian Move Parameters can't be linked\n");
         }
     }
-    fields().push_back(field16);
+    fields().push_back(field18);
     /*  */ 
-    DoubleField* field17 = new DoubleField
+    DoubleField* field19 = new DoubleField
         (
           Merger::FOV3_ID,
           offsetof(Merger, mFOV3),
@@ -325,12 +353,12 @@ int Merger::staticInit()
          1,
          360
         );
-    field17->widgetHint=BaseField::SPIN_BOX;
-    field17->suffixHint="deg";
-    field17->precision=2;
-    fields().push_back(field17);
+    field19->widgetHint=BaseField::SPIN_BOX;
+    field19->suffixHint="deg";
+    field19->precision=2;
+    fields().push_back(field19);
     /*  */ 
-    BoolField* field18 = new BoolField
+    BoolField* field20 = new BoolField
         (
           Merger::SWITCH3_ID,
           offsetof(Merger, mSwitch3),
@@ -339,10 +367,10 @@ int Merger::staticInit()
           "switch3",
           "switch3"
         );
-    field18->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field18);
+    field20->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field20);
     /*  */ 
-    CompositeField* field19 = new CompositeField
+    CompositeField* field21 = new CompositeField
         (
           Merger::POS3_ID,
           offsetof(Merger, mPos3),
@@ -357,14 +385,14 @@ int Merger::staticInit()
         std::string name("Euclidian Move Parameters");
         ReflectionDirectory::iterator it = directory->find(name);
         if(it != directory->end()) {
-             field19->reflection = it->second;
+             field21->reflection = it->second;
         } else {
              printf("Reflection Merger to the subclass Euclidian Move Parameters can't be linked\n");
         }
     }
-    fields().push_back(field19);
+    fields().push_back(field21);
     /*  */ 
-    DoubleField* field20 = new DoubleField
+    DoubleField* field22 = new DoubleField
         (
           Merger::FOV4_ID,
           offsetof(Merger, mFOV4),
@@ -376,12 +404,12 @@ int Merger::staticInit()
          1,
          360
         );
-    field20->widgetHint=BaseField::SPIN_BOX;
-    field20->suffixHint="deg";
-    field20->precision=2;
-    fields().push_back(field20);
+    field22->widgetHint=BaseField::SPIN_BOX;
+    field22->suffixHint="deg";
+    field22->precision=2;
+    fields().push_back(field22);
     /*  */ 
-    BoolField* field21 = new BoolField
+    BoolField* field23 = new BoolField
         (
           Merger::SWITCH4_ID,
           offsetof(Merger, mSwitch4),
@@ -390,10 +418,10 @@ int Merger::staticInit()
           "switch4",
           "switch4"
         );
-    field21->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field21);
+    field23->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field23);
     /*  */ 
-    CompositeField* field22 = new CompositeField
+    CompositeField* field24 = new CompositeField
         (
           Merger::POS4_ID,
           offsetof(Merger, mPos4),
@@ -408,12 +436,12 @@ int Merger::staticInit()
         std::string name("Euclidian Move Parameters");
         ReflectionDirectory::iterator it = directory->find(name);
         if(it != directory->end()) {
-             field22->reflection = it->second;
+             field24->reflection = it->second;
         } else {
              printf("Reflection Merger to the subclass Euclidian Move Parameters can't be linked\n");
         }
     }
-    fields().push_back(field22);
+    fields().push_back(field24);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Merger")]= &reflection;
@@ -426,7 +454,7 @@ int Merger::relinkCompositeFields()
         std::string name("Euclidian Move Parameters");
         ReflectionDirectory::iterator it = directory->find(name);
         if(it != directory->end()) {
-             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[13]);
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[15]);
              const_cast<CompositeField*>(field)->reflection = it->second;
         } else {
              printf("Reflection Merger to the subclass Euclidian Move Parameters can't be linked\n");
@@ -437,7 +465,7 @@ int Merger::relinkCompositeFields()
         std::string name("Euclidian Move Parameters");
         ReflectionDirectory::iterator it = directory->find(name);
         if(it != directory->end()) {
-             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[16]);
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[18]);
              const_cast<CompositeField*>(field)->reflection = it->second;
         } else {
              printf("Reflection Merger to the subclass Euclidian Move Parameters can't be linked\n");
@@ -448,7 +476,7 @@ int Merger::relinkCompositeFields()
         std::string name("Euclidian Move Parameters");
         ReflectionDirectory::iterator it = directory->find(name);
         if(it != directory->end()) {
-             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[19]);
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[21]);
              const_cast<CompositeField*>(field)->reflection = it->second;
         } else {
              printf("Reflection Merger to the subclass Euclidian Move Parameters can't be linked\n");
@@ -459,7 +487,7 @@ int Merger::relinkCompositeFields()
         std::string name("Euclidian Move Parameters");
         ReflectionDirectory::iterator it = directory->find(name);
         if(it != directory->end()) {
-             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[22]);
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[24]);
              const_cast<CompositeField*>(field)->reflection = it->second;
         } else {
              printf("Reflection Merger to the subclass Euclidian Move Parameters can't be linked\n");

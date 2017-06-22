@@ -82,6 +82,8 @@ public:
     PtrRGB24Buffer  mMasks[4];// = { NULL, NULL, NULL, NULL };
 
     FixtureScene  *mCarScene = NULL;
+    TableInverseCache *mUndistort = NULL;
+
     MultiewMapping mMapper;
     void prepareMapping();
 

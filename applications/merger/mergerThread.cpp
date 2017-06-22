@@ -44,6 +44,7 @@ MergerThread::~MergerThread()
         delete_safe(mMasks[c]);
     }
     delete_safe(mCarScene);
+    delete_safe(mUndistort);
 }
 
 Affine3DQ getTransform (const EuclidianMoveParameters &input)
@@ -84,9 +85,6 @@ void MergerThread::prepareMapping()
         }
     }
 
-
-
-
     /* Forming scene */
     delete_safe(mCarScene);
     mCarScene = new FixtureScene;
@@ -101,15 +99,47 @@ void MergerThread::prepareMapping()
     PinholeCameraIntrinsics pinhole3(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV3()));
     PinholeCameraIntrinsics pinhole4(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV4()));
 
+
+    /** Undistortion would be load only once **/
+
+    if (mUndistort == NULL)
+    {
+        LensDistortionModelParameters disortion;
+        JSONGetter loader("lens.json");
+        loader.visit(disortion, "intrinsic");
+        cout << disortion << endl;
+
+        //disortion.setShift(Vector2dd(400,400));
+        RadialCorrection corr(disortion);
+        delete_safe(mUndistort);
+        //mUndistort = new DisplacementBuffer(&corr, fstBuf->h, fstBuf->w, false);
+
+        int overshoot = mMergerParameters->distortionOvershoot();
+
+        mUndistort = TableInverseCache::CacheInverse(
+                      /*  - fstBuf->w,   - fstBuf->h,
+                      2 * fstBuf->w, 2 * fstBuf->h,*/
+                      -overshoot, -overshoot,
+                      fstBuf->w + overshoot, fstBuf->h + overshoot,
+                      /*0, 0,
+                      fstBuf->w, fstBuf->h,*/
+                      &corr,
+                      0.0, 0.0,
+                      (double)fstBuf->w, (double)fstBuf->h,
+                      0.1, false);
+    }
+
+
+
     FixtureCamera *frontCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(frontCam, body);
     FixtureCamera *rightCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(rightCam, body);
     FixtureCamera *backCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(backCam , body);
     FixtureCamera *leftCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(leftCam , body);
 
-    frontCam->intrinsics = pinhole1;
-    rightCam->intrinsics = pinhole2;
-    backCam ->intrinsics = pinhole3;
-    leftCam ->intrinsics = pinhole4;
+    frontCam->intrinsics = pinhole1; // frontCam->distortion = inverted.mParams;
+    rightCam->intrinsics = pinhole2; // rightCam->distortion = inverted.mParams;
+    backCam ->intrinsics = pinhole3; // backCam ->distortion = inverted.mParams;
+    leftCam ->intrinsics = pinhole4; // leftCam ->distortion = inverted.mParams;
 
     frontCam->nameId = "Front";
     rightCam->nameId = "Right";
@@ -224,42 +254,7 @@ AbstractOutputData* MergerThread::processNewData()
 
     stats.resetInterval("Canvas cleanup");
 
-    /* Unwrap */
-    RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
-    Vector2dd center(input->w / 2.0, input->h / 2.0);
 
-    vector<Vector2dd> lut;
-    for (unsigned i = 0; i < LUT_LEN; i++) {
-        lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
-    }
-    RadiusCorrectionLUTSq radiusLUTSq(&lut);
-    SphericalCorrectionLUTSq correctorSq(center, &radiusLUTSq);
-
-    RadiusCorrectionLUT radiusLUT = RadiusCorrectionLUT::FromSquareToSquare(lut);
-    SphericalCorrectionLUT corrector(center, &radiusLUT);
-
-    vector<Vector2dd> luthd;
-    for (unsigned i = 0; i < LUT_LEN_HD; i++) {
-        luthd.push_back(Vector2dd(AngleToShiftLUT_HD[i][0], AngleToShiftLUT_HD[i][1]));
-    }
-
-    RadiusCorrectionLUT radiusLUTHd = RadiusCorrectionLUT::FromAngleAndProjection(luthd, mMergerParameters->mMToPixel(), mMergerParameters->undistFocal());
-    SphericalCorrectionLUT correctorHD(center, &radiusLUTHd);
-
-    for (unsigned i = 0; i < radiusLUTHd.LUT.size(); i++) {
-        cout << "Table for HD " << i  << " - " << radiusLUTHd.LUT[i]  << endl;
-    }
-
-
-    //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);
-
-    if (mMergerParameters->undistMethod() == MergerUndistMethod::HD_TABLE) {
-        outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&correctorHD, input->h, input->w);
-    } else {
-        outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&corrector, input->h, input->w);
-    }
-
-    stats.resetInterval("Example unwrap");
 
 
     /* Scene */
@@ -290,6 +285,51 @@ AbstractOutputData* MergerThread::processNewData()
 
     RGB24Buffer *out = outputData->mainOutput;
  
+    /* Unwrap */
+    RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
+    Vector2dd center(input->w / 2.0, input->h / 2.0);
+
+    vector<Vector2dd> lut;
+    for (unsigned i = 0; i < LUT_LEN; i++) {
+        lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
+    }
+    RadiusCorrectionLUTSq radiusLUTSq(&lut);
+    SphericalCorrectionLUTSq correctorSq(center, &radiusLUTSq);
+
+    RadiusCorrectionLUT radiusLUT = RadiusCorrectionLUT::FromSquareToSquare(lut);
+    SphericalCorrectionLUT corrector(center, &radiusLUT);
+
+    vector<Vector2dd> luthd;
+    for (unsigned i = 0; i < LUT_LEN_HD; i++) {
+        luthd.push_back(Vector2dd(AngleToShiftLUT_HD[i][0], AngleToShiftLUT_HD[i][1]));
+    }
+
+    RadiusCorrectionLUT radiusLUTHd = RadiusCorrectionLUT::FromAngleAndProjection(luthd, mMergerParameters->mMToPixel(), mMergerParameters->undistFocal());
+    SphericalCorrectionLUT correctorHD(center, &radiusLUTHd);
+
+#if 0
+    for (unsigned i = 0; i < radiusLUTHd.LUT.size(); i++) {
+        cout << "Table for HD " << i  << " - " << radiusLUTHd.LUT[i]  << endl;
+    }
+#endif
+
+
+    //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);
+
+    switch (mMergerParameters->undistMethod()) {
+      case MergerUndistMethod::HD_TABLE:
+           outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&correctorHD, input->h, input->w);
+           break;
+      case MergerUndistMethod::LOADED_CAMERA:
+           outputData->unwarpOutput = input->doReverseDeformationBlTyped<TableInverseCache>(mUndistort, input->h, input->w);
+           break;
+      default:
+           outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&corrector, input->h, input->w);
+           break;
+    }
+
+    stats.resetInterval("Example unwrap");
+
     //precalculations
     //car simulation
     //{
@@ -348,7 +388,7 @@ AbstractOutputData* MergerThread::processNewData()
                     continue;
                 RGB24Buffer *buffer = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)c);
 
-                Vector2dd prj;               
+                Vector2dd prj (-1, -1);
                 switch (mMergerParameters->undistMethod())
                 {
                     case MergerUndistMethod::NONE:
@@ -385,6 +425,18 @@ AbstractOutputData* MergerThread::processNewData()
                         prj = correctorHD.map(projection);
                         break;
                     }
+                    case MergerUndistMethod::LOADED_CAMERA:
+                    {
+                        Vector3dd relative   = models[c].extrinsics.project(pos);
+                        if (relative.z() < 0)
+                            continue;
+                        Vector2dd projection = models[c].intrinsics.project(relative);
+                        if (mUndistort->isValidCoord((int32_t)projection.y(), (int32_t)projection.x())) {
+                            prj = mUndistort->map((int32_t)projection.y(), (int32_t)projection.x());
+                        }
+                        break;
+                    }
+
                 }
                 double weigth_separated_view = 1;
 
@@ -447,6 +499,7 @@ AbstractOutputData* MergerThread::processNewData()
     stats.resetInterval("Reprojecting");
 
     //car simulation
+    if (mMergerParameters->drawCar())
     {
         out->drawRectangle(rect, RGBColor::Black(), 2);
 

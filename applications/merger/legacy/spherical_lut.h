@@ -25,7 +25,7 @@
 
 
 #define LUT_LEN 48
-#define LUT_LEN_HD 90
+#define LUT_LEN_HD 104
 
 extern double WarpToUnwarpLUT[LUT_LEN][2];
 extern double UnwarpToWarpLUT[LUT_LEN][2];

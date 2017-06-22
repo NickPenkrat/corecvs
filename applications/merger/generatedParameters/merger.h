@@ -44,9 +44,11 @@ public:
         UNDISTMETHOD_ID,
         UNDIST_FOCAL_ID,
         MM_TO_PIXEL_ID,
+        DISTORTION_OVERSHOOT_ID,
         SHOWMASK_ID,
         BILINEAR_ID,
         SEPARATE_VIEW_ID,
+        DRAW_CAR_ID,
         FRAMETOUNDIST_ID,
         OUT_SIZE_H_ID,
         OUT_PHY_SIZE_L_ID,
@@ -88,6 +90,12 @@ public:
     double mMMToPixel;
 
     /** 
+     * \brief Distortion Overshoot 
+     * Distortion Overshoot 
+     */
+    int mDistortionOvershoot;
+
+    /** 
      * \brief showMask 
      * showMask 
      */
@@ -104,6 +112,12 @@ public:
      * Separate View 
      */
     bool mSeparateView;
+
+    /** 
+     * \brief Draw Car 
+     * Draw Car 
+     */
+    bool mDrawCar;
 
     /** 
      * \brief frameToUndist 
@@ -232,6 +246,11 @@ public:
         return mMMToPixel;
     }
 
+    int distortionOvershoot() const
+    {
+        return mDistortionOvershoot;
+    }
+
     bool showMask() const
     {
         return mShowMask;
@@ -245,6 +264,11 @@ public:
     bool separateView() const
     {
         return mSeparateView;
+    }
+
+    bool drawCar() const
+    {
+        return mDrawCar;
     }
 
     int frameToUndist() const
@@ -348,6 +372,11 @@ public:
         mMMToPixel = mMToPixel;
     }
 
+    void setDistortionOvershoot(int distortionOvershoot)
+    {
+        mDistortionOvershoot = distortionOvershoot;
+    }
+
     void setShowMask(bool showMask)
     {
         mShowMask = showMask;
@@ -361,6 +390,11 @@ public:
     void setSeparateView(bool separateView)
     {
         mSeparateView = separateView;
+    }
+
+    void setDrawCar(bool drawCar)
+    {
+        mDrawCar = drawCar;
     }
 
     void setFrameToUndist(int frameToUndist)
@@ -456,9 +490,11 @@ template<class VisitorType>
         visitor.visit((int &)mUndistMethod,       static_cast<const corecvs::EnumField *>(fields()[UNDISTMETHOD_ID]));
         visitor.visit(mUndistFocal,               static_cast<const corecvs::DoubleField *>(fields()[UNDIST_FOCAL_ID]));
         visitor.visit(mMMToPixel,                 static_cast<const corecvs::DoubleField *>(fields()[MM_TO_PIXEL_ID]));
+        visitor.visit(mDistortionOvershoot,       static_cast<const corecvs::IntField *>(fields()[DISTORTION_OVERSHOOT_ID]));
         visitor.visit(mShowMask,                  static_cast<const corecvs::BoolField *>(fields()[SHOWMASK_ID]));
         visitor.visit(mBilinear,                  static_cast<const corecvs::BoolField *>(fields()[BILINEAR_ID]));
         visitor.visit(mSeparateView,              static_cast<const corecvs::BoolField *>(fields()[SEPARATE_VIEW_ID]));
+        visitor.visit(mDrawCar,                   static_cast<const corecvs::BoolField *>(fields()[DRAW_CAR_ID]));
         visitor.visit(mFrameToUndist,             static_cast<const corecvs::IntField *>(fields()[FRAMETOUNDIST_ID]));
         visitor.visit(mOutSizeH,                  static_cast<const corecvs::DoubleField *>(fields()[OUT_SIZE_H_ID]));
         visitor.visit(mOutPhySizeL,               static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_L_ID]));
@@ -488,9 +524,11 @@ template<class VisitorType>
           MergerUndistMethod::MergerUndistMethod undistMethod
         , double undistFocal
         , double mMToPixel
+        , int distortionOvershoot
         , bool showMask
         , bool bilinear
         , bool separateView
+        , bool drawCar
         , int frameToUndist
         , double outSizeH
         , double outPhySizeL
@@ -513,9 +551,11 @@ template<class VisitorType>
         mUndistMethod = undistMethod;
         mUndistFocal = undistFocal;
         mMMToPixel = mMToPixel;
+        mDistortionOvershoot = distortionOvershoot;
         mShowMask = showMask;
         mBilinear = bilinear;
         mSeparateView = separateView;
+        mDrawCar = drawCar;
         mFrameToUndist = frameToUndist;
         mOutSizeH = outSizeH;
         mOutPhySizeL = outPhySizeL;
