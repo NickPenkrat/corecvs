@@ -120,7 +120,7 @@ public:
     Matrix44 t() const;
 
 	// if successful, returns 4x4 matrix decomposion [ Matrix = Translation * Rotation * Scale ]
-	bool Matrix44::decomposeTRS(Vector3dd& scale, Vector3dd& translate, Matrix33& rotate);
+	bool decomposeTRS(Vector3dd& scale, Vector3dd& translate, Matrix33& rotate);
 
     Matrix44 inverted() const;
     double trace() const;
