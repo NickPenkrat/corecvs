@@ -43,7 +43,7 @@ public:
     enum FieldId {
         UNDISTMETHOD_ID,
         UNDIST_FOCAL_ID,
-        MM_TO_PIXEL_ID,
+        SENSOR_WIDTH_ID,
         DISTORTION_OVERSHOOT_ID,
         SHOWMASK_ID,
         BILINEAR_ID,
@@ -84,10 +84,10 @@ public:
     double mUndistFocal;
 
     /** 
-     * \brief MM to Pixel 
-     * MM to Pixel 
+     * \brief Sensor Width 
+     * Sensor Width 
      */
-    double mMMToPixel;
+    double mSensorWidth;
 
     /** 
      * \brief Distortion Overshoot 
@@ -241,9 +241,9 @@ public:
         return mUndistFocal;
     }
 
-    double mMToPixel() const
+    double sensorWidth() const
     {
-        return mMMToPixel;
+        return mSensorWidth;
     }
 
     int distortionOvershoot() const
@@ -367,9 +367,9 @@ public:
         mUndistFocal = undistFocal;
     }
 
-    void setMMToPixel(double mMToPixel)
+    void setSensorWidth(double sensorWidth)
     {
-        mMMToPixel = mMToPixel;
+        mSensorWidth = sensorWidth;
     }
 
     void setDistortionOvershoot(int distortionOvershoot)
@@ -489,7 +489,7 @@ template<class VisitorType>
     {
         visitor.visit((int &)mUndistMethod,       static_cast<const corecvs::EnumField *>(fields()[UNDISTMETHOD_ID]));
         visitor.visit(mUndistFocal,               static_cast<const corecvs::DoubleField *>(fields()[UNDIST_FOCAL_ID]));
-        visitor.visit(mMMToPixel,                 static_cast<const corecvs::DoubleField *>(fields()[MM_TO_PIXEL_ID]));
+        visitor.visit(mSensorWidth,               static_cast<const corecvs::DoubleField *>(fields()[SENSOR_WIDTH_ID]));
         visitor.visit(mDistortionOvershoot,       static_cast<const corecvs::IntField *>(fields()[DISTORTION_OVERSHOOT_ID]));
         visitor.visit(mShowMask,                  static_cast<const corecvs::BoolField *>(fields()[SHOWMASK_ID]));
         visitor.visit(mBilinear,                  static_cast<const corecvs::BoolField *>(fields()[BILINEAR_ID]));
@@ -523,7 +523,7 @@ template<class VisitorType>
     Merger(
           MergerUndistMethod::MergerUndistMethod undistMethod
         , double undistFocal
-        , double mMToPixel
+        , double sensorWidth
         , int distortionOvershoot
         , bool showMask
         , bool bilinear
@@ -550,7 +550,7 @@ template<class VisitorType>
     {
         mUndistMethod = undistMethod;
         mUndistFocal = undistFocal;
-        mMMToPixel = mMToPixel;
+        mSensorWidth = sensorWidth;
         mDistortionOvershoot = distortionOvershoot;
         mShowMask = showMask;
         mBilinear = bilinear;

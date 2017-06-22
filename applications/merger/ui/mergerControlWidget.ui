@@ -87,27 +87,27 @@
         <double>0.1</double>
        </property>
        <property name="value">
-        <double>0.9</double>
+        <double>400</double>
        </property>
        <property name="prefix">
         <string></string>
        </property>
        <property name="suffix">
-        <string>mm</string>
+        <string>px</string>
        </property>
      </widget>
     </item>
     <item row="2" column="0">
      <widget class="QLabel" name="label_2">
        <property name="text">
-         <string>MM to Pixel</string>
+         <string>Sensor Width</string>
        </property>
      </widget>
     </item>
     <item row="2" column="1">
-     <widget class="QDoubleSpinBox" name="mMToPixelSpinBox">
+     <widget class="QDoubleSpinBox" name="sensorWidthSpinBox">
        <property name="toolTip">
-         <string>MM to Pixel</string>
+         <string>Sensor Width</string>
        </property>
        <property name="decimals">
         <number>3</number>
@@ -122,13 +122,13 @@
         <double>0.1</double>
        </property>
        <property name="value">
-        <double>400</double>
+        <double>20</double>
        </property>
        <property name="prefix">
         <string></string>
        </property>
        <property name="suffix">
-        <string>pix</string>
+        <string>mm</string>
        </property>
      </widget>
     </item>
@@ -160,7 +160,7 @@
         <string></string>
        </property>
        <property name="suffix">
-        <string>pix</string>
+        <string>px</string>
        </property>
      </widget>
     </item>
@@ -688,7 +688,7 @@
    <slot>changeParameters()</slot>
   </connection>
   <connection>
-   <sender>mMToPixelSpinBox</sender>
+   <sender>sensorWidthSpinBox</sender>
    <signal>valueChanged(double)</signal>
    <receiver>MergerControlWidget</receiver>
    <slot>changeParameters()</slot>

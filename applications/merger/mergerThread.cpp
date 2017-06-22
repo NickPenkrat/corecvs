@@ -304,7 +304,8 @@ AbstractOutputData* MergerThread::processNewData()
         luthd.push_back(Vector2dd(AngleToShiftLUT_HD[i][0], AngleToShiftLUT_HD[i][1]));
     }
 
-    RadiusCorrectionLUT radiusLUTHd = RadiusCorrectionLUT::FromAngleAndProjection(luthd, mMergerParameters->mMToPixel(), mMergerParameters->undistFocal());
+    double mmToPixel = (double)input->w / mMergerParameters->sensorWidth();
+    RadiusCorrectionLUT radiusLUTHd = RadiusCorrectionLUT::FromAngleAndProjection(luthd, mmToPixel, mMergerParameters->undistFocal());
     SphericalCorrectionLUT correctorHD(center, &radiusLUTHd);
 
 #if 0

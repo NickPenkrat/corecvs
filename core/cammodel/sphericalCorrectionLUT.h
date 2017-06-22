@@ -164,7 +164,7 @@ public:
         return result;
     }
 
-    static RadiusCorrectionLUT FromAngleAndProjection(const vector<Vector2dd> &_AngleLUT, double mmToPixel, double focalInMM)
+    static RadiusCorrectionLUT FromAngleAndProjection(const vector<Vector2dd> &_AngleLUT, double mmToPixel, double focalInPx)
     {
         RadiusCorrectionLUT result;
         vector<Vector2dd> lut;
@@ -173,7 +173,7 @@ public:
         /* We create a temporary lut that maps pixels to pixels */
         for (size_t i = 0; i < _AngleLUT.size(); i++)
         {
-            double original = tan(degToRad(_AngleLUT[i].x())) * focalInMM * mmToPixel;
+            double original = tan(degToRad(_AngleLUT[i].x())) * focalInPx;
             double result   = _AngleLUT[i].y() * mmToPixel;
 
             double koef = result / original;

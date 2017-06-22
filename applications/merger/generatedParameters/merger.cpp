@@ -65,7 +65,7 @@ int Merger::staticInit()
         (
           Merger::UNDIST_FOCAL_ID,
           offsetof(Merger, mUndistFocal),
-          0.9,
+          400,
           "Undist Focal",
           "Undist Focal",
           "Undist Focal",
@@ -74,24 +74,24 @@ int Merger::staticInit()
          99999
         );
     field1->widgetHint=BaseField::SPIN_BOX;
-    field1->suffixHint="mm";
+    field1->suffixHint="px";
     field1->precision=3;
     fields().push_back(field1);
     /*  */ 
     DoubleField* field2 = new DoubleField
         (
-          Merger::MM_TO_PIXEL_ID,
-          offsetof(Merger, mMMToPixel),
-          400,
-          "MM to Pixel",
-          "MM to Pixel",
-          "MM to Pixel",
+          Merger::SENSOR_WIDTH_ID,
+          offsetof(Merger, mSensorWidth),
+          20,
+          "Sensor Width",
+          "Sensor Width",
+          "Sensor Width",
           true,
          0,
          99999
         );
     field2->widgetHint=BaseField::SPIN_BOX;
-    field2->suffixHint="pix";
+    field2->suffixHint="mm";
     field2->precision=3;
     fields().push_back(field2);
     /*  */ 
@@ -107,7 +107,7 @@ int Merger::staticInit()
          0,
          99999
         );
-    field3->suffixHint="pix";
+    field3->suffixHint="px";
     fields().push_back(field3);
     /*  */ 
     BoolField* field4 = new BoolField

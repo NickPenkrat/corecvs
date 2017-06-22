@@ -12,10 +12,10 @@
 
   <class name="Merger" description="Merger parameters">  
     <field type="Merger Undist Method"      name="undistMethod"  defaultValue="3" />
-    <field type="double" name="Undist Focal" suffix="mm"  defaultValue="0.9" decimals="3" min="0"   max="99999" step="0.1" />
-    <field type="double" name="MM to Pixel"  suffix="pix" defaultValue="400" decimals="3" min="0"   max="99999" step="0.1" />
+    <field type="double" name="Undist Focal"   suffix="px"  defaultValue="400" decimals="3" min="0"   max="99999" step="0.1" />
+    <field type="double" name="Sensor Width"   suffix="mm"  defaultValue="20"  decimals="3" min="0"   max="99999" step="0.1" />
 
-    <field type="int"    name="Distortion Overshoot"  suffix="pix" defaultValue="0" min="0"   max="99999" step="10" />
+    <field type="int"    name="Distortion Overshoot"  suffix="px" defaultValue="0" min="0"   max="99999" step="10" />
 
 
     <field type="bool"   name="showMask"      defaultValue="true"  />
