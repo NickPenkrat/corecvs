@@ -25,7 +25,7 @@
 #include "calculationStats.h"
 
 #include "mesh3DDecorated.h"
-
+typedef RGB24Buffer * PtrRGB24Buffer;
 class MergerOutputData : public BaseOutputData
 {
 public:
@@ -79,8 +79,11 @@ public:
 
     bool recomputeMergerState = true;
 
-    RGB24Buffer   *mMasks[4] = {NULL, NULL, NULL, NULL};
+    PtrRGB24Buffer  mMasks[4];// = { NULL, NULL, NULL, NULL };
+
     FixtureScene  *mCarScene = NULL;
+    TableInverseCache *mUndistort = NULL;
+
     MultiewMapping mMapper;
     void prepareMapping();
 
@@ -109,7 +112,7 @@ private:
     QString mPath;
     QSharedPointer<Merger> mMergerParameters;
 
-
+    bool isUnderLine(Vector2dd point, Vector2dd point1, Vector2dd point2);
     //FixtureScene *scene = NULL;
 
 };

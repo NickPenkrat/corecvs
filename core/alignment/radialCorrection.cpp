@@ -80,8 +80,8 @@ public:
             for (int j = 0; j < mSteps; j++)
             {
                 Vector2dd point(dw * j, dh * i);
-                Vector2dd deformed = mInput.mapToUndistorted(point); /* this could be cached */
-                Vector2dd backproject = guess.mapToUndistorted(deformed);
+                Vector2dd deformed    = mInput.mapToUndistorted(point); /* this could be cached */
+                Vector2dd backproject = guess .mapToUndistorted(deformed);
                 Vector2dd diff = backproject - point;
 
                 out[2 * (i * mSteps + j)    ] = diff.x();
@@ -167,13 +167,16 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
     RadialCorrectionInversionCostFunction cost(*this, guess, step, h, w);
 
     LevenbergMarquardt lmFit;
-    lmFit.maxIterations = 101;
-    lmFit.maxLambda = 10e8;
+    lmFit.maxIterations = 10000001;
+    lmFit.maxLambda = 10e80;
+    lmFit.fTolerance = 1e-19;
+    lmFit.xTolerance = 1e-19;
+
     lmFit.lambdaFactor = 8;
     lmFit.f = &cost;
-  //lmFit.traceCrucial  = true;
-  //lmFit.traceProgress = true;
-  //lmFit.traceMatrix   = true;
+    lmFit.traceCrucial  = true;
+    lmFit.traceProgress = true;
+    lmFit.trace         = true;
 
     vector<double> initialGuess(cost.inputs);
     RadialCorrectionInversionCostFunction::fillWithRadial(guess, &(initialGuess[0]));
@@ -198,6 +201,29 @@ RadialCorrection RadialCorrection::invertCorrection(int h, int w, int step)
 
     return guess;
 }
+
+#if 0
+RadialCorrection RadialCorrection::invertCorrectionLSE(int h, int w, int step)
+{
+    double dh = (double)mH / (mSteps - 1);
+    double dw = (double)mW / (mSteps - 1);
+    RadialCorrection guess = updateWithModel(mGuess, in);
+
+    for (int i = 0; i < mSteps; i++)
+    {
+        for (int j = 0; j < mSteps; j++)
+        {
+            Vector2dd point(dw * j, dh * i);
+            Vector2dd deformed    = mInput.mapToUndistorted(point); /* this could be cached */
+            Vector2dd backproject = guess .mapToUndistorted(deformed);
+            Vector2dd diff = backproject - point;
+
+            out[2 * (i * mSteps + j)    ] = diff.x();
+            out[2 * (i * mSteps + j) + 1] = diff.y();
+        }
+    }
+}
+#endif
 
 /* use sample points. We can improve maximium numerically, but it's ok so far */
 EllipticalApproximation1d RadialCorrection::compareWith(const RadialCorrection &other, int h, int w, int steps)

@@ -168,7 +168,7 @@ TEST(Deform, testRadialApplication)  // TODO: move to perf-tests!
 
 TEST(Deform, testRadialInversion)
 {
-    testRadialInversion(1);
+    testRadialInversion(3);
 }
 
 TEST(Deform, testRectangularImage)

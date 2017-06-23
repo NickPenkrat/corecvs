@@ -120,9 +120,11 @@ class RadiusCorrectionLUT
 {
 public:
     vector<double> LUT;
-    RadiusCorrectionLUT( const vector<Vector2dd> &_LUT)
+    static const size_t LUT_SIZE_LIMIT = 100000;
+
+    RadiusCorrectionLUT( /*const vector<Vector2dd> &_LUT*/)
     {
-       double last = sqrt(_LUT.back().x());
+/*       double last = sqrt(_LUT.back().x());
        LUT.reserve(last + 1);
        for (int i = 0; i < last; i++)
        {
@@ -136,9 +138,75 @@ public:
            }
            double koef = lerp(_LUT[n].y(), _LUT[n + 1].y(), rSquare, _LUT[n].x(), _LUT[n + 1].x());
            LUT.push_back(koef);
-       }
+       }*/
     }
 
+    static RadiusCorrectionLUT FromSquareToSquare(const vector<Vector2dd> &_LUT)
+    {
+        RadiusCorrectionLUT result;
+        size_t last = sqrt(_LUT.back().x());
+        last = std::min(LUT_SIZE_LIMIT, last);
+
+        result.LUT.reserve(last + 1);
+        for (size_t i = 0; i < last; i++)
+        {
+            double val = i;
+            double rSquare = val * val;
+            size_t n = 1;
+            for (; n + 2 < _LUT.size(); n++)
+            {
+                if (_LUT[n + 1].x() > rSquare)
+                    break;
+            }
+            double koef = lerp(_LUT[n].y(), _LUT[n + 1].y(), rSquare, _LUT[n].x(), _LUT[n + 1].x());
+            result.LUT.push_back(koef);
+        }
+        return result;
+    }
+
+    static RadiusCorrectionLUT FromAngleAndProjection(const vector<Vector2dd> &_AngleLUT, double mmToPixel, double focalInPx)
+    {
+        RadiusCorrectionLUT result;
+        vector<Vector2dd> lut;
+        lut.reserve(_AngleLUT.size());
+
+        /* We create a temporary lut that maps pixels to pixels */
+        for (size_t i = 0; i < _AngleLUT.size(); i++)
+        {
+            double original = tan(degToRad(_AngleLUT[i].x())) * focalInPx;
+            double result   = _AngleLUT[i].y() * mmToPixel;
+
+            double koef = result / original;
+            // cout << "RadiusCorrectionLUT FromAngleAndProjection(): Shift " <<  original << "  -> " << result  << "(" << koef << ")" << endl;
+            lut.push_back(Vector2dd(original, koef));
+        }
+
+        /* Now we will create a dense lut that works for every integer distance */
+        /* This makes lookup fast */
+        size_t last = 0;
+        for (size_t i = 0; i < lut.size(); i++)
+        {
+            if (lut[i].x() > last)  last = lut[i].x();
+        }
+        last = std::min(LUT_SIZE_LIMIT, last);
+
+        result.LUT.reserve(last + 1);
+
+        SYNC_PRINT(("RadiusCorrectionLUT FromAngleAndProjection(): %d table size\n", (int)last));
+        for (size_t i = 0; i < last; i++)
+        {
+            double val = i;
+            size_t n = 1;
+            for (; n + 2 < lut.size(); n++)
+            {
+                if (lut[n + 1].x() > val)
+                    break;
+            }
+            double koef = lerp(lut[n].y(), lut[n + 1].y(), val, lut[n].x(), lut[n + 1].x());
+            result.LUT.push_back(koef);
+        }
+        return result;
+    }
 
     inline double transformRadius(double radius) const
     {
@@ -149,6 +217,8 @@ public:
             double y1 = LUT[n + 1];
             return lerp(y0, y1, radius, n, n+1);
         }
+
+        return 0;
     }
 };
 

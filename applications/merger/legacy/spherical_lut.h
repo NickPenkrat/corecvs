@@ -25,9 +25,16 @@
 
 
 #define LUT_LEN 48
+#define LUT_LEN_HD 104
 
 extern double WarpToUnwarpLUT[LUT_LEN][2];
 extern double UnwarpToWarpLUT[LUT_LEN][2];
+
+extern double WarpToUnwarpLUT_HD[LUT_LEN_HD][2];
+extern double UnwarpToWarpLUT_HD[LUT_LEN_HD][2];
+
+extern double AngleToShiftLUT_HD[LUT_LEN_HD][2];
+
 
 #ifdef __cplusplus
     } // extern "C"

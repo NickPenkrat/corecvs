@@ -346,6 +346,16 @@ void RGB24Buffer::drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, 
 }
 
 
+void RGB24Buffer::drawRectangle(const Rectangled &rect, RGBColor color, int style)
+{
+    drawRectangle(
+        fround(rect.corner.x()),
+        fround(rect.corner.y()),
+        fround(rect.size.x()),
+        fround(rect.size.y()), color, style);
+}
+
+
 #if 0
 void RGB24Buffer::rgb24DrawDisplacementBuffer(RGB24Buffer *dst, DisplacementBuffer *src, double step)
 {

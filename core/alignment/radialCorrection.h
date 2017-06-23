@@ -106,7 +106,12 @@ public:
     }
 
 
-    RadialCorrection invertCorrection(int h, int w, int step);
+    RadialCorrection invertCorrection   (int h, int w, int step);
+
+#if 0
+    RadialCorrection invertCorrectionLSE(int h, int w, int step);
+#endif
+
     EllipticalApproximation1d compareWith(const RadialCorrection &other, int h, int w, int steps);
 
     /* */

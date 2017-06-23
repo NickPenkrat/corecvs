@@ -31,6 +31,9 @@ MergerThread::MergerThread() :
    BaseCalculationThread(Frames::MAX_INPUTS_NUMBER)
   , mMergerParameters(NULL)
 {
+    for (int i = 0; i < 4;++i)
+      mMasks[i] = NULL;
+
     qRegisterMetaType<MergerThread::RecordingState>("MergerThread::RecordingState");
     mIdleTimer = PreciseTimer::currentTime();
 }
@@ -41,6 +44,7 @@ MergerThread::~MergerThread()
         delete_safe(mMasks[c]);
     }
     delete_safe(mCarScene);
+    delete_safe(mUndistort);
 }
 
 Affine3DQ getTransform (const EuclidianMoveParameters &input)
@@ -81,9 +85,6 @@ void MergerThread::prepareMapping()
         }
     }
 
-
-
-
     /* Forming scene */
     delete_safe(mCarScene);
     mCarScene = new FixtureScene;
@@ -93,17 +94,52 @@ void MergerThread::prepareMapping()
     body->name = "Car Body";
 
     G12Buffer *fstBuf = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
-    PinholeCameraIntrinsics pinhole(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV()));
+    PinholeCameraIntrinsics pinhole1(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV1()));
+    PinholeCameraIntrinsics pinhole2(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV2()));
+    PinholeCameraIntrinsics pinhole3(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV3()));
+    PinholeCameraIntrinsics pinhole4(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV4()));
+
+
+    /** Undistortion would be load only once **/
+
+    if (mUndistort == NULL)
+    {
+        LensDistortionModelParameters disortion;
+        JSONGetter loader("lens.json");
+        loader.visit(disortion, "intrinsic");
+        cout << disortion << endl;
+
+        //disortion.setShift(Vector2dd(400,400));
+        RadialCorrection corr(disortion);
+        delete_safe(mUndistort);
+        //mUndistort = new DisplacementBuffer(&corr, fstBuf->h, fstBuf->w, false);
+
+        int overshoot = mMergerParameters->distortionOvershoot();
+
+        mUndistort = TableInverseCache::CacheInverse(
+                      /*  - fstBuf->w,   - fstBuf->h,
+                      2 * fstBuf->w, 2 * fstBuf->h,*/
+                      -overshoot, -overshoot,
+                      fstBuf->w + overshoot, fstBuf->h + overshoot,
+                      /*0, 0,
+                      fstBuf->w, fstBuf->h,*/
+                      &corr,
+                      0.0, 0.0,
+                      (double)fstBuf->w, (double)fstBuf->h,
+                      0.1, false);
+    }
+
+
 
     FixtureCamera *frontCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(frontCam, body);
     FixtureCamera *rightCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(rightCam, body);
     FixtureCamera *backCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(backCam , body);
     FixtureCamera *leftCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(leftCam , body);
 
-    frontCam->intrinsics = pinhole;
-    rightCam->intrinsics = pinhole;
-    backCam ->intrinsics = pinhole;
-    leftCam ->intrinsics = pinhole;
+    frontCam->intrinsics = pinhole1; // frontCam->distortion = inverted.mParams;
+    rightCam->intrinsics = pinhole2; // rightCam->distortion = inverted.mParams;
+    backCam ->intrinsics = pinhole3; // backCam ->distortion = inverted.mParams;
+    leftCam ->intrinsics = pinhole4; // leftCam ->distortion = inverted.mParams;
 
     frontCam->nameId = "Front";
     rightCam->nameId = "Right";
@@ -218,25 +254,7 @@ AbstractOutputData* MergerThread::processNewData()
 
     stats.resetInterval("Canvas cleanup");
 
-    /* Unwrap */
-    RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
-    Vector2dd center(input->w / 2.0, input->h / 2.0);
 
-    vector<Vector2dd> lut;
-    for (unsigned i = 0; i < LUT_LEN; i++) {
-        lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
-    }
-    RadiusCorrectionLUTSq radiusLUTSq(&lut);
-    SphericalCorrectionLUTSq correctorSq(center, &radiusLUTSq);
-
-    RadiusCorrectionLUT radiusLUT(lut);
-    SphericalCorrectionLUT corrector(center, &radiusLUT);
-
-
-    //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);
-    outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&corrector, input->h, input->w);
-
-    stats.resetInterval("Example unwrap");
 
 
     /* Scene */
@@ -266,9 +284,96 @@ AbstractOutputData* MergerThread::processNewData()
     }
 
     RGB24Buffer *out = outputData->mainOutput;
+ 
+    /* Unwrap */
+    RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
+    Vector2dd center(input->w / 2.0, input->h / 2.0);
+
+    vector<Vector2dd> lut;
+    for (unsigned i = 0; i < LUT_LEN; i++) {
+        lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
+    }
+    RadiusCorrectionLUTSq radiusLUTSq(&lut);
+    SphericalCorrectionLUTSq correctorSq(center, &radiusLUTSq);
+
+    RadiusCorrectionLUT radiusLUT = RadiusCorrectionLUT::FromSquareToSquare(lut);
+    SphericalCorrectionLUT corrector(center, &radiusLUT);
+
+    vector<Vector2dd> luthd;
+    for (unsigned i = 0; i < LUT_LEN_HD; i++) {
+        luthd.push_back(Vector2dd(AngleToShiftLUT_HD[i][0], AngleToShiftLUT_HD[i][1]));
+    }
+
+    double mmToPixel = (double)input->w / mMergerParameters->sensorWidth();
+    RadiusCorrectionLUT radiusLUTHd = RadiusCorrectionLUT::FromAngleAndProjection(luthd, mmToPixel, mMergerParameters->undistFocal());
+    SphericalCorrectionLUT correctorHD(center, &radiusLUTHd);
+
+#if 0
+    for (unsigned i = 0; i < radiusLUTHd.LUT.size(); i++) {
+        cout << "Table for HD " << i  << " - " << radiusLUTHd.LUT[i]  << endl;
+    }
+#endif
+
+
+    //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);
+
+    switch (mMergerParameters->undistMethod()) {
+      case MergerUndistMethod::HD_TABLE:
+           outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&correctorHD, input->h, input->w);
+           break;
+      case MergerUndistMethod::LOADED_CAMERA:
+           outputData->unwarpOutput = input->doReverseDeformationBlTyped<TableInverseCache>(mUndistort, input->h, input->w);
+           break;
+      default:
+           outputData->unwarpOutput = input->doReverseDeformationBlTyped<SphericalCorrectionLUT>(&corrector, input->h, input->w);
+           break;
+    }
+
+    stats.resetInterval("Example unwrap");
+
+    //precalculations
+    //car simulation
+    //{
+    //Get x
+    Vector2dd projX0 = frame.projectTo(cams[0]->getWorldLocation().shift);
+    projX0 = projX0 * Vector2dd(out->w, out->h);
+    Vector2dd projX2 = frame.projectTo(cams[2]->getWorldLocation().shift);
+    projX2 = projX2 * Vector2dd(out->w, out->h);
+    int32_t sizeX = projX2.x() - projX0.x();
+    //Get y
+    Vector2dd projY3 = frame.projectTo(cams[3]->getWorldLocation().shift);
+    projY3 = projY3 * Vector2dd(out->w, out->h);
+    Vector2dd projY1 = frame.projectTo(cams[1]->getWorldLocation().shift);
+    projY1 = projY1 * Vector2dd(out->w, out->h);
+    int32_t sizeY = projY3.y() - projY1.y();
+
+    //size of car
+    int X_car_picture = 80;
+    corecvs::Vector2d<int32_t> sizeRect = { sizeX + X_car_picture, sizeY };
+
+    //draw car
+    int shift_car_picture = 30;
+    corecvs::Vector2d<int32_t> corner = { (int32_t)projX0.x() - shift_car_picture, (int32_t)projY1.y() };
+    corecvs::Rectangled rect = corecvs::Rectangled(corner.x(), corner.y(), sizeRect.x(), sizeRect.y());
+    //corecvs::Rectangle32 rect = corecvs::Rectangle32(corner, sizeRect);
+    Vector2dd v1 = { 0, 0 };
+    Vector2dd v1_end = rect.ulCorner();
+
+    Vector2dd v2 = { 0, (double)out->h };
+    Vector2dd v2_end = rect.llCorner();
+
+    Vector2dd v3 = { (double)out->w, 0 };
+    Vector2dd v3_end = rect.urCorner();
+
+    Vector2dd v4 = { (double)out->w, (double)out->h };
+    Vector2dd v4_end = rect.lrCorner();
+
+
+    //}
 
     parallelable_for(0, out->h, [&](const BlockedRange<int>& r)
     {
+
     for(int i = r.begin(); i < r.end(); i++)
         for (int j = 0; j < out->w; j++)
         {
@@ -284,17 +389,17 @@ AbstractOutputData* MergerThread::processNewData()
                     continue;
                 RGB24Buffer *buffer = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)c);
 
-                Vector2dd prj;               
+                Vector2dd prj (-1, -1);
                 switch (mMergerParameters->undistMethod())
                 {
-                    case 0:
+                    case MergerUndistMethod::NONE:
                     {
                         bool visible = cams[c]->projectPointFromWorld(pos, &prj);
                         if (!visible)
                             continue;
                         break;
                     }
-                    case 1:
+                    case MergerUndistMethod::SQUARE_TABLE:
                     {
                          Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
@@ -303,7 +408,7 @@ AbstractOutputData* MergerThread::processNewData()
                         prj = correctorSq.map(projection);
                         break;
                     }
-                    case 2:
+                    case MergerUndistMethod::RADIAL_TABLE:
                     {
                         Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
@@ -312,12 +417,76 @@ AbstractOutputData* MergerThread::processNewData()
                         prj = corrector.map(projection);
                         break;
                     }
+                    case MergerUndistMethod::HD_TABLE:
+                    {
+                        Vector3dd relative   = models[c].extrinsics.project(pos);
+                        if (relative.z() < 0)
+                            continue;
+                        Vector2dd projection = models[c].intrinsics.project(relative);
+                        prj = correctorHD.map(projection);
+                        break;
+                    }
+                    case MergerUndistMethod::LOADED_CAMERA:
+                    {
+                        Vector3dd relative   = models[c].extrinsics.project(pos);
+                        if (relative.z() < 0)
+                            continue;
+                        Vector2dd projection = models[c].intrinsics.project(relative);
+                        if (mUndistort->isValidCoord((int32_t)projection.y(), (int32_t)projection.x())) {
+                            prj = mUndistort->map((int32_t)projection.y(), (int32_t)projection.x());
+                        }
+                        break;
+                    }
+
+                }
+                double weigth_separated_view = 1;
+
+                if (mMergerParameters->mSeparateView)
+                {
+                    //front  // swith 1
+                    if (c == 0) 
+                    {
+                        Vector2dd v_out = { (double)j, (double)i };
+                        if (isUnderLine(v_out, v1, v1_end) || !isUnderLine(v_out, v2, v2_end))
+                            weigth_separated_view = 0;
+                    } 
+                    //rigth // swith 2
+                    else if (c == 1)
+                    {
+                        Vector2dd v_out = { (double)j, (double)i };
+                        if (!isUnderLine(v_out, v1, v1_end) || !isUnderLine(v_out, v3, v3_end))
+                            weigth_separated_view = 0;
+                    }
+                    //rear // swith 3
+                    else if (c == 2)
+                    {
+                        Vector2dd v_out = { (double)j, (double)i };
+                        if (isUnderLine(v_out, v3, v3_end) || !isUnderLine(v_out, v4, v4_end))
+                            weigth_separated_view = 0;
+                    }
+                    //left // swith 4
+                    else if (c == 3)
+                    {
+                        Vector2dd v_out = { (double)j, (double)i };
+                        if (isUnderLine(v_out, v2, v2_end) || isUnderLine(v_out, v4, v4_end))
+                            weigth_separated_view = 0;
+                    }
                 }
 
-                if (buffer->isValidCoord(prj.y(), prj.x()) && mMasks[c]->isValidCoord(prj.y(), prj.x())) {
-                    double weight = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
-                    color += weight * buffer->element(prj.y(), prj.x()).toDouble();
-                    sum += weight;
+                if (!mMergerParameters->bilinear()) {
+                    if ( buffer   ->isValidCoord(prj.y(), prj.x()) &&
+                         mMasks[c]->isValidCoord(prj.y(), prj.x())) {
+                        double weight = weigth_separated_view * mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+                        color += weight * buffer->element(prj.y(), prj.x()).toDouble();
+                        sum += weight;
+                    }
+                } else {
+                    if ( buffer   ->isValidCoordBl(prj.y(), prj.x()) &&
+                         mMasks[c]->isValidCoord(prj.y(), prj.x())) {
+                        double weight = weigth_separated_view * mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+                        color += weight * buffer->elementBl(prj.y(), prj.x()).toDouble();
+                        sum += weight;
+                    }
                 }
             }
 
@@ -330,20 +499,28 @@ AbstractOutputData* MergerThread::processNewData()
 
     stats.resetInterval("Reprojecting");
 
+    //car simulation
+    if (mMergerParameters->drawCar())
+    {
+        out->drawRectangle(rect, RGBColor::Black(), 2);
+
+        //draw lines
+        if (mMergerParameters->mSeparateView)
+        {
+            out->drawLine(v1, v1_end, RGBColor::Black());
+            out->drawLine(v2, v2_end, RGBColor::Black());
+            out->drawLine(v3, v3_end, RGBColor::Black());
+            out->drawLine(v4, v4_end, RGBColor::Black()); 
+        }
+    }
+
+    //camera position
     for (int c = 0; c < 4; c++)
     {
         Vector2dd proj = frame.projectTo(cams[c]->getWorldLocation().shift);
-        cout << "PROJECTED:" << proj << endl;
         proj = proj * Vector2dd(out->w, out->h);
         out->drawCrosshare2(proj.x(), proj.y(), RGBColor::Red());
-        
-
     }
-
-    Vector2d32 sizeRect = { 400, 100 };
-    Vector2d32 corner   = { 200, 500 };
-    Rectangle32 rect = Rectangle32(corner, sizeRect);
-    out->drawRectangle(rect, { 0, 0, 0 }, 0);
 
     outputData->visualisation = new Mesh3DDecorated;
     outputData->visualisation->switchColor(true);
@@ -453,6 +630,19 @@ if (x_center != 0 || y_center != 0)
 
 */
 
+bool MergerThread::isUnderLine(Vector2dd point, Vector2dd point1, Vector2dd point2)
+{
+    double y = point.y();
+    if (point2.x() != point1.x())
+    {
+        double k = ((point2.y() - point1.y()) / (point2.x() - point1.x()));
+        double b = point1.y() - k * point1.x();
+        double value_y = k * point.x() + b;
+        if (y < value_y)
+            return true;
+    }
+    return false;
+}
 
 void MergerThread::mergerControlParametersChanged(QSharedPointer<Merger> mergerParameters)
 {
