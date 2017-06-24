@@ -15,7 +15,7 @@ int SceneStereoAlignerBlock::operator ()()
 {
     if (inScene() == NULL)
     {
-        SYNC_PRINT(("Fail. No input"));
+        SYNC_PRINT(("Fail. No input scene\n"));
         return 1;
     }
 
@@ -28,7 +28,7 @@ int SceneStereoAlignerBlock::operator ()()
 
     if (camera1 == NULL || camera2 == NULL)
     {
-        SYNC_PRINT(("Fail. No camera input"));
+        SYNC_PRINT(("Fail. No input camera"));
         return 2;
     }
 
@@ -70,26 +70,8 @@ int SceneStereoAlignerBlock::operator ()()
 
     cout << "Sanity check" << endl;
     EssentialMatrix Ix;
-    cout << (rightTransform.transposed() * Ix * leftTransform) / F << endl;
+    cout << (leftTransform.transposed() * Ix * rightTransform) / F << endl;
 
-
-    /*Forming new Fixture*/
-    CameraFixture *fixture = inScene()->createCameraFixture();
-    fixture->name = "Stereo";
-    fixture->setLocation(pos1);
-
-    FixtureCamera *cam1 = inScene()->createCamera();
-    cam1->nameId = "Stereo 1";
-    FixtureCamera *cam2 = inScene()->createCamera();
-    cam2->nameId = "Stereo 2";
-
-    inScene()->addCameraToFixture(cam1, fixture);
-    inScene()->addCameraToFixture(cam2, fixture);
-    cam1->extrinsics = CameraLocationData(Affine3DQ::Identity());
-    cam2->extrinsics = CameraLocationData(relativeTransform);
-
-    cam1->intrinsics = camera1->intrinsics;
-    cam2->intrinsics = camera2->intrinsics;
 
     /* Forming new images*/
     ProjectiveTransform  leftTransformInv =  leftTransform.inv();
@@ -102,8 +84,60 @@ int SceneStereoAlignerBlock::operator ()()
     setOutImage2(resImage2);
 
 
-    setOutCamera1(cam1);
-    setOutCamera2(cam2);
+    /*Forming new Fixture*/
+    if (mParameters.produceCameras())
+    {
+        CameraFixture *fixture = inScene()->createCameraFixture();
+        fixture->name = "Stereo";
+        fixture->setLocation(pos1);
+
+        FixtureCamera *cam1 = inScene()->createCamera();
+        cam1->nameId = "Stereo 1";
+        FixtureCamera *cam2 = inScene()->createCamera();
+        cam2->nameId = "Stereo 2";
+
+        inScene()->addCameraToFixture(cam1, fixture);
+        inScene()->addCameraToFixture(cam2, fixture);
+        //cam1->extrinsics = CameraLocationData(Affine3DQ::Identity());
+        //cam2->extrinsics = CameraLocationData(relativeTransform);
+
+        cam1->extrinsics = CameraLocationData(Affine3DQ::Identity());
+        cam2->extrinsics = CameraLocationData(relativeTransform);
+
+
+        cam1->intrinsics = camera1->intrinsics;
+        cam2->intrinsics = camera2->intrinsics;
+
+        if (mParameters.produceObservations())
+        {
+            /* Making new observations */
+            for (size_t i = 0; i < inScene()->featurePoints().size(); i++)
+            {
+                SceneFeaturePoint *point = inScene()->featurePoints()[i];
+
+                SceneObservation *obs1 = point->getObservation(camera1);
+                SceneObservation *obs2 = point->getObservation(camera2);
+
+                if (obs1 != NULL)
+                {
+                    Vector2dd pos1 = leftTransform * obs1->observation;
+                    SceneObservation observation(cam1, point, pos1, fixture);
+                    point->observations[cam1] = observation;
+                }
+
+                if (obs2 != NULL)
+                {
+                    Vector2dd pos2 = rightTransform * obs2->observation;
+                    SceneObservation observation(cam2, point, pos2, fixture);
+                    point->observations[cam2] = observation;
+                }
+
+
+            }
+        }
+        setOutCamera1(cam1);
+        setOutCamera2(cam2);
+    }
 
     return 0;
 

@@ -40,7 +40,9 @@ public:
 
     DetectAndExtract* getDetector( const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params = "" );
     bool provides(const DetectorType &detectorType, const DescriptorType &descriptorType);
-    virtual std::string name()  override { return "OpenCv"; }
+    virtual std::string name()  override { return "OpenCV"; }
+    //virtual std::vector<std::string> provideHints() override;
+
 };
 
 #endif

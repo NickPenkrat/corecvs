@@ -75,9 +75,9 @@ int main(int argc, char **argv)
             }
         }
 
-        /*cout << "  -  add_subtract"     << endl;
+        cout << "  -  add_subtract"     << endl;
         cout << "  -  homography"     << endl;
-        cout << "  -  stereo_aligner" << endl;*/
+        cout << "  -  stereo_aligner" << endl;
         return 0;
     }
 

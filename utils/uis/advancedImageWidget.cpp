@@ -824,7 +824,7 @@ void AdvancedImageWidget::setKeepAspect(bool flag)
 
 void AdvancedImageWidget::setRightDrag(bool flag)
 {
-    mRightMouseButtonDrag = true;
+    mRightMouseButtonDrag = flag;
 }
 
 void AdvancedImageWidget::setCompactStyle(bool flag)

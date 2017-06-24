@@ -78,8 +78,9 @@ BaseHostDialog::BaseHostDialog(QWidget *parent)
     mUi.setupUi(this);
 }
 
-void BaseHostDialog::init(QWidget *parameterHolderWidget, QTextEdit * /*loggerWidget*/)
+void BaseHostDialog::init(bool isRGB, QWidget *parameterHolderWidget, QTextEdit * /*loggerWidget*/)
 {
+    mIsRGB = isRGB;
     mDockWidget = parameterHolderWidget;
     L_INFO << "ViMouse started" << "\n" << "Log will go here";
 
@@ -319,8 +320,9 @@ void BaseHostDialog::deinitCamera()
 /* ******************************************************************************
  *  Calculation thread
  */
-void BaseHostDialog::initCapture(QString const &init, bool isRgb)
+void BaseHostDialog::initCapture(QString const &init/*, bool isRgb*/)
 {
+    SYNC_PRINT(("BaseHostDialog::initCapture(%s, rgb=%s): called\n", init.toLatin1().constData(), mIsRGB ? "true" : "false"));
     //TODO:: if mInputString is empty, but app params not empty wizard is shown. Maybe it's bad
     if (!init.isEmpty())
     {
@@ -335,7 +337,7 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
 
     mInputSelectorDialog.setInputString(mInputString);
 
-    mCamera = ImageCaptureInterfaceQtFactory::fabric(mInputString.toStdString(), isRgb);
+    mCamera = ImageCaptureInterfaceQtFactory::fabric(mInputString.toStdString(), mIsRGB);
 
     if (mCamera == NULL)
     {
@@ -666,7 +668,6 @@ CamerasConfigParameters * BaseHostDialog::getAdditionalParams() const
     fp->setInputsN(mUseOneCaptureDevice ? CamerasConfigParameters::OneCapDev : CamerasConfigParameters::TwoCapDev);
 
     fp->setRectifierData(mRectifierData);
-
     fp->setDistortionTransform(mDistortionTransform);
 
     return fp;

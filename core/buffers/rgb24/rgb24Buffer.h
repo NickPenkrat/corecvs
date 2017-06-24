@@ -52,6 +52,7 @@ public:
 
     RGB24Buffer(int32_t h, int32_t w, bool shouldInit = true) : RGB24BufferBase (h, w, shouldInit) {}
     RGB24Buffer(Vector2d<int32_t> size, bool shouldInit = true) : RGB24BufferBase (size, shouldInit) {}
+    RGB24Buffer(Vector2d<int32_t> size, const RGBColor &data  ) : RGB24BufferBase (size, data) {}
 
     /*Helper Constructors form the relative types*/
     RGB24Buffer(G12Buffer *buffer) : RGB24BufferBase (buffer->h, buffer->w, false)
@@ -84,6 +85,7 @@ public:
      **/
     void drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style = 0);
     void drawRectangle(int x, int y, int w, int h, RGBColor color, int style = 0);
+    void drawRectangle(const Rectangled &rect, RGBColor color, int style = 0);
 
     //void drawDisplacementBuffer(DisplacementBuffer *src, double step);
 

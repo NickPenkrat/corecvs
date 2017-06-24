@@ -76,7 +76,8 @@ public:
 
     FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "");
     bool provides(const DetectorType &type);
-    virtual std::string name() override { return "OpenCv GPU"; }
+    virtual std::string name() override { return "OpenCV GPU"; }
+    virtual std::vector<std::string> provideHints();
 
 private:
     bool               cudaApi; // opencv module to use : cuda or opencl

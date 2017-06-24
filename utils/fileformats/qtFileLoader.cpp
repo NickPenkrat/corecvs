@@ -181,7 +181,7 @@ QTRGB24Loader::~QTRGB24Loader()
     // TODO Auto-generated destructor stub
 }
 
-bool QTRuntimeLoader::acceptsFile(std::string name)
+bool QTRuntimeLoader::acceptsFile(std::string /*name*/)
 {
     return true;
 }

@@ -22,7 +22,7 @@ public:
     virtual void prepareMesh(CloudViewDialog * /*dialog*/) override {}
     virtual void drawMyself(CloudViewDialog * /*dialog*/) override;
 
-    virtual bool dump(const QString &targetFile) override { return false; }
+    virtual bool dump(const QString &/*targetFile*/) override { return false; }
 
     virtual void setParameters(void * params)
     {

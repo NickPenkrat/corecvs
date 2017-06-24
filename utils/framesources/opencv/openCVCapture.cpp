@@ -114,16 +114,17 @@ void OpenCVCaptureInterface::SpinThread::run()
             pair->allocBuffers(height, width);
 
             // OpenCV does not set timestamps for the frames
-            pair->timeStampLeft = pair->timeStampRight = count * 10;
+            pair->setTimeStampLeft (count * 10);
+            pair->setTimeStampRight(count * 10);
             count++;
 
             if (mInterface->captureLeft != NULL)
             {
-                OpenCvHelper::captureImageCopyToBuffer(mInterface->captureLeft, pair->bufferLeft);
+                OpenCvHelper::captureImageCopyToBuffer(mInterface->captureLeft, pair->bufferLeft());
             }
             if (mInterface->captureRight != NULL)
             {
-                OpenCvHelper::captureImageCopyToBuffer(mInterface->captureRight, pair->bufferRight);
+                OpenCvHelper::captureImageCopyToBuffer(mInterface->captureRight, pair->bufferRight());
             }
         mInterface->protectFrame.unlock();
 

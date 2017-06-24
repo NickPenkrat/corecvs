@@ -565,7 +565,8 @@ Matrix Matrix::invPosdefSqrt(const Matrix* preTransform) const
         W.a(0, i) = d.a(i, i);
 #else
     Matrix A(*this);
-    int lwork, liwork, m;
+    //int lwork, liwork;
+    int m;
     std::unique_ptr<int[]> isuppz(new int[2*h]);
     Matrix W(1, h), U(h, h);
     double vl = 0.0, vu = 0.0, abstol = -1.0;

@@ -131,7 +131,10 @@ public:
         TYPE_COMPOSITE_ARRAY,
         TYPE_LAST,
 
-        TYPE_VECTOR_BIT = 0x80
+        TYPE_VECTOR_BIT = 0x80,
+        /* Suppressing warnings */
+        TYPE_DOUBLE_VECTOR = TYPE_DOUBLE | TYPE_VECTOR_BIT
+
     };
 
     /**

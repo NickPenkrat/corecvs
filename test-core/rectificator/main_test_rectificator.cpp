@@ -435,6 +435,7 @@ TEST(Rectification, testEssentialEstimator)
     of << "];";
 }
 
+#if 1
 
 TEST(Rectification, testRectifiedModel)
 {
@@ -464,6 +465,19 @@ TEST(Rectification, testRectifiedModel)
     Affine3DQ location;
     location.shift = model.getAffine().shift;
 
+    Vector3dd cameraX = xy.e1;
+    Vector3dd cameraY = xy.e2;
+    Vector3dd cameraAxis = norm;
+
+    Matrix33 newCameraRotation = Matrix33::FromRows(cameraX, cameraY, cameraAxis);
+    location.rotor = Quaternion::FromMatrix(newCameraRotation);
+
+
+    model1.setLocation(location);
+
+
+
+
 
 
 
@@ -474,9 +488,15 @@ TEST(Rectification, testRectifiedModel)
     mesh.setColor(RGBColor::White());
     helpers.drawCamera(mesh, model, 1.0);
     mesh.addPlaneFrame(xy, 3.0);
+
+    mesh.setColor(RGBColor::Green());
+    helpers.drawCamera(mesh, model1, 1.0);
+
     mesh.dumpPLY("debug.ply");
 
 }
+
+#endif
 
 //int main (int /*argC*/, char ** /*argV*/)
 //{

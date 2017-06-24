@@ -31,6 +31,7 @@ PresentationParametersControlWidget::PresentationParametersControlWidget(QWidget
     QObject::connect(mUi->produce3DCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->produce6DCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->dump3DCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->dumpSceneJSONCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
 }
 
 PresentationParametersControlWidget::~PresentationParametersControlWidget()
@@ -76,6 +77,7 @@ PresentationParameters *PresentationParametersControlWidget::createParameters() 
         , mUi->produce3DCheckBox->isChecked()
         , mUi->produce6DCheckBox->isChecked()
         , mUi->dump3DCheckBox->isChecked()
+        , mUi->dumpSceneJSONCheckBox->isChecked()
     );
 }
 
@@ -93,6 +95,7 @@ void PresentationParametersControlWidget::setParameters(const PresentationParame
     mUi->produce3DCheckBox->setChecked(input.produce3D());
     mUi->produce6DCheckBox->setChecked(input.produce6D());
     mUi->dump3DCheckBox->setChecked(input.dump3D());
+    mUi->dumpSceneJSONCheckBox->setChecked(input.dumpSceneJSON());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

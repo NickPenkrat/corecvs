@@ -667,6 +667,23 @@ template<typename ResultType>
         _copy(data, other.data, copyH, copyW, this->stride, other.stride);
     }
 
+    inline void fillWith(const AbstractBuffer &other, IndexType y, IndexType x)
+    {
+        IndexType copyH = CORE_MIN(this->h - y, other.h);
+        IndexType copyW = CORE_MIN(this->w - x, other.w);
+
+        /* If buffers have same horizontal geometry use fast method*/
+        if (TRIVIALLY_COPY_CONSTRUCTIBLE)
+        {
+            for (IndexType i = 0; i < copyH; i++)
+            {
+                memcpy(&this->element(i + y, x), &other.element(i, 0), sizeof(ElementType) * copyW);
+            }
+            return;
+        }
+        _copy(&this->element(y, x), other.data , copyH, copyW, this->stride, other.stride);
+    }
+
     /**
      *  You could use this to clean the buffer
      *

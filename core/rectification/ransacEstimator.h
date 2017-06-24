@@ -12,34 +12,44 @@
 
 #include "matrix33.h"
 #include "correspondenceList.h"
+#include "ransac.h"
+#include "fixtureScene.h"
+
 namespace corecvs {
-
-
-
-
 
 class RansacEstimator
 {
 public:
     unsigned trySize;
-    unsigned maxIterations;
-    double treshold;
+    RansacParameters ransacParams;
 
 
     RansacEstimator(
             unsigned  _trySize,
             unsigned _maxIterations,
             double _treshold ) :
-        trySize(_trySize),
-        maxIterations(_maxIterations),
-        treshold(_treshold)
-    {}
+        trySize(_trySize)
+    {
+        ransacParams.setIterationsNumber(_maxIterations);
+        ransacParams.setInlierThreshold(_treshold);
+    }
 
     Matrix33 getFundamentalRansac1(CorrespondenceList *list);
     Matrix33 getEssentialRansac1  (CorrespondenceList *list);
 
     Matrix33 getFundamentalRansac(vector<Correspondence *> *data);
     Matrix33 getEssentialRansac  (vector<Correspondence *> *data);
+};
+
+class RansacEstimatorScene
+{
+public:
+    RansacParameters params;
+    bool trace = true;
+
+    EssentialDecomposition getEssentialRansac(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);
+    //EssentialDecomposition getEssentialRansac(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);
+
 };
 
 

@@ -52,6 +52,7 @@ public:
         PRODUCE3D_ID,
         PRODUCE6D_ID,
         DUMP3D_ID,
+        DUMPSCENEJSON_ID,
         PRESENTATION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -117,6 +118,12 @@ public:
      */
     bool mDump3D;
 
+    /** 
+     * \brief dumpSceneJSON 
+     * dumpSceneJSON 
+     */
+    bool mDumpSceneJSON;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -177,6 +184,11 @@ public:
         return mDump3D;
     }
 
+    bool dumpSceneJSON() const
+    {
+        return mDumpSceneJSON;
+    }
+
     /* Section with setters */
     void setOutput(OutputStyle::OutputStyle output)
     {
@@ -228,6 +240,11 @@ public:
         mDump3D = dump3D;
     }
 
+    void setDumpSceneJSON(bool dumpSceneJSON)
+    {
+        mDumpSceneJSON = dumpSceneJSON;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -243,6 +260,7 @@ template<class VisitorType>
         visitor.visit(mProduce3D,                 static_cast<const corecvs::BoolField *>(fields()[PRODUCE3D_ID]));
         visitor.visit(mProduce6D,                 static_cast<const corecvs::BoolField *>(fields()[PRODUCE6D_ID]));
         visitor.visit(mDump3D,                    static_cast<const corecvs::BoolField *>(fields()[DUMP3D_ID]));
+        visitor.visit(mDumpSceneJSON,             static_cast<const corecvs::BoolField *>(fields()[DUMPSCENEJSON_ID]));
     }
 
     PresentationParameters()
@@ -262,6 +280,7 @@ template<class VisitorType>
         , bool produce3D
         , bool produce6D
         , bool dump3D
+        , bool dumpSceneJSON
     )
     {
         mOutput = output;
@@ -274,6 +293,7 @@ template<class VisitorType>
         mProduce3D = produce3D;
         mProduce6D = produce6D;
         mDump3D = dump3D;
+        mDumpSceneJSON = dumpSceneJSON;
     }
 
     friend std::ostream& operator << (std::ostream &out, PresentationParameters &toSave)

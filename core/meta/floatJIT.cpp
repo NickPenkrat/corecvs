@@ -7,7 +7,7 @@ FloatJIT::FloatJIT()
 
 }
 
-void FloatJIT::toAsm(ASTNodeInt *node)
+void FloatJIT::toAsm(ASTNodeInt * /*node*/)
 {
 
 

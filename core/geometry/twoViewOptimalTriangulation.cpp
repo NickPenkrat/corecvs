@@ -120,7 +120,7 @@ double TwoViewOptimalTriangulor::solveTL1()
         , -2*a3*b*d2 + 4*a2*b2*c*d + 6*a*b5 - 2*a*b3*c2 + 12*a*b3*d2*f22 + 6*a*b*d4*f24 + 6*b4*c*d*f22 + 12*b2*c*d3*f24 + 6*c*d5*f26
         , -a2*b2*d2 + 2*a*b3*c*d + b6 - b4*c2 + 3*b4*d2*f22 + 3*b2*d4*f24 + d6*f26
     };
-    for (int i = 0; i * 2 < cc.size(); ++i)
+    for (size_t i = 0; i * 2 < cc.size(); ++i)
         std::swap(cc[i], cc[cc.size() - i - 1]);
 
     auto f = [&](double t)

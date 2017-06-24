@@ -92,7 +92,7 @@ void EM::runKMeans()
 }
 
 EM::EM(const Matrix &A, int N, bool smooth, int maxIter, bool randomInit) :
-    N(N), M(A.h), K(A.w), smooth(smooth), A(A), maxIter(maxIter)
+    smooth(smooth), N(N), M(A.h), K(A.w), A(A), maxIter(maxIter)
 {
     CORE_ASSERT_TRUE_S(M > N);
 

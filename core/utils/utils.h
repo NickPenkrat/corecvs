@@ -11,6 +11,7 @@
  * \author alexander
  */
 
+#include <type_traits>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -46,7 +47,7 @@ class binary<0>
 
 //@}
 
-/** Useful class of some tasty things
+/** Useful class for some tasty things
  */
 namespace HelperUtils
 {
@@ -107,7 +108,6 @@ namespace HelperUtils
         size_t pos = filePath.find_last_of(".");
         return filePath.substr(0, pos) + suffix + (pos == string::npos ? "" : filePath.substr(pos));
     }
-
 
 
 } // namespace HelperUtils

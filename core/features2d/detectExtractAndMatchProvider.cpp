@@ -30,18 +30,7 @@ void DetectExtractAndMatch::detectExtractAndMatch( FeatureMatchingPipeline& pipe
 }
 
 DetectExtractAndMatchProvider::~DetectExtractAndMatchProvider()
-{
-    for ( std::vector<DetectExtractAndMatchProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p )
-	{
-		delete *p;
-	}
-	providers.clear();
-}
-
-void DetectExtractAndMatchProvider::add( DetectExtractAndMatchProviderImpl *provider )
-{
-	providers.push_back(provider);
-}
+{}
 
 DetectExtractAndMatchProvider& DetectExtractAndMatchProvider::getInstance()
 {

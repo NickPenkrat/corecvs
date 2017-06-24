@@ -376,4 +376,5 @@ void SimilarityReconstructor::CostFunctionToN::operator()(const double in[], dou
 }
 
 
+
 } // namespace corecvs
