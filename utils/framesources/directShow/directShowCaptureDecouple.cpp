@@ -181,8 +181,9 @@ ImageCaptureInterface::FramePair DirectShowCaptureDecoupleInterface::getFrame()
         uint8_t *ptr = cameras[0].rawBuffer;
         DecoupleYUYV::decouple(height, width, ptr, coupling, result);
 
-        result.timeStampLeft  =
-        result.timeStampRight = cameras[0].timestamp;
+        auto stamp = cameras[0].timestamp;
+        result.setTimeStampLeft(stamp);
+        result.setTimeStampRight(stamp);
     protectFrame.unlock();
     return result;
 }
