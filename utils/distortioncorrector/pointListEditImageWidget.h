@@ -114,15 +114,6 @@ class PointListEditImageWidgetUnited : public AdvancedImageWidget
    Q_OBJECT
 
 public:
-    enum PresentationStyle {
-        STYLE_NO_DELEGATE,
-        STYLE_NO_DELEGATE_SMALL,
-        STYLE_SELECTED,
-        STYLE_ONLY_DELEGATE,
-        STYLE_ALL
-    };
-
-
     enum PaintToolClass
     {
         MOVE_POINT_TOOL = TOOL_CLASS_LAST,
@@ -144,7 +135,19 @@ public:
    QToolButton               *mDeleteButton;
    QToolButton               *mAddInfoButton;
 
-   QComboBox *mDelegateStyleBox = NULL;
+   QPushButton *mDelegateStyleButton = NULL;
+
+   /* Parameters controlling observation presentation */
+
+   bool  mDecortatorAll      = false;
+   bool  mDecortatorMatched  = false;
+   bool  mDecortatorSelected = false;
+
+   bool  mMarkAll      = true;
+   bool  mMarkMatched  = false;
+   bool  mMarkSelected = false;
+
+   bool  mMarkFast     = false;
 
    PointListEditImageWidgetUnited(QWidget *parent = NULL, bool showHeader = true);
 
@@ -162,6 +165,7 @@ public slots:
 
    void         selectPoint(int id);
 
+   void         delegateMenuShow();
 protected:
    int          findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
 

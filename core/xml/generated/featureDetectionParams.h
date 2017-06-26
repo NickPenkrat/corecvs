@@ -19,14 +19,14 @@
  *  Additional includes for Composite Types.
  */
 
-// using namespace corecvs;
+using namespace corecvs;
 
 /*
  *  Additional includes for Pointer Types.
  */
 
-// namespace corecvs {
-// }
+namespace corecvs {
+}
 /*
  *  Additional includes for enum section.
  */
@@ -35,7 +35,7 @@
  * \brief Feature Detection Params 
  * Feature Detection Params 
  **/
-class FeatureDetectionParams : public corecvs::BaseReflection<FeatureDetectionParams>
+class FeatureDetectionParams : public BaseReflection<FeatureDetectionParams>
 {
 public:
     enum FieldId {
@@ -48,7 +48,6 @@ public:
         PLOTTRACKS_ID,
         THRESHOLDDISTANCE_ID,
         MAXFEATURECOUNT_ID,
-        POSITIONFILTER_ID,
         FEATURE_DETECTION_PARAMS_FIELD_ID_NUM
     };
 
@@ -108,16 +107,8 @@ public:
      */
     int mMaxFeatureCount;
 
-    /** 
-     * \brief positionfilter 
-     * positionfilter 
-     */
-    bool mPositionfilter;
-
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
-
-    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -169,11 +160,6 @@ public:
         return mMaxFeatureCount;
     }
 
-    bool positionfilter() const
-    {
-        return mPositionfilter;
-    }
-
     /* Section with setters */
     void setDetector(std::string detector)
     {
@@ -220,31 +206,25 @@ public:
         mMaxFeatureCount = maxFeatureCount;
     }
 
-    void setPositionfilter(bool positionfilter)
-    {
-        mPositionfilter = positionfilter;
-    }
-
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mDetector,                  static_cast<const corecvs::StringField *>(fields()[DETECTOR_ID]));
-        visitor.visit(mDescriptor,                static_cast<const corecvs::StringField *>(fields()[DESCRIPTOR_ID]));
-        visitor.visit(mMatcher,                   static_cast<const corecvs::StringField *>(fields()[MATCHER_ID]));
-        visitor.visit(mB2bThreshold,              static_cast<const corecvs::DoubleField *>(fields()[B2BTHRESHOLD_ID]));
-        visitor.visit(mMatchF2F,                  static_cast<const corecvs::BoolField *>(fields()[MATCHF2F_ID]));
-        visitor.visit(mParameters,                static_cast<const corecvs::StringField *>(fields()[PARAMETERS_ID]));
-        visitor.visit(mPlotTracks,                static_cast<const corecvs::BoolField *>(fields()[PLOTTRACKS_ID]));
-        visitor.visit(mThresholdDistance,         static_cast<const corecvs::BoolField *>(fields()[THRESHOLDDISTANCE_ID]));
-        visitor.visit(mMaxFeatureCount,           static_cast<const corecvs::IntField *>(fields()[MAXFEATURECOUNT_ID]));
-        visitor.visit(mPositionfilter,            static_cast<const corecvs::BoolField *>(fields()[POSITIONFILTER_ID]));
+        visitor.visit(mDetector,                  static_cast<const StringField *>  (fields()[DETECTOR_ID]));
+        visitor.visit(mDescriptor,                static_cast<const StringField *>  (fields()[DESCRIPTOR_ID]));
+        visitor.visit(mMatcher,                   static_cast<const StringField *>  (fields()[MATCHER_ID]));
+        visitor.visit(mB2bThreshold,              static_cast<const DoubleField *>  (fields()[B2BTHRESHOLD_ID]));
+        visitor.visit(mMatchF2F,                  static_cast<const BoolField *>    (fields()[MATCHF2F_ID]));
+        visitor.visit(mParameters,                static_cast<const StringField *>  (fields()[PARAMETERS_ID]));
+        visitor.visit(mPlotTracks,                static_cast<const BoolField *>    (fields()[PLOTTRACKS_ID]));
+        visitor.visit(mThresholdDistance,         static_cast<const BoolField *>    (fields()[THRESHOLDDISTANCE_ID]));
+        visitor.visit(mMaxFeatureCount,           static_cast<const IntField *>     (fields()[MAXFEATURECOUNT_ID]));
     }
 
     FeatureDetectionParams()
     {
-        corecvs::DefaultSetter setter;
+        DefaultSetter setter;
         accept(setter);
     }
 
@@ -258,7 +238,6 @@ template<class VisitorType>
         , bool plotTracks
         , bool thresholdDistance
         , int maxFeatureCount
-        , bool positionfilter
     )
     {
         mDetector = detector;
@@ -270,19 +249,18 @@ template<class VisitorType>
         mPlotTracks = plotTracks;
         mThresholdDistance = thresholdDistance;
         mMaxFeatureCount = maxFeatureCount;
-        mPositionfilter = positionfilter;
     }
 
-    friend std::ostream& operator << (std::ostream &out, FeatureDetectionParams &toSave)
+    friend ostream& operator << (ostream &out, FeatureDetectionParams &toSave)
     {
-        corecvs::PrinterVisitor printer(out);
-        toSave.accept<corecvs::PrinterVisitor>(printer);
+        PrinterVisitor printer(out);
+        toSave.accept<PrinterVisitor>(printer);
         return out;
     }
 
     void print ()
     {
-        std::cout << *this;
+        cout << *this;
     }
 };
 #endif  //FEATURE_DETECTION_PARAMS_H_

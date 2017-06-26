@@ -228,8 +228,8 @@ public:
 
         toReturn.fillWithArgs(
         1.0 - (yy + zz),     xy - wz     ,     xz + wy,
-             xy + wz   , 1.0 - (xx + zz),     yz - wx,
-             xz - wy   ,     yz + wx    ,  1.0 - (xx + yy)
+             xy + wz   , 1.0 - (xx + zz) ,     yz - wx,
+             xz - wy   ,     yz + wx     ,  1.0 - (xx + yy)
         );
 
         return toReturn;
@@ -518,7 +518,6 @@ public:
         result.normalise();
         return result;
     }
-
 
 template<class VisitorType>
     void accept(VisitorType &visitor)

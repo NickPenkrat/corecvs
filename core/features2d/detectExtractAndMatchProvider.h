@@ -13,22 +13,21 @@ protected:
     virtual void detectExtractAndMatchImpl( FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint ) = 0;
 };
 
-class DetectExtractAndMatchProviderImpl
+class DetectExtractAndMatchProviderImpl : public AlgoBase
 {
 public:
     virtual DetectExtractAndMatch* getDetector( const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType, const std::string &params = "" ) = 0;
-	virtual bool provides(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType) = 0;
+virtual bool provides(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType) = 0;
 
     virtual ~DetectExtractAndMatchProviderImpl() {}
 };
 
-class DetectExtractAndMatchProvider
+class DetectExtractAndMatchProvider : public AlgoCollectionNaming<DetectExtractAndMatchProviderImpl>
 {
 public:
 	static DetectExtractAndMatchProvider& getInstance();
 	~DetectExtractAndMatchProvider();
-
-    void add( DetectExtractAndMatchProviderImpl *provider );
+   
 	DetectExtractAndMatch* getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType, const std::string &params = "");
 
 private:
@@ -36,5 +35,4 @@ private:
 	DetectExtractAndMatchProvider(const DetectExtractAndMatchProvider&);
 	DetectExtractAndMatchProvider& operator=(const DetectExtractAndMatchProvider&);
 
-    std::vector<DetectExtractAndMatchProviderImpl*> providers;
 };

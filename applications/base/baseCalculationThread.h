@@ -44,7 +44,7 @@ class BaseCalculationThread : public AbstractCalculationThread
 {
     Q_OBJECT
 public:
-    BaseCalculationThread();
+    BaseCalculationThread(int inputNumbers = CamerasConfigParameters::TwoCapDev);
 
     virtual ~BaseCalculationThread();
 

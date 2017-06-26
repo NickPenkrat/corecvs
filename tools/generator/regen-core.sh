@@ -219,6 +219,7 @@ ui_classes="
        "
 
 full_ui_classes="
+        euclidianMoveParameters
         axisAlignedBoxParameters
         headSearchParameters
         makePreciseParameters
@@ -235,6 +236,8 @@ classes+=" lensDistortionModelParametersBase"
 classes+=" homorgaphyReconstructorBlockBase"
 classes+=" sceneStereoAlignerBlockBase"
 classes+=" adderSubstractorParametersBase"
+
+classes+=" ransacParameters"
 
 
 # We will try to use reflectionWidget

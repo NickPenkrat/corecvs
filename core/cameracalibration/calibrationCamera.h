@@ -194,6 +194,22 @@ public:
         extrinsics = other.extrinsics;
     }
 
+    /* This method produces camera model that is a copy, but works for downsampled image */
+    CameraModel scaledModel(double scaleFactor = 0.5)
+    {
+        CameraModel model = *this;
+        model.intrinsics.principal = model.intrinsics.principal * scaleFactor;
+        model.intrinsics.focal = model.intrinsics.focal * scaleFactor;
+        model.intrinsics.size  = model.intrinsics.size  * scaleFactor;
+        model.intrinsics.distortedSize = model.intrinsics.distortedSize  * scaleFactor;
+
+        model.distortion.setNormalizingFocal(model.distortion.normalizingFocal() * scaleFactor);
+        model.distortion.setPrincipalPoint  (model.distortion.principalPoint() * scaleFactor);
+        model.distortion.setShiftX(model.distortion.shiftX() * scaleFactor);
+        model.distortion.setShiftY(model.distortion.shiftY() * scaleFactor);
+        return model;
+    }
+
     void setLocation(const Affine3DQ &location)
     {
         extrinsics = CameraLocationData(location);

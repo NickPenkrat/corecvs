@@ -126,7 +126,7 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
         SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
         return;
     }
-    cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
+    //cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
 
     //if (sourceWithDistortion)
     //{
@@ -504,8 +504,7 @@ bool FixtureScene::checkIntegrity()
         FixtureSceneGeometry *geometry = mGeomtery[i];
         if (geometry == NULL) {
             ok = false; SYNC_PRINT(("Geometry is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
-        }
-        if (geometry->ownerScene != this) {
+        } else if (geometry->ownerScene != this) {
             ok = false; SYNC_PRINT(("Geometry form other scene: geometry:<%" PRISIZE_T "> scene:<%s>\n", i, this->nameId.c_str()));
         }
 
@@ -514,8 +513,7 @@ bool FixtureScene::checkIntegrity()
             SceneFeaturePoint *point = *it;
             if (point == NULL) {
                 ok = false; SYNC_PRINT(("Related point is NULL: scene:<%s> geometry <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
-            }
-            if (point->ownerScene != this) {
+            } else if (point->ownerScene != this) {
                 ok = false; SYNC_PRINT(("Related Point form other scene: point:<%s> scene:<%s>\n", point->name.c_str(), this->nameId.c_str()));
             }
         }
@@ -663,6 +661,8 @@ void FixtureScene::positionCameraInFixture(CameraFixture * /*fixture */, Fixture
 
 void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture)
 {
+    if (fixture == NULL)
+        return;
     auto it = std::find(mOrphanCameras.begin(), mOrphanCameras.end(), cam);
     if (it != mOrphanCameras.end()) {
         mOrphanCameras.erase(it);
@@ -927,10 +927,29 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
         pt->reprojectedPosition = scale * (transformation * pt->reprojectedPosition);
     }
 
-    for (auto& cf: mFixtures)
+    for (FixtureCamera* fc: mOrphanCameras)
+    {
+        fc->extrinsics.transform(transformation, scale);
+
+    }
+
+
+    for (CameraFixture* cf: mFixtures)
     {
         cf->location.shift = scale * (transformation * cf->location.shift);
         cf->location.rotor = transformation.rotor ^ cf->location.rotor;
+        for (FixtureCamera *fc : cf->cameras)
+        {
+            fc->extrinsics.transform(Affine3DQ::Identity(), scale);
+
+        }
+    }
+
+    Matrix44 T = Matrix44::Scale(scale) * (Matrix44)transformation;
+
+    for (FixtureSceneGeometry *g: mGeomtery)
+    {
+        g->transform<Matrix44>(T);
     }
 }
 

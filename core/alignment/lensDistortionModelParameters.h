@@ -162,6 +162,13 @@ public:
         return res + Vector2dd(cx, cy);
     }
 
+    /** To satisfy deform map static interface **/
+    corecvs::Vector2dd map(int &y, int &x) const
+    {
+        return map(Vector2dd(x,y));
+    }
+
+
     // the body of these methods have been moved to the cpp file to don't require including "polynomialSolver.h"
     bool check(const double r);
     bool check(const Vector2dd &tl, const Vector2dd &br);

@@ -46,7 +46,7 @@ public:
         end(_end),
         value(0),
         flags(FLAG_NONE)
-    {};
+    {}
 
     void clearFlags( void )
     {

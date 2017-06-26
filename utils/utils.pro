@@ -38,8 +38,6 @@ HEADERS += \
     framesources/decoders/aLowCodec.h \
     \
     framesources/file/imageFileCaptureInterface.h \
-    framesources/file/fileCapture.h \
-    framesources/file/precCapture.h \
     framesources/file/abstractFileCapture.h \
     framesources/file/abstractFileCaptureSpinThread.h \
     \
@@ -128,8 +126,6 @@ SOURCES += \
     framesources/decoders/aLowCodec.cpp \
     \
     framesources/file/imageFileCaptureInterface.cpp \
-    framesources/file/fileCapture.cpp \
-    framesources/file/precCapture.cpp \
     framesources/file/abstractFileCapture.cpp \
     framesources/file/abstractFileCaptureSpinThread.cpp \
     \
@@ -217,6 +213,26 @@ FORMS += \
     3d/shadedSceneControlWidget.ui \
     corestructs/cameraModel/fixtureGeometryControlWidget.ui \
     corestructs/pointerFieldWidget.ui
+
+# =============================================================
+
+# PREC
+CONFIG += with_framesource_prec
+
+with_framesource_prec {
+HEADERS +=  framesources/file/precCapture.h
+SOURCES +=  framesources/file/precCapture.cpp
+DEFINES += WITH_FRAMESOURCE_PREC
+}
+
+# FILE
+#CONFIG += with_framesource_file
+
+with_framesource_file {
+HEADERS +=  framesources/file/fileCapture.h
+SOURCES +=  framesources/file/fileCapture.cpp
+DEFINES += WITH_FRAMESOURCE_FILE
+}
 
 
 # =============================================================
@@ -452,6 +468,10 @@ RESOURCES += \
    ../resources/main.qrc
 
 unix:!macx:!win32 {
+    CONFIG += with_framesource_v4l2
+}
+
+with_framesource_v4l2 {
     message (Switching on V4L2 support)
 
     HEADERS += \
@@ -464,6 +484,7 @@ unix:!macx:!win32 {
         framesources/v4l2/V4L2Capture.cpp \
         framesources/v4l2/V4L2CaptureDecouple.cpp \
 
+    DEFINES += WITH_FRAMESOURCE_V4L2
 }
 
 

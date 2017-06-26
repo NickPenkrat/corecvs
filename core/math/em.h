@@ -27,8 +27,9 @@ struct EM
 
 private:
     bool smooth;
-    int N, M, K, maxIter;
+    int N, M, K;
     const Matrix &A;
+    int maxIter;
 
 };
 }

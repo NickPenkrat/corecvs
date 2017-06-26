@@ -18,7 +18,7 @@ namespace corecvs {
 
 
 /**
- *  \brief Template class that holds the affine transformation of the space in form of rotational/shear part
+ *  \brief Template class that holds the affine transformation of the space in form of rotational/scale/shear part
  *  and shift part.
  *
  *  Generally it is either quaternion based (and can't hold shear/scale on this case) or Matrix33 based.

@@ -109,7 +109,10 @@ V4L2CaptureDecoupleInterface::FramePair V4L2CaptureDecoupleInterface::getFrame()
         DecoupleYUYV::decouple(formatH, formatW, ptr, coupling, result);
 
         if (current.isFilled) {
-            result.timeStampLeft = result.timeStampRight = current.usecsTimeStamp();
+            uint64_t stamp = current.usecsTimeStamp();
+
+            result.setTimeStampLeft(stamp);
+            result.setTimeStampRight(stamp);
         }
 
         if (skippedCount == 0) {

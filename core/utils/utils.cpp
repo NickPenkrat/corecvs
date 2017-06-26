@@ -125,7 +125,7 @@ std::vector<string> stringSplit(const string &s, char delim)
 std::string stringCombine(std::vector<std::string> parts, char delim)
 {
     std::string toReturn;
-    for(int i = 0; i < parts.size(); i++)
+    for(size_t i = 0; i < parts.size(); i++)
     {
         if (i != 0) {
             toReturn += delim;

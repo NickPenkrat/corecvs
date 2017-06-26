@@ -8,10 +8,13 @@
  * \author alexander
  */
 
+#include <random>
 #include <vector>
 #include <algorithm>
 
 #include "global.h"
+#include "ransacParameters.h"
+
 namespace corecvs {
 
 using std::vector;
@@ -23,12 +26,14 @@ using std::find;
  *
  *
  **/
+#if 0
 class RansacParameters {
 public:
     int iterationsNumber;
     double inliersPercent;
     double inlierThreshold;
 };
+#endif
 
 template<typename SampleType, typename ModelType>
 class Ransac : public RansacParameters {
@@ -46,21 +51,27 @@ public:
 
     bool trace = false;
 
-    Ransac(int _sampleNumber ) :
+    /* */
+    std::mt19937 rng;
+
+    Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters()) :
+        RansacParameters(params),
         sampleNumber(_sampleNumber)
     {
         samples.reserve(sampleNumber);
+        rng.seed();
     }
 
     virtual void randomSelect ()
-    {
+    {        
+        std::uniform_int_distribution<int> uniform(0, data->size() - 1);
         samples.clear();
         for (int i = 0; i < sampleNumber; i++)
         {
             unsigned index;
             SampleType *element = NULL;
             do {
-                index = (rand() % data->size());
+                index = uniform(rng);
                 element = data->at(index);
 
                 if (find(samples.begin(), samples.end(), element) == samples.end())
@@ -82,13 +93,14 @@ public:
             ModelType model = ModelType(samples);
 
             int inliers = 0;
-            for (int i = 0; i < data->size(); i++)
+            for (size_t i = 0; i < data->size(); i++)
             {
-                if (model.fits(*(data->at(i)), inlierThreshold))
+                if (model.fits(*(data->at(i)), inlierThreshold()))
                     inliers++;
             }
 
-            if (trace) SYNC_PRINT(("iteration %d : %d inliers \n", iteration, inliers));
+            if (trace) SYNC_PRINT(("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
+                                   iteration, inliers, bestInliers, (int)data->size(), (double)100.0 * bestInliers / data->size() ));
 
             if (inliers > bestInliers)
             {
@@ -97,8 +109,8 @@ public:
                 bestModel = model;
             }
 
-            if (bestInliers >  data->size() * inliersPercent ||
-                iteration >= iterationsNumber )
+            if (bestInliers >  data->size() * inliersPercent() / 100.0 ||
+                iteration >= iterationsNumber() )
             {
                 if (trace) {
                     std::cout << "Fininshing:" << std::endl;
@@ -107,6 +119,53 @@ public:
                 }
 
                 return bestModel;
+            }
+            iteration++;
+        }
+    }
+
+
+    ModelType getModelRansacMultimodel()
+    {
+        bestInliers = 0;
+        iteration = 0;
+
+        while (true)
+        {
+            randomSelect();
+            vector<ModelType> models = ModelType::getModels(samples);
+
+            for (ModelType &model : models)
+            {
+                int inliers = 0;
+
+                for (size_t i = 0; i < data->size(); i++)
+                {
+                    if (model.fits(*(data->at(i)), inlierThreshold()))
+                        inliers++;
+                }
+
+                if (trace) SYNC_PRINT(("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
+                                       iteration, inliers, bestInliers, data->size(), (double)100.0 * bestInliers / data->size() ));
+
+                if (inliers > bestInliers)
+                {
+                    bestSamples = samples;
+                    bestInliers = inliers;
+                    bestModel = model;
+                }
+
+                if (bestInliers >  data->size() * inliersPercent() / 100.0 ||
+                    iteration >= iterationsNumber() )
+                {
+                    if (trace) {
+                        std::cout << "Fininshing:" << std::endl;
+                        std::cout << "BestInliers:" << bestInliers << std::endl;
+
+                    }
+
+                    return bestModel;
+                }
             }
             iteration++;
         }

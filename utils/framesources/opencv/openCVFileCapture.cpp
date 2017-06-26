@@ -46,11 +46,11 @@ ImageCaptureInterface::FramePair OpenCvFileCapture::getFrame()
         mCapture.retrieve(image);
         IplImage *header = new IplImage(image);
 
-        result.rgbBufferLeft  = OpenCVTools::getRGB24BufferFromCVImage(header);
-        result.rgbBufferRight = new RGB24Buffer(result.rgbBufferLeft);
+        result.setRgbBufferLeft  (OpenCVTools::getRGB24BufferFromCVImage(header));
+        result.setRgbBufferRight (new RGB24Buffer(result.rgbBufferLeft()));
 
-        result.bufferLeft  = result.rgbBufferLeft->toG12Buffer();
-        result.bufferRight = new G12Buffer(result.bufferLeft);
+        result.setBufferLeft     (result.rgbBufferLeft()->toG12Buffer());
+        result.setBufferRight    (new G12Buffer(result.bufferLeft()));
 
         /*for (int i = 0; i < result.bufferLeft->h; i++)
         {
@@ -60,7 +60,8 @@ ImageCaptureInterface::FramePair OpenCvFileCapture::getFrame()
             }
         }*/
 
-        result.timeStampLeft = result.timeStampRight = count * 10;
+        result.setTimeStampLeft (count * 10);
+        result.setTimeStampRight(count * 10);
 
         delete_safe(header);
     //mProtectFrame.unlock();

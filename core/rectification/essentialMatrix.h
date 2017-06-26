@@ -503,6 +503,51 @@ public:
     }
 
     /**
+     *
+     *   \param input
+     *   \param decomposition
+     **/
+    EssentialDecomposition decompose(std::vector<Correspondence *> *input, EssentialDecomposition decomposition[4])
+    {
+        double cost[4];
+        cout << "=============================================================" << endl;
+        this->decompose(decomposition);
+        int selected = 0;
+        for (selected = 0; selected < 4; selected++)
+        {
+             cout << "Decomposition " << selected << endl << decomposition[selected] << endl;
+
+            double d1;
+            double d2;
+            double err;
+            cost[selected] = 0.0;
+            EssentialDecomposition *dec = &(decomposition[selected]);
+            for (unsigned i = 0; i < input->size(); i++)
+            {
+                dec->getScaler(*(input->at(i)), d1, d2, err);
+                if (d1 > 0.0 && d2 > 0.0)
+                    cost[selected]++;
+            }
+
+            cout << "decomposition cost:" << cost[selected] << endl;
+        }
+
+        double maxCost = 0.0;
+        int finalSelection = 0;
+        for (selected = 0; selected < 4; selected++)
+        {
+            if (cost[selected] > maxCost)
+            {
+                maxCost = cost[selected];
+                finalSelection = selected;
+            }
+        }
+        cout << endl;
+        cout << "Chosen decomposition" << endl << decomposition[finalSelection] << endl;
+        return decomposition[finalSelection];
+    }
+
+    /**
      * Calculating vectors for left and right nullspaces of the 3 by 3 matrix of rank 2
      *
      * \f[ e_1 F = 0 \f]

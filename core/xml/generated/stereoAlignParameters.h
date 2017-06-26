@@ -39,6 +39,8 @@ class StereoAlignParameters : public corecvs::BaseReflection<StereoAlignParamete
 {
 public:
     enum FieldId {
+        PRODUCE_CAMERAS_ID,
+        PRODUCE_OBSERVATIONS_ID,
         ZDIRX_ID,
         ZDIRY_ID,
         ZDIRZ_ID,
@@ -50,6 +52,18 @@ public:
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief Produce Cameras 
+     * Produce Cameras 
+     */
+    bool mProduceCameras;
+
+    /** 
+     * \brief Produce Observations 
+     * Produce Observations 
+     */
+    bool mProduceObservations;
 
     /** 
      * \brief zdirX 
@@ -103,6 +117,16 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    bool produceCameras() const
+    {
+        return mProduceCameras;
+    }
+
+    bool produceObservations() const
+    {
+        return mProduceObservations;
+    }
+
     double zdirX() const
     {
         return mZdirX;
@@ -139,6 +163,16 @@ public:
     }
 
     /* Section with setters */
+    void setProduceCameras(bool produceCameras)
+    {
+        mProduceCameras = produceCameras;
+    }
+
+    void setProduceObservations(bool produceObservations)
+    {
+        mProduceObservations = produceObservations;
+    }
+
     void setZdirX(double zdirX)
     {
         mZdirX = zdirX;
@@ -179,6 +213,8 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mProduceCameras,            static_cast<const corecvs::BoolField *>(fields()[PRODUCE_CAMERAS_ID]));
+        visitor.visit(mProduceObservations,       static_cast<const corecvs::BoolField *>(fields()[PRODUCE_OBSERVATIONS_ID]));
         visitor.visit(mZdirX,                     static_cast<const corecvs::DoubleField *>(fields()[ZDIRX_ID]));
         visitor.visit(mZdirY,                     static_cast<const corecvs::DoubleField *>(fields()[ZDIRY_ID]));
         visitor.visit(mZdirZ,                     static_cast<const corecvs::DoubleField *>(fields()[ZDIRZ_ID]));
@@ -195,7 +231,9 @@ template<class VisitorType>
     }
 
     StereoAlignParameters(
-          double zdirX
+          bool produceCameras
+        , bool produceObservations
+        , double zdirX
         , double zdirY
         , double zdirZ
         , bool autoZ
@@ -204,6 +242,8 @@ template<class VisitorType>
         , int guessShiftThreshold
     )
     {
+        mProduceCameras = produceCameras;
+        mProduceObservations = produceObservations;
         mZdirX = zdirX;
         mZdirY = zdirY;
         mZdirZ = zdirZ;

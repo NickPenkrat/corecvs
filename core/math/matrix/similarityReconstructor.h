@@ -11,12 +11,14 @@
 #include <iostream>
 #include <vector>
 
+#include "affine.h"
 #include "vector2d.h"
 #include "matrix33.h"
 #include "correspondenceList.h"
 #include "matrix.h"
 #include "quaternion.h"
 #include "function.h"
+#include "affine.h"
 
 namespace corecvs {
 
@@ -50,6 +52,8 @@ public:
      *    To matrix transformation
      **/
     Matrix44 toMatrix() const;
+
+	Affine3DQ transform(const Affine3DQ &input);
 
     /**
      *    Transform
@@ -133,6 +137,38 @@ template<class VisitorType>
             return false;
 
         return true;
+    }
+
+};
+
+
+/**
+   Sim3 group
+
+   This class stores scale in quaternion
+
+ **/
+class SRTTransform : public Affine3D<Quaternion>{
+public:
+    SRTTransform(double scale, const Quaternion &rotate, const Vector3dd  &translate) :
+        Affine3D<Quaternion>(rotate * sqrt(scale), translate)
+    {}
+
+
+
+    /**
+     *    To matrix transformation
+     **/
+    Matrix44 toMatrix() const;
+
+
+    void print()
+    {
+        std::cout << *this;
+        std::cout << "Scale:" << rotor.l2Metric();
+        std::cout << "Rotation: ";
+        rotor.normalised().printAxisAndAngle();
+        std::cout << "Translate" << shift;
     }
 
 };

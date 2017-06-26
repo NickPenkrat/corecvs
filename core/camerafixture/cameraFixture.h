@@ -66,6 +66,9 @@ public:
         location = _location;
     }
 
+	void transformLocation(const Matrix44& coordinatesTransform);
+	Affine3DQ getTransformedLocation(const Matrix44& coordinatesTransform) const;
+
     FixtureCamera getWorldCamera(FixtureCamera *camPtr) const
     {
         FixtureCamera toReturn = *camPtr;

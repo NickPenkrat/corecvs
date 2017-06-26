@@ -51,7 +51,9 @@ class OpenCvDescriptorExtractorProvider : public DescriptorExtractorProviderImpl
 public:
     DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
     virtual bool provides(const DescriptorType &type) override;
-    virtual std::string name() override {return "OpenCV";}
+    virtual std::string name() override { return "OpenCV"; }
+    virtual std::vector<std::string> provideHints() override;
+
 
     ~OpenCvDescriptorExtractorProvider() {}
 

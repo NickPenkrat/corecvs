@@ -49,6 +49,19 @@ TEST(Draw, testHistogram)
     delete_safe(buffer);
 }
 
+TEST(Draw, testBitBlt)
+{
+    RGB24Buffer in (48,48, RGBColor::Yellow());
+    RGB24Buffer out(100,100, RGBColor::Green());
+
+    out.fillWith(in, 1, 1);
+    out.fillWith(in, 1, 51);
+    out.fillWith(in, 51, 1);
+    out.fillWith(in, 51, 51);
+
+    BMPLoader().save("bitBlt.bmp", &out);
+}
+
 
 TEST(Draw, testCircles)
 {

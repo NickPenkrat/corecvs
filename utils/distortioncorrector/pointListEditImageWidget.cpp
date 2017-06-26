@@ -1,6 +1,9 @@
+#include <QMenu>
+
 #include "pointListEditImageWidget.h"
 #include "painterHelpers.h"
 #include "qtHelper.h"
+
 
 PointListEditImageWidget::PointListEditImageWidget(QWidget *parent, bool showHeader) :
     AdvancedImageWidget(parent, showHeader),
@@ -275,18 +278,15 @@ PointListEditImageWidgetUnited::PointListEditImageWidgetUnited(QWidget *parent, 
     mAddInfoButton ->setCheckable(true);
 
     /*Delegate activity*/
-    mDelegateStyleBox = new QComboBox(this);
-    mDelegateStyleBox->addItem("No Delegate");
-    mDelegateStyleBox->addItem("Small");
-    mDelegateStyleBox->addItem("Selected");
-    mDelegateStyleBox->addItem("Only");
-    mDelegateStyleBox->addItem("All");
-
-    mDelegateStyleBox->setEnabled(true);
+    mDelegateStyleButton = new QPushButton(this);
+    mDelegateStyleButton->setText("Style");
+    mDelegateStyleButton->setEnabled(true);
+    mDelegateStyleButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+    connect(mDelegateStyleButton, SIGNAL(released()), this, SLOT(delegateMenuShow()));
 
     QWidget* holder = mUi->frame_2;
-    holder->layout()->addWidget(mDelegateStyleBox);
-    connect(mDelegateStyleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
+    holder->layout()->addWidget(mDelegateStyleButton);
+    //connect(mDelegateStyleBox, SIGNAL(currentIndexChanged(int)), this, SLOT(update()));
 
 }
 
@@ -342,6 +342,41 @@ void PointListEditImageWidgetUnited::selectPoint(int id)
             selectionModel->clear();
         }
     }
+}
+
+static QAction * addCheckBoxAction(QString name, bool state, QMenu *menu)
+{
+    QAction *action = new QAction(name, menu);
+    action->setCheckable(true);
+    action->setChecked(state);
+    menu->addAction(action);
+    return action;
+}
+
+
+void PointListEditImageWidgetUnited::delegateMenuShow()
+{
+    QPoint p = QCursor::pos();
+    QMenu menu;
+    QAction *actionDecAll      = addCheckBoxAction("Show Decorator All"     , mDecortatorAll     , &menu);
+    QAction *actionDecMatched  = addCheckBoxAction("Show Decorator Matched" , mDecortatorMatched , &menu);
+    QAction *actionDecSelected = addCheckBoxAction("Show Decorator Selected", mDecortatorSelected, &menu);
+    QAction *actionAll         = addCheckBoxAction("Show All"               , mMarkAll, &menu);
+    QAction *actionMatched     = addCheckBoxAction("Show Matched"           , mMarkMatched, &menu);
+    QAction *actionSelected    = addCheckBoxAction("Show Selected"          , mMarkSelected, &menu);
+    QAction *actionFast        = addCheckBoxAction("Show Fast"              , mMarkFast, &menu);
+
+    QAction* selectedItem = menu.exec(p);
+
+    if (selectedItem == actionDecAll)      mDecortatorAll = selectedItem->isChecked();
+    if (selectedItem == actionDecMatched)  mDecortatorMatched = selectedItem->isChecked();
+    if (selectedItem == actionDecSelected) mDecortatorSelected = selectedItem->isChecked();
+    if (selectedItem == actionAll)         mMarkAll = selectedItem->isChecked();
+    if (selectedItem == actionMatched)     mMarkMatched = selectedItem->isChecked();
+    if (selectedItem == actionSelected)    mMarkSelected = selectedItem->isChecked();
+    if (selectedItem == actionFast)        mMarkFast = selectedItem->isChecked();
+
+    update();
 }
 
 void PointListEditImageWidgetUnited::paintDirectionArrows(QPainter &painter, int type)
@@ -402,7 +437,9 @@ void PointListEditImageWidgetUnited::paintTarget(QPainter &painter, Vector2dd im
 
 }
 
-void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *who)
+
+
+void PointListEditImageWidgetUnited::childRepaint(QPaintEvent * /*event*/, QWidget *who)
 {
     //AdvancedImageWidget::childRepaint(event, who);
     if (mImage.isNull())
@@ -417,8 +454,10 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
 
     int rows = (int)mObservationListModel->getPointCount();
 
+
+    bool shortCut = mMarkFast && mMarkAll;
     /* This is the fastest way to draw, even outer cycle is brought invards */
-    if (mDelegateStyleBox->currentIndex() == STYLE_NO_DELEGATE_SMALL)
+    if (shortCut)
     {
         PreciseTimer timer = PreciseTimer::currentTime();
         painter.setPen(Qt::yellow);
@@ -450,15 +489,7 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
                 isSelected = (i == mSelectedPoint);
             }
 
-            /* We should probably use our own mechnism */
-            bool drawDelegate = false;
-            if (mDelegateStyleBox->currentIndex() == STYLE_ONLY_DELEGATE ||
-                mDelegateStyleBox->currentIndex() == STYLE_ALL )
-                drawDelegate = true;
-            if (mDelegateStyleBox->currentIndex() == STYLE_SELECTED && isSelected)
-                drawDelegate = true;
-
-            if (drawDelegate)
+            if (mDecortatorAll || (isSelected && mDecortatorSelected))
             {
                 QTransform old = painter.transform();
                 Matrix33 matrix = currentTransformMatrix();
@@ -472,7 +503,7 @@ void PointListEditImageWidgetUnited::childRepaint(QPaintEvent *event, QWidget *w
                 painter.setTransform(old);
             }
 
-            if (mDelegateStyleBox->currentIndex() != STYLE_ONLY_DELEGATE)
+            if (mMarkAll)
             {
                 painter.setPen(Qt::yellow);
                 drawCircle(painter, imageCoords, 5);
@@ -668,9 +699,19 @@ void DrawKeypointAreaDelegate::drawAt(QPainter &painter, Vector2dd position, int
     if (observation == NULL)
         return;
 
-    painter.setPen(state ? Qt::blue : Qt::yellow);
-
     KeyPointArea &area = observation->keyPointArea;
+
+    if (state) {
+        painter.setPen(state ? Qt::blue : Qt::yellow);
+        painter.drawEllipse(
+            position.x() - area.size / 2 - 1,
+            position.y() - area.size / 2 - 1,
+            area.size + 2.0,
+            area.size + 2.0);
+    }
+
+    RGBColor color = RGBColor::rainbow1(observation->accuracy.x());
+    painter.setPen(color.color());
 
     painter.drawEllipse(
         position.x() - area.size / 2,
@@ -682,8 +723,7 @@ void DrawKeypointAreaDelegate::drawAt(QPainter &painter, Vector2dd position, int
         position.y(),
         cos(degToRad(area.angle)) * observation->keyPointArea.size / 2.0 + position.x(),
         sin(degToRad(area.angle)) * observation->keyPointArea.size / 2.0 + position.y()
-
-                     );
+    );
 
 
 }

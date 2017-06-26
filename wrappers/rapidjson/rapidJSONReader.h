@@ -250,14 +250,14 @@ public:
         if (value.IsNull()) {
             CONDITIONAL_TRACE(("RapidJSONReader::pushChild(%s): no child\n", childName));
         } else {
-            CONDITIONAL_TRACE(("RapidJSONReader::pushChild(): depth %d\n", mNodePath.size()));
+            CONDITIONAL_TRACE(("RapidJSONReader::pushChild(): depth %u\n", (unsigned)mNodePath.size()));
         }
         mNodePath.push_back(&value);
     }
 
     void popChild()
     {
-        CONDITIONAL_TRACE(("RapidJSONReader::popChild() from depth %d\n", mNodePath.size()));
+        CONDITIONAL_TRACE(("RapidJSONReader::popChild() from depth %u\n", (unsigned)mNodePath.size()));
         mNodePath.pop_back();
 
     }

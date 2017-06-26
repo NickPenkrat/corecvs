@@ -37,7 +37,7 @@ class AviCapture : public virtual ImageCaptureInterface
     static bool avCodecInited;
 
 public:
-    AviCapture(QString const &params);
+    AviCapture(std::string const &params);
     ~AviCapture();
 
     virtual ImageCaptureInterface::CapErrorCode initCapture()  override;

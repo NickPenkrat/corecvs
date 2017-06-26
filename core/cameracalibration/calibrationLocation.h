@@ -285,15 +285,15 @@ public:
      *    R' = R * A^-1
      *
      **/
-    void transform(const Quaternion &rotate, const Vector3dd &translate)
+    void transform(const Quaternion &rotate, const Vector3dd &translate, const double scale = 1.0)
     {
-        position    = rotate * position + translate;
+        position    = (rotate * position + translate) * scale;
         orientation = orientation ^ rotate.conjugated();
     }
 
-    void transform(const Affine3DQ &affine)
+    void transform(const Affine3DQ &affine, const double scale = 1.0)
     {
-        transform(affine.rotor, affine.shift);
+        transform(affine.rotor, affine.shift, scale);
     }
 
     CameraLocationAngles getAngles() const

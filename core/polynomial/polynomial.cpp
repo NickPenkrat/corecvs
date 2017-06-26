@@ -6,12 +6,12 @@ double corecvs::Polynomial::polishRoot(double x0, int N) const
 {
     int it = 0;
     double val = std::abs((*this)(x0));
-    double v0 = val;
+//    double v0 = val;
     do
     {
         double df = 0.0, d2f = 0.0;
         double v1 = 1.0, v2 = 0.0;
-        for (int i = 1; i <=degree(); ++i)
+        for (size_t i = 1; i <= degree(); ++i)
         {
             double c = (*this)[i];
             df += i * v1 * c;
@@ -30,7 +30,7 @@ double corecvs::Polynomial::polishRoot(double x0, int N) const
         ++it;
         x0 = x1;
     } while (it < N);
-    double vfin = val;
+//    double vfin = val;
 //    std::cout << v0 / vfin << "x improvement" << std::endl;
     return x0;
 }

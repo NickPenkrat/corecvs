@@ -77,9 +77,9 @@ void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, bo
 void FeatureMatchingPipeline::printCaps()
 {
     cout << "Current caps are: " << std::endl;
-    FeatureDetectorProvider::getInstance().print();
-    DescriptorExtractorProvider::getInstance().print();
-    DescriptorMatcherProvider::getInstance().print();
+    FeatureDetectorProvider::getInstance().print("FeatureDetectorProvider");
+    DescriptorExtractorProvider::getInstance().print("DescriptorExtractorProvider");
+    DescriptorMatcherProvider::getInstance().print("DescriptorMatcherProvider");
 }
 
 //---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ public:
         size_t id = r.begin();
 
         std::stringstream ss1, ss2;
-        ss1 << "Detecting keypoints with " << detectorType << " on ";
+        ss1 << "Start detecting keypoints with " << detectorType << " on ";
         size_t cnt = 0;
         pipeline->tic(id, false);
         size_t kpt = 0;
@@ -136,8 +136,17 @@ public:
             cnt = 0;
         }
     }
-    ParallelDetector(FeatureMatchingPipeline* pipeline, DetectorType detectorType, int maxFeatureCount, int downsampleFactor, const std::string &params = "")
-        : pipeline(pipeline), detectorType(detectorType), params(params), maxFeatureCount(maxFeatureCount), downsampleFactor(downsampleFactor)
+    ParallelDetector(
+        FeatureMatchingPipeline* pipeline,
+        DetectorType detectorType,
+        int maxFeatureCount,
+        int downsampleFactor,
+        const std::string &params = "")
+    :    pipeline(pipeline)
+       , detectorType(detectorType)
+       , params(params)
+       , maxFeatureCount(maxFeatureCount)
+       , downsampleFactor(downsampleFactor)
     {}
 };
 
@@ -150,7 +159,7 @@ void KeyPointDetectionStage::run(FeatureMatchingPipeline *pipeline)
 
     corecvs::parallelable_for((size_t)0, N, CORE_MAX(N / MAX_CORE_COUNT_ESTIMATE, (size_t)1), ParallelDetector(pipeline, detectorType, maxFeatureCount, downsampleFactor, params), parallelable);
 
-    ss1 << "Detecting keypoints with " << detectorType;
+    ss1 << "KeyPointDetectionStage::run(): Detecting keypoints with " << detectorType;
     pipeline->toc(ss1.str(), ss2.str());
 }
 
@@ -177,8 +186,8 @@ void KeyPointDetectionStage::loadResults(FeatureMatchingPipeline *pipeline, cons
 KeyPointDetectionStage::KeyPointDetectionStage(DetectorType type, int maxFeatureCount, int downsampleFactor, const std::string &params)
     : detectorType(type)
     , downsampleFactor(downsampleFactor)
-    , params(params)
     , maxFeatureCount(maxFeatureCount)
+    , params(params)
 {
     FeatureDetector* detector = FeatureDetectorProvider::getInstance().getDetector(detectorType);
     parallelable = detector->isParallelable();
@@ -317,11 +326,15 @@ void DescriptorExtractionStage::run(FeatureMatchingPipeline *pipeline)
     pipeline->toc(ss1.str(), ss2.str());
 }
 
-DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, int downsampleFactor, const std::string &params, bool keypointsColor) : descriptorType(type), downsampleFactor(downsampleFactor), params(params), keypointsColor(keypointsColor)
+DescriptorExtractionStage::DescriptorExtractionStage(DescriptorType type, int downsampleFactor, const std::string &params, bool keypointsColor) :
+    descriptorType(type),
+    downsampleFactor(downsampleFactor),
+    keypointsColor(keypointsColor),
+    params(params)
 {
     DescriptorExtractor* extractor = DescriptorExtractorProvider::getInstance().getDescriptorExtractor(descriptorType, params);
 	parallelable = extractor ? extractor->isParallelable() : false;
-    delete extractor;
+    delete_safe(extractor);
 }
 
 //---------------------------------------------------------------------------
@@ -557,6 +570,14 @@ void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::st
 
 //---------------------------------------------------------------------------
 
+
+static void combinationToIndex(size_t in, size_t &out1, size_t out2)
+{
+    double tt = -0.5 + sqrt(1.0 + 8.0 * in) / 2.0;
+    size_t J = 1+(size_t)tt;
+    size_t I = in - (J - 1) * J / 2;
+}
+
 class ParallelMatcherRefiner
 {
     FeatureMatchingPipeline* pipeline;
@@ -612,7 +633,7 @@ public:
                 size_t s = reqs[si];
                 size_t Is = matchPlan.plan[s].queryImg;
                 size_t Js = matchPlan.plan[s].trainImg;
-                auto &query = matchPlan.plan[s];
+                MatchPlanEntry &query = matchPlan.plan[s];
 
                 CORE_ASSERT_TRUE_S(Is < N && Js < N);
 
@@ -631,6 +652,8 @@ public:
                 std::vector<std::vector<RawMatch>> ml;
 				if (matcher)
 					matcher->knnMatch(qb, tb, ml, responsesPerPoint);
+
+                SYNC_PRINT(("Matcher implementation returned %d\n", ml.size()));
 
                 for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
                 {
@@ -664,7 +687,7 @@ public:
             {
                 size_t s = reqs[si];
                 size_t query = matchPlan.plan[s].queryImg;
-                query = query == I ? 0 : 1;
+                query = (query == I) ? 0 : 1;
 
                 for (size_t i = 0; i < rawMatches.matches[s].size(); ++i)
                 {
@@ -1279,7 +1302,7 @@ void VsfmWriterStage::loadResults(FeatureMatchingPipeline *pipeline, const std::
             ofs >> idxB[i];
         std::deque<Match> matches;
         for(size_t i = 0; i < K; ++i)
-            matches.push_back(Match((uint16_t)I, (uint16_t)J, (uint16_t)idxA[i], (uint16_t)idxB[i], 0.0));
+            matches.push_back(Match((uint16_t)I, (uint16_t)J, (RawMatch::FeatureId)idxA[i], (RawMatch::FeatureId)idxB[i], 0.0));
 
         RefinedMatchSet set(I, J, matches);
         refinedMatches.matchSets.push_back(set);
@@ -1480,10 +1503,10 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 DetectAndExtractStage::DetectAndExtractStage(DetectorType detectorType, DescriptorType descriptorType, int maxFeatureCount, int downsampleFactor, const std::string &params, bool keypointsColor)
     : detectorType(detectorType)
     , descriptorType(descriptorType)
-    , downsampleFactor(downsampleFactor)
     , maxFeatureCount(maxFeatureCount)
-    , params(params)
+    , downsampleFactor(downsampleFactor)
     , keypointsColor(keypointsColor)
+    , params(params)
 {
     DetectAndExtract* detector = DetectAndExtractProvider::getInstance().getDetector(detectorType, descriptorType);
     parallelable = detector ? detector->isParallelable() : false;
@@ -1507,7 +1530,7 @@ public:
         size_t id = r.begin();
 
         std::stringstream ss1, ss2;
-        ss1 << "Detecting keypoints with " << detectorType << " on ";
+        ss1 << "Detecting/Extracting keypoints from" << detectorType << " on ";
         size_t cnt = 0;
         pipeline->tic(id, false);
         size_t kpt = 0;
@@ -1584,8 +1607,8 @@ public:
         descriptorType(descriptorType),
         params(params), 
         maxFeatureCount(maxFeatureCount), 
-        keypointsColor(keypointsColor),
-        downsampleFactor(downsampleFactor)
+        downsampleFactor(downsampleFactor),
+        keypointsColor(keypointsColor)
     {}
 };
 
@@ -1635,9 +1658,9 @@ void DetectAndExtractStage::loadResults(FeatureMatchingPipeline *pipeline, const
 DetectExtractAndMatchStage::DetectExtractAndMatchStage(DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, int downsampleFactor, size_t responsesPerPoint, const std::string &params)
     : detectorType(detectorType)
     , descriptorType(descriptorType)
-    , matcherType(matcherType)
-    , downsampleFactor(downsampleFactor)
+    , matcherType(matcherType)   
     , maxFeatureCount(maxFeatureCount)
+    , downsampleFactor(downsampleFactor)
     , responsesPerPoint(responsesPerPoint)
     , params(params)
 {}
@@ -1700,9 +1723,9 @@ void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
 	DetectorType detectorType,
 	DescriptorType descriptorType,
 	int maxFeatureCount,
-    int downsampleFactor,
-	const std::string &params,
-    bool keypointsColor)
+        int downsampleFactor,
+        const std::string &params,
+        bool keypointsColor)
 {
 
 	if (std::string::npos != detectorType  .find("_GPU") &&

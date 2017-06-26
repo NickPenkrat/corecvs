@@ -264,4 +264,19 @@ bool OpenCvFeatureDetectorProvider::provides(const DetectorType &type)
     return false;
 }
 
+std::vector<std::string> OpenCvFeatureDetectorProvider::provideHints()
+{
+    std::vector<std::string> toReturn;
+    toReturn.push_back("SIFT");
+    toReturn.push_back("SURF");
+    toReturn.push_back("STAR");
+    toReturn.push_back("FAST");
+    toReturn.push_back("BRISK");
+    toReturn.push_back("ORB");
+#ifdef WITH_OPENCV_3x
+    toReturn.push_back("AKAZE");
+#endif
+    return toReturn;
+}
+
 #undef SWITCH_TYPE
