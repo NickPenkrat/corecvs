@@ -80,6 +80,10 @@ int SceneStereoAlignerBlock::operator ()()
     RGB24Buffer *resImage1 = inImage1()->doReverseDeformationBlTyped<ProjectiveTransform>(&leftTransformInv);
     RGB24Buffer *resImage2 = inImage2()->doReverseDeformationBlTyped<ProjectiveTransform>(&rightTransformInv);
 
+    //RGB24Buffer *resImage1 = inImage1()->doReverseDeformationBlTyped<ProjectiveTransform>(&rightTransformInv);
+    //RGB24Buffer *resImage2 = inImage2()->doReverseDeformationBlTyped<ProjectiveTransform>(&leftTransformInv);
+
+
     setOutImage1(resImage1);
     setOutImage2(resImage2);
 

@@ -22,6 +22,8 @@
 #include "rectangle.h"
 #include "matrix33.h"
 
+#include "parametersControlWidgetBase.h"
+
 using corecvs::Vector2d;
 using corecvs::Vector2d32;
 using corecvs::Vector2dd;
@@ -133,17 +135,42 @@ namespace
         return "";
     }
 
-    class LastInOutDirsKeeper
-    {
-    public:
-        QString in;             // last input  dir
-        QString out;            // last output dir
-
-        void    updateIn (const QString& absoluteFilePath) { in  = getDirectory(absoluteFilePath); }
-        void    updateOut(const QString& absoluteFilePath) { out = getDirectory(absoluteFilePath); }
-    };
 
 } // namespace
 
+
+class RecentPathKeeper : public SaveableWidget
+{
+public:
+    static const QString LAST_INPUT_DIRECTORY_KEY ;
+    static const QString LAST_OUTPUT_DIRECTORY_KEY;
+    static const QString RECENT_SCENES_KEY;
+
+    static const int MAX_RECENT = 10;
+
+    QString in;             // last input  dir
+    QString out;            // last output dir
+
+    std::vector<std::string> lastScenes;
+
+    void    updateIn (const QString& absoluteFilePath) { in  = getDirectory(absoluteFilePath); }
+    void    updateOut(const QString& absoluteFilePath) { out = getDirectory(absoluteFilePath); }
+
+    void    addRecent(const std::string &recent) {
+        if (std::find(lastScenes.begin(), lastScenes.end(), recent) == lastScenes.end())
+            lastScenes.push_back(recent);
+
+        while (lastScenes.size() >= MAX_RECENT) {
+            lastScenes.erase(lastScenes.begin(), lastScenes.begin() + 1);
+        }
+    }
+
+
+    virtual void loadFromQSettings(const QString &fileName, const QString &_root) override;
+    virtual void saveToQSettings  (const QString &fileName, const QString &_root) override;
+
+    ~RecentPathKeeper();
+
+};
 
 /* EOF */
