@@ -214,7 +214,12 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
     Model5Point result = ransac.getModelRansacMultimodel();    
     model = result.model;
 #endif
-    Ransac<Correspondence, Model8Point>  ransac(8, params);
+    double thresholdScaler = camera1->intrinsics.fx();
+
+    RansacParameters scaledParams = params;
+    scaledParams.setInlierThreshold(scaledParams.inlierThreshold() / thresholdScaler);
+
+    Ransac<Correspondence, Model8Point>  ransac(8, scaledParams);
     ransac.trace = trace;
     ransac.data = &dataPtr;
     Model8Point result = ransac.getModelRansac();
@@ -234,8 +239,11 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
 //            Correspondence::CorrespondenceFlags flag = (Correspondence::CorrespondenceFlags)data[count].flags;
 
             double cost = result.getCost(data[count]);
-            obs1->accuracy = Vector2dd(cost / params.inlierThreshold());
-            obs2->accuracy = Vector2dd(cost / params.inlierThreshold());
+
+            Vector2dd accuracy(cost * thresholdScaler / params.inlierThreshold(), cost * thresholdScaler);
+
+            obs1->accuracy = accuracy;
+            obs2->accuracy = accuracy;
 
 #if 0
             if (flag & Correspondence::FLAG_PASSER) {
