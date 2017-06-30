@@ -414,9 +414,9 @@ inline void deletearr_safe (Type * &ptr)
 
 /** Compatibility with old STL library versions without data() method of the vector object */
 #if defined(_MSC_VER) && _MSC_VER <= 1500
-# define VEC_DATA_PTR(vec)      &(vec[0])
+# define VEC_DATA_PTR(vec)                  &(vec[0])
 #else
-# define VEC_DATA_PTR(vec)      vec.data()
+# define VEC_DATA_PTR(vec)                  vec.data()
 #endif
 
 #ifdef _WIN32
@@ -425,22 +425,21 @@ inline void deletearr_safe (Type * &ptr)
 #   define PATH_SEPARATOR  "/"
 #endif
 
+/* Helper to detect if the symbol is a slash for both platforms. It's not enough to check for PATH_SEPARATOR only */
+#define   IS_SLASH_SYMBOL(ch)               ((ch) == '/' || (ch) == '\\')
+
 #if defined(_WIN32) && defined(_MSC_VER) && _MSC_VER < 1800
 #   define FOREACH(X, Y) for each (X in Y)      // msvc understands standard since vc12
 #else
 #   define FOREACH(X, Y) for (X : Y)
 #endif
 
-//#define QSTR_DATA_PTR(qstring)        (qstring).toLatin1().data()
-#define   QSTR_DATA_PTR(qstring)        (qstring).toStdString().c_str()  // after using textCodecs we should use this
+//#define QSTR_DATA_PTR(qstring)            (qstring).toLatin1().data()
+#define   QSTR_DATA_PTR(qstring)            (qstring).toStdString().c_str()  // after using textCodecs we should use this
 
-#define   QSTR_HAS_SLASH_AT_END(qstring)  ((qstring).length() > 1 && \
-                                          ((qstring)[(qstring).length() - 1] == '/' || \
-                                           (qstring)[(qstring).length() - 1] == '\\'))
+#define   QSTR_HAS_SLASH_AT_END(qstring)    ((qstring).length() > 1 && IS_SLASH_SYMBOL((qstring)[(qstring).length() - 1]))
 
-#define   STR_HAS_SLASH_AT_END(string)  ((string).length() > 1 && \
-                                        ((string)[(string).length() - 1] == '/' || \
-                                         (string)[(string).length() - 1] == '\\'))
+#define   STR_HAS_SLASH_AT_END(string)      ((string).length() > 1 && IS_SLASH_SYMBOL((string)[(string).length() - 1]))
 
 #endif // is__cplusplus
 
