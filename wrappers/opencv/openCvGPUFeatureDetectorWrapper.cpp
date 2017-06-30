@@ -78,19 +78,19 @@ OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper(SmartPtrHolder 
 
 #else
 
-OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper( SURF_GPU *detector ) : detectorSURF_CUDA( detector ),
-    detectorORB_CUDA( 0 ),
-    detectorSURF_OCL( 0 )
+OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper(SURF_GPU *detector) : detectorSURF_CUDA(detector),
+    detectorORB_CUDA(0),
+    detectorSURF_OCL(0)
 {}
 
-OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper( ORB_GPU *detector ) : detectorORB_CUDA( detector ),
-    detectorSURF_CUDA( 0 ),
-    detectorSURF_OCL( 0 )
+OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper(ORB_GPU *detector) : detectorORB_CUDA(detector),
+    detectorSURF_CUDA(0),
+    detectorSURF_OCL(0)
 {}
 
-OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper( SURF_OCL *detector ) : detectorSURF_OCL( detector ),
-    detectorSURF_CUDA( 0 ),
-    detectorORB_CUDA( 0 )
+OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper(SURF_OCL *detector) : detectorSURF_OCL(detector),
+    detectorSURF_CUDA(0),
+    detectorORB_CUDA(0)
 {}
 
 #endif
@@ -107,16 +107,16 @@ OpenCvGPUFeatureDetectorWrapper::~OpenCvGPUFeatureDetectorWrapper()
     delete detectorSURF_CUDA;
 }
 
-double OpenCvGPUFeatureDetectorWrapper::getProperty( const std::string &name ) const
+double OpenCvGPUFeatureDetectorWrapper::getProperty(const std::string &name) const
 {
-    CORE_UNUSED( name );
+    CORE_UNUSED(name);
     return 0.0;
 }
 
-void OpenCvGPUFeatureDetectorWrapper::setProperty( const std::string &name, const double &value )
+void OpenCvGPUFeatureDetectorWrapper::setProperty(const std::string &name, const double &value)
 {
-    CORE_UNUSED( name );
-    CORE_UNUSED( value );
+    CORE_UNUSED(name);
+    CORE_UNUSED(value);
 }
 
 struct OpenCLRemapCache
@@ -151,7 +151,7 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &ima
 #ifdef WITH_OPENCV_3x
     if (detectorSURF_CUDA)
     {
-        cv::cuda::GpuMat img( convert( image ) );
+        cv::cuda::GpuMat img(convert(image));
 		if (pRemapCache)
 		{
 			GpuMat remapped;
@@ -160,14 +160,14 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &ima
 			img = remapped;
 		}
         cv::cuda::GpuMat mask;
-        ( *detectorSURF_CUDA )( img, mask, kps );  
+        (*detectorSURF_CUDA)(img, mask, kps);  
     }
-    else if ( holder )
+    else if (holder)
     {
         auto detector = holder->get();
-        if ( holder->tag == SmartPtrHolder::SURF ) // openCL implementation
+        if (holder->tag == SmartPtrHolder::SURF) // openCL implementation
         {
-			cv::UMat img( convert( image ) );
+			cv::UMat img(convert(image));
 			if (pRemapCache)
 			{
 				UMat remapped;
@@ -175,12 +175,12 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &ima
 				cv::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
 				img = remapped;
 			}
-            detector->detect( img, kps );
+            detector->detect(img, kps);
         }
 
-        if ( holder->tag == SmartPtrHolder::ORB ) // CUDA implementation
+        if (holder->tag == SmartPtrHolder::ORB) // CUDA implementation
         {
-            cv::cuda::GpuMat img( convert( image ) );
+            cv::cuda::GpuMat img(convert(image));
 			if (pRemapCache)
 			{
 				GpuMat remapped;
@@ -188,14 +188,14 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &ima
 				cv::cuda::remap(img, remapped, p->mat0, p->mat1, cv::INTER_NEAREST);
 				img = remapped;
 			}
-            detector->detect( img, kps );
+            detector->detect(img, kps);
         }           
     }
 
 #else
-    if ( detectorSURF_CUDA || detectorORB_CUDA )
+    if (detectorSURF_CUDA || detectorORB_CUDA)
     {
-        cv::gpu::GpuMat img( convert( image ) );
+        cv::gpu::GpuMat img(convert(image));
 		if (pRemapCache)
 		{
 			GpuMat remapped;
@@ -206,21 +206,21 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &ima
 
         cv::gpu::GpuMat mask;
 
-        if ( detectorSURF_CUDA )
+        if (detectorSURF_CUDA)
         {
             //max keypoints = min(keypointsRatio * img.size().area(), 65535)
-            //detectorSURF_CUDA->keypointsRatio = ( float )K / img.size().area();
-            ( *detectorSURF_CUDA )( img, mask, kps );
+            //detectorSURF_CUDA->keypointsRatio = (float)K / img.size().area();
+            (*detectorSURF_CUDA)(img, mask, kps);
         }     
-        else if ( detectorORB_CUDA )
+        else if (detectorORB_CUDA)
         {
-            ( *detectorORB_CUDA )( img, mask, kps );
+            (*detectorORB_CUDA)(img, mask, kps);
         }
 
     }
-    else if ( detectorSURF_OCL )
+    else if (detectorSURF_OCL)
     {
-        cv::ocl::oclMat img( convert( image ) );
+        cv::ocl::oclMat img(convert(image));
 		if (pRemapCache)
 		{
 			oclMat remapped;
@@ -231,8 +231,8 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &ima
 
         cv::ocl::oclMat mask;
         //max keypoints = min(keypointsRatio * img.size().area(), 65535)
-        //detectorSURF_OCL->keypointsRatio = ( float )K / img.size().area();
-        (*detectorSURF_OCL)( img, mask, kps );
+        //detectorSURF_OCL->keypointsRatio = (float)K / img.size().area();
+        (*detectorSURF_OCL)(img, mask, kps);
     }
 #endif
 
@@ -246,9 +246,9 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &ima
 	keyPoints.resize(std::min((int)keyPoints.size(), K));
 }
 
-bool FindGPUDevice( bool& cudaApi )
+bool FindGPUDevice(bool& cudaApi)
 {
-    if ( deviceFound )
+    if (deviceFound)
     {
         cudaApi = cudaDevice;
         return true;
@@ -265,16 +265,15 @@ bool FindGPUDevice( bool& cudaApi )
 	}
 		
     bool initProvider = false;
-    for ( int idx = 0; idx < numCudaDevices; idx++ )
+    for (int idx = 0; idx < numCudaDevices; idx++)
     {
-        setDevice( idx );
+        setDevice(idx);
 #ifdef WITH_OPENCV_3x
-        DeviceInfo devInfo( idx );
+        DeviceInfo devInfo(idx);
 #else
-        cv::gpu::DeviceInfo devInfo( idx );     
+        cv::gpu::DeviceInfo devInfo(idx);     
 #endif
-
-        if ( devInfo.isCompatible() )
+        if (devInfo.isCompatible())
         {
             deviceFound = initProvider = true; // found cuda device to use
             cout << "OpeCV uses CUDA "<< devInfo.name() << endl;
@@ -286,7 +285,7 @@ bool FindGPUDevice( bool& cudaApi )
     }
 
     //initProvider = false;
-    if ( !initProvider ) // if no cuda device found, try use first found opencl gpus
+    if (!initProvider) // if no cuda device found, try use first found opencl gpus
     {
 #ifdef WITH_OPENCV_3x
         if (!cv::ocl::haveOpenCL())
@@ -320,8 +319,8 @@ bool FindGPUDevice( bool& cudaApi )
         cudaDevice = cudaApi = false;
 #else
         DevicesInfo oclDevices;
-        getOpenCLDevices( oclDevices, cv::ocl::CVCL_DEVICE_TYPE_GPU );
-        if ( oclDevices.size() )
+        getOpenCLDevices(oclDevices, cv::ocl::CVCL_DEVICE_TYPE_GPU);
+        if (oclDevices.size())
         {
 			for (uint i = 0; i < oclDevices.size(); i++)
 			{
@@ -345,11 +344,11 @@ bool FindGPUDevice( bool& cudaApi )
 void init_opencv_gpu_detectors_provider()
 {
     bool cudaApi = false;
-    if ( FindGPUDevice( cudaApi ) )
-        FeatureDetectorProvider::getInstance().add( new OpenCvGPUFeatureDetectorProvider( cudaApi ) );
+    if (FindGPUDevice(cudaApi))
+        FeatureDetectorProvider::getInstance().add(new OpenCvGPUFeatureDetectorProvider(cudaApi));
 }
 
-OpenCvGPUFeatureDetectorProvider::OpenCvGPUFeatureDetectorProvider( bool _cudaApi ) : cudaApi( _cudaApi ) {}
+OpenCvGPUFeatureDetectorProvider::OpenCvGPUFeatureDetectorProvider(bool _cudaApi) : cudaApi(_cudaApi) {}
 
 #define SWITCH_TYPE(str, expr) \
 	if(type == #str) \
@@ -357,7 +356,7 @@ OpenCvGPUFeatureDetectorProvider::OpenCvGPUFeatureDetectorProvider( bool _cudaAp
 		expr; \
 	}
 
-FeatureDetector* OpenCvGPUFeatureDetectorProvider::getFeatureDetector( const DetectorType &type, const std::string &params )
+FeatureDetector* OpenCvGPUFeatureDetectorProvider::getFeatureDetector(const DetectorType &type, const std::string &params)
 {
 	SurfParams surfParams(params);
 	OrbParams orbParams(params);
@@ -391,31 +390,31 @@ FeatureDetector* OpenCvGPUFeatureDetectorProvider::getFeatureDetector( const Det
     }
 
 #else
-    if ( cudaApi )
+    if (cudaApi)
     {
-        SWITCH_TYPE( SURF_GPU,
-            return new OpenCvGPUFeatureDetectorWrapper( new cv::gpu::SURF_GPU( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ) ); )
-        SWITCH_TYPE( ORB_GPU,
-            return new OpenCvGPUFeatureDetectorWrapper( new cv::gpu::ORB_GPU( orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize ) ); )
+        SWITCH_TYPE(SURF_GPU,
+            return new OpenCvGPUFeatureDetectorWrapper(new cv::gpu::SURF_GPU(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright));)
+        SWITCH_TYPE(ORB_GPU,
+            return new OpenCvGPUFeatureDetectorWrapper(new cv::gpu::ORB_GPU(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize));)
     }
     else
-        SWITCH_TYPE( SURF_GPU,
-            return new OpenCvGPUFeatureDetectorWrapper( new cv::ocl::SURF_OCL( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ) ); )
+        SWITCH_TYPE(SURF_GPU,
+            return new OpenCvGPUFeatureDetectorWrapper(new cv::ocl::SURF_OCL(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright));)
     
 #endif 
 
     return 0;
 }
 
-bool OpenCvGPUFeatureDetectorProvider::provides( const DetectorType &type )
+bool OpenCvGPUFeatureDetectorProvider::provides(const DetectorType &type)
 {
-    if ( cudaApi )
+    if (cudaApi)
     {
-        SWITCH_TYPE( SURF_GPU, return true; );
-        SWITCH_TYPE( ORB_GPU, return true; );
+        SWITCH_TYPE(SURF_GPU, return true;);
+        SWITCH_TYPE(ORB_GPU, return true;);
     }
     else
-        SWITCH_TYPE( SURF_GPU, return true; );
+        SWITCH_TYPE(SURF_GPU, return true;);
     
     return false;
 }
@@ -423,7 +422,7 @@ bool OpenCvGPUFeatureDetectorProvider::provides( const DetectorType &type )
 std::vector<string> OpenCvGPUFeatureDetectorProvider::provideHints()
 {
     std::vector<std::string> toReturn;
-    if ( cudaApi )
+    if (cudaApi)
     {
         toReturn.push_back("SURF_GPU");
         toReturn.push_back("ORB_GPU");

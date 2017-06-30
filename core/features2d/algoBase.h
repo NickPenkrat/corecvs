@@ -39,12 +39,12 @@ public:
     /**
      * This is a convenience method to produce human readable name
      **/
-    virtual std::string name() {return "unknown"; }
+    virtual std::string name() { return "unknown"; }
     /**
      * This is a convenience method to provide subalgorithms names.
      * This should not return all implemented methods
      **/
-    virtual std::vector<std::string> provideHints() {return std::vector<std::string>(); }
+    virtual std::vector<std::string> provideHints() { return std::vector<std::string>(); }
 };
 
 
@@ -69,7 +69,8 @@ public:
         providers.clear();
     }
 
-    std::vector<std::string> getCaps() {
+    std::vector<std::string> getCaps()
+    {
         std::vector<std::string> result;
 
         for (typename std::vector<RealTypeName *>::iterator p = providers.begin(); p != providers.end(); ++p)
@@ -101,8 +102,6 @@ public:
             }
         }
     }
-
-
 
 };
 

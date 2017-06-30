@@ -1,4 +1,5 @@
-#pragma once
+#ifndef IMAGEKEYPOINTS_H
+#define IMAGEKEYPOINTS_H
 
 #include <vector>
 #include <iostream>
@@ -106,8 +107,10 @@ struct Image
 
 	size_t           id;
 	std::string      filename;
-	void*		 remapCache;
+	void*            remapCache;
 
 	Image(const size_t &id);
 	Image(const size_t &id, const std::string &filename, void* remapCache = 0);
 };
+
+#endif // IMAGEKEYPOINTS_H

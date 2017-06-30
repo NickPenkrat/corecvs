@@ -24,7 +24,7 @@
 using namespace corecvs;
 using namespace std;
 
-void asmF(double */*in*/, double */*out*/)
+void asmF(double */*in*/, double * /*out*/)
 {
 #if defined (__GNUC__) && __x86_64
 
