@@ -23,8 +23,8 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
 
     L_INFO_P("Starting iterative rectification...");
 
-    double sigma = initialSigma;
-    for (iteration = 0; iteration < maxIterations; iteration++)
+    double sigma = params.initialSigma();
+    for (iteration = 0; iteration < params.iterationsNumber(); iteration++)
     {
         EssentialEstimator estimator;
         if (workingSamples.size() < 9)
@@ -72,7 +72,7 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
                  , iteration, passed + rejected, passed, rejected, errorPerPoint, errorPerPointInit);
 
         workingSamples = passedSamples;
-        sigma *= sigmaFactor;
+        sigma *= params.sigmaFactor();
     }
 
     for (unsigned i = 0; i < samples.size(); i++)

@@ -238,6 +238,7 @@ classes+=" sceneStereoAlignerBlockBase"
 classes+=" adderSubstractorParametersBase"
 
 classes+=" ransacParameters"
+classes+=" iterativeEstimateParameters"
 
 
 # We will try to use reflectionWidget

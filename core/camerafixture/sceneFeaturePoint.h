@@ -298,7 +298,8 @@ public:
     /* Helper functions */
     PointPath getEpipath(FixtureCamera *camera1, FixtureCamera *camera2, int segments = 10);
 
-
+    /* Project this point to a given camera*/
+    void projectForward(FixtureCamera *camera, CameraFixture *fixture, bool round);
 };
 
 

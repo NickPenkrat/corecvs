@@ -9,14 +9,15 @@
  */
 
 #include "essentialEstimator.h"
+#include "iterativeEstimateParameters.h"
+
 namespace corecvs {
 
 class IterativeEstimator
 {
 public:
-    int maxIterations;
-    double initialSigma;
-    double sigmaFactor;
+
+    IterativeEstimateParameters params;
     EssentialEstimator::OptimisationMethod method;
 
     IterativeEstimator(
@@ -25,11 +26,13 @@ public:
             double _sigmaFactor,
             EssentialEstimator::OptimisationMethod _method = EssentialEstimator::METHOD_DEFAULT
     ) :
-        maxIterations(_maxIterations),
-        initialSigma(_initialSigma),
-        sigmaFactor(_sigmaFactor),
         method(_method)
-    {}
+    {
+        params.setIterationsNumber(_maxIterations);
+        params.setInitialSigma(_initialSigma);
+        params.setSigmaFactor(_sigmaFactor);
+
+    }
 
     EssentialMatrix getEssential   (const vector<Correspondence *> &samples);
 

@@ -40,39 +40,11 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
             //printf("Skipping (type = %x, mask = %x)\n", point->type, mask);
             continue;
         }
-
         for (CameraFixture * fixture : mFixtures)
         {
             for (FixtureCamera * camera : fixture->cameras)
             {
-                CameraModel worldCam = fixture->getWorldCamera(camera);
-
-                Vector2dd projection = worldCam.project(point->position);
-                if (!worldCam.isVisible(projection) || !worldCam.isInFront(point->position))
-                    continue;
-
-                if (round) {
-                    projection.x() = fround(projection.x());
-                    projection.y() = fround(projection.y());
-                }
-
-                SceneObservation observation(camera, point, projection, fixture);
-                if (!round) {
-                    observation.observDir = worldCam.dirToPoint(point->position).normalised();  // direct
-                }
-                else {
-                    observation.observDir = worldCam.intrinsics.reverse(projection).normalised();  // indirect
-                }
-                /*if (direct.notTooFar(indirect, 1e-7))
-                {
-                    SYNC_PRINT(("Ok\n"));
-                } else {
-                    cout << direct << " - " << indirect << "  ";
-                    SYNC_PRINT(("Fail\n"));
-                }*/
-
-                point->observations[camera] = observation;
-                point->observations__[WPP(fixture, camera)] = observation;
+                point->projectForward(camera, fixture, round);
             }
         }
     }

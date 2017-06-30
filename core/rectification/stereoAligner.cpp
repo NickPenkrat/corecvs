@@ -209,6 +209,8 @@ namespace corecvs {
  *
  */
 
+#define TRACE
+
 void StereoAligner::getAlignmentTransformation(
         const Matrix33 &F,
         Matrix33 *firstTransform,
@@ -321,10 +323,11 @@ void StereoAligner::getAlignmentTransformation(
     printf("\n");
 
     if (Fprim.notTooFar(F, 1e-5) || Fprim.notTooFar(-F, 1e-5)) {
+        SYNC_PRINT(("Matrix reconstruction ok\n"));
+    } else {
         SYNC_PRINT(("Matrix reconstruction failed\n"));
     }
 
-    //CORE_ASSERT_TRUE(Fprim.notTooFar(F, 1e-5) || Fprim.notTooFar(-F, 1e-5), "Matrix reconstruction failed");
 #endif // ASSERTS
 
     double det1 = rotationalPartFirst .det();
@@ -343,7 +346,7 @@ void StereoAligner::getAlignmentTransformation(
     *firstTransform  = scale * first;
     *secondTransform = scale * second;
 
-#ifdef TRACE
+#if 0
     printf("Final L %lg:\n", detL);
     leftTransform->print();
     printf("Final R %lg:\n", detR);
@@ -358,14 +361,16 @@ Vector3dd StereoAligner::getBestZ(const Matrix33 &F, const Vector2dd &rect, unsi
     Vector3dd E2;
     EssentialMatrix(F).nullspaces(&E2, &E1);
 
+    SYNC_PRINT(("StereoAligner::getBestZ(): called\n"));
 
     double minsum = numeric_limits<double>::max();
     double minalpha  = 0;
+    Vector3dd bestZ = Vector3dd::OrtY();
 
     for (unsigned i = 0; i < granularity; i++)
     {
         double alpha = i / (double)granularity * (M_PI * 2.0);
-        Vector3dd z = Vector3dd(cos(alpha), sin(alpha), 0.0);
+        Vector3dd z = Vector3dd(0.0, cos(alpha), sin(alpha));
 
         Vector3dd w1 = z ^ E1;
         Vector3dd w2 = F * z;
@@ -373,7 +378,7 @@ Vector3dd StereoAligner::getBestZ(const Matrix33 &F, const Vector2dd &rect, unsi
         w1 = w1.normalizeProjective();
         w2 = w2.normalizeProjective();
 
-        double distLeft = getDistortion(w1, rect);
+        double distLeft  = getDistortion(w1, rect);
         double distRight = getDistortion(w2, rect);
         if (leftDistortions != NULL)
             leftDistortions[i] = distLeft;
@@ -386,9 +391,13 @@ Vector3dd StereoAligner::getBestZ(const Matrix33 &F, const Vector2dd &rect, unsi
         {
             minsum = distLeft + distRight;
             minalpha = alpha;
+            bestZ = z;
         }
+        cout << "Alpha: " << radToDeg(alpha) << "deg weight " << (distLeft + distRight) << " dl:" << distLeft << " dr:" << distRight << std::endl;
     }
-    return Vector3dd(cos(minalpha), sin(minalpha), 0.0);
+
+    cout << "Best Alpha: " << radToDeg(minalpha) << endl;
+    return bestZ;
 }
 
 /*

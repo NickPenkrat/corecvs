@@ -15,7 +15,7 @@ int SceneStereoAlignerBlock::operator ()()
 {
     if (inScene() == NULL)
     {
-        SYNC_PRINT(("Fail. No input scene\n"));
+        SYNC_PRINT(("SceneStereoAlignerBlock::Fail. No input scene\n"));
         return 1;
     }
 
@@ -28,7 +28,7 @@ int SceneStereoAlignerBlock::operator ()()
 
     if (camera1 == NULL || camera2 == NULL)
     {
-        SYNC_PRINT(("Fail. No input camera"));
+        SYNC_PRINT(("SceneStereoAlignerBlock::Fail. No input camera"));
         return 2;
     }
 
@@ -37,8 +37,13 @@ int SceneStereoAlignerBlock::operator ()()
 
     Affine3DQ relativeTransform = pos1.inverted() * pos2;
 
-    //EssentialDecomposition decomposition = EssentialDecomposition::FromAffine(relativeTransform);
+    cout << "SceneStereoAlignerBlock(): Start transform" << relativeTransform << endl;
+
     Matrix33 F = camera1->fundamentalTo(*camera2);
+    //Matrix33 F = camera1->essentialTo(*camera2);
+    EssentialMatrix E(F);
+
+    E.prettyPrint();
 
     /* We would use existing code, though it is an inverse abstraction.
      * We already know all the geometry, but will be using code based on the Essential Matrix */
@@ -51,7 +56,7 @@ int SceneStereoAlignerBlock::operator ()()
     Vector3dd direction = Vector3dd(mParameters.zdirX(), mParameters.zdirY(), mParameters.zdirZ());
     if (mParameters.autoZ())
     {
-        printf("Autoguessing best Z\n");
+        printf("SceneStereoAlignerBlock::Autoguessing best Z\n");
         direction = StereoAligner::getBestZ(F, size /*, GRANULARITY, distL, distR*/);
     }
     cout << "Using Z value: " << direction << endl;
@@ -65,8 +70,8 @@ int SceneStereoAlignerBlock::operator ()()
     Vector2dd center = size / 2.0;
     StereoAligner::getLateralCorrectionFixPoint(&leftTransform, &rightTransform, center);
 
-    cout << "LTransform:" << leftTransform << endl;
-    cout << "RTransform:" << rightTransform << endl;
+    cout << "LTransform:\n" << leftTransform << endl;
+    cout << "RTransform:\n" << rightTransform << endl;
 
     cout << "Sanity check" << endl;
     EssentialMatrix Ix;
@@ -77,12 +82,11 @@ int SceneStereoAlignerBlock::operator ()()
     ProjectiveTransform  leftTransformInv =  leftTransform.inv();
     ProjectiveTransform rightTransformInv = rightTransform.inv();
 
+    // RGB24Buffer *resImage1 = inImage1()->doReverseDeformationBlTyped<ProjectiveTransform>(&leftTransform);
+    // RGB24Buffer *resImage2 = inImage2()->doReverseDeformationBlTyped<ProjectiveTransform>(&rightTransform);
+
     RGB24Buffer *resImage1 = inImage1()->doReverseDeformationBlTyped<ProjectiveTransform>(&leftTransformInv);
     RGB24Buffer *resImage2 = inImage2()->doReverseDeformationBlTyped<ProjectiveTransform>(&rightTransformInv);
-
-    //RGB24Buffer *resImage1 = inImage1()->doReverseDeformationBlTyped<ProjectiveTransform>(&rightTransformInv);
-    //RGB24Buffer *resImage2 = inImage2()->doReverseDeformationBlTyped<ProjectiveTransform>(&leftTransformInv);
-
 
     setOutImage1(resImage1);
     setOutImage2(resImage2);

@@ -172,6 +172,10 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
     image2->checkerBoard(20, RGBColor::Gray(50));
     image3->checkerBoard(20, RGBColor::Gray(50));
 
+    image1->drawCrosshare2(image1->w / 2, image1->h / 2, RGBColor::Blue());
+    image2->drawCrosshare2(image2->w / 2, image2->h / 2, RGBColor::Blue());
+    image3->drawCrosshare2(image3->w / 2, image3->h / 2, RGBColor::Blue());
+
     AbstractPainter<RGB24Buffer> painter1(image1);
     AbstractPainter<RGB24Buffer> painter2(image2);
     AbstractPainter<RGB24Buffer> painter3(image3);
@@ -235,8 +239,14 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
     camera3->copyModelFrom(model);
 
     scene->addCameraToFixture(camera3, fixture);
-    scene->positionCameraInFixture(fixture, camera3, Affine3DQ( Quaternion::RotationZ(degToRad(-40)), Vector3dd(10, 10, 0)));
+    scene->positionCameraInFixture(fixture,
+                                   camera3,
+                        Affine3DQ( Quaternion::RotationZ(degToRad(0)), Vector3dd(3, 10, 0)));
 
+    for (SceneFeaturePoint *point: scene->featurePoints())
+    {
+        point->projectForward(camera3, fixture, true);
+    }
 
     for (size_t i = 0; i < scene->featurePoints().size(); i++)
     {
@@ -253,7 +263,7 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 
         if (point->getObservation(camera3) != NULL) {
             Vector2dd p = point->getObservation(camera3)->observation;
-            painter2.drawCircle(p.x(), p.y(), 3, point->color);
+            painter3.drawCircle(p.x(), p.y(), 3, point->color);
         }
     }
 
