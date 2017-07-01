@@ -78,7 +78,7 @@ public:
         CostFunction7to1(const vector<Correspondence *> *_samples) :
                CostFunctionBase(1),
                samples(_samples)
-        {};
+        {}
         double getCost(const EssentialMatrix &matrix) const;
         virtual void operator()(const double in[], double out[]);
         virtual Matrix getJacobian(const double in[], double delta = 1e-7);

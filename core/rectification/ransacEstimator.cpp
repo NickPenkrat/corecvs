@@ -244,23 +244,6 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
 
             obs1->accuracy = accuracy;
             obs2->accuracy = accuracy;
-
-#if 0
-            if (flag & Correspondence::FLAG_PASSER) {
-                obs1->accuracy = Vector2dd(0.5);
-                obs2->accuracy = Vector2dd(0.5);
-            }
-
-            if (flag & Correspondence::FLAG_FAILER) {
-                obs1->accuracy = Vector2dd(1.0);
-                obs2->accuracy = Vector2dd(1.0);
-            }
-
-            if (flag & Correspondence::FLAG_IS_BASED_ON) {
-                obs1->accuracy = Vector2dd(0.0);
-                obs2->accuracy = Vector2dd(0.0);
-            }
-#endif
             count++;
         }
     }

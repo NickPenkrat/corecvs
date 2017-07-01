@@ -53,7 +53,7 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
             }
         }
 
-        double errorPerPoint = sqrt(cost.getCost(model) / workingSamples.size());
+        double errorPerPoint     = sqrt(cost.getCost(model) / workingSamples.size());
         double errorPerPointInit = sqrt(initialCost.getCost(model) / samples.size());
 
 #ifdef TRACE
@@ -96,6 +96,66 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
 IterativeEstimator::~IterativeEstimator()
 {
     // TODO Auto-generated destructor stub
+}
+
+EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureScene *scene, FixtureCamera *camera1, FixtureCamera *camera2)
+{
+    vector<Correspondence > data;
+    vector<Correspondence *> dataPtr;
+
+    //CameraModel cam1world = camera1->getWorldCameraModel();
+    //CameraModel cam2world = camera2->getWorldCameraModel();
+
+
+    for(SceneFeaturePoint *point: scene->featurePoints())
+    {
+        SceneObservation *obs1 = point->getObservation(camera1);
+        SceneObservation *obs2 = point->getObservation(camera2);
+
+        if (obs1 != NULL && obs2 != NULL)
+        {
+            Correspondence c;
+            Vector2dd startPixel = obs1->getDistorted(false);
+            Vector2dd endPixel   = obs2->getDistorted(false);
+
+            c.start = camera1->intrinsics.reverse(startPixel).xy();
+            c.end   = camera2->intrinsics.reverse(endPixel  ).xy();
+
+            data.push_back(c);
+            dataPtr.push_back(&data.back());
+        }
+    }
+
+    double thresholdScaler = camera1->intrinsics.fx();
+
+    IterativeEstimator estimator;
+    estimator.params = params;
+    estimator.method = EssentialEstimator::METHOD_DEFAULT;
+    EssentialMatrix model = estimator.getEssential(dataPtr);
+
+    int count = 0;
+    for(SceneFeaturePoint *point: scene->featurePoints())
+    {
+        SceneObservation *obs1 = point->getObservation(camera1);
+        SceneObservation *obs2 = point->getObservation(camera2);
+
+        if (obs1 != NULL && obs2 != NULL)
+        {
+//            Correspondence::CorrespondenceFlags flag = (Correspondence::CorrespondenceFlags)data[count].flags;
+
+            double cost = model.epipolarDistance(data[count]);
+            Vector2dd accuracy(cost * thresholdScaler / params.initialSigma(), cost * thresholdScaler);
+
+            obs1->accuracy = accuracy;
+            obs2->accuracy = accuracy;
+            count++;
+        }
+    }
+
+
+    EssentialDecomposition variants[4];
+    EssentialDecomposition dec = model.decompose(&dataPtr, variants);
+    return dec;
 }
 
 

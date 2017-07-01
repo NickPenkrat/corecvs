@@ -11,6 +11,8 @@
 #include "essentialEstimator.h"
 #include "iterativeEstimateParameters.h"
 
+#include "fixtureScene.h"
+
 namespace corecvs {
 
 class IterativeEstimator
@@ -19,6 +21,9 @@ public:
 
     IterativeEstimateParameters params;
     EssentialEstimator::OptimisationMethod method;
+
+    IterativeEstimator(EssentialEstimator::OptimisationMethod _method = EssentialEstimator::METHOD_DEFAULT) : method(_method)
+    {}
 
     IterativeEstimator(
             int _maxIterations,
@@ -38,6 +43,19 @@ public:
 
     virtual ~IterativeEstimator();
 };
+
+
+class IterativeEstimatorScene
+{
+public:
+    IterativeEstimateParameters params; /**< For  convinence threshold is in px - relative to focal**/
+    bool trace = true;
+
+    EssentialDecomposition getEssentialIterative(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);
+    //EssentialDecomposition getEssentialRansac(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);
+
+};
+
 
 
 } //namespace corecvs
