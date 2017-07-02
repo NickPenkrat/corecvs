@@ -25,6 +25,8 @@
 #include "mesh3d.h"
 #include "calibrationDrawHelpers.h"
 
+#include "iterativeEstimator.h"
+
 using namespace corecvs;
 
 
@@ -153,6 +155,55 @@ TEST(Rectification, testFundamentalEstimator)
     printf("====================================\n");
     printMatrixInfo(E1);
 
+}
+
+#define GRID_STEP1 4
+
+TEST(Rectification, testIterativeEstimator)
+{
+    cout << "=================Iterative Estimator test===============" << endl;
+
+    CorrespondenceList *points = new CorrespondenceList;
+    for (unsigned i = 0; i < GRID_STEP1; i++)
+    {
+        for (unsigned j = 0; j < GRID_STEP1; j++)
+        {
+
+            Correspondence corr;
+            double step = 1.0 / (GRID_STEP - 1);
+            double x = (step * j) - 0.5;
+            double y = (step * i) - 0.5;
+            double alpha = 0.05;
+
+            Matrix33 rotation = Matrix33::RotationZ(alpha);
+
+            /*TODO: Shift only causes the memory error */
+            corr.start = Vector2dd(x, y);
+            corr.end = rotation * corr.start + Vector2dd (+ 0.01, - 0.1);
+
+            corr.flags = 0;
+            corr.value = 1;
+
+            points->push_back(corr);
+
+        }
+    }
+
+    /* This can be created only when data is fully formed */
+    vector<Correspondence *> pointsPtr;
+    pointsPtr.reserve(points->size());
+    for (size_t p = 0; p < points->size(); p++)
+    {
+        pointsPtr.push_back(&points->operator [](p));
+    }
+
+    IterativeEstimator iterativeEstimator;
+    iterativeEstimator.params.setIterationsNumber(1);
+    srand(1);
+    Matrix33 F = iterativeEstimator.getEssential(pointsPtr);
+    printMatrixInfo(F);
+    printf("====================================\n");
+    delete_safe(points);
 }
 
 TEST(Rectification, testSVDDesc)

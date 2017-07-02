@@ -22,6 +22,8 @@ public:
     IterativeEstimateParameters params;
     EssentialEstimator::OptimisationMethod method;
 
+    EssentialMatrix initalGuess;
+
     IterativeEstimator(EssentialEstimator::OptimisationMethod _method = EssentialEstimator::METHOD_DEFAULT) : method(_method)
     {}
 
@@ -36,6 +38,7 @@ public:
         params.setIterationsNumber(_maxIterations);
         params.setInitialSigma(_initialSigma);
         params.setSigmaFactor(_sigmaFactor);
+        params.setUseInitial(false);
 
     }
 

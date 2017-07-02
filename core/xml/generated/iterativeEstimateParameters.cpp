@@ -46,7 +46,7 @@ int IterativeEstimateParameters::staticInit()
         (
           IterativeEstimateParameters::ITERATIONS_NUMBER_ID,
           offsetof(IterativeEstimateParameters, mIterationsNumber),
-          1000,
+          5,
           "Iterations Number",
           "Iterations Number",
           "Iterations Number",
@@ -56,7 +56,19 @@ int IterativeEstimateParameters::staticInit()
         );
     fields().push_back(field0);
     /*  */ 
-    DoubleField* field1 = new DoubleField
+    BoolField* field1 = new BoolField
+        (
+          IterativeEstimateParameters::USE_INITIAL_ID,
+          offsetof(IterativeEstimateParameters, mUseInitial),
+          true,
+          "Use initial",
+          "Use initial",
+          "Use initial"
+        );
+    field1->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
         (
           IterativeEstimateParameters::INITIAL_SIGMA_ID,
           offsetof(IterativeEstimateParameters, mInitialSigma),
@@ -68,11 +80,11 @@ int IterativeEstimateParameters::staticInit()
          0,
          1e+07
         );
-    field1->widgetHint=BaseField::SPIN_BOX;
-    field1->precision=2;
-    fields().push_back(field1);
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->precision=2;
+    fields().push_back(field2);
     /*  */ 
-    DoubleField* field2 = new DoubleField
+    DoubleField* field3 = new DoubleField
         (
           IterativeEstimateParameters::SIGMA_FACTOR_ID,
           offsetof(IterativeEstimateParameters, mSigmaFactor),
@@ -84,9 +96,9 @@ int IterativeEstimateParameters::staticInit()
          0,
          1
         );
-    field2->widgetHint=BaseField::SPIN_BOX;
-    field2->precision=5;
-    fields().push_back(field2);
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=5;
+    fields().push_back(field3);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Iterative Estimate Parameters")]= &reflection;

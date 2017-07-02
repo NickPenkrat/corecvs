@@ -40,6 +40,7 @@ class IterativeEstimateParameters : public corecvs::BaseReflection<IterativeEsti
 public:
     enum FieldId {
         ITERATIONS_NUMBER_ID,
+        USE_INITIAL_ID,
         INITIAL_SIGMA_ID,
         SIGMA_FACTOR_ID,
         ITERATIVE_ESTIMATE_PARAMETERS_FIELD_ID_NUM
@@ -52,6 +53,12 @@ public:
      * Iterations Number 
      */
     int mIterationsNumber;
+
+    /** 
+     * \brief Use initial 
+     * Use initial 
+     */
+    bool mUseInitial;
 
     /** 
      * \brief Initial Sigma 
@@ -80,6 +87,11 @@ public:
         return mIterationsNumber;
     }
 
+    bool useInitial() const
+    {
+        return mUseInitial;
+    }
+
     double initialSigma() const
     {
         return mInitialSigma;
@@ -94,6 +106,11 @@ public:
     void setIterationsNumber(int iterationsNumber)
     {
         mIterationsNumber = iterationsNumber;
+    }
+
+    void setUseInitial(bool useInitial)
+    {
+        mUseInitial = useInitial;
     }
 
     void setInitialSigma(double initialSigma)
@@ -112,6 +129,7 @@ template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit(mIterationsNumber,          static_cast<const corecvs::IntField *>(fields()[ITERATIONS_NUMBER_ID]));
+        visitor.visit(mUseInitial,                static_cast<const corecvs::BoolField *>(fields()[USE_INITIAL_ID]));
         visitor.visit(mInitialSigma,              static_cast<const corecvs::DoubleField *>(fields()[INITIAL_SIGMA_ID]));
         visitor.visit(mSigmaFactor,               static_cast<const corecvs::DoubleField *>(fields()[SIGMA_FACTOR_ID]));
     }
@@ -124,11 +142,13 @@ template<class VisitorType>
 
     IterativeEstimateParameters(
           int iterationsNumber
+        , bool useInitial
         , double initialSigma
         , double sigmaFactor
     )
     {
         mIterationsNumber = iterationsNumber;
+        mUseInitial = useInitial;
         mInitialSigma = initialSigma;
         mSigmaFactor = sigmaFactor;
     }

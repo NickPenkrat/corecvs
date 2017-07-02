@@ -13,19 +13,78 @@
 namespace corecvs {
 
 
+
+vector<Correspondence *>  filterCorrespondanceList(const vector<Correspondence *> &workingSamples, const EssentialMatrix &model, double sigma, int iteration)
+{
+    int passed = 0;
+    int rejected = 0;
+
+    vector<Correspondence *> passedSamples;
+    for (unsigned i = 0; i < workingSamples.size(); i++)
+    {
+        // SYNC_PRINT(("Cost at sample %d (%d)\n", i, workingSamples.size()));
+        Correspondence *corr = workingSamples[i];
+        double value = model.epipolarDistance(*corr);
+        if (value > sigma)
+        {
+            rejected++;
+            corr->value = iteration;
+        } else {
+            passed++;
+            passedSamples.push_back(corr);
+        }
+    }
+
+#ifdef TRACE
+    cout << "Iteration: " << iteration << endl;
+    cout << "Error:" << cost.getCost(model) << endl;
+    cout << "Sq per point:" << (cost.getCost(model) / workingSamples.size()) << endl;
+    cout << "Error per point:" << errorPerPoint << endl;
+
+    cout << " Total:" << workingSamples.size() << endl;
+    cout << "   Passed  :" << passed   << endl;
+    cout << "   Rejected:" << rejected << endl;
+#endif
+    // Make real callback
+    L_INFO_P("Iteration %4d: %6d %6d %6d"
+             , iteration, passed + rejected, passed, rejected);
+
+#ifdef DEEP_TRACE
+    double errorPerPoint     = sqrt(cost.getCost(model) / workingSamples.size());
+    double errorPerPointInit = sqrt(initialCost.getCost(model) / samples.size());
+
+    L_INFO_P("  %lf %lf" , errorPerPoint, errorPerPointInit);
+#endif
+
+
+    return passedSamples;
+}
+
+
 EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *> &samples)
 {
+    SYNC_PRINT(("IterativeEstimator::getEssential(vector<%d>)\n", samples.size()));
+
     EssentialMatrix model;
     int iteration;
     vector<Correspondence *> workingSamples = samples;
 
+
     EssentialEstimator::CostFunction7to1 initialCost(&samples);
 
-    L_INFO_P("Starting iterative rectification...");
+    L_INFO_P("Starting iterative rectification... with %d input samples", samples.size());
 
     double sigma = params.initialSigma();
-    for (iteration = 0; iteration < params.iterationsNumber(); iteration++)
+
+    if (params.useInitial()) {
+        workingSamples = filterCorrespondanceList(workingSamples, initalGuess, sigma, 0);
+    }
+
+    for (iteration = 1; iteration <= params.iterationsNumber(); iteration++)
     {
+        SYNC_PRINT(("IterativeEstimator::getEssential(): starting itreation %d (%d) working samples %d\n",
+                    (int)iteration, params.iterationsNumber(), (int)workingSamples.size()));
+
         EssentialEstimator estimator;
         if (workingSamples.size() < 9)
         {
@@ -33,44 +92,14 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
             break;
         }
         model = estimator.getEssential(workingSamples, method);
+        cout << "Result:" << endl;
+        model.prettyPrint();
         EssentialEstimator::CostFunction7to1 cost(&workingSamples);
 
-        int passed = 0;
-        int rejected = 0;
 
-        vector<Correspondence *> passedSamples;
-        for (unsigned i = 0; i < workingSamples.size(); i++)
-        {
-            Correspondence *corr = workingSamples[i];
-            double value = model.epipolarDistance(*corr);
-            if (value > sigma)
-            {
-                rejected++;
-                corr->value = iteration;
-            } else {
-                passed++;
-                passedSamples.push_back(corr);
-            }
-        }
+        /* Checking current result */
 
-        double errorPerPoint     = sqrt(cost.getCost(model) / workingSamples.size());
-        double errorPerPointInit = sqrt(initialCost.getCost(model) / samples.size());
-
-#ifdef TRACE
-        cout << "Iteration: " << iteration << endl;
-        cout << "Error:" << cost.getCost(model) << endl;
-        cout << "Sq per point:" << (cost.getCost(model) / workingSamples.size()) << endl;
-        cout << "Error per point:" << errorPerPoint << endl;
-
-        cout << " Total:" << workingSamples.size() << endl;
-        cout << "   Passed  :" << passed   << endl;
-        cout << "   Rejected:" << rejected << endl;
-#endif
-        //printf("Iteration %4d: %6d %6d %6d %lf %lf \n", iteration, passed + rejected, passed, rejected, errorPerPoint, errorPerPointInit);
-        // Make real callback
-        L_INFO_P("Iteration %4d: %6d %6d %6d %lf %lf"
-                 , iteration, passed + rejected, passed, rejected, errorPerPoint, errorPerPointInit);
-
+        vector<Correspondence *> passedSamples = filterCorrespondanceList(workingSamples, model, sigma, iteration);
         workingSamples = passedSamples;
         sigma *= params.sigmaFactor();
     }
@@ -101,6 +130,9 @@ IterativeEstimator::~IterativeEstimator()
 EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureScene *scene, FixtureCamera *camera1, FixtureCamera *camera2)
 {
     vector<Correspondence > data;
+
+
+    /* Be extreamly careful. You can only fill this array when actuall data is finilised */
     vector<Correspondence *> dataPtr;
 
     //CameraModel cam1world = camera1->getWorldCameraModel();
@@ -122,8 +154,14 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
             c.end   = camera2->intrinsics.reverse(endPixel  ).xy();
 
             data.push_back(c);
-            dataPtr.push_back(&data.back());
+
         }
+    }
+
+    dataPtr.reserve(data.size());
+    for (size_t p = 0; p < data.size(); p++)
+    {
+        dataPtr.push_back(&data[p]);
     }
 
     double thresholdScaler = camera1->intrinsics.fx();
@@ -131,6 +169,12 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
     IterativeEstimator estimator;
     estimator.params = params;
     estimator.method = EssentialEstimator::METHOD_DEFAULT;
+    if (params.useInitial())
+    {
+        estimator.initalGuess = camera1->fundamentalTo(*camera2);
+    }
+
+
     EssentialMatrix model = estimator.getEssential(dataPtr);
 
     int count = 0;
