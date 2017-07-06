@@ -1,6 +1,5 @@
 #include "openCvGPUDetectAndMatchWrapper.h"
 #include "openCvKeyPointsWrapper.h"
-#include "global.h"
 #include "bufferReaderProvider.h"
 #include "featureMatchingPipeline.h"
 #include "openCvDefaultParams.h"
@@ -32,7 +31,7 @@ struct GPUImageDetectData
     GPUImageDetectData(const oclMat& img) : oclImg(img) {}
 };
 
-void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint )
+void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl(FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint)
 {
 	const size_t numImages = pipeline.images.size();
 	std::vector<GPUImageDetectData> gpuImages;
@@ -45,36 +44,38 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
 		std::unique_ptr<BufferReader> reader(BufferReaderProvider::getInstance().getBufferReader(image.filename));
 		corecvs::RuntimeTypeBuffer img = reader->read(image.filename);
         
-        if ( detectorSURF_OCL )
+        if (detectorSURF_OCL)
         {
-            GPUImageDetectData gpuImage( cv::ocl::oclMat( convert( img ) ) );
-            gpuImages.push_back( gpuImage );
+            GPUImageDetectData gpuImage(cv::ocl::oclMat(convert(img)));
+            gpuImages.push_back(gpuImage);
         }
         else
         {
-            GPUImageDetectData gpuImage( cv::gpu::GpuMat( convert( img ) ) );
-            gpuImages.push_back( gpuImage );
+            GPUImageDetectData gpuImage(cv::gpu::GpuMat(convert(img)));
+            gpuImages.push_back(gpuImage);
         }
 	}
 
 	// GPU work begins now
 
-    for ( size_t i = 0; i < numImages; i++ )
+    for (size_t i = 0; i < numImages; i++)
     {
-        if ( detectorSURF_OCL )
+        if (detectorSURF_OCL)
         {
             //max keypoints = min(keypointsRatio * img.size().area(), 65535)
-            detectorSURF_OCL->keypointsRatio = ( float )nMaxKeypoints / gpuImages[ i ].oclImg.size().area();
-            ( *detectorSURF_OCL )( gpuImages[ i ].oclImg, cv::ocl::oclMat(), gpuImages[ i ].oclKeypoints, gpuImages[ i ].oclDescriptors, false );
+            detectorSURF_OCL->keypointsRatio = (float)nMaxKeypoints / gpuImages[i].oclImg.size().area();
+            (*detectorSURF_OCL)(gpuImages[i].oclImg, cv::ocl::oclMat(), gpuImages[i].oclKeypoints, gpuImages[i].oclDescriptors, false);
         }      
-        else if ( detectorSURF_CUDA )
+        else if (detectorSURF_CUDA)
         {
             //max keypoints = min(keypointsRatio * img.size().area(), 65535)
-            detectorSURF_CUDA->keypointsRatio = ( float )nMaxKeypoints / gpuImages[ i ].cudaImg.size().area();
-            ( *detectorSURF_CUDA )( gpuImages[ i ].cudaImg, cv::gpu::GpuMat(), gpuImages[ i ].cudaKeypoints, gpuImages[ i ].cudaDescriptors, false );
+            detectorSURF_CUDA->keypointsRatio = (float)nMaxKeypoints / gpuImages[i].cudaImg.size().area();
+            (*detectorSURF_CUDA)(gpuImages[i].cudaImg, cv::gpu::GpuMat(), gpuImages[i].cudaKeypoints, gpuImages[i].cudaDescriptors, false);
         }
-        else if ( detectorORB_CUDA )
-            ( *detectorORB_CUDA )( gpuImages[ i ].cudaImg, cv::gpu::GpuMat(), gpuImages[ i ].cudaKeypoints, gpuImages[ i ].cudaDescriptors );
+        else if (detectorORB_CUDA)
+        {
+            (*detectorORB_CUDA)(gpuImages[i].cudaImg, cv::gpu::GpuMat(), gpuImages[i].cudaKeypoints, gpuImages[i].cudaDescriptors);
+        }
 	}
 
 #if 0
@@ -94,12 +95,12 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
 		for (size_t j = 0; j < numImages; j++)
 		{
 			std::vector< std::vector<cv::DMatch> > matches_cv;
-            if ( i != j )
+            if (i != j)
             {
-                if ( matcherBF_CUDA )
-                    matcherBF_CUDA->knnMatch( gpuImages[ i ].cudaDescriptors, gpuImages[ j ].cudaDescriptors, matches_cv, numResponcesPerPoint );
-                else if ( matcherBF_OCL )
-                    matcherBF_OCL->knnMatch( gpuImages[ i ].oclDescriptors, gpuImages[ j ].oclDescriptors, matches_cv, numResponcesPerPoint );
+                if (matcherBF_CUDA)
+                    matcherBF_CUDA->knnMatch(gpuImages[i].cudaDescriptors, gpuImages[j].cudaDescriptors, matches_cv, numResponcesPerPoint);
+                else if (matcherBF_OCL)
+                    matcherBF_OCL->knnMatch(gpuImages[i].oclDescriptors, gpuImages[j].oclDescriptors, matches_cv, numResponcesPerPoint);
             }
 
 			matchesPerImage[i * numImages + j] = matches_cv;
@@ -108,23 +109,23 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
 
 	// GPU work is done by now, readback and convert results
 
-    for ( size_t i = 0; i < numImages; i++ )
+    for (size_t i = 0; i < numImages; i++)
     {
-        Image& image = pipeline.images[ i ];
+        Image& image = pipeline.images[i];
         std::vector<cv::KeyPoint> keypoints;
         cv::Mat descriptors;
 
-        if ( detectorSURF_CUDA )
+        if (detectorSURF_CUDA)
         {
-            detectorSURF_CUDA->downloadKeypoints( gpuImages[ i ].cudaKeypoints, keypoints );	// copy GPU -> CPU
-            gpuImages[ i ].cudaDescriptors.download( descriptors ); // copy GPU -> CPU
+            detectorSURF_CUDA->downloadKeypoints(gpuImages[i].cudaKeypoints, keypoints);	// copy GPU -> CPU
+            gpuImages[i].cudaDescriptors.download(descriptors); // copy GPU -> CPU
         }
-        else if ( detectorORB_CUDA )
+        else if (detectorORB_CUDA)
         {
             cv::Mat keypointsMat;
-            gpuImages[ i ].cudaDescriptors.download( descriptors ); // copy GPU -> CPU
-            gpuImages[ i ].cudaKeypoints.download( keypointsMat ); // copy GPU -> CPU
-            detectorORB_CUDA->convertKeyPoints( keypointsMat, keypoints );
+            gpuImages[i].cudaDescriptors.download(descriptors); // copy GPU -> CPU
+            gpuImages[i].cudaKeypoints.download(keypointsMat); // copy GPU -> CPU
+            detectorORB_CUDA->convertKeyPoints(keypointsMat, keypoints);
         }
 		else if (detectorSURF_OCL)
 		{
@@ -141,16 +142,16 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
 		image.descriptors.mat = convert(descriptors);
 	}
 
-    makeMatchingPlan( pipeline ); // compartibility call, to fill in required data
+    makeMatchingPlan(pipeline); // compatibility call, to fill in required data
 
 	size_t S = pipeline.matchPlan.plan.size();
-    CORE_ASSERT_TRUE_S( S );
+    CORE_ASSERT_TRUE_S(S);
 
 	MatchPlan &matchPlan = pipeline.matchPlan;
 	RawMatches &rawMatches = pipeline.rawMatches;
 
     rawMatches.matches.clear();
-    rawMatches.matches.resize( matchPlan.plan.size() );
+    rawMatches.matches.resize(matchPlan.plan.size());
 
 	std::vector<std::vector<RawMatch>> matches;
 	for (size_t i = 0; i < S; i++)
@@ -194,25 +195,28 @@ void OpenCvGPUDetectExtractAndMatchWrapper::detectExtractAndMatchImpl( FeatureMa
 	}
 }
 
-OpenCvGPUDetectExtractAndMatchWrapper::OpenCvGPUDetectExtractAndMatchWrapper( SURF_GPU *detector, cv::gpu::BruteForceMatcher_GPU_base* matcher ) : detectorSURF_CUDA( detector ),
-detectorORB_CUDA( 0 ),
-detectorSURF_OCL( 0 ),
-matcherBF_CUDA( matcher ),
-matcherBF_OCL( 0 )
+OpenCvGPUDetectExtractAndMatchWrapper::OpenCvGPUDetectExtractAndMatchWrapper(SURF_GPU *detector, cv::gpu::BruteForceMatcher_GPU_base* matcher)
+    : detectorSURF_CUDA(detector)
+    , detectorORB_CUDA(0)
+    , detectorSURF_OCL(0)
+    , matcherBF_CUDA(matcher)
+    , matcherBF_OCL(0)
 {}
 
-OpenCvGPUDetectExtractAndMatchWrapper::OpenCvGPUDetectExtractAndMatchWrapper( ORB_GPU *detector, cv::gpu::BruteForceMatcher_GPU_base* matcher ) : detectorORB_CUDA( detector ),
-detectorSURF_CUDA( 0 ),
-detectorSURF_OCL( 0 ),
-matcherBF_CUDA( matcher ),
-matcherBF_OCL( 0 )
+OpenCvGPUDetectExtractAndMatchWrapper::OpenCvGPUDetectExtractAndMatchWrapper(ORB_GPU *detector, cv::gpu::BruteForceMatcher_GPU_base* matcher)
+    : detectorORB_CUDA(detector)
+    , detectorSURF_CUDA(0)
+    , detectorSURF_OCL(0)
+    , matcherBF_CUDA(matcher)
+    , matcherBF_OCL(0)
 {}
 
-OpenCvGPUDetectExtractAndMatchWrapper::OpenCvGPUDetectExtractAndMatchWrapper( SURF_OCL *detector, cv::ocl::BruteForceMatcher_OCL_base* matcher ) : detectorSURF_OCL( detector ),
-detectorSURF_CUDA( 0 ),
-detectorORB_CUDA( 0 ),
-matcherBF_CUDA( 0 ),
-matcherBF_OCL( matcher )
+OpenCvGPUDetectExtractAndMatchWrapper::OpenCvGPUDetectExtractAndMatchWrapper(SURF_OCL *detector, cv::ocl::BruteForceMatcher_OCL_base* matcher)
+    : detectorSURF_OCL(detector)
+    , detectorSURF_CUDA(0)
+    , detectorORB_CUDA(0)
+    , matcherBF_CUDA(0)
+    , matcherBF_OCL(matcher)
 {}
 
 OpenCvGPUDetectExtractAndMatchWrapper::~OpenCvGPUDetectExtractAndMatchWrapper()
@@ -226,12 +230,12 @@ OpenCvGPUDetectExtractAndMatchWrapper::~OpenCvGPUDetectExtractAndMatchWrapper()
 
 extern bool FindGPUDevice(bool& cudaApi);
 
-bool  init_opencv_gpu_detect_extract_and_match_provider( bool& cudaApi )
+bool init_opencv_gpu_detect_extract_and_match_provider(bool& cudaApi)
 {
 	cudaApi = false;
-    if ( FindGPUDevice( cudaApi ) )
+    if (FindGPUDevice(cudaApi))
     {
-        DetectExtractAndMatchProvider::getInstance().add( new OpenCvGPUDetectExtractAndMatchProvider( cudaApi ) );
+        DetectExtractAndMatchProvider::getInstance().add(new OpenCvGPUDetectExtractAndMatchProvider(cudaApi));
         return true;
     }
 		
@@ -249,41 +253,51 @@ OpenCvGPUDetectExtractAndMatchProvider::OpenCvGPUDetectExtractAndMatchProvider(b
 DetectExtractAndMatch* OpenCvGPUDetectExtractAndMatchProvider::getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType, const std::string &params)
 {
 	SurfParams surfParams(params);
-	OrbParams orbParams(params);
 
-    if ( cudaApi )
+    if (cudaApi)
     {
-        if ( detectorType == "SURF_GPU" && descriptorType == "SURF_GPU" && matcherType == "BF_GPU" )
-            return new OpenCvGPUDetectExtractAndMatchWrapper( new cv::gpu::SURF_GPU( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ),
-            new cv::gpu::BruteForceMatcher_GPU_base( cv::gpu::BruteForceMatcher_GPU_base::L2Dist ) );
+        if (detectorType == "SURF_GPU" && descriptorType == "SURF_GPU" && matcherType == "BF_GPU")
+            return new OpenCvGPUDetectExtractAndMatchWrapper(
+                new cv::gpu::SURF_GPU(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright),
+                new cv::gpu::BruteForceMatcher_GPU_base(cv::gpu::BruteForceMatcher_GPU_base::L2Dist)
+            );
 
-        if ( detectorType == "ORB_GPU" && descriptorType == "ORB_GPU" && matcherType == "BF_GPU" )
-            return new OpenCvGPUDetectExtractAndMatchWrapper( new cv::gpu::ORB_GPU( orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize ),
-            new cv::gpu::BruteForceMatcher_GPU_base( cv::gpu::BruteForceMatcher_GPU_base::HammingDist ) );
+        if (detectorType == "ORB_GPU" && descriptorType == "ORB_GPU" && matcherType == "BF_GPU")
+        {
+            OrbParams orbParams(params);
+            return new OpenCvGPUDetectExtractAndMatchWrapper(
+                new cv::gpu::ORB_GPU(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize),
+                new cv::gpu::BruteForceMatcher_GPU_base(cv::gpu::BruteForceMatcher_GPU_base::HammingDist)
+            );
+        }
     }
-    else if ( detectorType == "SURF_GPU" && descriptorType == "SURF_GPU" && matcherType == "BF_GPU" )
-        return new OpenCvGPUDetectExtractAndMatchWrapper( new cv::ocl::SURF_OCL( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright ),
-                                                          new cv::ocl::BruteForceMatcher_OCL_base( cv::ocl::BruteForceMatcher_OCL_base::L2Dist ) );
+    else if (detectorType == "SURF_GPU" && descriptorType == "SURF_GPU" && matcherType == "BF_GPU")
+        return new OpenCvGPUDetectExtractAndMatchWrapper(
+            new cv::ocl::SURF_OCL(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, 0.01f, surfParams.upright),
+            new cv::ocl::BruteForceMatcher_OCL_base(cv::ocl::BruteForceMatcher_OCL_base::L2Dist)
+        );
 	return 0;
 }
 
 bool OpenCvGPUDetectExtractAndMatchProvider::provides(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType)
 {
-    if ( cudaApi && detectorType == "ORB_GPU" && descriptorType == "ORB_GPU" && matcherType == "BF_GPU" )
+    if (cudaApi && detectorType == "ORB_GPU" && descriptorType == "ORB_GPU" && matcherType == "BF_GPU")
         return true;
 
-    if ( detectorType == "SURF_GPU" && descriptorType == "SURF_GPU" && matcherType == "BF_GPU" )
+    if (detectorType == "SURF_GPU" && descriptorType == "SURF_GPU" && matcherType == "BF_GPU")
         return true;
 
 	return false;
 }
 
-#else // def WITH_OPENCV_3x
-bool  init_opencv_gpu_detect_extract_and_match_provider( bool& cudaApi )
+#else // !WITH_OPENCV_3x
+
+bool  init_opencv_gpu_detect_extract_and_match_provider(bool& cudaApi)
 {
 	cudaApi = false;
 	return false;
 }
-#endif
 
-#endif
+#endif // WITH_OPENCV_3x
+
+#endif // WITH_OPENCV_GPU

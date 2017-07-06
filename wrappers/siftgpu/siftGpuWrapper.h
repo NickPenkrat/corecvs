@@ -39,8 +39,8 @@ public:
     bool isParallelable() { return false; }
 
     void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
-
     void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint> &keypoints, corecvs::RuntimeTypeBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
+
 protected:
     void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors, void*);
     void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int, void*);
@@ -85,4 +85,4 @@ public:
 	~SiftGpuDescriptorExtractorProvider() {}
 };
 
-#endif
+#endif // SIFTGPUWRAPPER_H

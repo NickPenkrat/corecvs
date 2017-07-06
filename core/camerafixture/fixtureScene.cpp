@@ -98,7 +98,7 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
         SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
         return;
     }
-    cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
+    //cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
 
     //if (sourceWithDistortion)
     //{
