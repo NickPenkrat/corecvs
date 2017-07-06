@@ -29,7 +29,14 @@
    <property name="spacing">
     <number>1</number>
    </property>
-   <item row="5" column="2">
+   <item row="10" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Extrinsic</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
     <widget class="QDoubleSpinBox" name="spinBoxFocalY">
      <property name="suffix">
       <string>px</string>
@@ -39,160 +46,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QDoubleSpinBox" name="spinBoxFocalX">
-     <property name="suffix">
-      <string>px</string>
-     </property>
-     <property name="maximum">
-      <double>1000000000.000000000000000</double>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Distortion</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLabel" name="label_12">
-     <property name="text">
-      <string>Center (x,y)</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Extrinsic</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="labelSkew">
-     <property name="text">
-      <string>Skew</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QLabel" name="labelFocalX">
-     <property name="text">
-      <string>Focal (x, y)</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="QDoubleSpinBox" name="spinBoxCx">
-     <property name="suffix">
-      <string>px</string>
-     </property>
-     <property name="minimum">
-      <double>-1000000000.000000000000000</double>
-     </property>
-     <property name="maximum">
-      <double>1000000000.000000000000000</double>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="2">
-    <widget class="QDoubleSpinBox" name="spinBoxCy">
-     <property name="suffix">
-      <string>px</string>
-     </property>
-     <property name="minimum">
-      <double>-1000000000.000000000000000</double>
-     </property>
-     <property name="maximum">
-      <double>1000000000.000000000000000</double>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0" colspan="3">
-    <widget class="Affine3dControlWidget" name="extrinsicWidget" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_11">
-     <property name="text">
-      <string>Projection</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0" colspan="3">
-    <widget class="LensDistortionModelParametersControlWidget" name="lensDistortionWidget" native="true">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>0</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="3">
-    <widget class="Line" name="line">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="1">
-    <widget class="QDoubleSpinBox" name="spinBoxSkew">
-     <property name="suffix">
-      <string/>
-     </property>
-     <property name="decimals">
-      <number>6</number>
-     </property>
-     <property name="minimum">
-      <double>-1000000000.000000000000000</double>
-     </property>
-     <property name="maximum">
-      <double>1000000000.000000000000000</double>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1" colspan="2">
-    <widget class="QLabel" name="infoLabel">
-     <property name="text">
-      <string>Info:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="11" column="0" colspan="2">
-    <spacer name="verticalSpacer">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>40</height>
-      </size>
-     </property>
-    </spacer>
-   </item>
-   <item row="10" column="0" colspan="3">
+   <item row="12" column="0" colspan="3">
     <widget class="QFrame" name="frame">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="leftMargin">
@@ -275,6 +129,162 @@
        </spacer>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="11" column="0" colspan="3">
+    <widget class="Affine3dControlWidget" name="extrinsicWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLabel" name="label_11">
+     <property name="text">
+      <string>Projection</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0" colspan="2">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Distortion</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="3">
+    <widget class="Line" name="line">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QLabel" name="label_12">
+     <property name="text">
+      <string>Center (x,y)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLabel" name="labelSkew">
+     <property name="text">
+      <string>Skew</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1">
+    <widget class="QDoubleSpinBox" name="spinBoxSkew">
+     <property name="suffix">
+      <string/>
+     </property>
+     <property name="decimals">
+      <number>6</number>
+     </property>
+     <property name="minimum">
+      <double>-1000000000.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>1000000000.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QDoubleSpinBox" name="spinBoxFocalX">
+     <property name="suffix">
+      <string>px</string>
+     </property>
+     <property name="maximum">
+      <double>1000000000.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QLabel" name="labelFocalX">
+     <property name="text">
+      <string>Focal (x, y)</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1" colspan="2">
+    <widget class="QLabel" name="infoLabel">
+     <property name="text">
+      <string>Info:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="13" column="0" colspan="2">
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item row="4" column="0" colspan="3">
+    <widget class="LensDistortionModelParametersControlWidget" name="lensDistortionWidget" native="true">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>0</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="1">
+    <widget class="QDoubleSpinBox" name="spinBoxCx">
+     <property name="suffix">
+      <string>px</string>
+     </property>
+     <property name="minimum">
+      <double>-1000000000.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>1000000000.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="9" column="2">
+    <widget class="QDoubleSpinBox" name="spinBoxCy">
+     <property name="suffix">
+      <string>px</string>
+     </property>
+     <property name="minimum">
+      <double>-1000000000.000000000000000</double>
+     </property>
+     <property name="maximum">
+      <double>1000000000.000000000000000</double>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QLineEdit" name="cameraNameEdit"/>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Name</string>
+     </property>
     </widget>
    </item>
   </layout>

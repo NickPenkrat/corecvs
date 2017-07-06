@@ -171,7 +171,7 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
     estimator.method = EssentialEstimator::METHOD_DEFAULT;
     if (params.useInitial())
     {
-        estimator.initalGuess = camera1->fundamentalTo(*camera2);
+        estimator.initalGuess = camera1->essentialTo(*camera2);
     }
 
 
