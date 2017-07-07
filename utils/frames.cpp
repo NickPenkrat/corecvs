@@ -92,6 +92,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
     frameCount++;
 
 
+#if 0
     SYNC_PRINT(("Frames::fetchNewFrames(): G12: ["));
     for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
     {
@@ -104,6 +105,7 @@ void Frames::fetchNewFrames(ImageCaptureInterface *input)
          SYNC_PRINT(("%s", currentRgbFrames[i] == NULL ? "-" : "+"));
     }
     SYNC_PRINT(("]\n"));
+#endif
 
 }
 

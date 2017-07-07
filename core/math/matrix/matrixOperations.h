@@ -86,10 +86,10 @@ public:
     friend ostream & operator <<(ostream &out, const RealType &matrix)
     {
         //streamsize wasPrecision = out.precision(6);
-        for (int i = 0; i < _height(); i++)
+        for (int i = 0; i < matrix._height(); i++)
         {
             out << "[";
-            for (int j = 0; j < _width(); j++)
+            for (int j = 0; j < matrix._width(); j++)
             {
                 out << (j == 0 ? "" : " ");
                 //out.width(6);
@@ -103,9 +103,9 @@ public:
 
     friend istream & operator >>(istream &in, RealType &matrix)
     {
-        for (int i = 0; i < _height(); i++)
+        for (int i = 0; i < matrix._height(); i++)
         {
-            for (int j = 0; j < _width(); j++)
+            for (int j = 0; j < matrix._width(); j++)
             {
                 while (true)
                 {
@@ -158,7 +158,7 @@ public:
 
     friend ReturnType operator *(const ElementType &a, const RealType &B)
     {
-        ReturnType result = _createMatrix(B._height(), B._width());
+        ReturnType result = B._createMatrix(B._height(), B._width());
         int row, column;
         for (row = 0; row < result._height(); row++)
         {
@@ -172,7 +172,7 @@ public:
 
     friend ReturnType operator *(const RealType &B, const ElementType &a)
     {
-        ReturnType result = _createMatrix(B._height(), B._width());
+        ReturnType result = B._createMatrix(B._height(), B._width());
         int row, column;
         for (row = 0; row < result._height(); row++)
         {
@@ -190,7 +190,7 @@ public:
     friend ReturnType operator +(const RealType &A, const RealType &B)
     {
         CORE_ASSERT_TRUE(A._width() == B._width() && A._height() == B._height(), "Matrices have wrong sizes");
-        ReturnType result = _createMatrix(A._height(), A._width());
+        ReturnType result = A._createMatrix(A._height(), A._width());
 
         int row, column;
         for (row = 0; row < result._height(); row++)
@@ -208,7 +208,7 @@ public:
     friend ReturnType operator -(const RealType &A, const RealType &B)
     {
         CORE_ASSERT_TRUE(A._width() == B._width() && A._height() == B._height(), "Matrices have wrong sizes");
-        ReturnType result = _createMatrix(A._height(), A._width());
+        ReturnType result = A._createMatrix(A._height(), A._width());
 
         int row, column;
         for (row = 0; row < result._height(); row++)

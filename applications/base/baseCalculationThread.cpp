@@ -338,7 +338,7 @@ void BaseCalculationThread::camerasParametersChanged(QSharedPointer<CamerasConfi
  **/
 void BaseCalculationThread::recalculateCache()
 {
-    SYNC_PRINT(("void BaseCalculationThread::recalculateCache():called\n"));
+    // SYNC_PRINT(("void BaseCalculationThread::recalculateCache():called\n"));
     G12Buffer *firstInput = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
     if (!mCacheUpdateNeeded || firstInput == NULL)
         return;

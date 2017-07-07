@@ -226,7 +226,7 @@ DEFINES += WITH_FRAMESOURCE_PREC
 }
 
 # FILE
-#CONFIG += with_framesource_file
+CONFIG += with_framesource_file
 
 with_framesource_file {
 HEADERS +=  framesources/file/fileCapture.h
