@@ -1,6 +1,7 @@
-#ifdef WITH_OPENCV
+#ifndef OPENCVGPUDETECTANDMATCHWRAPPER_H
+#define OPENCVGPUDETECTANDMATCHWRAPPER_H
 
-#pragma once
+#ifdef WITH_OPENCV
 
 #include "detectExtractAndMatchProvider.h"
 
@@ -20,24 +21,18 @@ namespace cv {
 class OpenCvGPUDetectExtractAndMatchWrapper : public DetectExtractAndMatch
 {
 public:
+    OpenCvGPUDetectExtractAndMatchWrapper(cv::gpu::SURF_GPU *detector, cv::gpu::BruteForceMatcher_GPU_base* matcher);
+    OpenCvGPUDetectExtractAndMatchWrapper(cv::gpu::ORB_GPU  *detector, cv::gpu::BruteForceMatcher_GPU_base* matcher);
+    OpenCvGPUDetectExtractAndMatchWrapper(cv::ocl::SURF_OCL *detector, cv::ocl::BruteForceMatcher_OCL_base* matcher);
 
-    OpenCvGPUDetectExtractAndMatchWrapper( cv::gpu::SURF_GPU *detector, cv::gpu::BruteForceMatcher_GPU_base* matcher );
-    OpenCvGPUDetectExtractAndMatchWrapper( cv::gpu::ORB_GPU *detector, cv::gpu::BruteForceMatcher_GPU_base* matcher );
-    OpenCvGPUDetectExtractAndMatchWrapper( cv::ocl::SURF_OCL *detector, cv::ocl::BruteForceMatcher_OCL_base* matcher );
-
-	~OpenCvGPUDetectExtractAndMatchWrapper();
-
-	double getProperty(const std::string &name) const;
-	void   setProperty(const std::string &name, const double &value);
-
-	bool  isParallelable() { return false; }
+   ~OpenCvGPUDetectExtractAndMatchWrapper();
 
 protected:
-    void detectExtractAndMatchImpl( FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint );
+    void detectExtractAndMatchImpl(FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint) override;
 
 private:
 	OpenCvGPUDetectExtractAndMatchWrapper(const OpenCvGPUDetectExtractAndMatchWrapper&);
-	OpenCvGPUDetectExtractAndMatchWrapper& operator=(const OpenCvGPUDetectExtractAndMatchWrapper&);
+  //OpenCvGPUDetectExtractAndMatchWrapper& operator=(const OpenCvGPUDetectExtractAndMatchWrapper&);
 
 	cv::gpu::SURF_GPU* detectorSURF_CUDA;
 	cv::gpu::ORB_GPU*  detectorORB_CUDA;
@@ -49,22 +44,29 @@ private:
 
 extern "C"
 {
-    bool init_opencv_gpu_detect_extract_and_match_provider( bool& cudaApi );
+    bool init_opencv_gpu_detect_extract_and_match_provider(bool& cudaApi);
 }
 
 class OpenCvGPUDetectExtractAndMatchProvider : public DetectExtractAndMatchProviderImpl
 {
 public:
-	OpenCvGPUDetectExtractAndMatchProvider(bool cudaApi);
+    OpenCvGPUDetectExtractAndMatchProvider(bool cudaApi);
 
-	~OpenCvGPUDetectExtractAndMatchProvider() {}
+   ~OpenCvGPUDetectExtractAndMatchProvider() {}
 
-	DetectExtractAndMatch* getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType, const std::string &params = "");
-	bool provides(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType);
+    DetectExtractAndMatch* getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType, const std::string &params = "") override;
+
+    bool    provides(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType) override;
+
+    double getProperty(const std::string &name) const override;
+    void   setProperty(const std::string &name, const double &value) override;
+
+    bool isParallelable() override { return false; }
 
 private:
-	bool               cudaApi; // opencv module to use : cuda or opencl
+	bool    cudaApi; // opencv module to use : cuda or opencl
 };
 
+#endif // WITH_OPENCV
 
-#endif
+#endif // OPENCVGPUDETECTANDMATCHWRAPPER_H

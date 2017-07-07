@@ -1,6 +1,6 @@
-#ifdef WITH_OPENCV
-
 #pragma once
+
+#ifdef WITH_OPENCV
 
 #include "detectAndExtractProvider.h"
 
@@ -21,9 +21,8 @@ namespace cv {
 class OpenCvGPUDetectAndExtractWrapper : public DetectAndExtract
 {
 public:
-
-	OpenCvGPUDetectAndExtractWrapper(cv::ORB  *detectorORB = 0, cv::SURF *detectorSURF = 0, cv::gpu::SURF_GPU *detectorSURF_CUDA = 0, cv::gpu::ORB_GPU *detectorORB_CUDA = 0, cv::ocl::SURF_OCL* detectorSURF_OCL = 0);
-    ~OpenCvGPUDetectAndExtractWrapper();
+	OpenCvGPUDetectAndExtractWrapper(cv::ORB *detectorORB = 0, cv::SURF *detectorSURF = 0, cv::gpu::SURF_GPU *detectorSURF_CUDA = 0, cv::gpu::ORB_GPU *detectorORB_CUDA = 0, cv::ocl::SURF_OCL* detectorSURF_OCL = 0);
+   ~OpenCvGPUDetectAndExtractWrapper();
 
 	double getProperty(const std::string &name) const;
 	void   setProperty(const std::string &name, const double &value);
@@ -34,8 +33,8 @@ protected:
 	void detectAndExtractImpl(corecvs::RuntimeTypeBuffer &image, std::vector<::KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors, int nMaxKeypoints, void* pRemapCache);
 
 private:
-    OpenCvGPUDetectAndExtractWrapper( const OpenCvGPUDetectAndExtractWrapper& );
-    OpenCvGPUDetectAndExtractWrapper& operator=( const OpenCvGPUDetectAndExtractWrapper& );
+    OpenCvGPUDetectAndExtractWrapper(const OpenCvGPUDetectAndExtractWrapper&);
+  //OpenCvGPUDetectAndExtractWrapper& operator=( const OpenCvGPUDetectAndExtractWrapper& );
 
 	cv::gpu::SURF_GPU* detectorSURF_CUDA;
 	cv::gpu::ORB_GPU*  detectorORB_CUDA;
@@ -62,8 +61,8 @@ public:
     virtual std::string name()  override { return "OpenCv GPU"; }
 
 private:
-	bool               cudaApi; // opencv module to use : cuda or opencl
+	bool  cudaApi; // opencv module to use : cuda or opencl
 };
 
 
-#endif
+#endif // WITH_OPENCV

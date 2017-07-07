@@ -236,4 +236,4 @@ struct AkazeParams
 };
 
 
-#endif
+#endif // OPENCVDEFAULTPARAMS_H

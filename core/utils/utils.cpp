@@ -145,7 +145,15 @@ string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
     if (envDirPath.empty())
         return filename;
 
-    return toNativeSlashes(envDirPath + path + filename);
+    string res(envDirPath);
+
+    if (STR_HAS_SLASH_AT_END(envDirPath) && IS_SLASH_SYMBOL(path[0]))   // check for doubled slash in given components
+        res.resize(res.length() - 1);
+
+    res += path;
+    res += filename;
+
+    return toNativeSlashes(res);
 }
 
 string escapeString(const string &s, const std::unordered_map<char, char> &symbols, const string &escape)

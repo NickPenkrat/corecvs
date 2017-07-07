@@ -1,10 +1,9 @@
 #include "detectExtractAndMatchProvider.h"
-
 #include "global.h"
 
 DetectExtractAndMatch* DetectExtractAndMatchProvider::getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType, const std::string &params)
 {
-    for ( std::vector<DetectExtractAndMatchProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p )
+    for (std::vector<DetectExtractAndMatchProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
 	{
 		if ((*p)->provides(detectorType, descriptorType, matcherType))
 		{
@@ -21,12 +20,12 @@ DetectExtractAndMatch* DetectExtractAndMatchProvider::getDetector(const Detector
 	
 	}
 
-	return 0;
+	return nullptr;
 }
 
-void DetectExtractAndMatch::detectExtractAndMatch( FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint )
+void DetectExtractAndMatch::detectExtractAndMatch(FeatureMatchingPipeline& pipeline, int nMaxKeypoints, int numResponcesPerPoint)
 {
-    detectExtractAndMatchImpl( pipeline, nMaxKeypoints, numResponcesPerPoint );
+    detectExtractAndMatchImpl(pipeline, nMaxKeypoints, numResponcesPerPoint);
 }
 
 DetectExtractAndMatchProvider::~DetectExtractAndMatchProvider()
@@ -39,5 +38,4 @@ DetectExtractAndMatchProvider& DetectExtractAndMatchProvider::getInstance()
 }
 
 DetectExtractAndMatchProvider::DetectExtractAndMatchProvider()
-{
-}
+{}

@@ -140,15 +140,13 @@ double OpenCvGPUDetectAndExtractWrapper::getProperty(const std::string &name) co
 }
 
 
-OpenCvGPUDetectAndExtractWrapper::OpenCvGPUDetectAndExtractWrapper(cv::ORB  *detectorORB, cv::SURF *detectorSURF, cv::gpu::SURF_GPU *detectorSURF_CUDA, cv::gpu::ORB_GPU *detectorORB_CUDA, cv::ocl::SURF_OCL* detectorSURF_OCL) :
-detectorORB(detectorORB),
-detectorSURF(detectorSURF),
-detectorSURF_CUDA(detectorSURF_CUDA),
-detectorORB_CUDA(detectorORB_CUDA),
-detectorSURF_OCL(detectorSURF_OCL)
-{
-
-}
+OpenCvGPUDetectAndExtractWrapper::OpenCvGPUDetectAndExtractWrapper(cv::ORB  *detectorORB, cv::SURF *detectorSURF, cv::gpu::SURF_GPU *detectorSURF_CUDA, cv::gpu::ORB_GPU *detectorORB_CUDA, cv::ocl::SURF_OCL* detectorSURF_OCL)
+    : detectorORB(detectorORB)
+    , detectorSURF(detectorSURF)
+    , detectorSURF_CUDA(detectorSURF_CUDA)
+    , detectorORB_CUDA(detectorORB_CUDA)
+    , detectorSURF_OCL(detectorSURF_OCL)
+{}
 
 OpenCvGPUDetectAndExtractWrapper::~OpenCvGPUDetectAndExtractWrapper()
 {
@@ -161,22 +159,22 @@ OpenCvGPUDetectAndExtractWrapper::~OpenCvGPUDetectAndExtractWrapper()
 
 extern bool FindGPUDevice(bool& cudaApi);
 
-bool  init_opencv_gpu_detect_and_extract_provider( bool& cudaApi )
+bool init_opencv_gpu_detect_and_extract_provider(bool& cudaApi)
 {
 	cudaApi = false;
-    if ( FindGPUDevice( cudaApi ) )
+    if (FindGPUDevice(cudaApi))
     {
-        DetectAndExtractProvider::getInstance().add( new OpenCvGPUDetectAndExtractProvider( cudaApi ) );
+        DetectAndExtractProvider::getInstance().add(new OpenCvGPUDetectAndExtractProvider(cudaApi));
         return true;
     }
 		
     return false;
 }
 
-OpenCvGPUDetectAndExtractProvider::OpenCvGPUDetectAndExtractProvider( bool cudaApi ) : cudaApi( cudaApi ) {}
+OpenCvGPUDetectAndExtractProvider::OpenCvGPUDetectAndExtractProvider(bool cudaApi) : cudaApi(cudaApi) {}
 
 #define SWITCH_TYPE(str, expr) \
-	if(type == #str) \
+	if (type == #str) \
 		{ \
 		expr; \
 		}
@@ -186,7 +184,7 @@ DetectAndExtract* OpenCvGPUDetectAndExtractProvider::getDetector( const Detector
 	SurfParams surfParams(params);
 	OrbParams orbParams(params);
 
-    if ( cudaApi )
+    if (cudaApi)
     {
 		if (detectorType == "SURF" && descriptorType == "SURF")
 			return new OpenCvGPUDetectAndExtractWrapper( 0, new cv::SURF(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright));
@@ -206,12 +204,12 @@ DetectAndExtract* OpenCvGPUDetectAndExtractProvider::getDetector( const Detector
     return 0;
 }
 
-bool OpenCvGPUDetectAndExtractProvider::provides( const DetectorType &detectorType, const DescriptorType &descriptorType )
+bool OpenCvGPUDetectAndExtractProvider::provides(const DetectorType &detectorType, const DescriptorType &descriptorType)
 {
-    if ( cudaApi && detectorType == "ORB_GPU" && descriptorType == "ORB_GPU" )
+    if (cudaApi && detectorType == "ORB_GPU" && descriptorType == "ORB_GPU")
         return true;
 
-    if ( detectorType == "SURF_GPU" && descriptorType == "SURF_GPU" )
+    if (detectorType == "SURF_GPU" && descriptorType == "SURF_GPU")
         return true;
 
 	if (detectorType == "SURF" && descriptorType == "SURF")
@@ -223,12 +221,14 @@ bool OpenCvGPUDetectAndExtractProvider::provides( const DetectorType &detectorTy
 	return false;
 }
 
-#else // def WITH_OPENCV_3x
+#else // !WITH_OPENCV_3x
+
 bool  init_opencv_gpu_detect_and_extract_provider( bool& cudaApi )
 {
 	cudaApi = false;
 	return false;
 }
-#endif
 
-#endif
+#endif // WITH_OPENCV_3x
+
+#endif // WITH_OPENCV_GPU

@@ -2,12 +2,16 @@
 #define FIXTURECONTROLWIDGET_H
 
 #include <QWidget>
+#include <QLineEdit>
+
 #include "affine3dControlWidget.h"
 
 namespace Ui {
 class FixtureControlWidget;
 }
 
+
+/* This needs to be reworked */
 class FixtureControlWidget : public QWidget
 {
     Q_OBJECT
@@ -40,6 +44,7 @@ signals:
 public:
     Ui::FixtureControlWidget *ui;
     Affine3dControlWidget *getLocationWidget();
+    QLineEdit *getNameWidget();
 private:
 
 };

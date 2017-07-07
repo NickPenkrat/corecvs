@@ -1,6 +1,9 @@
-#pragma once
+#ifndef DETECTANDEXTRACTPROVIDER_H
+#define DETECTANDEXTRACTPROVIDER_H
 
 #include <string>
+#include <vector>
+
 #include "algoBase.h"
 #include "imageKeyPoints.h"
 #include "featureMatchingPipeline.h"
@@ -19,9 +22,8 @@ protected:
 class DetectAndExtractProviderImpl : public AlgoNaming
 {
 public:
-    virtual DetectAndExtract* getDetector( const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params = "" ) = 0;
-    virtual bool provides( const DetectorType &detectorType, const DescriptorType &descriptorType ) = 0;
-
+    virtual DetectAndExtract* getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params = "") = 0;
+    virtual bool provides(const DetectorType &detectorType, const DescriptorType &descriptorType) = 0;
 
     virtual ~DetectAndExtractProviderImpl() {}
 };
@@ -32,11 +34,12 @@ public:
     static DetectAndExtractProvider& getInstance();
     ~DetectAndExtractProvider();
 
-
-    DetectAndExtract* getDetector( const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params = "" );
+    DetectAndExtract* getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params = "");
 
 private:
     DetectAndExtractProvider();
-    DetectAndExtractProvider( const DetectAndExtractProvider& );
-    DetectAndExtractProvider& operator=( const DetectAndExtractProvider& );
+    DetectAndExtractProvider(const DetectAndExtractProvider&);
+  //DetectAndExtractProvider& operator=(const DetectAndExtractProvider&);
 };
+
+#endif // DETECTANDEXTRACTPROVIDER_H

@@ -1,5 +1,4 @@
 #include "detectAndExtractProvider.h"
-
 #include "global.h"
 
 DetectAndExtract* DetectAndExtractProvider::getDetector( const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params )
@@ -22,9 +21,7 @@ void DetectAndExtract::detectAndExtract(corecvs::RuntimeTypeBuffer &image, std::
 }
 
 DetectAndExtractProvider::~DetectAndExtractProvider()
-{
-
-}
+{}
 
 DetectAndExtractProvider& DetectAndExtractProvider::getInstance()
 {
@@ -33,5 +30,4 @@ DetectAndExtractProvider& DetectAndExtractProvider::getInstance()
 }
 
 DetectAndExtractProvider::DetectAndExtractProvider()
-{
-}
+{}

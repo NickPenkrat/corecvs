@@ -570,13 +570,12 @@ void MatchingStage::saveResults(FeatureMatchingPipeline *pipeline, const std::st
 
 //---------------------------------------------------------------------------
 
-
-static void combinationToIndex(size_t in, size_t &out1, size_t out2)
-{
-    double tt = -0.5 + sqrt(1.0 + 8.0 * in) / 2.0;
-    size_t J = 1+(size_t)tt;
-    size_t I = in - (J - 1) * J / 2;
-}
+//static void combinationToIndex(size_t in, size_t &out1, size_t out2)
+//{
+//    double tt = -0.5 + sqrt(1.0 + 8.0 * in) / 2.0;
+//    size_t J = 1+(size_t)tt;
+//    size_t I = in - (J - 1) * J / 2;
+//}
 
 class ParallelMatcherRefiner
 {
@@ -601,7 +600,6 @@ public:
         std::vector<int> &next = *next_ptr;
         std::vector<int> &idx = *idx_ptr;
 
-
         size_t N = images.size();
         size_t S = N*(N-1)/2;
         size_t responsesPerPoint = 2;
@@ -621,7 +619,7 @@ public:
 
             std::vector<size_t> reqs;
             size_t next_id = first[J*(J-1)/2+I+1];
-            while(next_id)
+            while (next_id)
             {
                 reqs.push_back(idx[next_id]);
                 CORE_ASSERT_TRUE_S(matchPlan.plan[idx[next_id]].isBetween((uint16_t)I, (uint16_t)J));
@@ -653,7 +651,7 @@ public:
 				if (matcher)
 					matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
-                SYNC_PRINT(("Matcher implementation returned %d\n", ml.size()));
+                SYNC_PRINT(("Matcher implementation returned %" PRISIZE_T "\n", ml.size()));
 
                 for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
                 {

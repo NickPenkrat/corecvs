@@ -11,8 +11,10 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
 
     ui->lensDistortionWidget->toggleAdvanced(false);
 
-    QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged()), this, SLOT(paramsChangedInUI()));
-    QObject::connect(ui->extrinsicWidget     , SIGNAL(paramsChanged()), this, SLOT(paramsChangedInUI()));
+
+    QObject::connect(ui->cameraNameEdit      , SIGNAL(textChanged(QString)), this, SLOT(paramsChangedInUI()));
+    QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged())     , this, SLOT(paramsChangedInUI()));
+    QObject::connect(ui->extrinsicWidget     , SIGNAL(paramsChanged())     , this, SLOT(paramsChangedInUI()));
 
 
     QObject::connect(ui->spinBoxFocalX, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
@@ -106,6 +108,8 @@ void CameraModelParametersControlWidget::getParameters(CameraModel& params) cons
 {    
     ui->lensDistortionWidget->getParameters(params.distortion);
 
+    params.nameId = ui->cameraNameEdit->text().toStdString();
+
     Affine3DQ location;
     ui->extrinsicWidget->getParameters(location);
     params.setLocation(location);
@@ -134,6 +138,8 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+
+    ui->cameraNameEdit->setText(QString::fromStdString(input.nameId));
     ui->lensDistortionWidget->setParameters(input.distortion);
 
     ui->extrinsicWidget->setParameters(input.getAffine());

@@ -13,7 +13,9 @@ FixtureControlWidget::FixtureControlWidget(QWidget *parent) :
     QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(savePressed()));
 
 
-    QObject::connect(ui->locationWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->locationWidget, SIGNAL(paramsChanged())     , this, SIGNAL(paramsChanged()));
+    QObject::connect(ui->nameEdit      , SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
+
 }
 
 FixtureControlWidget::~FixtureControlWidget()
@@ -24,6 +26,11 @@ FixtureControlWidget::~FixtureControlWidget()
 Affine3dControlWidget *FixtureControlWidget::getLocationWidget()
 {
     return ui->locationWidget;
+}
+
+QLineEdit *FixtureControlWidget::getNameWidget()
+{
+    return ui->nameEdit;
 }
 
 void FixtureControlWidget::loadPressed()
