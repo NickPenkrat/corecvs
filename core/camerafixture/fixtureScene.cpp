@@ -10,6 +10,13 @@
 namespace corecvs {
 
 const char * FixtureSceneFactory::DEFAULT_NAME = "FixtureScene";
+Affine3DQ FixtureScene::DEFAULT_WORLD_TO_CAMERA = Affine3DQ(Quaternion::FromMatrix(
+                                                                Matrix33( 0, -1,  0,
+                                                                          0,  0, -1,
+                                                                          1,  0,  0
+                                                                )));
+
+
 
 
 /**
@@ -20,11 +27,7 @@ const char * FixtureSceneFactory::DEFAULT_NAME = "FixtureScene";
  **/
 FixtureScene::FixtureScene() :
      //worldFrameToCameraFrame(Affine3DQ::RotationZ(degToRad(90.0)) * Affine3DQ::RotationX(degToRad(90.0)))
-    worldFrameToCameraFrame(Affine3DQ(Quaternion::FromMatrix(
-        Matrix33( 0, -1,  0,
-                  0,  0, -1,
-                  1,  0,  0
-        ))))
+    worldFrameToCameraFrame(DEFAULT_WORLD_TO_CAMERA)
 {
 }
 

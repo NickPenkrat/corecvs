@@ -52,7 +52,7 @@ public:
 
     virtual bool dump(const QString &targetFile);
 
-    virtual void setParameters(void * /*params*/){}
+    virtual void setParameters(void * /*params*/) {}
 
     /* Not the best practice.*/
     virtual ParametersControlWidgetBase *getContolWidget()

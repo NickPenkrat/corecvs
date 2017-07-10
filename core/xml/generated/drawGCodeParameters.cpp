@@ -94,6 +94,38 @@ int DrawGCodeParameters::staticInit()
     /*  */ 
     DoubleField* field3 = new DoubleField
         (
+          DrawGCodeParameters::MINEXTRUDE_ID,
+          offsetof(DrawGCodeParameters, mMinExtrude),
+          200,
+          "minExtrude",
+          "minExtrude",
+          "minExtrude",
+          true,
+         0,
+         1000
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=2;
+    fields().push_back(field3);
+    /*  */ 
+    DoubleField* field4 = new DoubleField
+        (
+          DrawGCodeParameters::MAXEXTRUDE_ID,
+          offsetof(DrawGCodeParameters, mMaxExtrude),
+          950,
+          "maxExtrude",
+          "maxExtrude",
+          "maxExtrude",
+          true,
+         0,
+         1000
+        );
+    field4->widgetHint=BaseField::SPIN_BOX;
+    field4->precision=2;
+    fields().push_back(field4);
+    /*  */ 
+    DoubleField* field5 = new DoubleField
+        (
           DrawGCodeParameters::MINSPEED_ID,
           offsetof(DrawGCodeParameters, mMinSpeed),
           200,
@@ -104,11 +136,11 @@ int DrawGCodeParameters::staticInit()
          0,
          1000
         );
-    field3->widgetHint=BaseField::SPIN_BOX;
-    field3->precision=2;
-    fields().push_back(field3);
+    field5->widgetHint=BaseField::SPIN_BOX;
+    field5->precision=2;
+    fields().push_back(field5);
     /*  */ 
-    DoubleField* field4 = new DoubleField
+    DoubleField* field6 = new DoubleField
         (
           DrawGCodeParameters::MAXSPEED_ID,
           offsetof(DrawGCodeParameters, mMaxSpeed),
@@ -120,9 +152,9 @@ int DrawGCodeParameters::staticInit()
          0,
          1000
         );
-    field4->widgetHint=BaseField::SPIN_BOX;
-    field4->precision=2;
-    fields().push_back(field4);
+    field6->widgetHint=BaseField::SPIN_BOX;
+    field6->precision=2;
+    fields().push_back(field6);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("draw GCode Parameters")]= &reflection;

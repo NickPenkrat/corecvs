@@ -40,6 +40,8 @@ void ShadedSceneControlWidget::getShaderPreset(ShaderPreset &preset, const QComb
         preset.type = ShaderPreset::NONE;
     } else if (combo->currentIndex() == 1) {
         preset.type = ShaderPreset::PRESET;
+    } else if (combo->currentIndex() == 2) {
+        preset.type = ShaderPreset::PRESET1;
     } else {
         QString name = combo->currentText();
         if (!shaderCache.contains(name)) {

@@ -393,7 +393,9 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
         this->gcodeHook(c);
 
         if (c.area == ' ') {
-            cout << ";" << c.comment << endl;
+            if (traceComment) {
+                cout << ";" << c.comment << endl;
+            }
             continue;
         }
 
@@ -408,13 +410,17 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
             case 104:
                     if (c.hasParameter('s')) {
                         state->extruderTemperature = c.getParameter('s');
-                        cout << "Setting extruder temperature " << state->extruderTemperature << endl;
+                        if (traceProcess) {
+                            cout << "Setting extruder temperature " << state->extruderTemperature << endl;
+                        }
                     }
                 break;
             case 140:
                     if (c.hasParameter('s'))
                         state->bedTemperature = c.getParameter('s');
-                        cout << "Setting bed temperature " << state->extruderTemperature << endl;
+                        if (traceProcess) {
+                            cout << "Setting bed temperature " << state->extruderTemperature << endl;
+                        }
                 break;
             default:
                 break;
@@ -556,12 +562,14 @@ bool GCodeToMesh::MeshInterpreter::straightHook(int type, const GCodeInterpreter
         erate = (after.extruderPos - before.extruderPos) / len;
     }
 
-    switch (parent->coloring) {
+    DrawGCodeParameters &p = parent->mParameters;
+
+    switch (p.scheme()) {
         default:
         case GCodeColoringSheme::COLOR_FROM_GCODE:          mesh->setColor(type ? RGBColor::Green() : RGBColor::Blue()); break;
-        case GCodeColoringSheme::COLOR_FROM_EXTRUSION_RATE: mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,                   erate,   0,   1))); break;
-        case GCodeColoringSheme::COLOR_FROM_TEMPERATURE:    mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.extruderTemperature, 200, 260))); break;
-        case GCodeColoringSheme::COLOR_FROM_SPEED:          mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.feedRate, 1000, 10000))); break;
+        case GCodeColoringSheme::COLOR_FROM_EXTRUSION_RATE: mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,                   erate,   p.minExtrude(), p.maxExtrude()))); break;
+        case GCodeColoringSheme::COLOR_FROM_TEMPERATURE:    mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.extruderTemperature, p.minTemp(), p.maxTemp()))); break;
+        case GCodeColoringSheme::COLOR_FROM_SPEED:          mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.feedRate, p.minSpeed(), p.maxSpeed()))); break;
     }
 
     mesh->addLine(before.position, after.position);
@@ -572,12 +580,13 @@ bool GCodeToMesh::MeshInterpreter::arkHook(const GCodeInterpreter::MachineState 
 {
     Vector3dd currentPosition = before.position;
 
-    switch (parent->coloring) {
+    DrawGCodeParameters &p = parent->mParameters;
+    switch (p.scheme()) {
         default:
         case GCodeColoringSheme::COLOR_FROM_GCODE:          mesh->setColor(RGBColor::Yellow()); break;
         case GCodeColoringSheme::COLOR_FROM_EXTRUSION_RATE: mesh->setColor(RGBColor::rainbow(0.5)); break;
-        case GCodeColoringSheme::COLOR_FROM_TEMPERATURE:    mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.extruderTemperature, 200, 260))); break;
-        case GCodeColoringSheme::COLOR_FROM_SPEED:          mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.feedRate, 100, 400))); break;
+        case GCodeColoringSheme::COLOR_FROM_TEMPERATURE:    mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.extruderTemperature, p.minTemp(), p.maxTemp()))); break;
+        case GCodeColoringSheme::COLOR_FROM_SPEED:          mesh->setColor(RGBColor::rainbow(lerp(0.0,1.0,after.feedRate, p.minSpeed(), p.maxSpeed()))); break;
     }
 
     double arg = 0;
@@ -596,6 +605,9 @@ bool GCodeToMesh::MeshInterpreter::arkHook(const GCodeInterpreter::MachineState 
 
 int GCodeToMesh::renderToMesh(const GCodeProgram &in, Mesh3D &mesh)
 {
+    SYNC_PRINT(("GCodeToMesh::renderToMesh(): called\n"));
+    SYNC_PRINT(("GCodeToMesh::renderToMesh(): style %d\n", mParameters.scheme()));
+
     mesh.switchColor(true);
     MeshInterpreter interpreter(this, &mesh);
     interpreter.executeProgram(in);

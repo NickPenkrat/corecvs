@@ -43,6 +43,8 @@ public:
         SCHEME_ID,
         MINTEMP_ID,
         MAXTEMP_ID,
+        MINEXTRUDE_ID,
+        MAXEXTRUDE_ID,
         MINSPEED_ID,
         MAXSPEED_ID,
         DRAW_GCODE_PARAMETERS_FIELD_ID_NUM
@@ -67,6 +69,18 @@ public:
      * maxTemp 
      */
     double mMaxTemp;
+
+    /** 
+     * \brief minExtrude 
+     * minExtrude 
+     */
+    double mMinExtrude;
+
+    /** 
+     * \brief maxExtrude 
+     * maxExtrude 
+     */
+    double mMaxExtrude;
 
     /** 
      * \brief minSpeed 
@@ -105,6 +119,16 @@ public:
         return mMaxTemp;
     }
 
+    double minExtrude() const
+    {
+        return mMinExtrude;
+    }
+
+    double maxExtrude() const
+    {
+        return mMaxExtrude;
+    }
+
     double minSpeed() const
     {
         return mMinSpeed;
@@ -131,6 +155,16 @@ public:
         mMaxTemp = maxTemp;
     }
 
+    void setMinExtrude(double minExtrude)
+    {
+        mMinExtrude = minExtrude;
+    }
+
+    void setMaxExtrude(double maxExtrude)
+    {
+        mMaxExtrude = maxExtrude;
+    }
+
     void setMinSpeed(double minSpeed)
     {
         mMinSpeed = minSpeed;
@@ -149,6 +183,8 @@ template<class VisitorType>
         visitor.visit((int &)mScheme,             static_cast<const corecvs::EnumField *>(fields()[SCHEME_ID]));
         visitor.visit(mMinTemp,                   static_cast<const corecvs::DoubleField *>(fields()[MINTEMP_ID]));
         visitor.visit(mMaxTemp,                   static_cast<const corecvs::DoubleField *>(fields()[MAXTEMP_ID]));
+        visitor.visit(mMinExtrude,                static_cast<const corecvs::DoubleField *>(fields()[MINEXTRUDE_ID]));
+        visitor.visit(mMaxExtrude,                static_cast<const corecvs::DoubleField *>(fields()[MAXEXTRUDE_ID]));
         visitor.visit(mMinSpeed,                  static_cast<const corecvs::DoubleField *>(fields()[MINSPEED_ID]));
         visitor.visit(mMaxSpeed,                  static_cast<const corecvs::DoubleField *>(fields()[MAXSPEED_ID]));
     }
@@ -163,6 +199,8 @@ template<class VisitorType>
           GCodeColoringSheme::GCodeColoringSheme scheme
         , double minTemp
         , double maxTemp
+        , double minExtrude
+        , double maxExtrude
         , double minSpeed
         , double maxSpeed
     )
@@ -170,6 +208,8 @@ template<class VisitorType>
         mScheme = scheme;
         mMinTemp = minTemp;
         mMaxTemp = maxTemp;
+        mMinExtrude = minExtrude;
+        mMaxExtrude = maxExtrude;
         mMinSpeed = minSpeed;
         mMaxSpeed = maxSpeed;
     }

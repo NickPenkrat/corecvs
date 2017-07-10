@@ -462,7 +462,7 @@ void _profileManualEdgeSimple (void)
          input[i]->touchOperationElementwize(vis);
          output[i] = new G12Buffer(TEST_H_SIZE ,TEST_W_SIZE);
      }
-     printf("Profiling ManualS Kernel       %5.5s %d.%d:", "Mag", 1, 1);
+     printf("Profiling ManualS Kernel       %5.5s %d.%d:", "Edge", 1, 1);
      start = PreciseTimer::currentTime();
      for (unsigned k = 0; k < LIMIT; k++) {
          G12Buffer *in  = input[k % POLUTING_INPUTS];
@@ -489,7 +489,7 @@ void _profileManualEdgeSimple (void)
                 int16_t negativeV = int16_t (a20 + a22 + 2 * a21);
                 int16_t resultV = ( positiveV - negativeV ) / 4;
 
-                uint16_t final = resultH + resultV;//std::abs(resultV) + std::abs(resultH);
+                uint16_t final = std::abs(resultV) + std::abs(resultH);
 
                 out->element(i,j) = final;
              }

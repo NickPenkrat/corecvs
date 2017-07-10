@@ -120,6 +120,11 @@
          <string>Default</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Default Phong</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="1" column="1">
@@ -137,6 +142,11 @@
          <string>Default</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Default Phong</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item row="2" column="1">
@@ -152,6 +162,11 @@
        <item>
         <property name="text">
          <string>Default</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Default Phong</string>
         </property>
        </item>
       </widget>
