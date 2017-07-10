@@ -300,6 +300,10 @@ public:
 
     /* Project this point to a given camera*/
     void projectForward(FixtureCamera *camera, CameraFixture *fixture, bool round);
+
+    /* L2 reprojection error per observation */
+    std::vector< double > estimateReconstructedReprojectionErrorL2();
+    std::vector< double > estimateReprojectionErrorL2();
 };
 
 
