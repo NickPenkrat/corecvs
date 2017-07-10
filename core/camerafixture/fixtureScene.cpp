@@ -78,7 +78,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
     }
 }
 
-void FixtureScene::triangulate(SceneFeaturePoint *point)
+void FixtureScene::triangulate(SceneFeaturePoint *point, bool trace)
 {
     //TODO: why don't use here:
     //      point->ensureDistortedObservations(false);
@@ -104,7 +104,7 @@ void FixtureScene::triangulate(SceneFeaturePoint *point)
     //}
 
     MulticameraTriangulator triangulator;
-    triangulator.trace = true;
+    triangulator.trace = trace;
 
     for (auto& pos : point->observations)
     {

@@ -111,23 +111,26 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uin
     }
     else
     {
-        for (auto& obs : observations)
+        for (auto& pos : observations)
         {
-            //cout << "SceneFeaturePoint::triangulate(" << name << ") distorted:" << obs.second.onDistorted << " " << obs.second.observation << endl;
+            const SceneObservation &obs = pos.second;
 
-            CORE_ASSERT_TRUE_S(obs.second.cameraFixture != NULL);
+            //cout << "SceneFeaturePoint::triangulate(" << name << ") distorted:" << obs.onDistorted << " " << obs.observation << endl;
+
+            CORE_ASSERT_TRUE_S(obs.cameraFixture != NULL);
             if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
             {
-                mct.addCamera(obs.second.cameraFixture->getMMatrix(obs.second.camera), obs.second.observation);
+                mct.addCamera(obs.cameraFixture->getMMatrix(obs.camera), obs.observation);
                 if (mask && ptr + 1 < mask->size())
                     CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
                 ptr++;
             }
             if (mask && ptr == mask->size())
                 break;
-            id++;
+            ++id;
         }
     }
+
     bool ok = false;
     Vector3dd initial = mct.triangulate(&ok);
 #ifdef DEEP_TRACE_702
