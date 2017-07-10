@@ -1528,7 +1528,7 @@ public:
         size_t id = r.begin();
 
         std::stringstream ss1, ss2;
-        ss1 << "Detecting/Extracting keypoints from" << detectorType << " on ";
+        ss1 << "Detecting/Extracting keypoints from " << detectorType << " on ";
         size_t cnt = 0;
         pipeline->tic(id, false);
         size_t kpt = 0;
