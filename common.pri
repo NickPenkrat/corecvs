@@ -304,6 +304,11 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     else {
         # Since [Qt5.5.0 + msvc2013] pdb management is added automatically into bin folder
     }
+
+    # add debug info for release build rules to catch app crash details
+    #
+    QMAKE_LFLAGS_RELEASE   += /DEBUG     # add debug info to the linked module
+    QMAKE_CXXFLAGS_RELEASE += /Zi        # add debug info to the compiling module
 }
 
 
