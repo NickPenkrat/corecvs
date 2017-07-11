@@ -150,7 +150,6 @@ with_ueye {
 }
 
 with_opencv {                                       # all this stuff was extracted from opencv.pri to speedup including
-    message (Utils will use opencv)
     OPENCV_WRAPPER_DIR = $$UTILSDIR/../wrappers/opencv
     include($$OPENCV_WRAPPER_DIR/opencvLibs.pri)
 
