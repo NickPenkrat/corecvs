@@ -78,70 +78,27 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
     }
 }
 
-void FixtureScene::triangulate(SceneFeaturePoint *point)
+bool FixtureScene::triangulate(SceneFeaturePoint *point, bool checkMinimalAngle)
 {
-    //TODO: why don't use here:
-    //      point->ensureDistortedObservations(false);
-    //      point->position = point->triangulate();
-    //
-    // that uses internally:    mct.triangulateLM(mct.triangulate()) ???
-
     if (point->observations.size() < 2)
     {
         SYNC_PRINT(("FixtureScene::triangulate(): too few observations"));
-        return;
-    }
-
-    //if (sourceWithDistortion)
-    //{
-    //    for (auto& pos : point->observations)
-    //    {
-    //        FixtureCamera    *cam = pos.first;
-    //        SceneObservation &obs = pos.second;
-    //
-    //        obs.observation = cam->distortion.mapBackward(obs.observation);   // convert given distorted projection to undistorted coords
-    //    }
-    //}
-
-    MulticameraTriangulator triangulator;
-    triangulator.trace = true;
-
-    for (auto& pos : point->observations)
-    {
-        FixtureCamera    *cam = pos.first;
-        SceneObservation &obs = pos.second;
-        if (cam->cameraFixture == NULL)
-            continue;
-
-        Vector2dd projection = obs.getDistorted(false);     // convert projection 'dist => undist' if need
-
-        FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
-        triangulator.addCamera(worldCam.getCameraMatrix(), projection);
+        return false;
     }
 
     bool ok = true;
-    Vector3dd point3d = triangulator.triangulateLM(triangulator.triangulate(&ok));
-
+    Vector3dd point3d = point->triangulate(false, nullptr, &ok, checkMinimalAngle);
     if (!ok) {
         SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
-        return;
+        return false;
     }
-    //cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
-
-    //if (sourceWithDistortion)
-    //{
-    //    for (auto& pos : point->observations)
-    //    {
-    //        FixtureCamera    *cam = pos.first;
-    //        SceneObservation &obs = pos.second;
-    //        obs.observation = cam->distortion.mapForward(obs.observation);   // convert undistorted projection to the distorted one
-    //    }
-    //}
 
     if (point->hasKnownPosition)
         point->reprojectedPosition = point3d;   // store at the reprojectedPosition as "position" is untouchable
     else
         point->position = point3d;              //TODO: why it's stored into the position field instead of reprojectedPosition?
+
+    return true;
 }
 
 CameraPrototype *FixtureScene::createCameraPrototype()
@@ -194,7 +151,6 @@ FixtureSceneGeometry *FixtureScene::createSceneGeometry()
     mGeomtery.push_back(geometry);
     return geometry;
 }
-
 
 void FixtureScene::destroyObject(FixtureScenePart *condemned)
 {

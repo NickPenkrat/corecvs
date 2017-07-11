@@ -87,7 +87,64 @@ int SceneFeaturePoint::ensureDistortedObservations(bool distorted)
     return toReturn;
 }
 
-Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uint* numProjections)
+bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& pointPosition, bool use__)
+{
+    //double angle = 1.0;
+    bool res = false;
+    if (use__)
+    {
+        for (auto& obs0 : observations__)
+        {
+            Vector3dd c0_location = obs0.first.v->getWorldLocation().shift - pointPosition;
+            for (auto& obs1 : observations__)
+            {
+                if (obs0.first == obs1.first)
+                    continue;
+
+                Vector3dd c1_location = obs1.first.v->getWorldLocation().shift - pointPosition;
+                double cos_ = (c0_location & c1_location) / (c0_location.l2Metric() * c1_location.l2Metric());
+                //angle = std::min( angle, cos_ );
+                if (cos_ < 0.9993) // > ~2.0 degree
+                {
+                    res = true;
+                    break;
+                }
+            }
+
+            if (res)
+                break;
+        }
+    }
+    else
+    {
+        for (auto& obs0 : observations)
+        {
+            Vector3dd c0_location = obs0.first->getWorldLocation().shift - pointPosition;
+            for (auto& obs1 : observations)
+            {
+                if (obs0.first == obs1.first)
+                    continue;
+
+                Vector3dd c1_location = obs1.first->getWorldLocation().shift - pointPosition;
+                double cos_ = (c0_location & c1_location) / (c0_location.l2Metric() * c1_location.l2Metric());
+                //angle = std::min( angle, cos_ );
+                if (cos_ < 0.9993) // > ~2.0 degree
+                {
+                    res = true;
+                    break;
+                }
+            }
+
+            if (res)
+                break;
+        }
+    }
+
+    //angle = radToDeg( std::acos( angle ) );
+    return res;
+}
+
+Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, bool* succeeded, bool checkMinimalAngle)
 {
     MulticameraTriangulator mct;
     int id = 0;
@@ -161,8 +218,17 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, uin
     if (ok)
         accuracy = mct.getCovarianceInvEstimation(res); 
 
-	if (numProjections != nullptr)
-		*numProjections = (uint)mct.P.size();
+    if (checkMinimalAngle && ok)
+    {
+        ok = checkTriangulationAngle(res, use__);
+        //if (!ok)
+        //{
+        //    res = Vector3dd(0.0);
+        //}
+    }
+
+    if (succeeded != nullptr)
+        *succeeded = ok;
 
     return res;
 }
