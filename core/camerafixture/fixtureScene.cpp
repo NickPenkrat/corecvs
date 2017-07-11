@@ -78,7 +78,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
     }
 }
 
-bool FixtureScene::triangulate(SceneFeaturePoint *point, bool checkMinimalAngle, bool trace)
+bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkMinimalAngle)
 {
     if (point->observations.size() < 2)
     {
@@ -86,9 +86,8 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool checkMinimalAngle,
         return false;
     }
 
-    triangulator.trace = trace;
     bool ok = true;
-    Vector3dd point3d = point->triangulate(false, nullptr, &ok, checkMinimalAngle);
+    Vector3dd point3d = point->triangulate(false, nullptr, &ok, trace, checkMinimalAngle);
     if (!ok) {
         SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
         return false;

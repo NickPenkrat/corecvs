@@ -181,7 +181,7 @@ public:
      * \param checkMinimalAngle - 'succeeded' will be false if maximum trabgulation angle less than threshold (2 degree)
      *
      **/
-    Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr, bool* succeeded = nullptr, bool checkMinimalAngle = false);
+    Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr, bool* succeeded = nullptr, bool trace = false, bool checkMinimalAngle = false);
 
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;

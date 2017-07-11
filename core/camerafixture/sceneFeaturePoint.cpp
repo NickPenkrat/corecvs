@@ -144,9 +144,10 @@ bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& pointP
     return res;
 }
 
-Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, bool* succeeded, bool checkMinimalAngle)
+Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, bool* succeeded, bool trace, bool checkMinimalAngle)
 {
     MulticameraTriangulator mct;
+    mct.trace = trace;
     int id = 0;
     size_t ptr = 0;
 
