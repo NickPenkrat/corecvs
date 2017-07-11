@@ -78,7 +78,7 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
     }
 }
 
-bool FixtureScene::triangulate(SceneFeaturePoint *point, bool checkMinimalAngle)
+bool FixtureScene::triangulate(SceneFeaturePoint *point, bool checkMinimalAngle, bool trace)
 {
     if (point->observations.size() < 2)
     {
@@ -86,6 +86,7 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool checkMinimalAngle)
         return false;
     }
 
+    triangulator.trace = trace;
     bool ok = true;
     Vector3dd point3d = point->triangulate(false, nullptr, &ok, checkMinimalAngle);
     if (!ok) {
