@@ -10,11 +10,16 @@ using namespace corecvs;
 
 int vynilCutter (double offset)
 {
+    std::string input = "in.gcode";
+    std::string output = "out.gcode";
+
+
+
     GCodeProgram program;
     GcodeLoader loader;
 
     ifstream file;
-    file.open("test.gcode", ios::in);
+    file.open(input, ios::in);
     if (file.fail())
     {
         SYNC_PRINT(("g code playground::load(): Can't open mesh file <%s>\n", input.c_str()));
@@ -97,9 +102,4 @@ int main (int argc, char **argv)
     loader.saveGcode(outfile, program);
     outfile.close();
     return 0;
-}
-
-bool VinylCutterInterpreter::straightHook(int type, const GCodeInterpreter::MachineState &before, const GCodeInterpreter::MachineState &after)
-{
-
 }

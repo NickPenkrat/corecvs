@@ -289,6 +289,8 @@ class PointPath : public vector<Vector2dd>
 public:
     PointPath(){}
 
+    PointPath(std::initializer_list<Vector2dd> list) : vector<Vector2dd>(list) {}
+
     PointPath(int len) : vector<Vector2dd>(len)
     {}
 
@@ -348,6 +350,8 @@ class Polygon : public PointPath
 {
 public:
     Polygon(){}
+
+    Polygon(std::initializer_list<Vector2dd> list) : PointPath(list) {}
 
     Polygon(const Vector2dd *points, int len) : PointPath(len)
     {
@@ -568,7 +572,10 @@ public:
 
     /* */
     bool validateState(void) const;
+
+    Rectangled getDebugRectangle() const;
     void drawDebug(RGB24Buffer *buffer) const;
+    void drawDebugAutoscale(RGB24Buffer *buffer, int margin = 100) const;
 
     Polygon followContour(int startIntersection, bool inner, vector<bool> *visited = NULL) const;
 

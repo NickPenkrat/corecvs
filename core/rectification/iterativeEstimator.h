@@ -52,7 +52,7 @@ class IterativeEstimatorScene
 {
 public:
     IterativeEstimateParameters params; /**< For  convinence threshold is in px - relative to focal**/
-    bool trace = true;
+    bool trace = false;
 
     EssentialDecomposition getEssentialIterative(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);
     //EssentialDecomposition getEssentialRansac(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);

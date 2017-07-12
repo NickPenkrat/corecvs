@@ -393,10 +393,10 @@ Vector3dd StereoAligner::getBestZ(const Matrix33 &F, const Vector2dd &rect, unsi
             minalpha = alpha;
             bestZ = z;
         }
-        cout << "Alpha: " << radToDeg(alpha) << "deg weight " << (distLeft + distRight) << " dl:" << distLeft << " dr:" << distRight << std::endl;
+        // cout << "Alpha: " << radToDeg(alpha) << "deg weight " << (distLeft + distRight) << " dl:" << distLeft << " dr:" << distRight << std::endl;
     }
 
-    cout << "Best Alpha: " << radToDeg(minalpha) << endl;
+    cout << "StereoAligner::getBestZ():Best Alpha: " << radToDeg(minalpha) << endl;
     return bestZ;
 }
 

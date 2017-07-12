@@ -599,6 +599,104 @@ TEST(polygon, tortureTest2)
     testTwoPolygonsIntersection(p1, p2, "poly-torture-all2.bmp", false);
 }
 
+TEST(polygon, tortureTest3)
+{
+    Polygon  p1 = { {-2.90149, 0.0805642}
+                    , {-3.0181, 0.0605381}
+                    , {-3.13391, 0.0444257}
+                    , {3.04539, 0.0343246}
+                    , {2.96102, 0.0307865}
+                    , {2.89836, 0.0328962}
+                    , {2.87241, 0.0980895}
+                    , {2.84955, 0.170706}
+                    , {2.83127, 0.248412}
+                    , {2.81919, 0.327795}
+                    , {2.81451, 0.404978}
+                    , {2.81469, 0.405896}
+                    , {2.8774, 0.446287}
+                    , {2.97198, 0.48808}
+                    , {3.09762, 0.523923}
+                    , {-3.0405, 0.545819}
+                    , {-2.89553, 0.550269}
+                    , {-2.89553, 0.549402}
+                    , {-2.89588, 0.459391}
+                    , {-2.89676, 0.361218}
+                    , {-2.89809, 0.261286}
+                    , {-2.89971, 0.166112}};
+
+    Polygon  p2 = {{-2.64873, 0.0640694}
+                   , {-2.75313, 0.0490903}
+                   , {-2.87685, 0.0368737}
+                   , {-3.00952, 0.0297115}
+                   , {-3.13618, 0.0289084}
+                   , {3.03898, 0.0340167}
+                   , {3.01716, 0.112584}
+                   , {2.99757, 0.201737}
+                   , {2.98153, 0.297595}
+                   , {2.97075, 0.394283}
+                   , {2.96654, 0.485397}
+                   , {2.96695, 0.48644}
+                   , {3.09391, 0.523037}
+                   , {-3.02993, 0.546339}
+                   , {-2.86019, 0.548172}
+                   , {-2.70778, 0.529923}
+                   , {-2.58856, 0.500558}
+                   , {-2.58856, 0.499719}
+                   , {-2.59199, 0.413882}
+                   , {-2.60081, 0.322209}
+                   , {-2.61406, 0.230079}
+                   , {-2.63048, 0.142738}};
+
+    RGB24Buffer buffer(1500, 1500);
+    BMPLoader tracer;
+
+    p1 = ConvexHull::GiftWrap(p1);
+    p2 = ConvexHull::GiftWrap(p2);
+
+
+    SYNC_PRINT(("Prefail trace"));
+    cout << "First : " << p1 << endl;
+    cout << "Second: " << p2 << endl;
+    PolygonCombiner combiner(p1, p2);
+    combiner.prepare();
+
+    Rectangled r = combiner.getDebugRectangle();
+    Matrix33 transform = Matrix33::Scale2(buffer.w / r.size.x(), buffer.h / r.size.y()) * Matrix33::ShiftProj(-r.corner.x(), -r.corner.y());;
+
+
+
+    Polygon pol[] = {p1, p2};
+
+
+
+
+    for (int p = 0; p < 2; p++)
+    {
+        for (int i = 0; i < (int)pol[p].size(); i++)
+        {
+            Vector2dd v1 = transform * pol[p].getPoint(i);
+            Vector2dd v2 = transform * pol[p].getNextPoint(i);
+            buffer.drawLine(v1, v2, p == 0 ? RGBColor::Yellow() : RGBColor::Cyan());
+        }
+    }
+
+
+    RGB24Buffer debug(1500, 1500);
+    combiner.drawDebugAutoscale(&debug);
+    tracer.save("debug_intersection.bmp", &debug);
+
+    Polygon p3 = combiner.intersection();
+
+
+    for (int i = 0; i < (int)p3.size(); i++)
+    {
+        Vector2dd v1 = transform * p3.getPoint(i);
+        Vector2dd v2 = transform * p3.getNextPoint(i);
+        buffer.drawLine(v1, v2, RGBColor::Green());
+    }
+
+    tracer.save("debug_input.bmp", &buffer);
+}
 
 
 TEST(polygon, CameraView)

@@ -111,7 +111,7 @@ void CameraModelParametersControlWidget::zeroPressed()
 
 void CameraModelParametersControlWidget::resetPressed()
 {
-    Affine3DQ zero = FixtureScene::DEFAULT_WORLD_TO_CAMERA;
+    Affine3DQ zero = FixtureScene::DEFAULT_WORLD_TO_CAMERA.inverted();
     ui->extrinsicWorldWidget->setParameters(zero);
     emit paramsChanged();
 }

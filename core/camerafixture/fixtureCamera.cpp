@@ -33,12 +33,20 @@ Affine3DQ FixtureCamera::getWorldLocation()
    return (cameraFixture->location * local);
 }
 
-void FixtureCamera::setWorldLocation(const Affine3DQ &location)
+void FixtureCamera::setWorldLocation(const Affine3DQ &location, bool moveFixture)
 {
     if (cameraFixture == NULL) {
         setLocation(location);
     }
-    setLocation(cameraFixture->location.inverted() * location);
+
+    if (!moveFixture) {
+        setLocation(cameraFixture->location.inverted() * location);
+    } else {
+       /* W  =    F * C */
+       /* W1 = ( W1 *  C ^ -1 )  C */
+       Affine3DQ F1 = location * getAffine().inverted();
+       cameraFixture->location = F1;
+    }
 }
 
 CameraModel FixtureCamera::getWorldCameraModel()

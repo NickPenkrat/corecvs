@@ -341,6 +341,64 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer) const
     }
 }
 
+Rectangled PolygonCombiner::getDebugRectangle() const
+{
+    Rectangled r = Rectangled::Empty();
+
+    for (int p = 0; p < 2; p++)
+    {
+        for (int i = 0; i < (int)c[p].size(); i++)
+        {
+            const VertexData &v = c[p][i];
+            Vector2dd pos = v.pos;
+            r.extendToFit(pos);
+        }
+    }
+    cout << "Overall rectangle:" << r << endl;
+    return r;
+}
+
+void PolygonCombiner::drawDebugAutoscale(RGB24Buffer *buffer, int margin) const
+{
+    Rectangled r = getDebugRectangle();
+
+    Matrix33 transform =   Matrix33::Scale2((buffer->w - 2 * margin) / r.size.x(), (buffer->h - 2 * margin) / r.size.y()) * Matrix33::ShiftProj(-r.corner.x(), -r.corner.y());;
+    transform = Matrix33::ShiftProj(margin, margin) * transform;
+
+    AbstractPainter<RGB24Buffer> painter(buffer);
+
+    for (int p = 0; p < 2; p++)
+    {
+
+       /*for (int i = 0; i < (int)c[p].size(); i++)
+        {
+            Vector2dd v1 = transform * pol[p].getPoint(i);
+            Vector2dd v2 = transform * pol[p].getNextPoint(i);
+
+            buffer->drawLine(v1, v2, p == 0 ? RGBColor::Yellow() : RGBColor::Cyan());
+        }*/
+
+        for (int i = 0; i < (int)c[p].size(); i++)
+        {
+            const VertexData &v = c[p][i];
+            Vector2dd posOrig = v.pos;
+            Vector2dd pos = transform * posOrig;
+
+            if (v.flag == INSIDE)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Red());
+            if (v.flag == OUTSIDE)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Green());
+            if (v.flag == COMMON)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Blue());
+
+            painter.drawFormat(pos.x(), pos.y() + p * 10, RGBColor::White(), 1, "%c%d (%0.2lf) [%d]", p == 0 ? 'A' : 'B', i, v.t, v.other);
+            printf("(%lf %lf) %c%d (%0.2lf) [%" PRISIZE_T "]\n", posOrig.x(), posOrig.y() , p == 0 ? 'A' : 'B', i, v.t, v.other);
+        }
+    }
+}
+
+
+
 Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector<bool> *visited) const
 {
     Polygon result;

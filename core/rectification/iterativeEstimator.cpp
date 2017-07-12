@@ -82,8 +82,8 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
 
     for (iteration = 1; iteration <= params.iterationsNumber(); iteration++)
     {
-        SYNC_PRINT(("IterativeEstimator::getEssential(): starting itreation %d (%d) working samples %d\n",
-                    (int)iteration, params.iterationsNumber(), (int)workingSamples.size()));
+        SYNC_PRINT(("IterativeEstimator::getEssential(): starting itreation %d/%d (sigma=%lf) working samples %d\n",
+                    (int)iteration, params.iterationsNumber(), sigma, (int)workingSamples.size()));
 
         EssentialEstimator estimator;
         if (workingSamples.size() < 9)
@@ -92,8 +92,8 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
             break;
         }
         model = estimator.getEssential(workingSamples, method);
-        cout << "Result:" << endl;
-        model.prettyPrint();
+       // cout << "Result:" << endl;
+       // model.prettyPrint();
         EssentialEstimator::CostFunction7to1 cost(&workingSamples);
 
 
@@ -168,10 +168,11 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
 
     IterativeEstimator estimator;
     estimator.params = params;
+    estimator.params.setInitialSigma(estimator.params.initialSigma() / thresholdScaler);
     estimator.method = EssentialEstimator::METHOD_DEFAULT;
     if (params.useInitial())
     {
-        estimator.initalGuess = camera1->essentialTo(*camera2);
+        estimator.initalGuess = camera1->getWorldCameraModel().essentialTo(camera2->getWorldCameraModel());
     }
 
 
@@ -188,7 +189,7 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
 //            Correspondence::CorrespondenceFlags flag = (Correspondence::CorrespondenceFlags)data[count].flags;
 
             double cost = model.epipolarDistance(data[count]);
-            Vector2dd accuracy(cost * thresholdScaler / params.initialSigma(), cost * thresholdScaler);
+            Vector2dd accuracy(cost / params.initialSigma(), cost * thresholdScaler);
 
             obs1->accuracy = accuracy;
             obs2->accuracy = accuracy;

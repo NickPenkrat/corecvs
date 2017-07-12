@@ -39,8 +39,7 @@ int SceneStereoAlignerBlock::operator ()()
 
     cout << "SceneStereoAlignerBlock(): Start transform" << relativeTransform << endl;
 
-    Matrix33 F = camera1->fundamentalTo(*camera2);
-    //Matrix33 F = camera1->essentialTo(*camera2);
+    Matrix33 F = camera1->getWorldCameraModel().fundamentalTo(camera2->getWorldCameraModel());
     EssentialMatrix E(F);
 
     E.prettyPrint();
