@@ -90,7 +90,7 @@ public:
      *
      **/
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
-    void triangulate   (SceneFeaturePoint * point);
+    bool triangulate   (SceneFeaturePoint * point, bool trace = false, bool checkMinimalAngle = false);
 
     /**
      * Accessors. This need to be redone to invert constness and make objects const, not the arrays

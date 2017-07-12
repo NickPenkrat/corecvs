@@ -177,11 +177,11 @@ public:
      *
      * \param use__ 			- should we use observations from observations or observations__
      * \param mask 				- to select observations to use
-	 * \param numProjections 	- if non-null, gives number of projections
+     * \param succeeded 		- if non-null, returns success or fail (Vector3dd == 0,0,0)
+     * \param checkMinimalAngle - 'succeeded' will be false if maximum trabgulation angle less than threshold (2 degree)
      *
      **/
-    Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr, uint* numProjections = nullptr);
-
+    Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr, bool* succeeded = nullptr, bool trace = false, bool checkMinimalAngle = false);
 
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
@@ -304,6 +304,9 @@ public:
     /* L2 reprojection error per observation */
     std::vector< double > estimateReconstructedReprojectionErrorL2();
     std::vector< double > estimateReprojectionErrorL2();
+
+ private:
+     bool checkTriangulationAngle(const corecvs::Vector3dd& pointPosition, bool use__ = false);
 };
 
 

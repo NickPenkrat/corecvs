@@ -1,11 +1,13 @@
 #ifndef MULTICAMERATRIANGULATOR_H
 #define MULTICAMERATRIANGULATOR_H
 
-#include "vector3d.h"
-#include "vector2d.h"
-#include "matrix.h"
-#include "matrix44.h"
+#include <vector>
 
+#include "vector2d.h"
+#include "vector3d.h"
+#include "matrix.h"
+#include "matrix33.h"
+#include "matrix44.h"
 #include "function.h"
 
 namespace corecvs {
@@ -13,20 +15,19 @@ namespace corecvs {
 using corecvs::Vector2dd;
 using corecvs::Vector3dd;
 using corecvs::Matrix;
+using corecvs::Matrix33;
 using corecvs::Matrix44;
 
 class MulticameraTriangulator
 {
 public:
-    vector<Matrix44> P;
-    vector<Vector2dd> xy;
+    std::vector<Matrix44>  P;
+    std::vector<Vector2dd> xy;
 
-    bool trace;
-    bool hasError;
+    bool trace    = false;
+    bool hasError = true;
 
-    MulticameraTriangulator() :
-        trace(false) ,
-        hasError (true)
+    MulticameraTriangulator()
     {}
 
     void addCamera(const Matrix44 &_P, const Vector2dd &_xy)
@@ -99,12 +100,11 @@ public:
      **/
     Vector3dd triangulate(bool *ok = NULL);
 
-    double reprojErrorAlgbra(const corecvs::Vector3dd &input);
+    double reprojErrorAlgbra(const Vector3dd &input);
 
 private:
     Matrix constructMatrix();
     void printUnitySums(const Matrix &A);
-
 
 public:
     /**
@@ -112,11 +112,12 @@ public:
      *
      *
      **/
-    Vector3dd triangulateLM(Vector3dd initialGuess, bool *ok = NULL);
-    corecvs::Matrix33 getCovarianceInvEstimation(const corecvs::Vector3dd &at) const;
+    Vector3dd   triangulateLM(Vector3dd initialGuess, bool *ok = NULL);
 
-    vector<Vector2dd> reprojectionError(const Vector3dd &input);
-    double reprojError(const corecvs::Vector3dd &input);
+    Matrix33    getCovarianceInvEstimation(const Vector3dd &at) const;
+
+    std::vector<Vector2dd> reprojectionError(const Vector3dd &input);
+    double                 reprojError(const Vector3dd &input);
 
     class CostFunction : public FunctionArgs
     {
