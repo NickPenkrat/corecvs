@@ -104,7 +104,7 @@ bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& pointP
                 Vector3dd c1_location = obs1.first.v->getWorldLocation().shift - pointPosition;
                 double cos_ = (c0_location & c1_location) / (c0_location.l2Metric() * c1_location.l2Metric());
                 //angle = std::min( angle, cos_ );
-                if (cos_ < 0.9993) // > ~2.0 degree
+                if (cos_ < 0.999) // > ~2.5 degree
                 {
                     res = true;
                     break;
@@ -128,7 +128,7 @@ bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& pointP
                 Vector3dd c1_location = obs1.first->getWorldLocation().shift - pointPosition;
                 double cos_ = (c0_location & c1_location) / (c0_location.l2Metric() * c1_location.l2Metric());
                 //angle = std::min( angle, cos_ );
-                if (cos_ < 0.9993) // > ~2.0 degree
+                if (cos_ < 0.999) // > ~2.5 degree
                 {
                     res = true;
                     break;
@@ -182,7 +182,7 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, boo
                 Vector2dd projection = obs.getDistorted(false);     // convert projection 'dist => undist' if need
 
                 FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
-                mct.addCamera( worldCam.getCameraMatrix(), projection );
+                mct.addCamera(worldCam.getCameraMatrix(), projection);
 
                 //mct.addCamera(obs.cameraFixture->getMMatrix(obs.camera), obs.observation);
                 if (mask && ptr + 1 < mask->size())
