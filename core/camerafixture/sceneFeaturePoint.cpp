@@ -171,14 +171,20 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, boo
     {
         for (auto& pos : observations)
         {
+            FixtureCamera    *cam = pos.first;
             const SceneObservation &obs = pos.second;
 
             //cout << "SceneFeaturePoint::triangulate(" << name << ") distorted:" << obs.onDistorted << " " << obs.observation << endl;
 
-            CORE_ASSERT_TRUE_S(obs.cameraFixture != NULL);
-            if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
+            //CORE_ASSERT_TRUE_S(obs.cameraFixture != NULL);
+            if ((obs.cameraFixture != NULL) && (!mask || (ptr < mask->size() && (*mask)[ptr] == id)))
             {
-                mct.addCamera(obs.cameraFixture->getMMatrix(obs.camera), obs.observation);
+                Vector2dd projection = obs.getDistorted(false);     // convert projection 'dist => undist' if need
+
+                FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
+                mct.addCamera( worldCam.getCameraMatrix(), projection );
+
+                //mct.addCamera(obs.cameraFixture->getMMatrix(obs.camera), obs.observation);
                 if (mask && ptr + 1 < mask->size())
                     CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
                 ptr++;
