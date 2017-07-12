@@ -95,10 +95,14 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkM
 
     cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
 
+#if 0
     if (point->hasKnownPosition)
         point->reprojectedPosition = point3d;   // store at the reprojectedPosition as "position" is untouchable
     else
         point->position = point3d;              //TODO: why it's stored into the position field instead of reprojectedPosition?
+#else
+    point->reprojectedPosition = point3d;
+#endif
 
     return true;
 }

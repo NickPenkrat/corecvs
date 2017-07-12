@@ -180,7 +180,6 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, boo
             if ((obs.cameraFixture != NULL) && (!mask || (ptr < mask->size() && (*mask)[ptr] == id)))
             {
                 Vector2dd projection = obs.getDistorted(false);     // convert projection 'dist => undist' if need
-
                 FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
                 mct.addCamera(worldCam.getCameraMatrix(), projection);
 
