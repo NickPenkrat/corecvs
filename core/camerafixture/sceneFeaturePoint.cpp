@@ -87,64 +87,54 @@ int SceneFeaturePoint::ensureDistortedObservations(bool distorted)
     return toReturn;
 }
 
-bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& pointPosition, bool use__)
+bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& point, const corecvs::Vector3dd& camera0, const corecvs::Vector3dd& camera1, double thresholdCos)
 {
-    //double angle = 1.0;
-    bool res = false;
+    const corecvs::Vector3dd& c0 = camera0 - point;
+    double c0sumsq = c0.sumAllElementsSq();
+    const corecvs::Vector3dd& c1 = camera1 - point;
+    double c1sumsq = c1.sumAllElementsSq();
+    double dot = ( c0 & c1 ) / thresholdCos;
+    return dot * dot < c0sumsq * c1sumsq;
+}
+
+bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& point, const std::vector<corecvs::Vector3dd>& cameras, double thresholdCos)
+{
+    const size_t n = cameras.size();
+    for (size_t i = 0; i < n; i++)
+    {
+        const corecvs::Vector3dd& c0 = cameras[i] - point;
+        double c0sumsq = c0.sumAllElementsSq();
+        for (size_t j = i + 1; j < n; j++)
+        {
+            const corecvs::Vector3dd& c1 = cameras[j] - point;
+            double c1sumsq = c1.sumAllElementsSq();
+            double dot = (c0 & c1) / thresholdCos;
+            if (dot * dot < c0sumsq * c1sumsq)
+                return true;
+        }
+    }
+
+    return false;
+}
+
+bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& pointPosition, bool use__, double thresholdCos)
+{
+    std::vector<corecvs::Vector3dd> cameras;
     if (use__)
     {
         for (auto& obs0 : observations__)
-        {
-            Vector3dd c0_location = obs0.first.v->getWorldLocation().shift - pointPosition;
-            for (auto& obs1 : observations__)
-            {
-                if (obs0.first == obs1.first)
-                    continue;
-
-                Vector3dd c1_location = obs1.first.v->getWorldLocation().shift - pointPosition;
-                double cos_ = (c0_location & c1_location) / (c0_location.l2Metric() * c1_location.l2Metric());
-                //angle = std::min( angle, cos_ );
-                if (cos_ < 0.999) // > ~2.5 degree
-                {
-                    res = true;
-                    break;
-                }
-            }
-
-            if (res)
-                break;
-        }
+            cameras.push_back( obs0.first.v->getWorldLocation().shift );
     }
     else
     {
         for (auto& obs0 : observations)
-        {
-            Vector3dd c0_location = obs0.first->getWorldLocation().shift - pointPosition;
-            for (auto& obs1 : observations)
-            {
-                if (obs0.first == obs1.first)
-                    continue;
-
-                Vector3dd c1_location = obs1.first->getWorldLocation().shift - pointPosition;
-                double cos_ = (c0_location & c1_location) / (c0_location.l2Metric() * c1_location.l2Metric());
-                //angle = std::min( angle, cos_ );
-                if (cos_ < 0.999) // > ~2.5 degree
-                {
-                    res = true;
-                    break;
-                }
-            }
-
-            if (res)
-                break;
-        }
+            cameras.push_back( obs0.first->getWorldLocation().shift );
     }
 
-    //angle = radToDeg( std::acos( angle ) );
-    return res;
+    return SceneFeaturePoint::checkTriangulationAngle( pointPosition, cameras, thresholdCos);
 }
 
-Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, bool* succeeded, bool trace, bool checkMinimalAngle)
+Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, bool* succeeded, bool trace, bool checkMinimalAngle, double thresholdCos)
 {
     MulticameraTriangulator mct;
     mct.trace = trace;
@@ -229,7 +219,7 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, boo
 
     if (checkMinimalAngle && ok)
     {
-        ok = checkTriangulationAngle(res, use__);
+        ok = checkTriangulationAngle(res, use__, thresholdCos);
         //if (!ok)
         //{
         //    res = Vector3dd(0.0);
