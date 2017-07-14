@@ -93,7 +93,8 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkM
         return false;
     }
 
-    cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
+    if (trace)
+        cout << "FixtureScene::triangulate(): triangulated to " << point3d << std::endl;
 
 #if 0
     if (point->hasKnownPosition)

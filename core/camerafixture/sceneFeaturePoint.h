@@ -23,6 +23,7 @@ namespace corecvs {
 
 class SceneFeaturePoint;
 
+static const double triangulatorCosAngleThreshold = std::cos(degToRad(2.5));
 
 /**
  *
@@ -182,7 +183,7 @@ public:
      * \param thresholdCos      - if 'checkMinimalAngle' is enabled, this field represents maximum cosine threshold for triangulation angle
      *
      **/
-    Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr, bool* succeeded = nullptr, bool trace = false, bool checkMinimalAngle = false, double thresholdCos = 0.999);
+    Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr, bool* succeeded = nullptr, bool trace = false, bool checkMinimalAngle = false, double thresholdCos = triangulatorCosAngleThreshold);
 
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
@@ -303,11 +304,11 @@ public:
     std::vector< double > estimateReconstructedReprojectionErrorL2();
     std::vector< double > estimateReprojectionErrorL2();
 
-    static bool checkTriangulationAngle(const corecvs::Vector3dd& point, const corecvs::Vector3dd& camera0, const corecvs::Vector3dd& camera1, double thresholdCos = 0.999 /* angle ~2.5 degree */);
-    static bool checkTriangulationAngle(const corecvs::Vector3dd& point, const std::vector<corecvs::Vector3dd>& cameras, double thresholdCos = 0.999 /* angle ~2.5 degree */);
+    static bool checkTriangulationAngle(const corecvs::Vector3dd& point, const corecvs::Vector3dd& camera0, const corecvs::Vector3dd& camera1, double thresholdCos = triangulatorCosAngleThreshold);
+    static bool checkTriangulationAngle(const corecvs::Vector3dd& point, const std::vector<corecvs::Vector3dd>& cameras, double thresholdCos = triangulatorCosAngleThreshold);
 
  private:
-     bool checkTriangulationAngle(const corecvs::Vector3dd& pointPosition, bool use__ = false, double thresholdCos = 0.999 /* angle ~2.5 degree */);
+     bool checkTriangulationAngle(const corecvs::Vector3dd& pointPosition, bool use__ = false, double thresholdCos = triangulatorCosAngleThreshold);
 };
 
 
