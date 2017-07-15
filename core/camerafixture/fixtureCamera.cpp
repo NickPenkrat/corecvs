@@ -1,5 +1,6 @@
 #include "fixtureCamera.h"
 #include "cameraFixture.h"
+#include "fixtureScene.h"
 
 namespace corecvs {
 
@@ -56,6 +57,36 @@ CameraModel FixtureCamera::getWorldCameraModel()
     }
 
     return *this;
+}
+
+void FixtureCamera::addImageToCamera(ImageRelatedData *data)
+{
+    if (data == NULL)
+        return;
+
+    this->mImages.push_back(data);
+    data->camera  = this;
+    //data->mStationImages = static_cast<CameraFixtureUI *>(this->cameraFixture);
+}
+
+void FixtureCamera::setImageCount(size_t count)
+{
+    if (ownerScene == NULL)
+    {
+        SYNC_PRINT(("FixtureCamera(%p)::setImageCount(): ownerScene is NULL ", static_cast<void*>(this)));
+        return;
+    }
+
+    while (mImages.size() > count) {
+        ImageRelatedData *image = mImages.back();
+        mImages.pop_back();
+        ownerScene->deleteImage(image);
+    }
+
+    while (mImages.size() < count) {
+        ImageRelatedData *data = ownerScene->createImageData();
+        addImageToCamera(data);
+    }
 }
 
 } // namespace corecvs

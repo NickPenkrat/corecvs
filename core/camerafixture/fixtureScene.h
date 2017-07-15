@@ -38,6 +38,32 @@ public:
     void print();
 };
 
+
+class ImageRelatedData : public FixtureScenePart {
+public:
+
+    ImageRelatedData(FixtureScene * owner = NULL) : FixtureScenePart(owner) {}
+
+    ImageRelatedData(const std::string &imagePath, FixtureScene * owner = NULL) :
+        FixtureScenePart(owner),
+        mImagePath(imagePath)
+    {}
+
+
+    FixtureCamera              *camera = NULL;
+
+    std::string                 mImagePath;
+    std::string                 mRelativeImagePath;
+    std::string                 mUndistortedImagePath;
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(mImagePath, std::string(""), "imagePath");
+    }
+
+};
+
 /**
  * Heap of Calibration related stuff
  **/
@@ -49,6 +75,8 @@ public:
     typedef CameraFixture        FixtureType;
     typedef SceneFeaturePoint    PointType;
     typedef FixtureSceneGeometry GeometryType;
+    typedef ImageRelatedData     ImageType;
+
 
 
     FixtureScene();
@@ -111,6 +139,10 @@ public:
     const vector<FixtureSceneGeometry *>&  geometries() const  { return mGeomtery; }
           vector<FixtureSceneGeometry *>&  geometries()        { return mGeomtery; }
 
+    const vector<ImageRelatedData *>&  images() const  { return mImages; }
+          vector<ImageRelatedData *>&  images()        { return mImages; }
+
+
 
 protected:
 
@@ -119,7 +151,7 @@ protected:
     vector<FixtureCamera *>        mOrphanCameras;
     vector<SceneFeaturePoint *>    mSceneFeaturePoints;
     vector<FixtureSceneGeometry *> mGeomtery;
-
+    vector<ImageRelatedData *>     mImages;
 
 
     template<typename T>
@@ -202,6 +234,7 @@ protected:
     virtual CameraFixture        *fabricateCameraFixture();
     virtual SceneFeaturePoint    *fabricateFeaturePoint();
     virtual FixtureSceneGeometry *fabricateSceneGeometry();
+    virtual ImageRelatedData     *fabricateImageData();
 
 public:
 
@@ -213,6 +246,8 @@ public:
     virtual CameraFixture        *createCameraFixture();
     virtual SceneFeaturePoint    *createFeaturePoint();
     virtual FixtureSceneGeometry *createSceneGeometry();
+    virtual ImageRelatedData     *createImageData();
+
 
     virtual void destroyObject    (FixtureScenePart *condemned);
 
@@ -223,6 +258,8 @@ public:
     virtual void deleteFixturePair    (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint   (SceneFeaturePoint *point);
     virtual void deleteSceneGeometry  (FixtureSceneGeometry *geometries);
+    virtual void deleteImage          (ImageRelatedData* image) ;
+
 
     virtual void clear();
 
@@ -276,7 +313,6 @@ public:
     void setOrphanCameraCount(size_t count);
     void setFeaturePointCount(size_t count);
     void setGeometryCount    (size_t count);
-
 
     /* This performs full search. It should not */
     FixtureCamera     *getCameraById (FixtureScenePart::IdType id);

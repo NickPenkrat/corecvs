@@ -154,7 +154,6 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
             c.end   = camera2->intrinsics.reverse(endPixel  ).xy();
 
             data.push_back(c);
-
         }
     }
 

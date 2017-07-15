@@ -133,6 +133,17 @@ FixtureSceneGeometry *FixtureScene::createSceneGeometry()
     return geometry;
 }
 
+
+ImageRelatedData *FixtureScene::createImageData()
+{
+    ImageRelatedData *image = fabricateImageData();
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
+    mOwnedObjects.push_back(image);
+#endif
+    mImages.push_back(image);
+    return image;
+}
+
 void FixtureScene::destroyObject(FixtureScenePart *condemned)
 {
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
@@ -166,6 +177,14 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
         }
 
         deleteFixtureCameraUMWPP(point->observations__, camera);
+    }
+
+    for (size_t i = 0; i < camera->mImages.size(); i++)
+    {
+        ImageRelatedData *image = static_cast<ImageRelatedData *>(camera->mImages[i]);
+        /* Detach image manually */
+        image->camera = NULL;
+        deleteImage(image);
     }
 
     delete_safe(camera);
@@ -249,6 +268,17 @@ void FixtureScene::deleteSceneGeometry(FixtureSceneGeometry *geometry)
     delete_safe(geometry);
 }
 
+void FixtureScene::deleteImage(ImageRelatedData *image)
+{
+    FixtureCamera  *camera  = image->camera;
+    if (camera != NULL) {
+        vectorErase(camera->mImages, image);
+    }
+
+    vectorErase(mImages, image);
+    delete_safe(image);
+}
+
 void FixtureScene::clear()
 {
     SYNC_PRINT(("FixtureScene::clear(): called\n"));
@@ -288,6 +318,10 @@ void FixtureScene::clear()
 
     while (!mGeomtery.empty()) {
         deleteSceneGeometry(mGeomtery.back());
+    }
+
+    while (!mImages.empty()) {
+        deleteImage(mImages.back());
     }
 #endif
 
@@ -333,6 +367,16 @@ bool FixtureScene::checkIntegrity()
         if (cam->cameraFixture != NULL) {
              ok = false; SYNC_PRINT(("Orphan Camera pretends to have station: cam:<%s>cam->station:<%s> scene:<%s>\n", cam->nameId.c_str(), cam->cameraFixture->name.c_str(), this->nameId.c_str()));
         }
+
+        for (size_t c = 0; c < cam->mImages.size(); c++)
+        {
+            ImageRelatedData *image = cam->mImages[c];
+            if (image == NULL) {
+                 ok = false; SYNC_PRINT(("Image is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
+            }
+
+        }
+
     }
 
     for (size_t i = 0; i < mFixtures.size(); i++)
@@ -461,6 +505,8 @@ bool FixtureScene::checkIntegrity()
 
 bool FixtureScene::integrityRelink()
 {
+    vectorErase(mImages, (ImageRelatedData *)NULL);
+
     vectorErase(mOrphanCameras, (FixtureCamera *)NULL);
 
     for (size_t i = 0; i < mOrphanCameras.size(); i++)
@@ -468,6 +514,11 @@ bool FixtureScene::integrityRelink()
         FixtureCamera *cam = mOrphanCameras[i];
         cam->ownerScene = this;
         cam->cameraFixture = NULL;
+        for (size_t c = 0; c < cam->mImages.size(); c++)
+        {
+            ImageRelatedData *image = cam->mImages[c];
+            image->camera = cam;
+        }
     }
 
     vectorErase(mFixtures, (CameraFixture *)NULL);
@@ -484,6 +535,11 @@ bool FixtureScene::integrityRelink()
             FixtureCamera *cam = fixture->cameras[j];
             cam->ownerScene = this;
             cam->cameraFixture = fixture;
+            for (size_t c = 0; c < cam->mImages.size(); c++)
+            {
+                ImageRelatedData *image = cam->mImages[c];
+                image->camera = cam;
+            }
         }
     }
 
@@ -515,6 +571,7 @@ bool FixtureScene::integrityRelink()
         FixtureSceneGeometry *geometry = mGeomtery[i];
         geometry->ownerScene = this;
     }
+
 
     return true;
 }
@@ -752,6 +809,8 @@ void FixtureScene::setGeometryCount(size_t count)
     }
 }
 
+
+
 FixtureCamera *FixtureScene::getCameraById(FixtureScenePart::IdType id)
 {
     for (FixtureCamera *cam : mOrphanCameras) {
@@ -854,6 +913,12 @@ FixtureSceneGeometry *FixtureScene::fabricateSceneGeometry()
 {
     //SYNC_PRINT(("FixtureScene::fabricateSceneGeometry(): called\n"));
     return new FixtureSceneGeometry(this);
+}
+
+ImageRelatedData *FixtureScene::fabricateImageData()
+{
+    //SYNC_PRINT(("FixtureScene::fabricateImageData(): called\n"));
+    return new ImageRelatedData(this);
 }
 
 void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, const double scale)
