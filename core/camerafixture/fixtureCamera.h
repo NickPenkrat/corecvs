@@ -18,6 +18,7 @@ namespace corecvs {
 
 class CameraFixture;
 class ImageRelatedData;
+class SceneFeaturePoint;
 
 
 class FixtureCamera : public FixtureScenePart, public CameraModel
@@ -84,6 +85,10 @@ public:
 
     void setImageCount       (size_t count);
     std::vector<ImageRelatedData *> mImages;  /*< Not owned*/
+
+    /** Helper functions **/
+    bool addObservation(SceneFeaturePoint *point, bool setUserType);
+
 };
 
 

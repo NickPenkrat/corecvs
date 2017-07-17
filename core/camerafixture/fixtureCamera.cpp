@@ -89,4 +89,22 @@ void FixtureCamera::setImageCount(size_t count)
     }
 }
 
+bool FixtureCamera::addObservation(SceneFeaturePoint *point, bool setUserType)
+{
+    if (point->hasObservation(this))
+        return false;
+
+    SceneObservation obs;
+    obs.featurePoint = point;
+    obs.camera = this;
+    obs.cameraFixture = this->cameraFixture;
+    obs.observation = Vector2dd(0.0);
+
+    point->observations[this] = obs;
+    if (setUserType) {
+        point->type = SceneFeaturePoint::POINT_USER_DEFINED;
+    }
+    return true;
+}
+
 } // namespace corecvs
