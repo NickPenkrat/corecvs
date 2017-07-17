@@ -62,6 +62,8 @@ public:
         visitor.visit(mImagePath, std::string(""), "imagePath");
     }
 
+    RGB24Buffer* getRGB24Buffer();
+
 };
 
 /**
@@ -424,6 +426,14 @@ public:
     }
 
     virtual ~FixtureScene();
+
+   /*  We have a set of callbacks for algorithms - this is still experimental */
+        /* Some algorithms make huge changes to the scene.
+         * During this process scene may be invalid. */
+    virtual void beforeChange() {}
+    virtual void afterChange () {}
+
+
 };
 
 } // namespace corecvs

@@ -15,7 +15,23 @@ MOC_DIR  = $$OBJECTS_DIR
 #UI_DIR  = $$OBJECTS_DIR
 #RCC_DIR = $$OBJECTS_DIR
 
-include(../../core/core.pri)
+#include(../../core/core.pri)
+
+# CORE SUBSET
+COREDIR=../../core
+
+INCLUDEPATH += \
+    $$COREDIR/reflection \
+    $$COREDIR/utils   \
+
+SOURCES += $$COREDIR/utils/util.c
+SOURCES += $$COREDIR/utils/utils.cpp
+
+
+
+
+# ACTUAL GENERATOR
+
 
 SOURCES += \
     main.cpp \

@@ -146,7 +146,7 @@ void SceneShaded::addTexture(GLuint texId, RGB24Buffer *input)
 
 void SceneShaded::setParameters(void *params)
 {
-    SYNC_PRINT(("SceneShaded::setParameters()\m"));
+    SYNC_PRINT(("SceneShaded::setParameters()\n"));
     mParameters = *static_cast<ShadedSceneControlParameters *>(params);
 
     ShaderPreset *sources[ShaderTarget::LAST] = {

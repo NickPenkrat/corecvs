@@ -63,7 +63,7 @@ vector<Correspondence *>  filterCorrespondanceList(const vector<Correspondence *
 
 EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *> &samples)
 {
-    SYNC_PRINT(("IterativeEstimator::getEssential(vector<%d>)\n", samples.size()));
+    SYNC_PRINT(("IterativeEstimator::getEssential(vector<%u>)\n", (unsigned)samples.size()));
 
     EssentialMatrix model;
     int iteration;

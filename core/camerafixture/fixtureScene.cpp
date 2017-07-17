@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bufferFactory.h>
 
 #include "affine.h"
 
@@ -990,6 +991,13 @@ void FixtureSceneFactory::print()
     {
         cout << " " << it.first << endl;
     }
+}
+
+RGB24Buffer *ImageRelatedData::getRGB24Buffer()
+{
+    RGB24Buffer* toReturn = BufferFactory::getInstance()->loadRGB24Bitmap(mImagePath) ;
+
+    return toReturn;
 }
 
 
