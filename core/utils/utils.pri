@@ -10,8 +10,8 @@ HEADERS += \
     utils/countedPtr.h \
     utils/atomicOps.h \
     utils/typesafeBitmaskEnums.h \
-    utils/statusTracker.h
-
+    utils/statusTracker.h \
+    utils/abstractImageNamer.cpp \
 
 SOURCES += \
     utils/memhooks.c \
@@ -22,5 +22,6 @@ SOURCES += \
     utils/visitors/basePathVisitor.cpp \
     utils/utils.cpp \
     utils/log.cpp \
-    utils/statusTracker.cpp
+    utils/statusTracker.cpp \
+    utils/abstractImageNamer.cpp \
 
