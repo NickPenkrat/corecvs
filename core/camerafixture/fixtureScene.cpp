@@ -861,6 +861,32 @@ SceneFeaturePoint *FixtureScene::getPointByName(const std::string &name)
     return NULL;
 }
 
+CameraFixture *FixtureScene::getFixtureByName(const string& name)
+{
+    for (size_t stationId = 0; stationId < fixtures().size(); stationId++)
+    {
+        if (fixtures()[stationId]->name == name) {
+            return static_cast<CameraFixture *>(fixtures()[stationId]);
+        }
+    }
+    return NULL;
+}
+
+FixtureCamera *FixtureScene::getCameraByName(const string& fixtureName, const string& name)
+{
+    CameraFixture *station = getFixtureByName(fixtureName);
+    if (station == NULL)
+        return NULL;
+
+    for (auto cam : station->cameras)
+    {
+        if (cam->nameId == name)
+            return static_cast<FixtureCamera *>(cam);
+    }
+    return NULL;
+}
+
+
 FixtureCamera *FixtureScene::getCameraByNumber(int fixtureNumber, int cameraNumber)
 {
     if (fixtureNumber == -1)

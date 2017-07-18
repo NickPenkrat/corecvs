@@ -321,7 +321,10 @@ public:
     CameraFixture     *getFixtureById(FixtureScenePart::IdType id);
     SceneFeaturePoint *getPointById  (FixtureScenePart::IdType id);
 
-    SceneFeaturePoint *getPointByName(const std::string &name);
+    virtual SceneFeaturePoint *getPointByName  (const std::string &name);
+    virtual CameraFixture     *getFixtureByName(const string& name);
+    virtual FixtureCamera     *getCameraByName (const string& fixtureName, const string& name);
+
 
     /** This method is for convenience, generally pointer itself is a best way to reference **/
     FixtureCamera *getCameraByNumber (int fixtureNumber, int cameraNumber);
