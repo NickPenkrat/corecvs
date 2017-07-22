@@ -21,6 +21,10 @@ public:
 
     FixtureCamera *camera1 = NULL;
     FixtureCamera *camera2 = NULL;
+
+    ProjectiveTransform  leftTransform = ProjectiveTransform::Identity();
+    ProjectiveTransform rightTransform = ProjectiveTransform::Identity();
+
 };
 
 } // namespace corecvs

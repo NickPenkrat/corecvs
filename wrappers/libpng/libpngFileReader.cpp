@@ -90,7 +90,9 @@ RGB24Buffer *LibpngFileReader::load(string name)
         png_byte *row = row_pointers[y];
         for (uint32_t x = 0; x < width; x++) {
             RGBColor *dest = &toReturn->element(y,x);
-            uint32_t r = *row++, g = *row++, b = *row++;
+            uint32_t r = *row++;
+            uint32_t g = *row++;
+            uint32_t b = *row++;
             *dest = RGBColor(r,g,b);
         }
         png_free (png_ptr, row_pointers[y]);

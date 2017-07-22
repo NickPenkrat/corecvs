@@ -61,8 +61,8 @@ int SceneStereoAlignerBlock::operator ()()
     cout << "Using Z value: " << direction << endl;
 
     /**/
-    ProjectiveTransform  leftTransform(1.0);
-    ProjectiveTransform rightTransform(1.0);
+    //ProjectiveTransform  leftTransform(1.0);
+    //ProjectiveTransform rightTransform(1.0);
 
     StereoAligner::getAlignmentTransformation(F, &leftTransform, &rightTransform, direction);
 
