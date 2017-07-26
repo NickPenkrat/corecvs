@@ -482,18 +482,36 @@ public:
             size_t J = matchPlan.plan[s].trainImg;
             MatchPlanEntry &query = matchPlan.plan[s];
 
+#if 0
             corecvs::RuntimeTypeBuffer qb(images[I].descriptors.mat);
             corecvs::RuntimeTypeBuffer tb(images[J].descriptors.mat);
-#if 0
+
+#   if 0
             for (size_t j = 0; j < query.queryFeatures.size(); ++j)
             {
-                memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
+                memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j] ), qb.getRowSize());
             }
             for (size_t j = 0; j < query.trainFeatures.size(); ++j)
             {
                 memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
             }
+#   endif
+
+#else
+            corecvs::RuntimeTypeBuffer qb(query.queryFeatures.size(), images[I].descriptors.mat.getCols(), images[I].descriptors.mat.getType());
+            corecvs::RuntimeTypeBuffer tb(query.trainFeatures.size(), images[J].descriptors.mat.getCols(), images[J].descriptors.mat.getType());
+
+            for (size_t j = 0; j < query.queryFeatures.size(); ++j)
+            {
+                memcpy(qb.row<void>(j), images[I].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
+            }
+
+            for (size_t j = 0; j < query.trainFeatures.size(); ++j)
+            {
+                memcpy(tb.row<void>(j), images[J].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
+            }
 #endif
+
             std::vector<std::vector<RawMatch>> ml;
 			if (matcher)
 				matcher->knnMatch(qb, tb, ml, responsesPerPoint);
@@ -635,6 +653,7 @@ public:
 
                 CORE_ASSERT_TRUE_S(Is < N && Js < N);
 
+#if 0
                 corecvs::RuntimeTypeBuffer qb(images[Is].descriptors.mat);
                 corecvs::RuntimeTypeBuffer tb(images[Js].descriptors.mat);
 
@@ -646,6 +665,20 @@ public:
                 {
                     memcpy(tb.row<void>(j), images[Js].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
                 }
+#else
+                corecvs::RuntimeTypeBuffer qb(query.queryFeatures.size(), images[Is].descriptors.mat.getCols(), images[Is].descriptors.mat.getType());
+                corecvs::RuntimeTypeBuffer tb(query.trainFeatures.size(), images[Js].descriptors.mat.getCols(), images[Js].descriptors.mat.getType());
+
+                for (size_t j = 0; j < query.queryFeatures.size(); ++j)
+                {
+                    memcpy(qb.row<void>(j), images[Is].descriptors.mat.row<void>(query.queryFeatures[j]), qb.getRowSize());
+                }
+
+                for (size_t j = 0; j < query.trainFeatures.size(); ++j)
+                {
+                    memcpy(tb.row<void>(j), images[Js].descriptors.mat.row<void>(query.trainFeatures[j]), tb.getRowSize());
+                }
+#endif
 
                 std::vector<std::vector<RawMatch>> ml;
 				if (matcher)
