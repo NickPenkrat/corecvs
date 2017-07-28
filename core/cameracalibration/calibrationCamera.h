@@ -12,6 +12,7 @@
 #include "essentialMatrix.h"
 #include "distortionApplicationParameters.h"
 
+#include "polygons.h"
 #include "pinholeCameraIntrinsics.h"
 
 namespace corecvs {
@@ -139,6 +140,10 @@ public:
     EssentialDecomposition essentialDecomposition(const CameraModel &right) const;
     static EssentialDecomposition ComputeEssentialDecomposition(const CameraLocationData &thisData, const CameraLocationData &otherData);
 
+
+    PlaneFrame getVirtualScreen(double distance) const;
+    Polygon projectViewport(const CameraModel &right) const;
+
     /**
      * Only checks for the fact that point belongs to viewport.
      * If you are projecting 3d point you should be sure that point is in front
@@ -184,8 +189,19 @@ public:
     Matrix44            getCameraMatrix() const;
 
     /* These methods ignore distortion */
-    ConvexPolyhedron    getViewport(const Vector2dd &p1, const Vector2dd &p2);
-    ConvexPolyhedron    getCameraViewport();
+    ConvexPolyhedron    getViewport(const Vector2dd &p1, const Vector2dd &p2) const;
+    ConvexPolyhedron    getCameraViewport() const;
+
+    /**
+     * Sides of the viewport are triangles with points at infinity, so they are stored in projective space
+     **/
+    vector<GenericTriangle<Vector4dd>> getCameraViewportSides() const;
+
+    /**
+     * Some points of the viewport are at infinity, so they are stored in projective space
+     **/
+    vector<Vector4dd> getCameraViewportPyramid() const;
+
 
 
     void copyModelFrom(const CameraModel &other) {

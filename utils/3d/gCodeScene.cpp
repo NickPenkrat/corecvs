@@ -13,7 +13,7 @@ void GCodeScene::drawMyself(CloudViewDialog *dialog)
     SceneShaded::drawMyself(dialog);
 }
 
-bool GCodeScene::dump(const QString &targetFile)
+bool GCodeScene::dump(const QString &/*targetFile*/)
 {
     return false;
 }

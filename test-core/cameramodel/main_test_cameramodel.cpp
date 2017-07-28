@@ -24,6 +24,8 @@
 #include "bmpLoader.h"
 #include "mathUtils.h"
 #include "abstractPainter.h"
+#include "mesh3d.h"
+#include "calibrationDrawHelpers.h"
 
 using corecvs::G12Buffer;
 using corecvs::PPMLoader;
@@ -38,6 +40,8 @@ using corecvs::BufferFactory;
 using corecvs::BMPLoader;
 using corecvs::fround;
 using corecvs::AbstractPainter;
+using corecvs::CalibrationDrawHelpers;
+
 
 TEST(Cameramodel, generateReality)
 {
@@ -224,6 +228,61 @@ TEST(Cameramodel, newPinholeCameraIntrinsics)
     cout << "PinholeCameraIntrinsics::matrix "  << back1 << endl;
 
     ASSERT_TRUE(back.notTooFar(back1, 1e-4));
+}
 
+
+TEST(Cameramodel, testViewportProject)
+{
+    const double FOCAL    =  640;
+
+    const int RESOLUTION_X = 640;
+    const int RESOLUTION_Y = 480;
+    /***/
+
+    PinholeCameraIntrinsics pinhole(Vector2dd(RESOLUTION_X, RESOLUTION_Y), Vector2dd(RESOLUTION_X, RESOLUTION_Y) / 2, FOCAL);
+
+    CameraModel m1;
+    CameraModel m2;
+
+    m1.intrinsics = pinhole;
+    m2.intrinsics = pinhole;
+
+    m1.setLocation(Affine3DQ::Identity());
+    m2.setLocation(Affine3DQ::Shift(0,0,100) * Affine3DQ::RotationY(degToRad(90)));
+
+    Mesh3D mesh;
+    mesh.switchColor();    
+
+    CalibrationDrawHelpers helper;
+    mesh.setColor(RGBColor::Red());
+    helper.drawCamera(mesh, m1, 5.0);
+    mesh.setColor(RGBColor::Green());
+    helper.drawCamera(mesh, m2, 5.0);
+
+    /* --------------------- */
+    {
+        Polygon pentacle = Polygon::RegularPolygon(5, pinhole.principal, 200, 0);
+        FlatPolygon fp;
+        fp.polygon = pentacle;
+        fp.frame = m1.getVirtualScreen(5.0);
+       // mesh.addFlatPolygon(fp);
+    }
+
+
+    /* --------------------- */
+
+    Polygon viewport = m1.projectViewport(m2);
+    FlatPolygon fp;
+    fp.polygon = viewport;
+    fp.frame = m1.getVirtualScreen(5.0);
+
+    mesh.setColor(RGBColor::Blue());
+    mesh.addFlatPolygon(fp);
+
+
+
+
+    mesh.dumpPLY("viewport.ply");
 
 }
+

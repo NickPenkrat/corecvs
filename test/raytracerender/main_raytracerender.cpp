@@ -20,7 +20,6 @@
 #include "meshLoader.h"
 #include "objLoader.h"
 #include "rgb24Buffer.h"
-#include "cameraModel.h"
 #include "bmpLoader.h"
 
 extern void raytrace_scene1( void );

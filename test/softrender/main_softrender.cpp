@@ -12,7 +12,6 @@
 #include "meshLoader.h"
 #include "objLoader.h"
 #include "rgb24Buffer.h"
-#include "cameraModel.h"
 #include "bmpLoader.h"
 
 #if 0

@@ -9,16 +9,23 @@ namespace corecvs {
 
 using std::vector;
 
-class ConvexPolyhedron
+template<typename HalfspaceType, typename VectorType>
+class ConvexPolyhedronGeneric
 {
 public:
-    vector<Plane3d> faces;
-    ConvexPolyhedron();
+    vector<HalfspaceType> faces;
 
-    ConvexPolyhedron(const AxisAlignedBox3d &box);
+    ConvexPolyhedronGeneric() {}
 
-
-    bool isInside();
+    bool isInside(const VectorType &p)
+    {
+        for (HalfspaceType &type: faces )
+        {
+            if (type.pointWeight(p) < 0)
+                return false;
+        }
+        return true;
+    }
 
     unsigned size() const
     {
@@ -35,12 +42,28 @@ public:
         return faces[i].normal();
     }
 
+
+};
+
+
+class ConvexPolyhedron : public ConvexPolyhedronGeneric<Plane3d, Vector3dd>
+{
+public:
+    ConvexPolyhedron();
+    ConvexPolyhedron(const AxisAlignedBox3d &box);
+
     bool intersectWith(const Ray3d &ray, double &t1, double &t2)
     {
         return ray.clip<ConvexPolyhedron> (*this, t1, t2);
     }
+};
+
+class ConvexPolygon : public ConvexPolyhedronGeneric< Line2d, Vector2dd>
+{
+public:
 
 };
+
 
 } // namespace corecvs
 

@@ -20,6 +20,7 @@
 #include "line.h"
 #include "affine.h"
 #include "rectangle.h"
+#include "convexPolyhedron.h"
 
 namespace corecvs {
 
@@ -377,6 +378,7 @@ public:
 
 
     bool isConvex(bool *direction = NULL) const;
+    bool hasSelfIntersection() const;
 
     Vector2dd &getPoint (int i) {
         return operator [](i);
@@ -400,6 +402,11 @@ public:
     Ray2d getRay(int i)  const {
         return Ray2d::FromPoints(getPoint(i), getNextPoint(i));
     }
+
+    Segment2d getSegment(int i)  const {
+        return Segment2d(getPoint(i), getNextPoint(i));
+    }
+
 
 
     /** This method uses the index by module of size() **/
@@ -430,6 +437,12 @@ public:
     static Polygon RegularPolygon(int sides, const Vector2dd &center, double radius, double startAngleRad = 0.0);
 
     static Polygon Reverse(const Polygon &p);
+
+    static Polygon FromConvexPolygon(const ConvexPolygon& polygon);
+    static Polygon FromHalfplanes   (const std::vector<Line2d> &halfplanes);
+
+
+    ConvexPolygon toConvexPolygon() const;
 
 
     Polygon transformed(const Matrix33 &transform) const {
@@ -632,6 +645,18 @@ public:
      * This methods need a lot of additional testing
      ***/
     static Polygon GiftWrap(const std::vector<Vector2dd> &list);
+    static Polygon GrahamScan(std::vector<Vector2dd> points);
+
+
+    enum ConvexHullMethod {
+        GIFT_WARP,
+        GRAHAM_SCAN,
+        LAST
+    };
+
+    static Polygon ConvexHullCompute(std::vector<Vector2dd> points, ConvexHullMethod &method);
+
+
 };
 
 } //namespace corecvs

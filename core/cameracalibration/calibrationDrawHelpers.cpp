@@ -129,6 +129,7 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, doub
 void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const FixtureSceneGeometry &fg, double /*scale*/)
 {
     mesh.setColor(RGBColor::Red());
+#if 0
     /* Simple way */
     for (size_t i = 0; i < fg.polygon.size(); i++)
     {
@@ -139,6 +140,8 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const FixtureSceneGeometry &f
         Vector3dd point2 = fg.frame.getPoint(p2);
         mesh.addLine(point1, point2);
     }
+#endif
+    mesh.addFlatPolygon(fg);
 }
 
 
