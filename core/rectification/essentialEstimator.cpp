@@ -471,6 +471,9 @@ EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*>
     LMfit.startLambda = 10;
     LMfit.lambdaFactor = 20.0;
 
+    LMfit.trace = false;
+    LMfit.traceProgress = false;
+
     vector<double> input(CostFunctionBase::VECTOR_SIZE);
     /* Left camera is in the negative direction of right camera */
  // Quaternion rotation    = Quaternion::RotationIdentity();

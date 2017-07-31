@@ -382,6 +382,40 @@ PointPath SceneFeaturePoint::getEpipath(FixtureCamera *camera1, FixtureCamera *c
     return result;
 }
 
+
+void SceneFeaturePoint::projectForward(FixtureCamera *camera, CameraFixture *fixture, bool round)
+{
+    CameraModel worldCam = camera->getWorldCameraModel();
+
+    Vector2dd projection = worldCam.project(position);
+    if (!worldCam.isVisible(projection) || !worldCam.isInFront(position))
+        return;
+
+    if (round) {
+        projection.x() = fround(projection.x());
+        projection.y() = fround(projection.y());
+    }
+
+    SceneObservation observation(camera, this, projection, fixture);
+    if (!round) {
+        observation.observDir = worldCam.dirToPoint(position).normalised();  // direct
+    }
+    else {
+        observation.observDir = worldCam.intrinsics.reverse(projection).normalised();  // indirect
+    }
+    /*if (direct.notTooFar(indirect, 1e-7))
+    {
+        SYNC_PRINT(("Ok\n"));
+    } else {
+        cout << direct << " - " << indirect << "  ";
+        SYNC_PRINT(("Fail\n"));
+    }*/
+
+    observations[camera] = observation;
+    observations__[WPP(fixture, camera)] = observation;
+}
+
+
 /*
 SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType id)
 {

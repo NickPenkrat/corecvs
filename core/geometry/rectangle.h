@@ -45,6 +45,37 @@ public:
         size.y() = height;
     }
 
+    void extendToFit(Vector2d<ElementType> &point)
+    {
+        if (isEmpty()) {
+            size.x() = 0;
+            size.y() = 0;
+            corner = point;
+        } else {
+            if (point.x() < corner.x())
+                corner.x() = point.x();
+            if (point.y() < corner.y())
+                corner.y() = point.y();
+
+
+            if (point.x() > right())
+                size.x() = point.x() - corner.x();
+            if (point.y() > bottom())
+                size.y() = point.y() - corner.y();
+        };
+    }
+
+    void extend (const ElementType& value)
+    {
+        if (isEmpty())
+            return;
+
+        corner.x() -= value;
+        corner.y() -= value;
+        size.x() += 2 * value;
+        size.y() += 2 * value;
+    }
+
     bool isEmpty() const
     {
         return size.x() == 0 && size.y() == 0 && corner.x() == 0 && corner.y() == 0;

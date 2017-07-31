@@ -138,7 +138,7 @@ public:
 
 
     friend Vector3dd operator *(const Matrix44 &M1, const Vector3dd &v);
-    friend FixedVector<double, 4> operator *(const Matrix44 &m, const FixedVector<double, 4> &v);
+    friend FixedVector<double, 4> operator *(const Matrix44 &m, const FixedVector<double, 4> &v);    
     friend Vector4dd operator *(const Matrix44 &m, const Vector4dd &v);
 
     static Matrix44 Identity();

@@ -1,4 +1,5 @@
 #include <fstream>
+#include <gCodeScene.h>
 #include <sstream>
 #include <QtCore/QDebug>
 
@@ -108,6 +109,20 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
 
     addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()), false);
     addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()), false);
+
+#if 0
+    {
+        GCodeScene *gcodeTest = new GCodeScene;
+        addSubObject("GCode"  , QSharedPointer<Scene3D>(gcodeTest));
+        GCodeProgram *program = new GCodeProgram;
+        GcodeLoader loader;
+
+        std::ifstream infile("/home/alexander/printer3d/models/Squirrel.gcode");
+        loader.loadGcode(infile ,*program);
+        gcodeTest->replaceGode(program);
+
+    }
+#endif
 
 #if 0
     {

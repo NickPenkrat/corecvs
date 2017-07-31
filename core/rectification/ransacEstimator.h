@@ -44,7 +44,7 @@ public:
 class RansacEstimatorScene
 {
 public:
-    RansacParameters params;
+    RansacParameters params; /**< For  convinence threshold is in px - relative to focal**/
     bool trace = true;
 
     EssentialDecomposition getEssentialRansac(FixtureScene *scene, FixtureCamera *cam1, FixtureCamera *cam2);

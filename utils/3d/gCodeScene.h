@@ -1,8 +1,6 @@
 #ifndef GCODESCENE_H
 #define GCODESCENE_H
 
-
-#if 0
 /**
  * \file gCodeScene.h
  *
@@ -13,126 +11,52 @@
 #include "global.h"
 
 #include "scene3D.h"
+#include "sceneShaded.h"
 #include "cloudViewDialog.h"
-#include "plyLoader.h"
+#include "gcodeLoader.h"
 #include "generated/draw3dParameters.h"
 #include "draw3dParametersControlWidget.h"
 #include "draw3dCameraParametersControlWidget.h"
+#include "generated/drawGCodeParameters.h"
 
-class Mesh3DScene : public Mesh3D, public Scene3D {
+#include "reflectionWidget.h"
+
+class GCodeScene : public SceneShaded {
 
 public:
-    Draw3dParameters mParameters;
+    DrawGCodeParameters mParameters;
 
-    /* This mesh is not used so far.*/
-    Mesh3D *owned;
+    GCodeProgram *owned;
 
-    Mesh3DScene() :
-        owned(NULL)
-    {}
+    GCodeScene();
 
+#if 0
     virtual void prepareMesh(CloudViewDialog * /*dialog*/) {}
-    virtual void drawMyself(CloudViewDialog * /*dialog*/);
+#endif
+
+    virtual void drawMyself(CloudViewDialog * /*dialog*/) override;
 
     virtual bool dump(const QString &targetFile) override;
 
-    virtual void setParameters(void * params)
-    {
-        mParameters = *static_cast<Draw3dParameters *>(params);
-    }
+    virtual void setParameters(void * params) override;
 
-    virtual ParametersControlWidgetBase *getContolWidget()
+    virtual ParametersControlWidgetBase *getContolWidget() override
     {
-        Draw3dParametersControlWidget *result = new Draw3dParametersControlWidget();
-        result->setParameters(mParameters);
+        ReflectionWidget *result = new ReflectionWidget(&DrawGCodeParameters::reflection);
+        result->setParameters(&mParameters);
         return result;
     }
 
-    virtual void replaceMesh(Mesh3D *newMesh) {
+    void replaceGode(GCodeProgram *newGCode) {
         delete_safe(owned);
-        owned = newMesh;
+        owned = newGCode;
+        updateMesh();
     }
 
-    virtual void setMesh(Mesh3D *newMesh) {
-        owned = newMesh;
-    }
+    void updateMesh();
 
-    virtual ~Mesh3DScene();
+    virtual ~GCodeScene();
 };
-
-
-/* Some basic primitive objects */
-
-class Grid3DScene : public Scene3D {
-private:
-    GLuint mGridId;
-public:
-    const static int GRID_SIZE;
-    const static int GRID_STEP;
-
-    Grid3DScene() :
-        mGridId(0)
-    {}
-
-    virtual void prepareMesh(CloudViewDialog *dialog);
-    virtual void drawMyself(CloudViewDialog *dialog);
-};
-
-
-class Plane3DScene : public Scene3D {
-    GLuint mPlaneListId;
-
-public:
-    Plane3DScene() :
-        mPlaneListId(0)
-    {}
-
-    virtual void prepareMesh(CloudViewDialog *dialog);
-    virtual void drawMyself(CloudViewDialog *dialog);
-};
-
-
-class CameraScene : public Mesh3DScene {
-
-public:
-    Draw3dCameraParameters mParameters;
-
-    virtual ParametersControlWidgetBase *getContolWidget()
-    {
-//        qDebug("CameraScene::getContolWidget() : Called");
-
-        Draw3dCameraParametersControlWidget *result = new Draw3dCameraParametersControlWidget();
-        result->setParameters(mParameters);
-        return result;
-    }
-
-    virtual void setParameters(void * params)
-    {
-        //qDebug() << "Camera new parameters arrived";
-        mParameters = *static_cast<Draw3dCameraParameters *>(params);
-    }
-
-    virtual void prepareMesh(CloudViewDialog * /*dialog*/);
-    virtual void drawMyself(CloudViewDialog *dialog);
-
-    virtual ~CameraScene() {}
-};
-
-class StereoCameraScene : public Mesh3DScene {
-    RectificationResult mStereoPair;
-    CameraScene mCamera1;
-    CameraScene mCamera2;
-public:
-    StereoCameraScene(const RectificationResult &stereoPair);
-
-    virtual void prepareMesh(CloudViewDialog * /*dialog*/);
-    virtual void drawMyself(CloudViewDialog *dialog);
-
-    virtual ~StereoCameraScene() {}
-
-};
-
-#endif
 
 #endif // GCODESCENE_H
 /* EOF */

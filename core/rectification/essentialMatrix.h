@@ -695,6 +695,16 @@ public:
         *this = *this * Wbig * V;
     }
 
+    void prettyPrint()
+    {
+        EssentialDecomposition d[4];
+        decompose(d);
+        for (size_t i = 0; i < CORE_COUNT_OF(d); i++)
+        {
+            cout << d[i] << endl;
+        }
+    }
+
 
 };
 

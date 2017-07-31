@@ -314,7 +314,7 @@ public:
 
     bool isValidCoordBl (const Vector2dd &pointd) const
     {
-        return isValidCoordBl(Vector2dd(pointd.x(), pointd.y()));
+        return isValidCoordBl(pointd.y(), pointd.x());
     }
 
 

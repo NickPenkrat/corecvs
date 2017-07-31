@@ -1,6 +1,8 @@
 #include "affine3dControlWidget.h"
 #include "ui_affine3dControlWidget.h"
 
+#include <QClipboard>
+
 Affine3dControlWidget::Affine3dControlWidget(QWidget *parent) :
     ParametersControlWidgetBase(parent),
     ui(new Ui::Affine3dControlWidget)
@@ -14,6 +16,8 @@ Affine3dControlWidget::Affine3dControlWidget(QWidget *parent) :
     QObject::connect(ui->widgetYaw,   SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->widgetPitch, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->widgetRoll,  SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
+
+    QObject::connect(ui->copyTextButton,  SIGNAL(released()), this, SLOT(copyText()));
 }
 
 Affine3dControlWidget::~Affine3dControlWidget()
@@ -72,4 +76,27 @@ void Affine3dControlWidget::setParametersVirtual(void *input)
     // Modify widget parameters from outside
     Affine3DQ *inputCasted = static_cast<Affine3DQ *>(input);
     setParameters(*inputCasted);
+}
+
+void Affine3dControlWidget::copyText()
+{
+    SYNC_PRINT(("Affine3dControlWidget::copyText()\n"));
+//    Affine3DQ params;
+//    getParameters(params);
+    QClipboard *clipboard = QApplication::clipboard();
+    QString result = QString(
+        "X = %1\n"
+        "Y = %2\n"
+        "Z = %3\n"
+        "alpha = %4 °\n"
+        "beta  = %5 °\n"
+        "gamma = %6 °\n"
+    ).arg(ui->spinBoxX->value()).arg(ui->spinBoxY->value()).arg(ui->spinBoxZ->value())
+     .arg(radToDeg(ui->widgetYaw->value()))
+     .arg(radToDeg(ui->widgetPitch->value()))
+     .arg(radToDeg(ui->widgetRoll->value()));
+
+    clipboard->setText(result);
+    qDebug() << result;
+
 }

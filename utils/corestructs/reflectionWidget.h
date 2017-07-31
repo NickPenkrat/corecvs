@@ -38,7 +38,9 @@ public:
 
     // ParametersControlWidgetBase interface
 public:
-    //virtual BaseReflectionStatic *createParametersVirtual() const;
+    /* This function is extreamly unsafe */
+    virtual BaseReflectionStatic *createParametersVirtual() const;
+
     bool getParameters(void *param) const;
     bool setParameters(void *param) const;
 
@@ -51,7 +53,6 @@ public slots:
 signals:
     void outerFilterRequest(int filter);
 //    void executeCalled();
-
 
 
 };

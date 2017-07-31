@@ -341,3 +341,46 @@ QString printModelItemRole(int role)
     return text;
 
 }
+
+
+const QString RecentPathKeeper::LAST_INPUT_DIRECTORY_KEY  = "lastInputDirectory";
+const QString RecentPathKeeper::LAST_OUTPUT_DIRECTORY_KEY = "lastOutputDirectory";
+const QString RecentPathKeeper::RECENT_SCENES_KEY         = "recent";
+
+void RecentPathKeeper::loadFromQSettings(const QString &fileName, const QString &_root)
+{
+    QSettings settings(fileName, QSettings::IniFormat);
+    settings.beginGroup(_root);
+    updateIn (settings.value(LAST_INPUT_DIRECTORY_KEY, ".").toString());
+    updateOut(settings.value(LAST_OUTPUT_DIRECTORY_KEY, ".").toString());
+
+    unsigned size = settings.beginReadArray(RECENT_SCENES_KEY);
+    for (unsigned j = 0; j < size; j++) {
+        settings.setArrayIndex(j);
+        lastScenes.push_back(settings.value("path", ".").toString().toStdString());
+    }
+    settings.endArray();
+    settings.endGroup();
+
+}
+
+void RecentPathKeeper::saveToQSettings(const QString &fileName, const QString &_root)
+{
+    QSettings settings(fileName, QSettings::IniFormat);
+    settings.beginGroup(_root);
+    settings.setValue(LAST_INPUT_DIRECTORY_KEY,  in);
+    settings.setValue(LAST_OUTPUT_DIRECTORY_KEY, out);
+
+    settings.beginWriteArray(RECENT_SCENES_KEY);
+    for (unsigned j = 0; j < lastScenes.size(); j++) {
+        settings.setArrayIndex(j);
+        settings.setValue("path", QString::fromStdString(lastScenes[j]));
+    }
+    settings.endArray();
+    settings.endGroup();
+}
+
+RecentPathKeeper::~RecentPathKeeper()
+{
+
+}

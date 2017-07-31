@@ -27,6 +27,7 @@ public:
 
     virtual bool acceptsFile(corecvs::string name) override;
     virtual corecvs::RGB24Buffer * load(string name) override;
+    virtual std::string name() override { return "LibPNG"; }
     virtual bool save(corecvs::string name, corecvs::RGB24Buffer *buffer);
 
 };

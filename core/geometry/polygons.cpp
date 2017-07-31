@@ -102,6 +102,27 @@ bool Polygon::isConvex(bool *direction) const
     return true;
 }
 
+/** Rewrite this with sweep line **/
+bool Polygon::hasSelfIntersection() const
+{
+    int len = (int)size();
+    for (size_t i = 0; i < len; i++)
+    {
+       Segment2d s1 = getSegment(i);
+       for (size_t j = i + 2; j < len; j++)
+       {
+          Segment2d s2 = getSegment(j);
+          bool intersect;
+          Segment2d::intersect(s1, s2, intersect);
+          if (intersect)
+              return true;
+       }
+    }
+
+    return false;
+}
+
+
 Polygon Polygon::RegularPolygon(int sides, const Vector2dd &center, double radius, double startAngleRad) {
     Polygon toReturn;
     toReturn.reserve(sides);
@@ -125,6 +146,61 @@ Polygon Polygon::Reverse(const Polygon &p)
         toReturn.push_back(*ri);
     }
     return toReturn;
+}
+
+Polygon Polygon::FromConvexPolygon(const ConvexPolygon &polygon)
+{
+    vector<Vector2dd> points;
+    for (size_t i = 0; i < polygon.faces.size(); i++)
+    {
+        for (size_t j = i + 1; j < polygon.faces.size(); j++)
+        {
+            Line2d in1 = polygon.faces[i];
+            Line2d in2 = polygon.faces[j];
+
+            bool hasIntersection = false;
+            Vector2dd intersect = in1.intersectWith(in2, &hasIntersection);
+            if (!hasIntersection) {
+                continue;
+            }
+
+            bool inside = true;
+            for (size_t k = 0; k < polygon.faces.size(); k++)
+            {
+                if (k == i || k == j)
+                    continue;
+
+                if (polygon.faces[k].pointWeight(intersect) < 0) {
+                    inside = false;
+                    break;
+                }
+            }
+            if (inside) {
+                points.push_back(intersect);
+            }
+        }
+    }
+    return ConvexHull::GrahamScan(points);
+}
+
+
+/* Sweep line makes this much faster, we need to implement it someday */
+Polygon Polygon::FromHalfplanes(const std::vector<Line2d> &halfplanes)
+{
+    ConvexPolygon polygon;
+    polygon.faces = halfplanes;
+    return Polygon::FromConvexPolygon(polygon);
+}
+
+ConvexPolygon Polygon::toConvexPolygon() const
+{
+    ConvexPolygon result;
+    for (size_t i = 0; i < size(); i++)
+    {
+        result.faces.push_back(Line2d(Segment2d(getSegment(i))));
+    }
+
+    return result;
 }
 
 double Polygon::signedArea()
@@ -340,6 +416,64 @@ void PolygonCombiner::drawDebug(RGB24Buffer *buffer) const
         }
     }
 }
+
+Rectangled PolygonCombiner::getDebugRectangle() const
+{
+    Rectangled r = Rectangled::Empty();
+
+    for (int p = 0; p < 2; p++)
+    {
+        for (int i = 0; i < (int)c[p].size(); i++)
+        {
+            const VertexData &v = c[p][i];
+            Vector2dd pos = v.pos;
+            r.extendToFit(pos);
+        }
+    }
+    cout << "Overall rectangle:" << r << endl;
+    return r;
+}
+
+void PolygonCombiner::drawDebugAutoscale(RGB24Buffer *buffer, int margin) const
+{
+    Rectangled r = getDebugRectangle();
+
+    Matrix33 transform =   Matrix33::Scale2((buffer->w - 2 * margin) / r.size.x(), (buffer->h - 2 * margin) / r.size.y()) * Matrix33::ShiftProj(-r.corner.x(), -r.corner.y());;
+    transform = Matrix33::ShiftProj(margin, margin) * transform;
+
+    AbstractPainter<RGB24Buffer> painter(buffer);
+
+    for (int p = 0; p < 2; p++)
+    {
+
+       /*for (int i = 0; i < (int)c[p].size(); i++)
+        {
+            Vector2dd v1 = transform * pol[p].getPoint(i);
+            Vector2dd v2 = transform * pol[p].getNextPoint(i);
+
+            buffer->drawLine(v1, v2, p == 0 ? RGBColor::Yellow() : RGBColor::Cyan());
+        }*/
+
+        for (int i = 0; i < (int)c[p].size(); i++)
+        {
+            const VertexData &v = c[p][i];
+            Vector2dd posOrig = v.pos;
+            Vector2dd pos = transform * posOrig;
+
+            if (v.flag == INSIDE)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Red());
+            if (v.flag == OUTSIDE)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Green());
+            if (v.flag == COMMON)
+                buffer->drawCrosshare3(pos.x(), pos.y(), RGBColor::Blue());
+
+            painter.drawFormat(pos.x(), pos.y() + p * 10, RGBColor::White(), 1, "%c%d (%0.2lf) [%d]", p == 0 ? 'A' : 'B', i, v.t, v.other);
+            printf("(%lf %lf) %c%d (%0.2lf) [%" PRISIZE_T "]\n", posOrig.x(), posOrig.y() , p == 0 ? 'A' : 'B', i, v.t, v.other);
+        }
+    }
+}
+
+
 
 Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector<bool> *visited) const
 {
@@ -626,6 +760,84 @@ Polygon ConvexHull::GiftWrap(const std::vector<Vector2dd> &list)
 
     return toReturn;
 }
+
+double ccw(const Vector2dd& p1, const Vector2dd& p2, const Vector2dd& p3)
+{
+    //return (p2.x() - p1.x())*(p3.y() - p1.y()) - (p2.y() - p1.y())*(p3.x() - p1.x());
+    return (p2 - p1) & (p3 - p1).leftNormal();
+}
+
+double ccwProjective(const Vector3dd& p1, const Vector3dd& p2, const Vector3dd& p3)
+{
+
+
+}
+
+Polygon ConvexHull::GrahamScan(std::vector<Vector2dd> points)
+{
+    if (points.size() < 3)
+        return Polygon();
+
+    //find value with lowest y-coordinate
+    int idx = 0;
+    double yMin = std::numeric_limits<double>::max();
+    for (size_t i = 1; i < points.size(); i++)
+    {
+        bool less = points[i].y() < yMin;
+        less |= (points[i].y() == yMin) && (points[i].x() < points[idx].x());
+        if (less)
+        {
+            yMin = points[i].y();
+            idx = i;
+        }
+    }
+
+    //sort ascending polar angle around lowest y-coordinate value
+    std::swap(points[0], points[idx]);
+    std::sort(points.begin() + 1, points.end(), [=](const Vector2dd& a, const Vector2dd& b) -> bool
+        {
+            Vector2dd ab = b - a;
+            double polar = ccw(points[0], a, b);
+
+            if (polar != 0.0)
+                return (polar > 0);
+            else
+                return (ab.y() > 0);
+        }
+    );
+
+    //pass of Graham scan
+    Polygon hull;
+    hull.push_back(points[0]);
+    hull.push_back(points[1]);
+    for (size_t i = 2; i < points.size(); i++)
+    {
+        int M = (int)hull.size();
+        while (ccw(hull[M - 2], hull[M - 1], points[i]) < 0)
+        {
+            hull.pop_back();
+            M = (int)hull.size();
+            if (hull.size() < 2)
+                break;
+        }
+        hull.push_back(points[i]);
+    }
+
+    return hull;
+}
+
+Polygon ConvexHull::ConvexHullCompute(std::vector<Vector2dd> points, ConvexHull::ConvexHullMethod &method)
+{
+    switch (method) {
+    case ConvexHullMethod::GIFT_WARP:
+        return ConvexHull::GiftWrap(points);
+        break;
+    default:
+        return ConvexHull::GrahamScan(points);
+        break;
+    }
+}
+
 
 
 #if 0

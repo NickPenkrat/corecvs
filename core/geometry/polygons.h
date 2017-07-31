@@ -20,6 +20,7 @@
 #include "line.h"
 #include "affine.h"
 #include "rectangle.h"
+#include "convexPolyhedron.h"
 
 namespace corecvs {
 
@@ -289,6 +290,8 @@ class PointPath : public vector<Vector2dd>
 public:
     PointPath(){}
 
+    PointPath(std::initializer_list<Vector2dd> list) : vector<Vector2dd>(list) {}
+
     PointPath(int len) : vector<Vector2dd>(len)
     {}
 
@@ -349,6 +352,8 @@ class Polygon : public PointPath
 public:
     Polygon(){}
 
+    Polygon(std::initializer_list<Vector2dd> list) : PointPath(list) {}
+
     Polygon(const Vector2dd *points, int len) : PointPath(len)
     {
         for (unsigned i = 0; i < size(); i++) {
@@ -373,6 +378,7 @@ public:
 
 
     bool isConvex(bool *direction = NULL) const;
+    bool hasSelfIntersection() const;
 
     Vector2dd &getPoint (int i) {
         return operator [](i);
@@ -396,6 +402,11 @@ public:
     Ray2d getRay(int i)  const {
         return Ray2d::FromPoints(getPoint(i), getNextPoint(i));
     }
+
+    Segment2d getSegment(int i)  const {
+        return Segment2d(getPoint(i), getNextPoint(i));
+    }
+
 
 
     /** This method uses the index by module of size() **/
@@ -426,6 +437,12 @@ public:
     static Polygon RegularPolygon(int sides, const Vector2dd &center, double radius, double startAngleRad = 0.0);
 
     static Polygon Reverse(const Polygon &p);
+
+    static Polygon FromConvexPolygon(const ConvexPolygon& polygon);
+    static Polygon FromHalfplanes   (const std::vector<Line2d> &halfplanes);
+
+
+    ConvexPolygon toConvexPolygon() const;
 
 
     Polygon transformed(const Matrix33 &transform) const {
@@ -568,7 +585,10 @@ public:
 
     /* */
     bool validateState(void) const;
+
+    Rectangled getDebugRectangle() const;
     void drawDebug(RGB24Buffer *buffer) const;
+    void drawDebugAutoscale(RGB24Buffer *buffer, int margin = 100) const;
 
     Polygon followContour(int startIntersection, bool inner, vector<bool> *visited = NULL) const;
 
@@ -625,6 +645,18 @@ public:
      * This methods need a lot of additional testing
      ***/
     static Polygon GiftWrap(const std::vector<Vector2dd> &list);
+    static Polygon GrahamScan(std::vector<Vector2dd> points);
+
+
+    enum ConvexHullMethod {
+        GIFT_WARP,
+        GRAHAM_SCAN,
+        LAST
+    };
+
+    static Polygon ConvexHullCompute(std::vector<Vector2dd> points, ConvexHullMethod &method);
+
+
 };
 
 } //namespace corecvs

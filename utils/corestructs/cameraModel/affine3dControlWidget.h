@@ -23,6 +23,8 @@ public:
     void setParameters(const Affine3DQ &input);
     virtual void setParametersVirtual(void *input);
 
+public slots:
+    void copyText();
 signals:
     void valueChanged();
     void paramsChanged();

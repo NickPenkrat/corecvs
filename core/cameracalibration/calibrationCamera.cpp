@@ -2,6 +2,10 @@
 
 #include <array>
 
+#include "abstractPainter.h"
+#include "rgb24Buffer.h"
+#include "bmpLoader.h"
+
 namespace corecvs {
 
 int ScenePart::OBJECT_COUNT = 0;
@@ -60,6 +64,112 @@ EssentialDecomposition CameraModel::ComputeEssentialDecomposition(const CameraLo
     Quaternion R =  thisData.orientation ^ otherData.orientation.conjugated();
     Vector3dd  T =  thisData.orientation * (-thisData.position + otherData.position);
     return EssentialDecomposition(R.toMatrix(), T);
+}
+
+PlaneFrame CameraModel::getVirtualScreen(double distance) const
+{
+    Vector3dd topLeft     = Vector3dd(              0,               0,  1) * distance;
+    Vector3dd topRight    = Vector3dd( intrinsics.w(),               0,  1) * distance;
+    Vector3dd bottomLeft  = Vector3dd(              0,  intrinsics.h(),  1) * distance;
+
+    PlaneFrame toReturn;
+
+    Matrix33 invK = intrinsics.getInvKMatrix33();
+    toReturn.p1  = extrinsics.camToWorld(invK * topLeft);
+    Vector3dd d1 = extrinsics.camToWorld(invK * topRight  ) - toReturn.p1;
+    Vector3dd d2 = extrinsics.camToWorld(invK * bottomLeft) - toReturn.p1;
+
+    toReturn.e1 = (d1 / intrinsics.w() );
+    toReturn.e2 = (d2 / intrinsics.h() );
+
+    return toReturn;
+}
+
+Polygon CameraModel::projectViewport(const CameraModel &right) const
+{
+#if 0 /* We use a shortcut here */
+    vector<Vector4dd> pyramid = right.getCameraViewportPyramid();
+
+    Matrix44 T = getCameraMatrix();
+
+    vector<Vector3dd> pyramidP;
+    Polygon pyramidPSimple;
+
+
+    for (size_t i = 0; i < pyramid.size(); i++)
+    {
+        Vector4dd out = T * pyramid[i];
+        Vector3dd pos1 = Vector3dd( out[0], out[1], out[3]) / out[2];
+        pyramidP.push_back(pos1);
+        pyramidPSimple.push_back(Vector2dd( out[0], out[1]) / out[2]);
+    }
+
+#if 1
+    RGB24Buffer *buffer  = new RGB24Buffer(intrinsics.h(), intrinsics.w(), RGBColor::Black());
+    AbstractPainter<RGB24Buffer> painter(buffer);
+    painter.drawPolygon(pyramidPSimple, RGBColor::Magenta());
+    BMPLoader().save("debug.bmp", buffer);
+#endif
+#endif
+
+
+    std::vector<Ray3d> rays;
+
+
+    const int SIDE_STEPS = 100;
+    rays.reserve(SIDE_STEPS * 4);
+
+    Vector2dd p1 = Vector2dd::Zero();
+    Vector2dd p3 = right.intrinsics.size;
+    Vector2dd p2 = Vector2dd(p3.x(), p1.y());
+    Vector2dd p4 = Vector2dd(p1.x(), p3.y());
+
+    Ray3d  baseRays[] =
+    {
+        right.rayFromPixel(p1), right.rayFromPixel(p2), right.rayFromPixel(p3), right.rayFromPixel(p4)
+    };
+
+    for (size_t rayId = 0; rayId < CORE_COUNT_OF(baseRays); rayId++ )
+    {
+        for (int i = 0; i < SIDE_STEPS; i++)
+        {
+            Ray3d r1 = baseRays[rayId];
+            Ray3d r2 = baseRays[(rayId + 1) % CORE_COUNT_OF(baseRays)];
+            rays.push_back(Ray3d(lerp(r1.direction(), r2.direction(), i, 0.0, SIDE_STEPS), r1.origin() ));
+        }
+    }
+
+    /* ==== */
+    ConvexPolyhedron viewport = getCameraViewport();
+    Matrix44 T = getCameraMatrix();
+
+    //cout << "Ray" << ray << endl;
+
+    /* We go with ray analysis instead of essential matrix beacause it possibly gives
+     * more semanticly valuable info
+     */
+
+    vector<Vector2dd> points;
+    for (size_t rayId = 0; rayId < rays.size(); rayId++ )
+    {
+        Ray3d &ray = rays[rayId];
+        double t1 = 0;
+        double t2 = 0;
+        bool hasIntersection = viewport.intersectWith(ray, t1, t2);
+        if (hasIntersection)
+        {
+            if (t1 < 0.0) t1 = 0.0;
+
+            FixedVector<double, 4> out1 = (T * ray.getProjectivePoint(t1));
+            FixedVector<double, 4> out2 = (T * ray.getProjectivePoint(t2));
+            Vector2dd pos1 = Vector2dd( out1[0], out1[1]) / out1[2];
+            Vector2dd pos2 = Vector2dd( out2[0], out2[1]) / out2[2];
+            points.push_back(pos1);
+            points.push_back(pos2);
+        }
+    }
+
+    return ConvexHull::GrahamScan(points);
 }
 
 
@@ -200,7 +310,7 @@ Vector3dd CameraModel::getCameraTVector() const
     return extrinsics.orientation * (-extrinsics.position);
 }
 
-ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &p3)
+ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &p3) const
 {
     ConvexPolyhedron toReturn;
     Vector3dd position = extrinsics.position;
@@ -223,9 +333,56 @@ ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &
     return toReturn;
 }
 
-ConvexPolyhedron  CameraModel::getCameraViewport()
+ConvexPolyhedron  CameraModel::getCameraViewport() const
 {
     return getViewport(Vector2dd::Zero(), intrinsics.size);
+}
+
+vector<GenericTriangle<Vector4dd> > CameraModel::getCameraViewportSides() const
+{
+    vector<GenericTriangle<Vector4dd> > sides;
+
+    Vector2dd p1 = Vector2dd::Zero();
+    Vector2dd p3 = intrinsics.size;
+    Vector2dd p2 = Vector2dd(p3.x(), p1.y());
+    Vector2dd p4 = Vector2dd(p1.x(), p3.y());
+
+    Vector4dd position(extrinsics.position, 1.0);
+    Vector4dd d1(extrinsics.camToWorld(intrinsics.reverse(p1)), 0.0);
+    Vector4dd d2(extrinsics.camToWorld(intrinsics.reverse(p2)), 0.0);
+    Vector4dd d3(extrinsics.camToWorld(intrinsics.reverse(p3)), 0.0);
+    Vector4dd d4(extrinsics.camToWorld(intrinsics.reverse(p4)), 0.0);
+
+    sides.push_back(GenericTriangle<Vector4dd>(position, d1, d2));
+    sides.push_back(GenericTriangle<Vector4dd>(position, d2, d3));
+    sides.push_back(GenericTriangle<Vector4dd>(position, d3, d4));
+    sides.push_back(GenericTriangle<Vector4dd>(position, d4, d1));
+    return sides;
+
+}
+
+vector<Vector4dd> CameraModel::getCameraViewportPyramid() const
+{
+    vector<Vector4dd> pyramid;
+
+    Vector2dd p1 = Vector2dd::Zero();
+    Vector2dd p3 = intrinsics.size;
+    Vector2dd p2 = Vector2dd(p3.x(), p1.y());
+    Vector2dd p4 = Vector2dd(p1.x(), p3.y());
+
+    Vector4dd position(extrinsics.position, 1.0);
+    Vector4dd d1(extrinsics.camToWorld(intrinsics.reverse(p1)), 0.0);
+    Vector4dd d2(extrinsics.camToWorld(intrinsics.reverse(p2)), 0.0);
+    Vector4dd d3(extrinsics.camToWorld(intrinsics.reverse(p3)), 0.0);
+    Vector4dd d4(extrinsics.camToWorld(intrinsics.reverse(p4)), 0.0);
+
+    pyramid.push_back(position);
+    pyramid.push_back(d1);
+    pyramid.push_back(d2);
+    pyramid.push_back(d3);
+    pyramid.push_back(d4);
+
+    return pyramid;
 }
 
 

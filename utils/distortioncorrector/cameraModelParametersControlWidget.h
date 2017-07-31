@@ -42,6 +42,9 @@ public slots:
 
     void revertPressed();
 
+    void zeroPressed ();
+    void resetPressed();
+
 
     void paramsChangedInUI();
 

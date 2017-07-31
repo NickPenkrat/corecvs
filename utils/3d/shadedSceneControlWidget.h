@@ -17,10 +17,11 @@ public:
     enum ShaderType{
         NONE,
         PRESET,
+        PRESET1,
         IMUTABLE,
         SAVEABLE
     };
-    ShaderType type = ShaderPreset::PRESET;
+    ShaderType type = ShaderPreset::PRESET1;
 
     QString vertex;
     QString fragment;

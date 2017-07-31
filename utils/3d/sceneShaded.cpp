@@ -63,6 +63,38 @@ static const char *fragmentShaderSource =
     "varying lowp vec2 vTexCoord;\n"
     "varying lowp vec4 normal;\n"
     "void main() {\n"
+    "   gl_FragColor = col;\n"
+    "   gl_FragColor.a = 1.0;\n"
+    "   gl_FragDepth = gl_FragCoord.z;\n"
+    "}\n";
+
+static const char *vertexShaderSource1 =
+    "attribute highp vec4 posAttr;\n"
+    "attribute lowp  vec4 colAttr;\n"
+    "attribute lowp  vec4 faceColAttr;\n"
+    "attribute lowp  vec4 normalAttr;\n"
+    "attribute lowp  vec2 texAttr;\n"
+    "varying lowp vec4 col;\n"
+    "varying lowp vec4 normal;\n"
+    "varying lowp vec2 vTexCoord;\n"
+    "uniform highp mat4 modelview;\n"
+    "uniform highp mat4 projection;\n"
+    "void main() {\n"
+    "   col = colAttr / 1.0;\n"
+    "   col.a = 1.0;\n"
+    "   vTexCoord.x = texAttr.x;"
+    "   vTexCoord.y = 1.0 - texAttr.y;\n"
+    "   normal = normalAttr;\n"
+    "   gl_Position = projection * modelview * posAttr;\n"
+    "}\n";
+
+static const char *fragmentShaderSource1 =
+    "uniform sampler2D textureSampler;\n"
+    "uniform sampler2D bumpSampler;\n"
+    "varying lowp vec4 col;\n"
+    "varying lowp vec2 vTexCoord;\n"
+    "varying lowp vec4 normal;\n"
+    "void main() {\n"
     "   //gl_FragColor = col;\n"
     "   //gl_FragColor.rg = vTexCoord;\n"
     "   gl_FragColor.rgb  = texture2D(textureSampler, vTexCoord).rgb;\n"
@@ -73,6 +105,7 @@ static const char *fragmentShaderSource =
     "   gl_FragColor.a = 1.0;\n"
     "   gl_FragDepth = gl_FragCoord.z;\n"
     "}\n";
+
 
 void SceneShaded::addTexture(GLuint texId, RGB24Buffer *input)
 {
@@ -113,6 +146,7 @@ void SceneShaded::addTexture(GLuint texId, RGB24Buffer *input)
 
 void SceneShaded::setParameters(void *params)
 {
+    SYNC_PRINT(("SceneShaded::setParameters()\n"));
     mParameters = *static_cast<ShadedSceneControlParameters *>(params);
 
     ShaderPreset *sources[ShaderTarget::LAST] = {
@@ -136,6 +170,10 @@ void SceneShaded::setParameters(void *params)
             fShader = sources[target]->fragment;
         }
 
+        if(sources[target]->type == ShaderPreset::PRESET1) {
+            vShader = vertexShaderSource1;
+            fShader = fragmentShaderSource1;
+        }
 
         mProgram[target] = new QOpenGLShaderProgram();
         mProgram[target]->addShaderFromSourceCode(QOpenGLShader::Vertex,   vShader);
@@ -270,7 +308,7 @@ void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
     glDisableVertexAttribArray(mColAttr);
 #endif
 
-    qDebug() << "Before Mesh Draw";   dumpGLErrors();
+    // qDebug() << "Before Mesh Draw";   dumpGLErrors();
 
     /* Draw embedded Mesh */
     if (mMesh != NULL)

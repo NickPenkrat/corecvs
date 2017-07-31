@@ -215,6 +215,20 @@ void Mesh3D::addTriangle(const Triangle3dd &triangle)
     addTriangle(triangle.p1(), triangle.p2(), triangle.p3());
 }
 
+void Mesh3D::addFlatPolygon(const FlatPolygon &polygon)
+{
+    /* Simple way */
+    for (size_t i = 0; i < polygon.polygon.size(); i++)
+    {
+        Vector2dd p1 = polygon.polygon.getPoint((int)i);
+        Vector2dd p2 = polygon.polygon.getNextPoint((int)i);
+
+        Vector3dd point1 = polygon.frame.getPoint(p1);
+        Vector3dd point2 = polygon.frame.getPoint(p2);
+        addLine(point1, point2);
+    }
+}
+
 Triangle3dd Mesh3D::getFaceAsTrinagle(size_t number)
 {
     Vector3d32 facei = faces[number];

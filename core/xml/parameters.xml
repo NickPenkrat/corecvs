@@ -121,11 +121,14 @@
   <class name="draw GCode Parameters">
      <field type="GCode Coloring Sheme"  name="scheme"  />
 
-     <field type="double"  name="minTemp"   min = "0" max="1000"   defaultValue="200" />
-     <field type="double"  name="maxTemp"   min = "0" max="1000"   defaultValue="250" />
+     <field type="double"  name="minTemp"   min="0" max="1000"   defaultValue="200" step="1"/>
+     <field type="double"  name="maxTemp"   min="0" max="1000"   defaultValue="250" step="1"/>
 
-     <field type="double"  name="minSpeed"   min = "0" max="1000"   defaultValue="200" />
-     <field type="double"  name="maxSpeed"   min = "0" max="1000"   defaultValue="950" />
+     <field type="double"  name="minExtrude"  min="0" max="1000"   defaultValue="200" step="1"/>
+     <field type="double"  name="maxExtrude"  min="0" max="1000"   defaultValue="950" step="1"/>
+
+     <field type="double"  name="minSpeed"   min="0" max="1000"   defaultValue="200" step="1"/>
+     <field type="double"  name="maxSpeed"   min="0" max="1000"   defaultValue="950" step="1"/>
   </class>
 
 

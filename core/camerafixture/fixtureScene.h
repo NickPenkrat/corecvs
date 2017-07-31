@@ -38,6 +38,34 @@ public:
     void print();
 };
 
+
+class ImageRelatedData : public FixtureScenePart {
+public:
+
+    ImageRelatedData(FixtureScene * owner = NULL) : FixtureScenePart(owner) {}
+
+    ImageRelatedData(const std::string &imagePath, FixtureScene * owner = NULL) :
+        FixtureScenePart(owner),
+        mImagePath(imagePath)
+    {}
+
+
+    FixtureCamera              *camera = NULL;
+
+    std::string                 mImagePath;
+    std::string                 mRelativeImagePath;
+    std::string                 mUndistortedImagePath;
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(mImagePath, std::string(""), "imagePath");
+    }
+
+    RGB24Buffer* getRGB24Buffer();
+
+};
+
 /**
  * Heap of Calibration related stuff
  **/
@@ -49,6 +77,8 @@ public:
     typedef CameraFixture        FixtureType;
     typedef SceneFeaturePoint    PointType;
     typedef FixtureSceneGeometry GeometryType;
+    typedef ImageRelatedData     ImageType;
+
 
 
     FixtureScene();
@@ -69,6 +99,7 @@ public:
      *  This transform only happens when you use ::positionCameraInStation() method. Thoough we encourage you to do so.
      *
      **/
+    static Affine3DQ              DEFAULT_WORLD_TO_CAMERA;
     Affine3DQ                     worldFrameToCameraFrame;
 
     std::string                   nameId;
@@ -110,6 +141,10 @@ public:
     const vector<FixtureSceneGeometry *>&  geometries() const  { return mGeomtery; }
           vector<FixtureSceneGeometry *>&  geometries()        { return mGeomtery; }
 
+    const vector<ImageRelatedData *>&  images() const  { return mImages; }
+          vector<ImageRelatedData *>&  images()        { return mImages; }
+
+
 
 protected:
 
@@ -118,7 +153,7 @@ protected:
     vector<FixtureCamera *>        mOrphanCameras;
     vector<SceneFeaturePoint *>    mSceneFeaturePoints;
     vector<FixtureSceneGeometry *> mGeomtery;
-
+    vector<ImageRelatedData *>     mImages;
 
 
     template<typename T>
@@ -201,6 +236,7 @@ protected:
     virtual CameraFixture        *fabricateCameraFixture();
     virtual SceneFeaturePoint    *fabricateFeaturePoint();
     virtual FixtureSceneGeometry *fabricateSceneGeometry();
+    virtual ImageRelatedData     *fabricateImageData();
 
 public:
 
@@ -212,6 +248,8 @@ public:
     virtual CameraFixture        *createCameraFixture();
     virtual SceneFeaturePoint    *createFeaturePoint();
     virtual FixtureSceneGeometry *createSceneGeometry();
+    virtual ImageRelatedData     *createImageData();
+
 
     virtual void destroyObject    (FixtureScenePart *condemned);
 
@@ -222,6 +260,8 @@ public:
     virtual void deleteFixturePair    (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint   (SceneFeaturePoint *point);
     virtual void deleteSceneGeometry  (FixtureSceneGeometry *geometries);
+    virtual void deleteImage          (ImageRelatedData* image) ;
+
 
     virtual void clear();
 
@@ -276,13 +316,15 @@ public:
     void setFeaturePointCount(size_t count);
     void setGeometryCount    (size_t count);
 
-
     /* This performs full search. It should not */
     FixtureCamera     *getCameraById (FixtureScenePart::IdType id);
     CameraFixture     *getFixtureById(FixtureScenePart::IdType id);
     SceneFeaturePoint *getPointById  (FixtureScenePart::IdType id);
 
-    SceneFeaturePoint *getPointByName(const std::string &name);
+    virtual SceneFeaturePoint *getPointByName  (const std::string &name);
+    virtual CameraFixture     *getFixtureByName(const string& name);
+    virtual FixtureCamera     *getCameraByName (const string& fixtureName, const string& name);
+
 
     /** This method is for convenience, generally pointer itself is a best way to reference **/
     FixtureCamera *getCameraByNumber (int fixtureNumber, int cameraNumber);
@@ -387,6 +429,14 @@ public:
     }
 
     virtual ~FixtureScene();
+
+   /*  We have a set of callbacks for algorithms - this is still experimental */
+        /* Some algorithms make huge changes to the scene.
+         * During this process scene may be invalid. */
+    virtual void beforeChange() {}
+    virtual void afterChange () {}
+
+
 };
 
 } // namespace corecvs

@@ -76,6 +76,11 @@ void JSONModernReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue
 template <>
 void JSONModernReader::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName)
 {
+    nlohmann::json &current = (*mNodePath.back());
+    if (!current.is_object()) {
+        SYNC_PRINT(( "JSONModernReader::visit<std::string>() unable to find object where expected\n" ));
+        return;
+    }
     nlohmann::json &value = (*mNodePath.back())[fieldName];
 
     if (value.is_string()) {

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bufferFactory.h>
 
 #include "affine.h"
 
@@ -10,6 +11,13 @@
 namespace corecvs {
 
 const char * FixtureSceneFactory::DEFAULT_NAME = "FixtureScene";
+Affine3DQ FixtureScene::DEFAULT_WORLD_TO_CAMERA = Affine3DQ(Quaternion::FromMatrix(
+                                                                Matrix33( 0, -1,  0,
+                                                                          0,  0, -1,
+                                                                          1,  0,  0
+                                                                )));
+
+
 
 
 /**
@@ -20,11 +28,7 @@ const char * FixtureSceneFactory::DEFAULT_NAME = "FixtureScene";
  **/
 FixtureScene::FixtureScene() :
      //worldFrameToCameraFrame(Affine3DQ::RotationZ(degToRad(90.0)) * Affine3DQ::RotationX(degToRad(90.0)))
-    worldFrameToCameraFrame(Affine3DQ(Quaternion::FromMatrix(
-        Matrix33( 0, -1,  0,
-                  0,  0, -1,
-                  1,  0,  0
-        ))))
+    worldFrameToCameraFrame(DEFAULT_WORLD_TO_CAMERA)
 {
 }
 
@@ -40,39 +44,11 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
             //printf("Skipping (type = %x, mask = %x)\n", point->type, mask);
             continue;
         }
-
         for (CameraFixture * fixture : mFixtures)
         {
             for (FixtureCamera * camera : fixture->cameras)
             {
-                CameraModel worldCam = fixture->getWorldCamera(camera);
-
-                Vector2dd projection = worldCam.project(point->position);
-                if (!worldCam.isVisible(projection) || !worldCam.isInFront(point->position))
-                    continue;
-
-                if (round) {
-                    projection.x() = fround(projection.x());
-                    projection.y() = fround(projection.y());
-                }
-
-                SceneObservation observation(camera, point, projection, fixture);
-                if (!round) {
-                    observation.observDir = worldCam.dirToPoint(point->position).normalised();  // direct
-                }
-                else {
-                    observation.observDir = worldCam.intrinsics.reverse(projection).normalised();  // indirect
-                }
-                /*if (direct.notTooFar(indirect, 1e-7))
-                {
-                    SYNC_PRINT(("Ok\n"));
-                } else {
-                    cout << direct << " - " << indirect << "  ";
-                    SYNC_PRINT(("Fail\n"));
-                }*/
-
-                point->observations[camera] = observation;
-                point->observations__[WPP(fixture, camera)] = observation;
+                point->projectForward(camera, fixture, round);
             }
         }
     }
@@ -159,6 +135,17 @@ FixtureSceneGeometry *FixtureScene::createSceneGeometry()
     return geometry;
 }
 
+
+ImageRelatedData *FixtureScene::createImageData()
+{
+    ImageRelatedData *image = fabricateImageData();
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
+    mOwnedObjects.push_back(image);
+#endif
+    mImages.push_back(image);
+    return image;
+}
+
 void FixtureScene::destroyObject(FixtureScenePart *condemned)
 {
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
@@ -192,6 +179,14 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
         }
 
         deleteFixtureCameraUMWPP(point->observations__, camera);
+    }
+
+    for (size_t i = 0; i < camera->mImages.size(); i++)
+    {
+        ImageRelatedData *image = static_cast<ImageRelatedData *>(camera->mImages[i]);
+        /* Detach image manually */
+        image->camera = NULL;
+        deleteImage(image);
     }
 
     delete_safe(camera);
@@ -275,6 +270,17 @@ void FixtureScene::deleteSceneGeometry(FixtureSceneGeometry *geometry)
     delete_safe(geometry);
 }
 
+void FixtureScene::deleteImage(ImageRelatedData *image)
+{
+    FixtureCamera  *camera  = image->camera;
+    if (camera != NULL) {
+        vectorErase(camera->mImages, image);
+    }
+
+    vectorErase(mImages, image);
+    delete_safe(image);
+}
+
 void FixtureScene::clear()
 {
     SYNC_PRINT(("FixtureScene::clear(): called\n"));
@@ -314,6 +320,10 @@ void FixtureScene::clear()
 
     while (!mGeomtery.empty()) {
         deleteSceneGeometry(mGeomtery.back());
+    }
+
+    while (!mImages.empty()) {
+        deleteImage(mImages.back());
     }
 #endif
 
@@ -359,6 +369,16 @@ bool FixtureScene::checkIntegrity()
         if (cam->cameraFixture != NULL) {
              ok = false; SYNC_PRINT(("Orphan Camera pretends to have station: cam:<%s>cam->station:<%s> scene:<%s>\n", cam->nameId.c_str(), cam->cameraFixture->name.c_str(), this->nameId.c_str()));
         }
+
+        for (size_t c = 0; c < cam->mImages.size(); c++)
+        {
+            ImageRelatedData *image = cam->mImages[c];
+            if (image == NULL) {
+                 ok = false; SYNC_PRINT(("Image is NULL: scene:<%s> pos <%" PRISIZE_T ">\n", this->nameId.c_str(), i));
+            }
+
+        }
+
     }
 
     for (size_t i = 0; i < mFixtures.size(); i++)
@@ -487,6 +507,8 @@ bool FixtureScene::checkIntegrity()
 
 bool FixtureScene::integrityRelink()
 {
+    vectorErase(mImages, (ImageRelatedData *)NULL);
+
     vectorErase(mOrphanCameras, (FixtureCamera *)NULL);
 
     for (size_t i = 0; i < mOrphanCameras.size(); i++)
@@ -494,6 +516,11 @@ bool FixtureScene::integrityRelink()
         FixtureCamera *cam = mOrphanCameras[i];
         cam->ownerScene = this;
         cam->cameraFixture = NULL;
+        for (size_t c = 0; c < cam->mImages.size(); c++)
+        {
+            ImageRelatedData *image = cam->mImages[c];
+            image->camera = cam;
+        }
     }
 
     vectorErase(mFixtures, (CameraFixture *)NULL);
@@ -510,6 +537,11 @@ bool FixtureScene::integrityRelink()
             FixtureCamera *cam = fixture->cameras[j];
             cam->ownerScene = this;
             cam->cameraFixture = fixture;
+            for (size_t c = 0; c < cam->mImages.size(); c++)
+            {
+                ImageRelatedData *image = cam->mImages[c];
+                image->camera = cam;
+            }
         }
     }
 
@@ -541,6 +573,7 @@ bool FixtureScene::integrityRelink()
         FixtureSceneGeometry *geometry = mGeomtery[i];
         geometry->ownerScene = this;
     }
+
 
     return true;
 }
@@ -778,6 +811,8 @@ void FixtureScene::setGeometryCount(size_t count)
     }
 }
 
+
+
 FixtureCamera *FixtureScene::getCameraById(FixtureScenePart::IdType id)
 {
     for (FixtureCamera *cam : mOrphanCameras) {
@@ -826,6 +861,32 @@ SceneFeaturePoint *FixtureScene::getPointByName(const std::string &name)
     }
     return NULL;
 }
+
+CameraFixture *FixtureScene::getFixtureByName(const string& name)
+{
+    for (size_t stationId = 0; stationId < fixtures().size(); stationId++)
+    {
+        if (fixtures()[stationId]->name == name) {
+            return static_cast<CameraFixture *>(fixtures()[stationId]);
+        }
+    }
+    return NULL;
+}
+
+FixtureCamera *FixtureScene::getCameraByName(const string& fixtureName, const string& name)
+{
+    CameraFixture *station = getFixtureByName(fixtureName);
+    if (station == NULL)
+        return NULL;
+
+    for (auto cam : station->cameras)
+    {
+        if (cam->nameId == name)
+            return static_cast<FixtureCamera *>(cam);
+    }
+    return NULL;
+}
+
 
 FixtureCamera *FixtureScene::getCameraByNumber(int fixtureNumber, int cameraNumber)
 {
@@ -880,6 +941,12 @@ FixtureSceneGeometry *FixtureScene::fabricateSceneGeometry()
 {
     //SYNC_PRINT(("FixtureScene::fabricateSceneGeometry(): called\n"));
     return new FixtureSceneGeometry(this);
+}
+
+ImageRelatedData *FixtureScene::fabricateImageData()
+{
+    //SYNC_PRINT(("FixtureScene::fabricateImageData(): called\n"));
+    return new ImageRelatedData(this);
 }
 
 void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, const double scale)
@@ -951,6 +1018,13 @@ void FixtureSceneFactory::print()
     {
         cout << " " << it.first << endl;
     }
+}
+
+RGB24Buffer *ImageRelatedData::getRGB24Buffer()
+{
+    RGB24Buffer* toReturn = BufferFactory::getInstance()->loadRGB24Bitmap(mImagePath) ;
+
+    return toReturn;
 }
 
 

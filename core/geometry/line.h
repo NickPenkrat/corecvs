@@ -48,8 +48,20 @@ public:
  * Line segment in 2D and 3D
  *
  */
-typedef Segment<Vector2dd> Segment2d;
+//typedef Segment<Vector2dd> Segment2d;
 typedef Segment<Vector3dd> Segment3d;
+
+class Segment2d : public Segment<Vector2dd>
+{
+public:
+    Segment2d(const Vector2dd &_a, const Vector2dd &_b) :
+        Segment<Vector2dd>(_a,_b)
+    {}
+
+   static Vector2dd intersect(const Segment2d &s1, const Segment2d &s2, bool &hasIntersection);
+
+};
+
 
 
 /**
@@ -560,7 +572,7 @@ public:
      **/
     Line2d(const Segment2d &segment)
     {
-       (*this) = fromSegment(segment);
+       (*this) = FromSegment(segment);
     }
 
     /**
@@ -579,7 +591,7 @@ public:
        return Line2d(n, -(p & n));
     }
 
-    static Line2d fromSegment(const Segment2d &segment)
+    static Line2d FromSegment(const Segment2d &segment)
     {
         return FromRay(Ray2d(segment));
     }
@@ -1039,6 +1051,32 @@ inline Vector2dd Ray2d::intersection(const Ray2d &ray1, const Ray2d &ray2, doubl
 
 //    SYNC_PRINT(("Ray2d::intersection(): t1=%lf t2=%lf\n", t1, t2 ));
     return ray1.getPoint(t1);
+}
+
+inline Vector2dd Segment2d::intersect(const Segment2d &s1, const Segment2d &s2, bool &hasIntersection)
+{
+    Ray2d r1(s1);
+    Ray2d r2(s2);
+
+    double t1 = 0;
+    double t2 = 0;
+
+    Vector2dd x = Ray2d::intersection(r1, r2, t1, t2);
+
+    if (t1 == std::numeric_limits<double>::infinity())
+    {
+        hasIntersection = false;
+        return Vector2dd::Zero();
+    }
+
+    if ((t1 < 0.0 || t1 > 1.0) ||
+        (t2 < 0.0 || t2 > 1.0))
+    {
+        hasIntersection = false;
+        return Vector2dd::Zero();
+    }
+
+    return x;
 }
 
 } //namespace corecvs

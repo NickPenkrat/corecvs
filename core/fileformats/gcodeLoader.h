@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include "drawGCodeParameters.h"
 
 
 #include "global.h"
@@ -84,6 +85,8 @@ public:
     };
 
     MachineState* state = NULL;
+    bool traceComment = false;
+    bool traceProcess = false;
 
     virtual MachineState* createState(void);
 
@@ -108,7 +111,8 @@ public:
     int arcSteps = 10;
 
 
-    GCodeColoringSheme::GCodeColoringSheme coloring = GCodeColoringSheme::COLOR_FROM_SPEED;
+//    GCodeColoringSheme::GCodeColoringSheme coloring = GCodeColoringSheme::COLOR_FROM_SPEED;
+    DrawGCodeParameters mParameters;
 
 
 
@@ -144,7 +148,7 @@ class GcodeLoader
 {
 public:
     GcodeLoader();
-    bool trace = true;
+    bool trace = false;
 
 
     int loadGcode(istream &input, Mesh3D &mesh);

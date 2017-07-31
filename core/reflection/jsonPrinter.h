@@ -143,6 +143,7 @@ template <typename inputType, typename reflectionType>
             *stream << separate() << indent() << decorateName(fieldDescriptor) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
         }
         indentation += dIndent;
+        isFirst = true;
         field.accept(*this);
         indentation -= dIndent;
 

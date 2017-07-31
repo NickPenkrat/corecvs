@@ -1877,3 +1877,21 @@ TEST(Matrix, hugeMatrix)
     ASSERT_NEAR(A.element(sy / 2 * 2, sx / 2 * 2    ), 1.0, 1e-16);
     ASSERT_NEAR(A.element(sy / 2 * 2, sx / 2 * 2 - 1), 0.0, 1e-16);
 }
+
+TEST(Matrix, svd33Matrix)
+{
+    Matrix33 input(
+        0,  0,  0,
+        0,  0,  1,
+        0, -1,  0 );
+
+    Vector3dd out1(1.0);
+    Matrix33  out2(1.0);
+
+    Matrix::svd(&input, &out1, &out2);
+
+    cout << input << endl;
+    cout << out1 << endl;
+    cout << out2 << endl;
+
+}

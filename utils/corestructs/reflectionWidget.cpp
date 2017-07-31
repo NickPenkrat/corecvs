@@ -298,6 +298,16 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
 
 }
 
+BaseReflectionStatic *ReflectionWidget::createParametersVirtual() const
+{
+    DynamicObject obj;
+    obj.reflection = reflection;
+    obj.rawObject = malloc(reflection->objectSize);
+    obj.simulateConstructor();
+    getParameters(obj.rawObject);
+    return static_cast<BaseReflectionStatic *>(obj.rawObject);
+}
+
 bool ReflectionWidget::getParameters(void *param) const
 {
     DynamicObject obj(reflection, param);

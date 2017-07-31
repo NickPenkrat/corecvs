@@ -3,6 +3,8 @@
 #include "cameraModelParametersControlWidget.h"
 #include "ui_cameraModelParametersControlWidget.h"
 
+#include "fixtureScene.h"
+
 CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *parent) :
     ParametersControlWidgetBase(parent),
     ui(new Ui::CameraModelParametersControlWidget)
@@ -11,9 +13,10 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
 
     ui->lensDistortionWidget->toggleAdvanced(false);
 
-    QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged()), this, SLOT(paramsChangedInUI()));
-    QObject::connect(ui->extrinsicWidget     , SIGNAL(paramsChanged()), this, SLOT(paramsChangedInUI()));
 
+    QObject::connect(ui->cameraNameEdit      , SIGNAL(textChanged(QString)), this, SLOT(paramsChangedInUI()));
+    QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged())     , this, SLOT(paramsChangedInUI()));
+    QObject::connect(ui->extrinsicWorldWidget, SIGNAL(paramsChanged())     , this, SLOT(paramsChangedInUI()));
 
     QObject::connect(ui->spinBoxFocalX, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
     QObject::connect(ui->spinBoxFocalY, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
@@ -28,6 +31,12 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadPressed()));
     QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(savePressed()));
     QObject::connect(ui->revertButton  , SIGNAL(released()), this, SLOT(revertPressed()));
+
+    /* Extrinsics reset button */
+    QObject::connect(ui->zeroExtrinsicsPushButton , SIGNAL(released()), this, SLOT( zeroPressed()));
+    QObject::connect(ui->resetExtrinsicsPushButton, SIGNAL(released()), this, SLOT(resetPressed()));
+
+    ui->extrinsicCamWidget->setEnabled(false);
 
 }
 
@@ -93,6 +102,20 @@ void CameraModelParametersControlWidget::revertPressed()
     setParameters(backup);
 }
 
+void CameraModelParametersControlWidget::zeroPressed()
+{
+    Affine3DQ zero = Affine3DQ::Identity();
+    ui->extrinsicWorldWidget->setParameters(zero);
+    emit paramsChanged();
+}
+
+void CameraModelParametersControlWidget::resetPressed()
+{
+    Affine3DQ zero = FixtureScene::DEFAULT_WORLD_TO_CAMERA.inverted();
+    ui->extrinsicWorldWidget->setParameters(zero);
+    emit paramsChanged();
+}
+
 void CameraModelParametersControlWidget::paramsChangedInUI()
 {
 //    qDebug() << "CameraModelParametersControlWidget::paramsChangedInUI(): pressed";
@@ -106,8 +129,10 @@ void CameraModelParametersControlWidget::getParameters(CameraModel& params) cons
 {    
     ui->lensDistortionWidget->getParameters(params.distortion);
 
+    params.nameId = ui->cameraNameEdit->text().toStdString();
+
     Affine3DQ location;
-    ui->extrinsicWidget->getParameters(location);
+    ui->extrinsicWorldWidget->getParameters(location);
     params.setLocation(location);
 
     params.intrinsics.focal.x() = ui->spinBoxFocalX->value();
@@ -134,9 +159,12 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
+
+    ui->cameraNameEdit->setText(QString::fromStdString(input.nameId));
     ui->lensDistortionWidget->setParameters(input.distortion);
 
-    ui->extrinsicWidget->setParameters(input.getAffine());
+    ui->extrinsicWorldWidget->setParameters(input.getAffine());
+    ui->extrinsicCamWidget->setParameters(FixtureScene::DEFAULT_WORLD_TO_CAMERA * input.getAffine());
 
     ui->spinBoxFocalX->setValue(input.intrinsics.fx());
     ui->spinBoxFocalY->setValue(input.intrinsics.fy());

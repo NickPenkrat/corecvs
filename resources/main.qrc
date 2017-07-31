@@ -112,6 +112,10 @@
         <file>shape_rotate_clockwise.png</file>
         <file>lighthouse.png</file>
         <file>draw_polygon.png</file>
+        <file>merge_two_tables.png</file>
+        <file>fingerprint.png</file>
+        <file>setting_tools.png</file>
+        <file>page_copy.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>

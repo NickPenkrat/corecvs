@@ -17,7 +17,8 @@
 namespace corecvs {
 
 class CameraFixture;
-
+class ImageRelatedData;
+class SceneFeaturePoint;
 
 
 class FixtureCamera : public FixtureScenePart, public CameraModel
@@ -48,13 +49,25 @@ public:
         , cameraFixture(NULL)
     {}
 
-    template<class VisitorType>
+    template<class VisitorType, class SceneType = FixtureScene>
     void accept(VisitorType &visitor)
     {
+        typedef typename SceneType::ImageType          RealImageType;
+
         CameraModel::accept(visitor);
         IdType id = getObjectId();
         visitor.visit(id, IdType(0) , "id");
         setObjectId(id);
+
+        int imageSize = (int)mImages.size();
+        visitor.visit(imageSize, 0, "image.size");
+        setImageCount(imageSize);
+
+        for (int i = 0; i < imageSize; i++)
+        {
+            char buffer[100]; snprintf2buf(buffer, "image[%d]", i);
+            visitor.visit(*static_cast<RealImageType *>(mImages[i]), buffer);
+        }
     }
 
     /** This is an experimental block of functions  it may change. Please use with caution **/
@@ -63,9 +76,18 @@ public:
     bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projectionPtr = NULL);
 
     Affine3DQ getWorldLocation();
-    void setWorldLocation(const Affine3DQ &location);
+    void setWorldLocation(const Affine3DQ &location, bool moveFixture = false);
 
     CameraModel getWorldCameraModel();
+
+    /** Images **/
+    void addImageToCamera(ImageRelatedData *data);
+
+    void setImageCount       (size_t count);
+    std::vector<ImageRelatedData *> mImages;  /*< Not owned*/
+
+    /** Helper functions **/
+    bool addObservation(SceneFeaturePoint *point, bool setUserType);
 
 };
 
