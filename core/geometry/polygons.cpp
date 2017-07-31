@@ -769,8 +769,8 @@ double ccw(const Vector2dd& p1, const Vector2dd& p2, const Vector2dd& p3)
 
 double ccwProjective(const Vector3dd& p1, const Vector3dd& p2, const Vector3dd& p3)
 {
-
-
+    // TODO:
+    return 0.0;
 }
 
 Polygon ConvexHull::GrahamScan(std::vector<Vector2dd> points)
