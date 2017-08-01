@@ -390,7 +390,10 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
     for (size_t num = 0; num < program.program.size(); num++)
     {
         const GCodeProgram::Code &c = program.program[num];
-        this->gcodeHook(c);
+        if (this->gcodeHook(c)) {
+            continue;
+        }
+
 
         if (c.area == ' ') {
             if (traceComment) {
@@ -521,10 +524,14 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
 }
 
 
-/* These hooks could either return true - then implemenation update the machine state */
+/**
+ * These hooks could either
+ *  return true - when this method has taken care of the gcode
+ *  return flase - is you want default implemenation update the machine state
+ **/
 bool GCodeInterpreter::gcodeHook    ( const GCodeProgram::Code &/*code*/ )
 {
-    return true;
+    return false;
 }
 
 bool GCodeInterpreter::straightHook (int /*type*/, const MachineState &/*before*/, const MachineState &/*after*/)

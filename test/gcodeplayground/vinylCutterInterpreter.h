@@ -9,6 +9,12 @@ class VinylCutterInterpreter : public GCodeInterpreter {
 public:
     GCodeProgram result;
 
+    double knifeOffset;
+    double touchZ = 0.5;
+
+    Vector2dd tangent;
+
+
 
     // GCodeInterpreter interface
 public:
