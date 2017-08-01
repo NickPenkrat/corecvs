@@ -230,7 +230,6 @@ TEST(Cameramodel, newPinholeCameraIntrinsics)
     ASSERT_TRUE(back.notTooFar(back1, 1e-4));
 }
 
-
 TEST(Cameramodel, testViewportProject)
 {
     const double FOCAL    =  640;
@@ -268,7 +267,6 @@ TEST(Cameramodel, testViewportProject)
        // mesh.addFlatPolygon(fp);
     }
 
-
     /* --------------------- */
 
     Polygon viewport = m1.projectViewport(m2);
@@ -279,10 +277,5 @@ TEST(Cameramodel, testViewportProject)
     mesh.setColor(RGBColor::Blue());
     mesh.addFlatPolygon(fp);
 
-
-
-
     mesh.dumpPLY("viewport.ply");
-
 }
-

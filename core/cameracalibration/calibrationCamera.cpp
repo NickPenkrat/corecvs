@@ -85,6 +85,18 @@ PlaneFrame CameraModel::getVirtualScreen(double distance) const
     return toReturn;
 }
 
+Polygon removeDuplicateVertices(Polygon& polygon)
+{
+    Polygon filteredPolygon;
+    for (auto& vertex : polygon)
+    {
+        if (filteredPolygon.end() == std::find_if(filteredPolygon.begin(), filteredPolygon.end(), [&] ( const corecvs::Vector2dd& p ) -> bool { return (p - vertex).l2Metric() < 1.e-9; }))
+            filteredPolygon.push_back(vertex);
+    }
+
+    return filteredPolygon;
+}
+
 Polygon CameraModel::projectViewport(const CameraModel &right) const
 {
 #if 0 /* We use a shortcut here */
@@ -112,10 +124,7 @@ Polygon CameraModel::projectViewport(const CameraModel &right) const
 #endif
 #endif
 
-
     std::vector<Ray3d> rays;
-
-
     const int SIDE_STEPS = 100;
     rays.reserve(SIDE_STEPS * 4);
 
@@ -169,9 +178,8 @@ Polygon CameraModel::projectViewport(const CameraModel &right) const
         }
     }
 
-    return ConvexHull::GrahamScan(points);
+    return removeDuplicateVertices(ConvexHull::GrahamScan(points));
 }
-
 
 PinholeCameraIntrinsics::PinholeCameraIntrinsics(Vector2dd resolution, double hfov)
   : principal(resolution / 2.0)
