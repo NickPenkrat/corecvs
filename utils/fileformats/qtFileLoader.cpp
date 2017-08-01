@@ -25,12 +25,12 @@ using namespace corecvs;
  **/
 //int QTFileLoader::DUMMY = 1;//QTFileLoader::registerMyself();
 
-RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
+corecvs::RGB24Buffer *QTFileLoader::RGB24BufferFromQImage(QImage *image)
 {
     if (image == NULL)
         return NULL;
 
-    RGB24Buffer *result = new RGB24Buffer(image->height(), image->width(), false);
+    corecvs::RGB24Buffer *result = new corecvs::RGB24Buffer(image->height(), image->width(), false);
 
     if (image->format() == QImage::Format_ARGB32 || image->format() == QImage::Format_RGB32 )
     {
@@ -88,13 +88,20 @@ QImage* QTFileLoader::RGB24BufferToQImage(RGB24Buffer &buffer)
     return img;
 }
 
-void QTFileLoader::save(const std::string& name, RGB24Buffer *input)
+void QTFileLoader::save(const std::string& name, corecvs::RGB24Buffer *input)
 {
     save(name, input, 95);
 }
 
-void QTFileLoader::save(const std::string& name, RGB24Buffer *input, int quality)
+void QTFileLoader::save(const std::string& name, corecvs::RGB24Buffer *input, int quality)
 {
+    qDebug() << "Saving to" << name.c_str() << "[" << input->w << "x" << input->h << " st:" << input->stride << " sz:" << input->sizeInBytes() << "] ptr:" << hex << (void *)input->data;
+    {
+        std::ostringstream s;
+        s << "[0,0]= " << input->element(0, 0) << "  [w-1,h-1]= " << input->element(input->h - 1, input->w - 1);
+        qDebug() << "\tinput RGB24Buffer elements: " << s.str().c_str();
+    }
+
     QImageWriter imageWriter(QString(name.c_str()));
     RGB24InterfaceImage imageToSave(input);
     imageWriter.setQuality(quality);
@@ -150,7 +157,7 @@ bool QTG12Loader::acceptsFile(string /*name*/)
     return true;
 }
 
-RGB24Buffer* QTRGB24Loader::load(string name)
+corecvs::RGB24Buffer* QTRGB24Loader::load(string name)
 {
     SYNC_PRINT(("QTRGB24Loader::load(%s): called\n", name.c_str()));
     QString qtName = QString::fromStdString(name);
