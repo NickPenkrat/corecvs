@@ -13,45 +13,54 @@ namespace corecvs {
 string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, bool clear)
 {
     static vector<string> clearedFolders;
-    string tempPath = ".";
+    string res = ".";
     if (projectEnviromentVariable.empty())
     {
         L_ERROR_P("The 'projectEnviromentVariable' is empty.");
-        return tempPath;
+        return res;
     }
 
-    cchar* sProjectPath = std::getenv(projectEnviromentVariable.c_str());
-    if (!sProjectPath)
+    string projectPath = HelperUtils::getEnvVar(projectEnviromentVariable.c_str());
+    if (projectPath.empty())
     {
         L_ERROR_P("The <%s> enviroment variable is not set.", projectEnviromentVariable.c_str());
-        return tempPath;
+        return res;
     }
 
-    string projectPath = sProjectPath;
-    static const char* envBuildNumber = std::getenv("BUILD_NUMBER");
-    static const char* envBuildJob    = std::getenv("JOB_NAME");
-    if (envBuildNumber && envBuildJob)
+    static string envBuildNumber = HelperUtils::getEnvVar("BUILD_NUMBER");
+    static string envBuildJob    = HelperUtils::getEnvVar("JOB_NAME");
+    if (!envBuildNumber.empty() && !envBuildJob.empty())
     {
-        tempPath = projectPath + PATH_SEPARATOR + "data" + PATH_SEPARATOR + 
-        "test_results" + PATH_SEPARATOR + envBuildJob + "_" + envBuildNumber + PATH_SEPARATOR + "temp";
+        res = projectPath;
+        if (!STR_HAS_SLASH_AT_END(res)) {
+            res += PATH_SEPARATOR;                  // add slash if need
+        }
+        res += string("data") + PATH_SEPARATOR + "test_results" + PATH_SEPARATOR + envBuildJob + "_" + envBuildNumber + PATH_SEPARATOR + "temp";
     }
     else
     {
 #ifdef WIN32
-        cchar * temp = std::getenv("TEMP");
-        if (temp == nullptr) temp = std::getenv("TMP");
-        if (temp != nullptr)
-            tempPath = temp;
+        string temp = HelperUtils::getEnvVar("TEMP");
+        if (temp.empty())
+            temp = HelperUtils::getEnvVar("TMP");
+        if (!temp.empty())
+            res = temp;
         else
-            L_ERROR_P("The <TEMP> enviroment variable is not set.", projectEnviromentVariable.c_str());
+            L_ERROR_P("The <TEMP> enviroment variable is not set.");
 #else
-        tempPath = "/tmp";
+        res = "/tmp";
 #endif
-        tempPath += (PATH_SEPARATOR + projectEnviromentVariable);
+        if (!STR_HAS_SLASH_AT_END(res)) {
+            res += PATH_SEPARATOR;                  // add slash if need
+        }
+        res += projectEnviromentVariable;
+        if (STR_HAS_SLASH_AT_END(res)) {
+            res.resize(res.length() - 1);           // kill the last slash
+        }
     }
         
     bool createFolder = false;
-    if (FolderScanner::isDir(tempPath))
+    if (FolderScanner::isDir(res))
     {
         if (clear)
         {
@@ -68,11 +77,11 @@ string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, bo
             if (!found) // delete folder to create it later
             {
 #ifdef WIN32
-                std::system(("rd /s /q " + tempPath).c_str());
+                std::system(("rd /s /q " + res).c_str());
 #else
-                std::system(("rm -rf " + tempPath).c_str());
+                std::system(("rm -rf " + res).c_str());
 #endif
-                L_INFO_P("The <%s> folder is deleted.", tempPath.c_str());
+                L_INFO_P("The <%s> folder is deleted.", res.c_str());
                 createFolder = true;
             }
         }
@@ -82,14 +91,14 @@ string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, bo
 
     if (createFolder) // create folder
     {
-        std::system(("mkdir " + tempPath).c_str());
-        L_INFO_P("The <%s> folder is created.", tempPath.c_str());
+        std::system(("mkdir " + res).c_str());
+        L_INFO_P("The <%s> folder is created.", res.c_str());
 
         // the created folder is automatically considered cleared
         clearedFolders.push_back(projectEnviromentVariable);
     }    
     
-    return tempPath;
+    return res;
 }
 
-}
+} // namespace corecvs
