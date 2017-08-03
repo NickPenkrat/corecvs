@@ -93,6 +93,8 @@ bool FolderScanner::createDir(const string &path)
     std::cout << "creating dir <" << path << ">" << std::endl;
 
     std::system(("mkdir " + path).c_str());
+
+    return isDir(path);
 }
 
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
@@ -131,6 +133,36 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 }
 
 #endif
+
+bool FolderScanner::createDirSafe(const string &path)
+{
+    if (createDir(path))
+    {
+        L_INFO_P("The <%s> folder is created.", path.c_str());
+    }
+    else
+    {
+        L_INFO_P("Unable to create folder <%s>, creating the tree...", path.c_str());
+
+        auto subfolders = HelperUtils::stringSplit(path, PATH_SEPARATOR[0]);
+
+        string p;
+        for (auto& subfolder : subfolders)
+        {
+            if (!p.empty()) p += PATH_SEPARATOR;
+            p += subfolder;
+
+            if (FolderScanner::isDir(p))
+                continue;
+
+            if (!FolderScanner::createDir(p)) {
+                L_INFO_P("Unable to create subfolder <%s>.", p.c_str());
+                return false;
+            }
+        }
+    }
+    return true;
+}
 
 
 } // namespace corecvs

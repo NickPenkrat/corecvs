@@ -91,8 +91,7 @@ string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, bo
 
     if (createFolder) // create folder
     {
-        std::system(("mkdir " + res).c_str());
-        L_INFO_P("The <%s> folder is created.", res.c_str());
+        FolderScanner::createDirSafe(res);
 
         // the created folder is automatically considered cleared
         clearedFolders.push_back(projectEnviromentVariable);
