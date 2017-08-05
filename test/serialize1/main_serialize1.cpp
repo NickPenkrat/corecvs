@@ -462,6 +462,27 @@ void testJSONModern_saveDistortion()
     cout << loaded << endl;
 
 }
+
+void testJSONModernScene()
+{
+    FixtureScene scene;
+    std::string calibration = "/media/workarea/work/data/Measure_31_prototype-3_martishkino-bridge/bridge//bridge_25ph/scene_M31p2_bridge_25ph_v32d.json";
+    {
+        cout << "Loading :" << calibration << endl;
+        JSONModernReader getter(calibration);
+       // getter.trace = true;
+        if (!getter.hasError())
+        {
+            getter.visit(scene, "scene");
+        } else {
+            SYNC_PRINT(("Unable to parse json: Unable to parse json. See log for details"));
+        }
+    }
+    scene.dumpInfo();
+
+}
+
+
 #endif
 
 
@@ -486,6 +507,10 @@ int main (int /*argc*/, char ** /*argv*/)
 #endif
 
 #ifdef WITH_JSONMODERN
+     testJSONModernScene();
+
+
+     return 0;
      testJSONModern1();
      testJSONModern_saveDistortion();
 #endif

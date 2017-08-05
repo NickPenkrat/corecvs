@@ -107,8 +107,7 @@ TEST(polygon, testArea2)
     cout << "Test <polygon> PASSED" << endl;
 }
 
-
-TEST(polygon, testGiftWrap)
+TEST(ConvexHullTest, testConvexHull1)
 {
     Polygon  p;
     p.push_back(Vector2dd(0.0, 0.0));
@@ -120,18 +119,30 @@ TEST(polygon, testGiftWrap)
     p.push_back(Vector2dd(6.0, 6.0));
     p.push_back(Vector2dd(0.0, 6.0));
 
-    Polygon result = ConvexHull::GiftWrap(p);
-    cout << result << endl;
-
-    for (size_t i = 0; i < result.size(); i++)
+    /* Test Gift Wrap */
+    Polygon result1 = ConvexHull::GiftWrap(p);
+    cout << result1 << endl;
+    for (size_t i = 0; i < result1.size(); i++)
     {
-        Vector2dd point = result[i];
+        Vector2dd point = result1[i];
         bool perefery = !point.isInRect(Vector2dd(0.01,0.01), Vector2dd(5.99,5.99));
-        CORE_ASSERT_TRUE(perefery, "Convex hull is wrong");
+        CORE_ASSERT_TRUE(perefery, "GiftWrap: Convex hull is wrong");
     }
+
+    /* Test GrahamScan */
+    Polygon pCopy(p);
+    Polygon result2 = ConvexHull::GrahamScan(pCopy);
+    cout << result2 << endl;
+    for (size_t i = 0; i < result2.size(); i++)
+    {
+        Vector2dd point = result2[i];
+        bool perefery = !point.isInRect(Vector2dd(0.01,0.01), Vector2dd(5.99,5.99));
+        CORE_ASSERT_TRUE(perefery, "GrahamScan: Convex hull is wrong");
+    }
+
 }
 
-TEST(ConvexHullTest, simple)
+TEST(ConvexHullTest, testConvexHull2)
 {
     std::vector<Vector2dd> points;
 
@@ -144,24 +155,32 @@ TEST(ConvexHullTest, simple)
         points.emplace_back(radius*std::cos(angle), radius*std::sin(angle));
     }
 
-    Polygon p = ConvexHull::GrahamScan(points);
-    ASSERT_TRUE(p.size() == N);
-    ASSERT_TRUE(p.isConvex());
+    std::vector<Vector2dd> pointsCopy(points);
+    Polygon p1 = ConvexHull::GrahamScan(pointsCopy);
+    ASSERT_TRUE(p1.size() == N);
+    ASSERT_TRUE(p1.isConvex());
+
+    Polygon p2 = ConvexHull::GiftWrap(points);
+    ASSERT_TRUE(p2.size() == N);
+    ASSERT_TRUE(p2.isConvex());
+
 
     for (size_t i = 0; i < N; i++)
     {
         double angle = 2*M_PI/N*i;
         double rho = radius*(1.0 - eps);
         Vector2dd point = Vector2dd(rho*std::cos(angle), rho*std::sin(angle));
-        ASSERT_TRUE(p.isInsideConvex(point));
+        ASSERT_TRUE(p1.isInsideConvex(point));
+        ASSERT_TRUE(p2.isInsideConvex(point));
     }
 
     for (size_t i = 0; i < N; i++)
     {
         double angle = 2*M_PI/N*i;
         double rho = radius*(1.0 + eps);
-        Vector2dd point = Vector2dd(rho*std::cos(angle), rho*std::sin(angle));
-        ASSERT_FALSE(p.isInsideConvex(point));
+        Vector2dd point = Vector2dd(rho*std::cos(angle), rho*std::sin(angle));        
+        ASSERT_FALSE(p1.isInsideConvex(point));
+        ASSERT_FALSE(p2.isInsideConvex(point));
     }
 }
 
@@ -172,7 +191,7 @@ TEST(ConvexHullTest, wrapClose)
 
     double radius = 1.0;
     double eps = 1e-6;
-    int N = 10;
+    size_t N = 10;
     for (int i = 0; i < N; i++)
     {
         double angle = 2*M_PI/N*i;
@@ -186,16 +205,23 @@ TEST(ConvexHullTest, wrapClose)
         points.emplace_back(rho*std::cos(angle), rho*std::sin(angle));
     }
 
-    Polygon p = ConvexHull::GrahamScan(points);
-    ASSERT_EQ(p.size(), N);
-    ASSERT_TRUE(p.isConvex());
+    std::vector<Vector2dd> pointsCopy(points);
+    Polygon p1 = ConvexHull::GrahamScan(pointsCopy);
+    ASSERT_EQ(p1.size(), N);
+    ASSERT_TRUE(p1.isConvex());
+
+    Polygon p2 = ConvexHull::GiftWrap(points);
+    ASSERT_TRUE(p2.size() == N);
+    ASSERT_TRUE(p2.isConvex());
+
 
     for (int i = 0; i < N; i++)
     {
         double angle = 2*M_PI/N*i;
         double rho = radius*(1.0 - eps);
         Vector2dd point = Vector2dd(rho*std::cos(angle), rho*std::sin(angle));
-        ASSERT_TRUE(p.isInsideConvex(point));
+        ASSERT_TRUE(p1.isInsideConvex(point));
+        ASSERT_TRUE(p2.isInsideConvex(point));
     }
 
     for (int i = 0; i < N; i++)
@@ -203,7 +229,8 @@ TEST(ConvexHullTest, wrapClose)
         double angle = 2*M_PI/N*i;
         double rho = radius*(1.0 + eps);
         Vector2dd point = Vector2dd(rho*std::cos(angle), rho*std::sin(angle));
-        ASSERT_FALSE(p.isInsideConvex(point));
+        ASSERT_FALSE(p1.isInsideConvex(point));
+        ASSERT_FALSE(p2.isInsideConvex(point));
     }
 }
 
@@ -486,8 +513,8 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
     cout << combiner << endl;
     combiner.validateState();
 
-    Polygon p3 = combiner.intersection();
-    Polygon p4 = combiner.combination();
+    Polygon pIntr = combiner.intersection();
+    Polygon pComb = combiner.combination();
     cout << "Structure after intersection" << endl;
     cout << combiner << endl;
 
@@ -499,7 +526,7 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
     for (int i = 0; i < TEST_FILED_H; i++)
         for (int j = 0; j < TEST_FILED_W; j++)
         {
-            if (p3.isInside(Vector2dd(j,i)))
+            if (pIntr.isInside(Vector2dd(j,i)))
             {
                 buffer->element(i,j) = RGBColor::Gray();
             }
@@ -516,17 +543,17 @@ Polygon testTwoPolygons(Polygon &p1, Polygon &p2, const std::string &name)
 
 
     combiner.drawDebug(buffer);
-    cout << "Result intersection: " << p3 << endl;
-    cout << "Result combination : " << p4 << endl;
+    cout << "Result intersection: " << pIntr << endl;
+    cout << "Result combination : " << pComb << endl;
 
     cout << combiner << endl;
 
-    painter.drawPolygon(p4, RGBColor::Magenta());
+    painter.drawPolygon(pComb, RGBColor::Magenta());
 
     BMPLoader().save(name, buffer);
     delete_safe(buffer);
 
-    return p3;
+    return pIntr;
 }
 
 void testTwoPolygonsIntersection(Polygon &p1, Polygon &p2, const std::string &name, bool debug = true)
