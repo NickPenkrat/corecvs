@@ -23,9 +23,7 @@ public:
 
     static bool isDir(const string &path);
 
-    static bool createDir(const string &path);
-
-    static bool createDirSafe(const string &path);      // it understands recursive creating
+    static bool createDir(const string &path, bool allowRecursive = true);
 };
 
 } // namespace corecvs

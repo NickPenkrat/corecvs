@@ -59,11 +59,13 @@ public:
     virtual G12Buffer* loadG12Bitmap(string name);
 
 
-    /** Main function to get a 12-bits buffer from the file with the given path name
+    /** Main function to get a 32-bits buffer from the file with the given path name
      */
     virtual RGB24Buffer* loadRGB24Bitmap(string name);
 
 
+    /** Main function to get a fixed #bits buffer from the file with the given path name
+     */
     virtual RuntimeTypeBuffer* loadRuntimeTypeBitmap(string name);
 
     /** Main function to get a 16-bits buffer from the file with the given path name

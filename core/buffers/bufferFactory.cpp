@@ -56,7 +56,6 @@ void BufferFactory::printCaps()
     {
         cout << "     " << it->name() << endl;
     }
-
 }
 
 /* Use template function instead of */

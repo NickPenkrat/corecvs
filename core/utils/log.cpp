@@ -10,6 +10,7 @@
 #include "log.h"
 #include "commandLineSetter.h"
 #include "tbbWrapper.h"
+#include "tempFolder.h"
 
 const char *Log::level_names[] =
 {
@@ -95,7 +96,7 @@ std::string Log::formatted(const char *format, ...)
     return result;
 }
 
-void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
+void Log::addAppLog(int argc, char* argv[], cchar* logFileName, cchar *projectEnvVar)
 {
     /** Detect min LogLevel and log filename from params
      */
@@ -132,6 +133,13 @@ void Log::addAppLog(int argc, char* argv[], cchar* logFileName)
     Log::mMinLogLevel = minLogLevel;
 
     L_INFO_P("%s", corecvs::tbbInfo().c_str());
+
+    if (projectEnvVar)
+    {
+        auto path = corecvs::TempFolder::getTempFolderPath(projectEnvVar, "data/test_results", true);  // clear it
+        L_INFO_P("Working temp dir is <%s>", path.c_str());
+    }
+
 
     // Some MSVC stuff code to activate the memory leak detector dump if we have >1 exits!
 #ifdef USE_MSVC_DEBUG_MEM
