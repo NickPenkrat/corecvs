@@ -250,9 +250,9 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
     QMAKE_CFLAGS_DEBUG     -= -g
     QMAKE_CXXFLAGS_DEBUG   -= -g
     QMAKE_LFLAGS           -= -g
-    QMAKE_CFLAGS_DEBUG     += -O3 -g3
-    QMAKE_CXXFLAGS_DEBUG   += -O3 -g3
-    QMAKE_LFLAGS           +=     -g3
+    QMAKE_CFLAGS_DEBUG     += -g3
+    QMAKE_CXXFLAGS_DEBUG   += -g3
+    QMAKE_LFLAGS           += -g3
 
     QMAKE_CFLAGS_RELEASE   += -O3
     QMAKE_CXXFLAGS_RELEASE += -O3
