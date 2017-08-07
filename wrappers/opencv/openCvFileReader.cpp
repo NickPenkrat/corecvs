@@ -27,35 +27,36 @@ void init_opencv_reader_provider()
 {
     BufferReaderProvider::getInstance().add(new OpenCvBufferReaderProvider);
 
-    BufferFactory::getInstance()->registerLoader(new OpenCVLoaderRGB24Loader());   // TODO: memory leak: this loader is never destroyed!!!
-    BufferFactory::getInstance()->registerLoader(new OpenCVLoaderRuntimeTypeBufferLoader());   // TODO: memory leak: this loader is never destroyed!!!
-
+    BufferFactory::getInstance()->registerLoader(new OpenCVLoaderRGB24Loader());
+    BufferFactory::getInstance()->registerLoader(new OpenCVLoaderRuntimeTypeBufferLoader());
 }
+
+static void throwInvalidArg(const std::string &name)
+{
+    std::stringstream ss;
+    ss << "\"" << name << "\" is not a valid image file";
+    throw std::invalid_argument(ss.str());
+}
+
 
 corecvs::RGB24Buffer OpenCvBufferReader::readRgb(const std::string &s)
 {
     cv::Mat img = cv::imread(s, CV_LOAD_IMAGE_COLOR);
-    if (!(img.rows && img.cols && img.data))
-    {
-        std::stringstream ss;
-        ss << "\"" << s << "\" is not a valid image file";
-        throw std::invalid_argument(ss.str());
+    if (!(img.rows && img.cols && img.data)) {
+        throwInvalidArg(s);
     }
     IplImage ip(img);
     auto* b = OpenCVTools::getRGB24BufferFromCVImage(&ip);
     corecvs::RGB24Buffer buffer = *b;
     delete b;
-    return  buffer;
+    return buffer;
 }
 
 RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
 {
     cv::Mat img = cv::imread(s, CV_LOAD_IMAGE_GRAYSCALE);
-    if (!(img.rows && img.cols && img.data))
-    {
-        std::stringstream ss;
-        ss << "\"" << s << "\" is not a valid image file";
-        throw std::invalid_argument(ss.str());
+    if (!(img.rows && img.cols && img.data)) {
+        throwInvalidArg(s);
     }
     return convert(img);
 }
@@ -64,22 +65,20 @@ void OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std:
 {
     auto* b = OpenCVTools::getCVImageFromRGB24Buffer(&const_cast<corecvs::RGB24Buffer&>(buffer));
     CVMAT_FROM_IPLIMAGE( mat, b, false );
-    imwrite(s, mat);
+    cv::imwrite(s, mat);
     cvReleaseImage(&b);
 }
 
 void OpenCvBufferReader::write(const RuntimeTypeBuffer &buffer, const std::string &s)
 {
     cv::Mat img = convert(buffer);
-    imwrite(s, img);
+    cv::imwrite(s, img);
 }
 
 
 /* Remove copypaste here*/
 OpenCVLoaderRGB24Loader::OpenCVLoaderRGB24Loader()
-{
-
-}
+{}
 
 bool OpenCVLoaderRGB24Loader::acceptsFile(std::string name)
 {
@@ -91,20 +90,15 @@ bool OpenCVLoaderRGB24Loader::acceptsFile(std::string name)
 RGB24Buffer *OpenCVLoaderRGB24Loader::load(std::string name)
 {
     cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_COLOR);
-    if (!(img.rows && img.cols && img.data))
-    {
-        std::stringstream ss;
-        ss << "\"" << name << "\" is not a valid image file";
-        throw std::invalid_argument(ss.str());
+    if (!(img.rows && img.cols && img.data)) {
+        throwInvalidArg(name);
     }
     IplImage ip(img);
     return OpenCVTools::getRGB24BufferFromCVImage(&ip);
 }
 
 OpenCVLoaderRuntimeTypeBufferLoader::OpenCVLoaderRuntimeTypeBufferLoader()
-{
-
-}
+{}
 
 bool OpenCVLoaderRuntimeTypeBufferLoader::acceptsFile(std::string name)
 {
@@ -115,13 +109,9 @@ bool OpenCVLoaderRuntimeTypeBufferLoader::acceptsFile(std::string name)
 RuntimeTypeBuffer *OpenCVLoaderRuntimeTypeBufferLoader::load(std::string name)
 {
     cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_GRAYSCALE);
-    if (!(img.rows && img.cols && img.data))
-    {
-        std::stringstream ss;
-        ss << "\"" << name << "\" is not a valid image file";
-        throw std::invalid_argument(ss.str());
+    if (!(img.rows && img.cols && img.data)) {
+        throwInvalidArg(name);
     }
-
     RuntimeTypeBuffer *header = new RuntimeTypeBuffer;
     *header = convert(img);
     return header;
