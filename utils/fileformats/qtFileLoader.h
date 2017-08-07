@@ -28,8 +28,7 @@ public:
 
     static corecvs::RGB24Buffer *RGB24BufferFromQImage(QImage *image);
     static QImage* RGB24BufferToQImage(corecvs::RGB24Buffer &buffer);
-    static void save(const std::string& name, corecvs::RGB24Buffer *input);
-    static void save(const std::string& name, corecvs::RGB24Buffer *input, int quality);
+    static void save(const std::string& name, corecvs::RGB24Buffer *input, int quality = 95);
     static QTemporaryFile* saveTemporary(const QImage& image);
 };
 
@@ -38,7 +37,7 @@ class QTG12Loader : public corecvs::BufferLoader<corecvs::G12Buffer>
 public:
     static int registerMyself()
     {
-        corecvs::BufferFactory::getInstance()->registerLoader(new QTG12Loader());   // TODO: memory leak: this loader is never destroyed!!!
+        corecvs::BufferFactory::getInstance()->registerLoader(new QTG12Loader());
         return 0;
     }
 
@@ -55,7 +54,7 @@ class QTRGB24Loader : public corecvs::BufferLoader<corecvs::RGB24Buffer>
 public:
     static int registerMyself()
     {
-        corecvs::BufferFactory::getInstance()->registerLoader(new QTRGB24Loader());   // TODO: memory leak: this loader is never destroyed!!!
+        corecvs::BufferFactory::getInstance()->registerLoader(new QTRGB24Loader());
         return 0;
     }
 
@@ -64,7 +63,6 @@ public:
     virtual std::string name() override { return "QTRGB24Loader(multitype)"; }
 
     virtual ~QTRGB24Loader();
-
 };
 
 class QTRuntimeLoader : public corecvs::BufferLoader<corecvs::RuntimeTypeBuffer>
@@ -72,7 +70,7 @@ class QTRuntimeLoader : public corecvs::BufferLoader<corecvs::RuntimeTypeBuffer>
 public:
     static int registerMyself()
     {
-        corecvs::BufferFactory::getInstance()->registerLoader(new QTRuntimeLoader());   // TODO: memory leak: this loader is never destroyed!!!
+        corecvs::BufferFactory::getInstance()->registerLoader(new QTRuntimeLoader());
         return 0;
     }
 

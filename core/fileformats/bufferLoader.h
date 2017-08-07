@@ -29,7 +29,6 @@ public:
     virtual std::string              name()        { return "noname"; }
     virtual std::vector<std::string> resolutions() { return std::vector<std::string>(); }
     virtual ~BufferLoader() {}
-
 };
 
 template <typename BufferType>
@@ -45,7 +44,6 @@ public:
     virtual std::vector<std::string> resolutions() { return std::vector<std::string>(); }
     virtual ~BufferSaver() {}
 };
-
 
 
 } //namespace corecvs

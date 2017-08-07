@@ -188,9 +188,9 @@ public:
     friend std::istream& ::operator>>(std::istream &is, corecvs::RuntimeTypeBuffer &b);
 
     /* Obvious converters */
-    /** We need an infrustructure for data conversion based on fastkernels **/
+    /** We need an infrastructure for data conversion based on fastkernels **/
 
-    G8Buffer *toG8Buffer();
+    G8Buffer  *toG8Buffer();
     G12Buffer *toG12Buffer(double min = 0.0, double max = 1.0);
     /**
      * TODO: We probably we need to allow to select channel
