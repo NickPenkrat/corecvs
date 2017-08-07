@@ -651,7 +651,7 @@ public:
 				if (matcher)
 					matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
-                SYNC_PRINT(("Matcher implementation returned %" PRISIZE_T "\n", ml.size()));
+                SYNC_PRINT(("Matcher implementation returned %" PRISIZE_T " matches\n", ml.size()));
 
                 for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
                 {

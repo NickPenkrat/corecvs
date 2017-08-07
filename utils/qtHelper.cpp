@@ -117,8 +117,8 @@ QString printSelectionModel(const QItemSelectionModel::SelectionFlags &flag)
     if (flag & QItemSelectionModel::Deselect) text += "deselected.";
     if (flag & QItemSelectionModel::Toggle  ) text += "selected or deselected depending on their current state.";
     if (flag & QItemSelectionModel::Current ) text += "The current selection will be updated.";
-    if (flag & QItemSelectionModel::Rows    ) text += "All indexes will be expanded to span rows.";
-    if (flag & QItemSelectionModel::Columns ) text += "All indexes will be expanded to span columns.";
+    if (flag & QItemSelectionModel::Rows    ) text += "All indices will be expanded to span rows.";
+    if (flag & QItemSelectionModel::Columns ) text += "All indices will be expanded to span columns.";
 
     return text;
 }
