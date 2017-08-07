@@ -50,6 +50,17 @@ bool FolderScanner::createDir(const string &path, bool allowRecursive)
     return res;
 }
 
+void FolderScanner::emptyDir(const string &path)
+{                                       // delete folder to create it later
+#ifdef WIN32
+    std::system(("rd /s /q " + path).c_str());
+#else
+    std::system(("rm -rf " + path).c_str());
+#endif
+    L_INFO_P("The <%s> folder is deleted.", path.c_str());
+}
+
+
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
 {
     if (!isDir(path))

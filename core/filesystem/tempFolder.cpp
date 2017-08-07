@@ -10,12 +10,84 @@ using std::string;
 
 namespace corecvs {
 
-string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, cchar *subfolderRelPathJen, bool clear)
+static string envBuildNumber = HelperUtils::getEnvVar("BUILD_NUMBER");
+static string envBuildJob    = HelperUtils::getEnvVar("JOB_NAME");
+
+string TempFolder::LocalTempPath(const string &projectEnviromentVariable)
+{
+    string res;
+#ifdef WIN32
+    res = HelperUtils::getEnvVar("TEMP");
+    if (res.empty())
+        res = HelperUtils::getEnvVar("TMP");
+    if (res.empty())
+    {
+        L_ERROR_P("The <TEMP> enviroment variable is not set.");
+        res = ".";
+    }
+#else
+    res = "/tmp";
+#endif
+    if (!STR_HAS_SLASH_AT_END(res)) {
+        res += PATH_SEPARATOR;                  // add slash if need
+    }
+    res += projectEnviromentVariable;
+    if (STR_HAS_SLASH_AT_END(res)) {
+        res.resize(res.length() - 1);           // kill the last slash
+    }
+
+    return res;
+}
+
+string TempFolder::TempFolderPath(const string &projectEnviromentVariable, bool clear, bool useLocal)
 {
     static vector<string> clearedFolders;
-    static string envBuildNumber = HelperUtils::getEnvVar("BUILD_NUMBER");
-    static string envBuildJob    = HelperUtils::getEnvVar("JOB_NAME");
 
+    string res;
+    if (useLocal)
+    {
+        res = LocalTempPath(projectEnviromentVariable);
+        if (envBuildJob.empty())
+        {
+            res += PATH_SEPARATOR;                      // add slash
+            res += envBuildJob;
+        }
+    }
+    else
+    {
+        res = UniqueBuildPath(projectEnviromentVariable) + PATH_SEPARATOR + "temp";
+    }
+
+    bool createFolder = false;
+    if (FolderScanner::isDir(res))                  // dir exists: clear it if others have created it
+    {
+        if (clear)                                  // clear it only if others have created it, we're not
+        {
+            if (!contains(clearedFolders, projectEnviromentVariable))
+            {                                       // delete folder to create it later
+                FolderScanner::emptyDir(res);
+                createFolder = true;
+            }
+        }
+    }
+    else
+    {
+        createFolder = true;                        // it doesn't exist, we need to create it
+    }
+
+    if (createFolder)
+    {
+        FolderScanner::createDir(res);              // folder creation with its subfolders
+
+        // the created folder is automatically considered cleared
+        clearedFolders.push_back(projectEnviromentVariable);
+    }    
+    
+    return res;
+}
+
+std::string TempFolder::UniqueBuildPath(const std::string &projectEnviromentVariable, const std::string &subfolderRelPathJen)
+{
     string res = ".";
     if (projectEnviromentVariable.empty())
     {
@@ -36,66 +108,22 @@ string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, cc
         if (!STR_HAS_SLASH_AT_END(res)) {
             res += PATH_SEPARATOR;                  // add slash if need
         }
-        if (subfolderRelPathJen && *subfolderRelPathJen) {
-            res += HelperUtils::toNativeSlashes(subfolderRelPathJen);
-        }
-        if (!STR_HAS_SLASH_AT_END(res)) {
-            res += PATH_SEPARATOR;                  // add slash if need
-        }
-        res += envBuildJob + "_" + envBuildNumber + PATH_SEPARATOR + "temp";
-    }
-    else
-    {
-#ifdef WIN32
-        string temp = HelperUtils::getEnvVar("TEMP");
-        if (temp.empty())
-            temp = HelperUtils::getEnvVar("TMP");
-        if (!temp.empty())
-            res = temp;
-        else
-            L_ERROR_P("The <TEMP> enviroment variable is not set.");
-#else
-        res = "/tmp";
-#endif
-        if (!STR_HAS_SLASH_AT_END(res)) {
-            res += PATH_SEPARATOR;                  // add slash if need
-        }
-        res += projectEnviromentVariable;
-        if (STR_HAS_SLASH_AT_END(res)) {
-            res.resize(res.length() - 1);           // kill the last slash
-        }
-    }
-        
-    bool createFolder = false;
-    if (FolderScanner::isDir(res))                  // dir exists: clear it if others have created it
-    {
-        if (clear)                                  // clear it only if others have created it, we're not
+
+        if (!subfolderRelPathJen.empty())
         {
-            if (!contains(clearedFolders, projectEnviromentVariable))
-            {                                       // delete folder to create it later
-#ifdef WIN32
-                std::system(("rd /s /q " + res).c_str());
-#else
-                std::system(("rm -rf " + res).c_str());
-#endif
-                L_INFO_P("The <%s> folder is deleted.", res.c_str());
-                createFolder = true;
+            res += HelperUtils::toNativeSlashes(subfolderRelPathJen);
+            if (!STR_HAS_SLASH_AT_END(res)) {
+                res += PATH_SEPARATOR;              // add slash if need
             }
         }
+
+        res += envBuildJob + "_" + envBuildNumber;
     }
     else
     {
-        createFolder = true;                        // it doesn't exist, we need to create it
+        res = LocalTempPath(projectEnviromentVariable);
     }
 
-    if (createFolder)
-    {
-        FolderScanner::createDir(res);              // folder creation with its subfolders
-
-        // the created folder is automatically considered cleared
-        clearedFolders.push_back(projectEnviromentVariable);
-    }    
-    
     return res;
 }
 
