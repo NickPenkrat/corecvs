@@ -21,7 +21,7 @@ public:
     ///
     /// \note   the returned path looks like: "/tmp/<projectName>"
     ///
-    static std::string LocalTempPath(const string &projectEnviromentVariable);
+    static std::string LocalTempPath(const std::string &projectEnviromentVariable);
 
     ///
     /// \brief returns path to the project's temp folder, not a thread safe
