@@ -95,12 +95,12 @@ void QTFileLoader::save(const std::string& name, corecvs::RGB24Buffer *input)
 
 void QTFileLoader::save(const std::string& name, corecvs::RGB24Buffer *input, int quality)
 {
-    qDebug() << "Saving to" << name.c_str() << "[" << input->w << "x" << input->h << " st:" << input->stride << " sz:" << input->sizeInBytes() << "] ptr:" << hex << (void *)input->data;
-    {
-        std::ostringstream s;
-        s << "[0,0]= " << input->element(0, 0) << "  [w-1,h-1]= " << input->element(input->h - 1, input->w - 1);
-        qDebug() << "\tinput RGB24Buffer elements: " << s.str().c_str();
-    }
+    //qDebug() << "Saving to" << name.c_str() << "[" << input->w << "x" << input->h << " st:" << input->stride << " sz:" << input->sizeInBytes() << "] ptr:" << hex << (void *)input->data;
+    //{
+    //    std::ostringstream s;
+    //    s << "[0,0]= " << input->element(0, 0) << "  [w-1,h-1]= " << input->element(input->h - 1, input->w - 1);
+    //    qDebug() << "\tinput RGB24Buffer elements: " << s.str().c_str();
+    //}
 
     QImageWriter imageWriter(QString(name.c_str()));
     RGB24InterfaceImage imageToSave(input);
