@@ -47,7 +47,7 @@ string TempFolder::TempFolderPath(const string &projectEnviromentVariable, bool 
     if (useLocal)
     {
         res = LocalTempPath(projectEnviromentVariable);
-        if (envBuildJob.empty())
+        if (!envBuildJob.empty())
         {
             res += PATH_SEPARATOR;                      // add slash
             res += envBuildJob;
