@@ -1,9 +1,8 @@
 #include "gcodeLoader.h"
+#include "utils.h"
 
 #include <sstream>
 #include <cctype>
-#include "utils.h"
-
 
 namespace corecvs {
 
@@ -15,9 +14,7 @@ using std::pair;
 GcodeLoader::GcodeLoader()
 {}
 
-
-
-vector<pair<char, double>> parseLine(string gline)
+vector<pair<char, double>> parseLine(const string& gline)
 {    
     vector<pair<char, double>> result;
     vector<string> split = HelperUtils::stringSplit(gline, ' ');
@@ -349,8 +346,6 @@ int GcodeLoader::loadGcode(std::istream &input, GCodeProgram &program)
     return 0;
 }
 
-
-
 int GcodeLoader::saveGcode(std::ostream &out, const GCodeProgram &program)
 {
     for (const GCodeProgram::Code &c: program.program)
@@ -397,24 +392,27 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
             continue;
         }
 
-        if (c.area == 'm') {
-            switch (c.number) {
+        if (c.area == 'm')
+        {
+            switch (c.number)
+            {
             case 82:
-                    state->extruderRealtive = false;
-                    break;
+                state->extruderRealtive = false;
+                break;
             case 83:
-                    state->extruderRealtive = true;
-                    break;
+                state->extruderRealtive = true;
+                break;
             case 104:
-                    if (c.hasParameter('s')) {
-                        state->extruderTemperature = c.getParameter('s');
-                        cout << "Setting extruder temperature " << state->extruderTemperature << endl;
-                    }
+                if (c.hasParameter('s')) {
+                    state->extruderTemperature = c.getParameter('s');
+                    cout << "Setting extruder temperature " << state->extruderTemperature << endl;
+                }
                 break;
             case 140:
-                    if (c.hasParameter('s'))
-                        state->bedTemperature = c.getParameter('s');
-                        cout << "Setting bed temperature " << state->extruderTemperature << endl;
+                if (c.hasParameter('s')) {
+                    state->bedTemperature = c.getParameter('s');
+                    cout << "Setting bed temperature " << state->extruderTemperature << endl;
+                }
                 break;
             default:
                 break;
@@ -424,7 +422,6 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
         if (c.area == 'g')
         {
             MachineState newState = *state;
-
 
             for (int i = 0; i < (int)c.parameters.size(); i++)
             {
@@ -445,14 +442,14 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
                 //mesh.setColor(RGBColor::Gray());
                 //mesh.addLine(currentPosition, target);
                 straightHook(0, *state, newState);
-
-
-            } else if (c.number == 1) {
+            }
+            else if (c.number == 1) {
 //                cout << "G1 move" << endl;
                 //mesh.setColor(RGBColor::Blue());
                 //mesh.addLine(currentPosition, target);
                 straightHook(1, *state, newState);
-            } else if (c.number == 2 || c.number == 3) {
+            }
+            else if (c.number == 2 || c.number == 3) {
                 Vector3dd center = newState.position;
                 //mesh.setColor(RGBColor::Yellow());
 
@@ -495,13 +492,10 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
                     currentPosition = subTarget;
                 }
                 */
-
-
-
                 /*mesh.setColor(RGBColor::Pink());
                 mesh.addLine(currentPosition, target);*/
-
-            } else {
+            }
+            else {
                 errorHook();
                 /*mesh.setColor(RGBColor::Green());
                 mesh.addLine(currentPosition, target);*/
@@ -509,11 +503,8 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
 
             *state = newState;
         }
-
     }
-
 }
-
 
 /* These hooks could either return true - then implemenation update the machine state */
 bool GCodeInterpreter::gcodeHook    ( const GCodeProgram::Code &/*code*/ )
@@ -532,10 +523,8 @@ bool GCodeInterpreter::arkHook(const MachineState &/*before*/, const MachineStat
     return true;
 }
 
-void GCodeInterpreter::errorHook( void )
-{
-
-}
+void GCodeInterpreter::errorHook(void)
+{}
 
 GCodeInterpreter::~GCodeInterpreter()
 {
@@ -544,9 +533,7 @@ GCodeInterpreter::~GCodeInterpreter()
 
 /*void GCodeToMesh::setColor(Mesh3D &mesh, const MachineState &before, const MachineState &after)
 {
-
 }*/
-
 
 bool GCodeToMesh::MeshInterpreter::straightHook(int type, const GCodeInterpreter::MachineState &before, const GCodeInterpreter::MachineState &after)
 {
@@ -603,6 +590,4 @@ int GCodeToMesh::renderToMesh(const GCodeProgram &in, Mesh3D &mesh)
 }
 
 
-
 } // namespace corecvs
-

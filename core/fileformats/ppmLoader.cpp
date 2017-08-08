@@ -42,36 +42,29 @@ G12Buffer* PPMLoader::loadG16(string name)
     }
 
     G12Buffer *result = NULL;
-    uint32_t h = 0, w = 0; uint16_t d = 0;
     FILE *In = fopen(name.c_str(), "rb");
-    if (In == NULL) {
-        goto exit;
-    }
-    int read = (int)fread(&h, sizeof(uint32_t), 1, In);
-    if (read != 1) {
-        goto exit;
-    }
-    read = (int)fread(&w, sizeof(uint32_t), 1, In);
-    if (read != 1) {
-        goto exit;
-    }
-    if (h > 2000 || w > 2000) {
-        goto exit;
-    }
-    result = new G12Buffer(h, w);
-    for (uint32_t i = 0; i < h; ++i) {
-        for (uint32_t j = 0; j < w; ++j) {
-            read = (int)fread(&d, sizeof(uint16_t), 1, In);
-            if (read != 1) {
-                goto exit;
-            }
-            result->element(i, j) = d;
-        }
-    }
-exit:
-    if (In != NULL)
+    while (In != NULL)
     {
+        uint32_t h = 0, w = 0;
+        if (fread(&h, sizeof(h), 1, In) != 1 ||
+            fread(&w, sizeof(w), 1, In) != 1 ||
+            h > 2000 || w > 2000)
+            break;
+
+        result = new G12Buffer(h, w);
+        if (result)
+        for (uint32_t i = 0; i < h; ++i) {
+            for (uint32_t j = 0; j < w; ++j) {
+                uint16_t d = 0;
+                if (fread(&d, sizeof(d), 1, In) != 1) {
+                    j = w, i = h;
+                    break;
+                }
+                result->element(i, j) = d;
+            }
+        }
         fclose(In);
+        break;
     }
     return result;
 }
