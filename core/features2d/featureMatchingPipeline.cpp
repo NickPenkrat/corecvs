@@ -112,6 +112,8 @@ public:
 
             ss1 << image.filename << ", ";
 
+            corecvs::BufferFactory::printCaps();
+
 			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
 			img->downsample(downsampleFactor);
             detector->detect((*img.get()), image.keyPoints.keyPoints, maxFeatureCount, downsampleFactor == 1 ? image.remapCache : 0);
