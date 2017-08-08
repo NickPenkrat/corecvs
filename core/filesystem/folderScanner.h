@@ -25,7 +25,7 @@ public:
 
     static bool createDir(const string &path, bool allowRecursive = true);
 
-    static void emptyDir(const string &path);
+    static void emptyDir(const string &path);       // delete folder to create it later probably
 
 };
 
