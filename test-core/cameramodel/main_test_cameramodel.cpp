@@ -233,6 +233,10 @@ TEST(Cameramodel, newPinholeCameraIntrinsics)
 
 TEST(Cameramodel, testViewportProject)
 {
+    CameraModel m1;
+    CameraModel m2;
+
+#if 1
     const double FOCAL    =  640;
 
     const int RESOLUTION_X = 640;
@@ -241,14 +245,28 @@ TEST(Cameramodel, testViewportProject)
 
     PinholeCameraIntrinsics pinhole(Vector2dd(RESOLUTION_X, RESOLUTION_Y), Vector2dd(RESOLUTION_X, RESOLUTION_Y) / 2, FOCAL);
 
-    CameraModel m1;
-    CameraModel m2;
-
     m1.intrinsics = pinhole;
     m2.intrinsics = pinhole;
 
     m1.setLocation(Affine3DQ::Identity());
     m2.setLocation(Affine3DQ::Shift(0,0,100) * Affine3DQ::RotationY(degToRad(90)));
+#endif
+#if 0
+    PinholeCameraIntrinsics pinhole(3965.4383873659367, 3965.4383873659367,  // fx, fy
+                                    2084.80540331143  , 1679.7502678975418,  // cx, cy
+                                    0,
+                                    Vector2dd(4354.294334297267 , 3183.5054940438877),
+                                    Vector2dd(4212, 3120) );
+
+    m1.intrinsics = pinhole;
+    m2.intrinsics = pinhole;
+
+    m2.setLocation(Affine3DQ::Identity());
+
+    m1.extrinsics.position    = Vector3dd(-0.26863324275046974, -0.06798521743228642, 0.9456380575382222);
+    m1.extrinsics.orientation = Quaternion(0.015185444481965392, -0.11858704841730526, -0.0012166648664927032, 0.9928267895006454);
+#endif
+
 
     Mesh3D mesh;
     mesh.switchColor();    
@@ -268,19 +286,51 @@ TEST(Cameramodel, testViewportProject)
        // mesh.addFlatPolygon(fp);
     }
 
+    {
+        std::vector<Ray3d> rays;
+
+
+        mesh.setColor(RGBColor::Cyan());
+
+        const int SIDE_STEPS = 10;
+        rays.reserve(SIDE_STEPS * 4);
+
+        Vector2dd p1 = Vector2dd::Zero();
+        Vector2dd p3 = m2.intrinsics.size;
+        Vector2dd p2 = Vector2dd(p3.x(), p1.y());
+        Vector2dd p4 = Vector2dd(p1.x(), p3.y());
+
+        Ray3d  baseRays[] =
+        {
+            m2.rayFromPixel(p1), m2.rayFromPixel(p2), m2.rayFromPixel(p3), m2.rayFromPixel(p4)
+        };
+
+        for (size_t rayId = 0; rayId < CORE_COUNT_OF(baseRays); rayId++ )
+        {
+            for (int i = 0; i < SIDE_STEPS; i++)
+            {
+                Ray3d r1 = baseRays[rayId];
+                Ray3d r2 = baseRays[(rayId + 1) % CORE_COUNT_OF(baseRays)];
+                Ray3d r  = Ray3d(lerp(r1.direction(), r2.direction(), i, 0.0, SIDE_STEPS), r1.origin());
+                rays.push_back(r);
+//                mesh.addLine(r.origin(), r.getPoint(10));
+            }
+        }
+    }
+
+
+
 
     /* --------------------- */
 
     Polygon viewport = m1.projectViewport(m2);
     FlatPolygon fp;
     fp.polygon = viewport;
-    fp.frame = m1.getVirtualScreen(5.0);
+    fp.frame = m1.getVirtualScreen(5.1);
 
-    mesh.setColor(RGBColor::Blue());
+    mesh.setColor(RGBColor::Yellow());
     mesh.addFlatPolygon(fp);
-
-
-
+    cout << "Result viewport" << viewport;
 
     mesh.dumpPLY("viewport.ply");
 
