@@ -41,7 +41,7 @@ void PointListEditImageWidget::setObservationModel(ObservationListModel *observa
     connect(mObservationListModel, SIGNAL(modelReset())                                     , this, SLOT(invalidateModel()));
 }
 
-/* This is called when model indexes are changed, and our cache is no longer valid */
+/* This is called when model indices are changed, and our cache is no longer valid */
 void PointListEditImageWidget::invalidateModel()
 {
     mSelectedPoint = -1;
@@ -319,7 +319,7 @@ void PointListEditImageWidgetUnited::setSelectionModel(QItemSelectionModel *_sel
 }
 
 
-/* This is called when model indexes are changed, and our cache is no longer valid */
+/* This is called when model indices are changed, and our cache is no longer valid */
 void PointListEditImageWidgetUnited::invalidateModel()
 {
     mSelectedPoint = -1;

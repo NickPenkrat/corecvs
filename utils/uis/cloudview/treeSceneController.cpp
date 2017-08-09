@@ -531,7 +531,7 @@ QModelIndex  TreeSceneModel::unpackPath(QDataStream &stream) const
     return pathIter;
 }
 
-QMimeData *TreeSceneModel::mimeData(const QModelIndexList &indexes) const
+QMimeData *TreeSceneModel::mimeData(const QModelIndexList &indices) const
 {
     //qDebug() << "Packing object to mime";
     QMimeData *mimeData = new QMimeData();
@@ -539,10 +539,10 @@ QMimeData *TreeSceneModel::mimeData(const QModelIndexList &indexes) const
 
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    if (indexes.size() == 0)
+    if (indices.size() == 0)
         return NULL;
 
-    packPath(indexes[0], stream);
+    packPath(indices[0], stream);
     mimeData->setData(MIME_TYPE, encodedData);
     return mimeData;
 }
