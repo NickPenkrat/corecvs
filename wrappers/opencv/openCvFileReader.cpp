@@ -38,7 +38,7 @@ corecvs::RGB24Buffer OpenCvBufferReader::readRgb(const std::string &s)
     if (!(img.rows && img.cols && img.data))
     {
         std::stringstream ss;
-        ss << "\"" << s << "\" is not a valid image file";
+        ss << "OpenCvBufferReader::readRgb() \"" << s << "\" is not a valid image file";
         throw std::invalid_argument(ss.str());
     }
     IplImage ip(img);
@@ -54,7 +54,7 @@ RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
     if (!(img.rows && img.cols && img.data))
     {
         std::stringstream ss;
-        ss << "\"" << s << "\" is not a valid image file";
+        ss << "OpenCvBufferReader::read() \"" << s << "\" is not a valid image file";
         throw std::invalid_argument(ss.str());
     }
     return convert(img);
@@ -94,7 +94,7 @@ RGB24Buffer *OpenCVLoaderRGB24Loader::load(std::string name)
     if (!(img.rows && img.cols && img.data))
     {
         std::stringstream ss;
-        ss << "\"" << name << "\" is not a valid image file";
+        ss << "OpenCVLoaderRGB24Loader::load() \"" << name << "\" is not a valid image file";
         throw std::invalid_argument(ss.str());
     }
     IplImage ip(img);
@@ -118,7 +118,7 @@ RuntimeTypeBuffer *OpenCVLoaderRuntimeTypeBufferLoader::load(std::string name)
     if (!(img.rows && img.cols && img.data))
     {
         std::stringstream ss;
-        ss << "\"" << name << "\" is not a valid image file";
+        ss << "OpenCVLoaderRuntimeTypeBufferLoader::load() \"" << name << "\" is not a valid image file";
         throw std::invalid_argument(ss.str());
     }
 

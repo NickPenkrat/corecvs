@@ -786,11 +786,11 @@ double ccw(const Vector2dd& p1, const Vector2dd& p2, const Vector2dd& p3)
     return (p2 - p1) & (p3 - p1).leftNormal();
 }
 
+#if 0
 double ccwProjective(const Vector3dd& p1, const Vector3dd& p2, const Vector3dd& p3)
 {
-
-
 }
+#endif
 
 Polygon ConvexHull::GrahamScan(std::vector<Vector2dd> points)
 {
