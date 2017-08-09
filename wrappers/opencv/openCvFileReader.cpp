@@ -29,6 +29,7 @@ void init_opencv_reader_provider()
 
     BufferFactory::getInstance()->registerLoader(new OpenCVLoaderRGB24Loader());   // TODO: memory leak: this loader is never destroyed!!!
     BufferFactory::getInstance()->registerLoader(new OpenCVLoaderRuntimeTypeBufferLoader());   // TODO: memory leak: this loader is never destroyed!!!
+}
 
 static void throwInvalidArg(const std::string &name)
 {

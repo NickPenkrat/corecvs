@@ -128,11 +128,14 @@ bool Polygon::hasSelfIntersection() const
     for (size_t i = 0; i < len; i++)
     {
        Segment2d s1 = getSegment(i);
-       for (size_t j = i + 2; j < len; j++)
+       for (size_t j = i + 2; j < len - 1; j++)
        {
           Segment2d s2 = getSegment(j);
           bool intersect;
           Segment2d::intersect(s1, s2, intersect);
+
+          cout << s1 << " and " << s2 << (intersect ? " y" : " n") << endl;
+
           if (intersect)
               return true;
        }

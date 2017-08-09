@@ -619,8 +619,8 @@ TEST(polygon, DISABLED_testIsSelfintersection)
     drawPolygon(&buffer, p2, RGBColor::Red(), RGBColor::Blue());
     BMPLoader().save("selfintersect.bmp", &buffer);
 
-    CORE_ASSERT_TRUE_P(!p1.hasSelfIntersection(), ("Should not be selfintersecting" ));
     CORE_ASSERT_TRUE_P( p2.hasSelfIntersection(), ("Should be selfintersecting"     ));
+    CORE_ASSERT_TRUE_P(!p1.hasSelfIntersection(), ("Should not be selfintersecting" ));
 
 }
 
