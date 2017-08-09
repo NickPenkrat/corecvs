@@ -286,41 +286,6 @@ TEST(Cameramodel, testViewportProject)
        // mesh.addFlatPolygon(fp);
     }
 
-    {
-        std::vector<Ray3d> rays;
-
-
-        mesh.setColor(RGBColor::Cyan());
-
-        const int SIDE_STEPS = 10;
-        rays.reserve(SIDE_STEPS * 4);
-
-        Vector2dd p1 = Vector2dd::Zero();
-        Vector2dd p3 = m2.intrinsics.size;
-        Vector2dd p2 = Vector2dd(p3.x(), p1.y());
-        Vector2dd p4 = Vector2dd(p1.x(), p3.y());
-
-        Ray3d  baseRays[] =
-        {
-            m2.rayFromPixel(p1), m2.rayFromPixel(p2), m2.rayFromPixel(p3), m2.rayFromPixel(p4)
-        };
-
-        for (size_t rayId = 0; rayId < CORE_COUNT_OF(baseRays); rayId++ )
-        {
-            for (int i = 0; i < SIDE_STEPS; i++)
-            {
-                Ray3d r1 = baseRays[rayId];
-                Ray3d r2 = baseRays[(rayId + 1) % CORE_COUNT_OF(baseRays)];
-                Ray3d r  = Ray3d(lerp(r1.direction(), r2.direction(), i, 0.0, SIDE_STEPS), r1.origin());
-                rays.push_back(r);
-//                mesh.addLine(r.origin(), r.getPoint(10));
-            }
-        }
-    }
-
-
-
-
     /* --------------------- */
 
     Polygon viewport = m1.projectViewport(m2);

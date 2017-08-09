@@ -606,7 +606,7 @@ TEST(polygon, testIntersection)
     delete_safe(buffer);
 }
 
-TEST(polygon, DISABLED_testIsSelfintersection)
+TEST(polygon, testIsSelfintersection)
 {
     int h = 200;
     int w = 200;

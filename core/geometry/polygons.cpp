@@ -134,7 +134,7 @@ bool Polygon::hasSelfIntersection() const
           bool intersect;
           Segment2d::intersect(s1, s2, intersect);
 
-          cout << s1 << " and " << s2 << (intersect ? " y" : " n") << endl;
+          //cout << "Polygon::hasSelfIntersection():" << s1 << " and " << s2 << (intersect ? " y" : " n") << endl;
 
           if (intersect)
               return true;
