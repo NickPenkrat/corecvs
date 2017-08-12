@@ -85,7 +85,7 @@ PlaneFrame CameraModel::getVirtualScreen(double distance) const
     return toReturn;
 }
 
-Polygon removeDuplicateVertices(Polygon& polygon)
+Polygon removeDuplicateVertices(const Polygon& polygon)
 {
     Polygon filteredPolygon;
     for (auto& vertex : polygon)
