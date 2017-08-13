@@ -81,21 +81,40 @@ int  Polygon::isInside(const Vector2dd &point) const
 bool Polygon::isConvex(bool *direction) const
 {
     double oldsign = 0;
-    int len = (int)size();
-    for (int i = 0; i < len; i++)
+
+    const Vector2dd *curr  = &getPoint(0);
+    int idx1 = getNextDifferentIndex(0);
+    if (idx1 == 0)
+        return true;
+
+    const Vector2dd *next  = &getPoint(idx1);
+
+    int idx2 = getNextIndex(idx1);
+    const Vector2dd *nnext = NULL;
+
+    cout << "We have taken as first ones" << *curr << " " << *next << endl;
+
+    while (idx2 != idx1)
     {
-        const Vector2dd &curr = operator [](i);
-        const Vector2dd &next = operator []((i + 1) % len);
-        const Vector2dd &nnext = operator []((i + 2) % len);
+        double sign = 0.0;
 
-        double sign = (next - curr).rightNormal() & (nnext - next);
+        nnext = &getPoint(idx2);
+        sign = (*next - *curr).rightNormal() & (*nnext - *next);
 
-        if (oldsign > 0  && sign < 0)
-            return false;
-        if (oldsign < 0  && sign > 0)
-            return false;
-        oldsign = sign;
+        if (sign != 0.0) {
+            if (oldsign > 0  && sign < 0)
+                return false;
+            if (oldsign < 0  && sign > 0)
+                return false;
+            oldsign = sign;
+
+            curr = next;
+            next = nnext;
+        }
+        idx2 = getNextIndex(idx2);
     }
+
+done:
     if (direction != NULL) {
         *direction =  (oldsign > 0);
     }
@@ -105,15 +124,18 @@ bool Polygon::isConvex(bool *direction) const
 /** Rewrite this with sweep line **/
 bool Polygon::hasSelfIntersection() const
 {
-    int len = (int)size();
+    size_t len = size();
     for (size_t i = 0; i < len; i++)
     {
        Segment2d s1 = getSegment(i);
-       for (size_t j = i + 2; j < len; j++)
+       for (size_t j = i + 2; j < len - 1; j++)
        {
           Segment2d s2 = getSegment(j);
           bool intersect;
           Segment2d::intersect(s1, s2, intersect);
+
+          //cout << "Polygon::hasSelfIntersection():" << s1 << " and " << s2 << (intersect ? " y" : " n") << endl;
+
           if (intersect)
               return true;
        }
@@ -767,11 +789,11 @@ double ccw(const Vector2dd& p1, const Vector2dd& p2, const Vector2dd& p3)
     return (p2 - p1) & (p3 - p1).leftNormal();
 }
 
+#if 0
 double ccwProjective(const Vector3dd& p1, const Vector3dd& p2, const Vector3dd& p3)
 {
-    // TODO:
-    return 0.0;
 }
+#endif
 
 Polygon ConvexHull::GrahamScan(std::vector<Vector2dd> points)
 {
@@ -805,6 +827,10 @@ Polygon ConvexHull::GrahamScan(std::vector<Vector2dd> points)
                 return (ab.y() > 0);
         }
     );
+
+    /* Dedup */
+    auto last = std::unique(points.begin(), points.end());
+    points.erase(last, points.end());
 
     //pass of Graham scan
     Polygon hull;

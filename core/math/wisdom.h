@@ -150,10 +150,10 @@ private:
         static AcceleratorController controller;
 #ifdef WITH_CUDA
         if (!gpuptr())
-            std::cout << "No gpu!?" << std::endl;
+            std::cout << "AcceleratorController: No gpu!?" << std::endl;
 #endif
         if (!cpuptr())
-            std::cout << "No cpu!?" << std::endl;
+            std::cout << "AcceleratorController: No cpu!?" << std::endl;
         return controller;
     }
     AcceleratorController() {}
@@ -281,7 +281,7 @@ private:
         CORE_ASSERT_TRUE_S(false);
         return R();
     }
-    Wisdom() {};
+    Wisdom() {}
     static const int RETRIES = 5;
     std::map<std::tuple<AcceleratorTypes, Implementation>, std::function<R(int,T&,A...)>> registered;
     std::map<typename Characterizator<T>::characteristic_type, std::map<std::tuple<AcceleratorTypes, Implementation, int>, std::vector<double>>> timings;

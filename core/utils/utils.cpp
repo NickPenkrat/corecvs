@@ -62,13 +62,12 @@ bool endsWith(const std::string &str, const std::string &postfix)
 
 string getEnvDirPath(cchar *envVarName)
 {
-    cchar* dir = std::getenv(envVarName);
-    if (dir == NULL || dir[0] == 0) {
+    string toReturn = getEnvVar(envVarName);
+    if (toReturn.empty()) {
         CORE_ASSERT_FAIL_P(("Missed environment variable %s", envVarName));
         return "";
     }
 
-    string toReturn(dir);
     if (!STR_HAS_SLASH_AT_END(toReturn)) {
         toReturn += PATH_SEPARATOR;
     }
@@ -81,7 +80,6 @@ string getEnvVar(cchar *envVarName)
     if (var == NULL || var[0] == 0) {
         return "";
     }
-
     return var;
 }
 
@@ -147,11 +145,18 @@ string getFullPath(const string& envDirPath, cchar* path, cchar* filename)
 
     string res(envDirPath);
 
-    if (STR_HAS_SLASH_AT_END(envDirPath) && IS_SLASH_SYMBOL(path[0]))   // check for doubled slash in given components
+    if (STR_HAS_SLASH_AT_END(res) && IS_SLASH_SYMBOL(path[0]))   // check for doubled slash in given components
         res.resize(res.length() - 1);
 
     res += path;
-    res += filename;
+
+    if (*filename)
+    {
+        if (!STR_HAS_SLASH_AT_END(res) && !IS_SLASH_SYMBOL(filename[0]))   // check for absent slash in given components
+            res += PATH_SEPARATOR;
+
+        res += filename;
+    }
 
     return toNativeSlashes(res);
 }

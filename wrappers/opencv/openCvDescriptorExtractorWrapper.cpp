@@ -111,9 +111,10 @@ void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
 	, void* pRemapCache )
 {
     std::vector<cv::KeyPoint> kps;
+    kps.reserve(keyPoints.size());
     FOREACH(const KeyPoint& kp, keyPoints)
     {
-        kps.push_back(convert(kp));
+        kps.emplace_back(convert(kp));
     }
     cv::Mat img = convert(image), desc;
 	if (pRemapCache)
@@ -127,9 +128,10 @@ void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
     extractor->compute(img, kps, desc);
 
     keyPoints.clear();
+    keyPoints.reserve(kps.size());
     FOREACH(const cv::KeyPoint& kp, kps)
     {
-        keyPoints.push_back(convert(kp));
+        keyPoints.emplace_back(convert(kp));
     }
 
     descriptors = convert(desc);

@@ -32,6 +32,7 @@ public:
     virtual bool acceptsFile(string name);
 
     virtual G12Buffer * loadG12(string name);
+    virtual G12Buffer * loadG16(string name);
 
     /**
      * Load method overload.
@@ -98,6 +99,17 @@ public:
     }
 
     virtual std::string name() override { return "PPMLoaderG12"; }
+};
+
+class PPMLoaderG16 : public PPMLoaderG12        // we may use G12Buffer container as it has 2bytes/pixel indeed
+{
+public:
+    virtual G12Buffer *load(string name) override
+    {
+        return PPMLoader::loadG16(name);
+    }
+
+    virtual std::string name() override { return "PPMLoaderG16"; }
 };
 
 class PPMLoaderRGB24 : public BufferLoader<RGB24Buffer>, public PPMLoader

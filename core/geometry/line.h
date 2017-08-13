@@ -1061,6 +1061,8 @@ inline Vector2dd Segment2d::intersect(const Segment2d &s1, const Segment2d &s2, 
     double t1 = 0;
     double t2 = 0;
 
+    //cout << "Segment2d::intersect(): " << r1 << " and " << r2 << std::endl;
+
     Vector2dd x = Ray2d::intersection(r1, r2, t1, t2);
 
     if (t1 == std::numeric_limits<double>::infinity())
@@ -1076,6 +1078,7 @@ inline Vector2dd Segment2d::intersect(const Segment2d &s1, const Segment2d &s2, 
         return Vector2dd::Zero();
     }
 
+    hasIntersection = true;
     return x;
 }
 

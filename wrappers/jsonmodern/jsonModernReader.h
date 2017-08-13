@@ -29,6 +29,10 @@ using corecvs::DoubleVectorField;
         SYNC_PRINT(X);       \
     }                        \
 
+#define CONDITIONAL_DEEPTRACE(X) \
+    if (deepTrace) {             \
+        SYNC_PRINT(X);       \
+    }
 
 
 /**
@@ -76,6 +80,9 @@ public:
     void visit(Type &field, const char *fieldName)
     {
         CONDITIONAL_TRACE(("JSONModernReader::visit(Type &field, %s)\n", fieldName));
+        if (mNodePath.empty() || mNodePath.back() == NULL) {
+            SYNC_PRINT(("JSONModernReader::visit(Type &field, %s)\n", fieldName));
+        }
         if (mNodePath.back()->count(fieldName) == 0) {
              SYNC_PRINT(("JSONModernReader::visit(): member %s not found\n", fieldName));
              return;
@@ -221,7 +228,7 @@ public:
     {
         CONDITIONAL_TRACE(("JSONModernReader::visit(type &field, type defaultValue, %s) v1 \n", fieldName ));
         if (mNodePath.back()->count(fieldName) == 0) {
-             SYNC_PRINT(("JSONModernReader::visit(): member not found\n"));
+             SYNC_PRINT(("JSONModernReader::visit v1(_,_,%s): member not found\n", fieldName));
              return;
         }
 
@@ -281,11 +288,17 @@ private:
     std::vector<nlohmann::json *> mNodePath;
     std::string         mFileName;
     nlohmann::json mDocument;
-    bool trace = false;
     bool mHasError = false;
+
+public:
+    bool trace = false;
+    bool deepTrace = false;
+
 };
 
 #undef CONDITIONAL_TRACE
+#undef CONDITIONAL_DEEPTRACE
+
 
 template <>
 void JSONModernReader::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);
