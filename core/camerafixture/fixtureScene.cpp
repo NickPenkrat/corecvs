@@ -56,9 +56,10 @@ void FixtureScene::projectForward(SceneFeaturePoint::PointType mask, bool round)
 
 bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkMinimalAngle)
 {
-    if (point->observations.size() < 2)
+    size_t observationNum = point->observations.size();
+    if (observationNum < 2)
     {
-        SYNC_PRINT(("FixtureScene::triangulate(): too few observations"));
+        SYNC_PRINT(("FixtureScene::triangulate(): too few observations (%d)", (int)observationNum));
         return false;
     }
 

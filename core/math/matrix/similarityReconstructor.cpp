@@ -233,7 +233,7 @@ Similarity SimilarityReconstructor::getBestSimilarity()
         cout << "Maximum eigenvalue:" << max << " at row/column " << maxi << endl;
     }
 
-    /* make an eigenvalue cheak */
+    /* make an eigenvalue check */
     FixedVector<double, 4> eigen;
     eigen[0] = VT.a(0, maxi);
     eigen[1] = VT.a(1, maxi);

@@ -112,7 +112,7 @@ public:
 
             ss1 << image.filename << ", ";
 
-            corecvs::BufferFactory::printCaps();
+            // corecvs::BufferFactory::printCaps();
 
 			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
 

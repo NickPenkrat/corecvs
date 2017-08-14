@@ -35,7 +35,7 @@ public:
     * @brief JSONGetter
     * @param fileName
     **/
-    JSONGetter(const char * fileName) { init(fileName); }
+    explicit JSONGetter(const char * fileName) { init(fileName); }
 
     /**
      *  Create a getter object that will use data from a file with a specified name.
@@ -56,10 +56,16 @@ public:
     /**
      *  Create a getter object that will use data from a given XML
      **/
-    JSONGetter(QJsonObject &document) : mDocument(document)
+    explicit JSONGetter(QJsonObject &document) : mDocument(document)
     {
         mNodePath.push_back(mDocument);
     }
+
+    explicit JSONGetter(const QByteArray &array)
+    {
+        init(array);
+    }
+
 
     /**
      *  Visitor method that will traverse json and object tree and fill object with data form xml
@@ -234,6 +240,7 @@ public:
 
 private:
     void init(const char *fileName);
+    bool init(const QByteArray &array);
 
     std::vector<QJsonObject> mNodePath;
     QString     mFileName;
