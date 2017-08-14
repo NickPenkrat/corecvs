@@ -44,10 +44,11 @@ public:
         : camera(cam)
         , cameraFixture(fix)
         , featurePoint(sfp)
-        , observation(obs)
         , accuracy(0.0)
+        , observation(obs)
         , observDir(0.0)
         , onDistorted(false)
+        , validityFlags(ValidFlags::OBSERVATION_VALID)
     {}
 
     /**
@@ -64,22 +65,45 @@ public:
      *   Point that is observed
      **/
     SceneFeaturePoint  *featurePoint;
-    Vector2dd           observation;
     Vector2dd           accuracy;
+    enum ValidFlags {
+        OBSERVATION_VALID = 0x1,
+        DIRECTION_VALID   = 0x2
+    };
+
+private:
+    Vector2dd           observation;
     Vector3dd           observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
     bool                onDistorted;                /**< true when observation belongs to source-distorted image, def: we assume working with points on undistorted images */
+    int validityFlags;
+
+public:
 
   //MetaContainer       meta;                       /* not used */
 
     KeyPointArea    keyPointArea;
 
+    /* \depicated Using this is discoraged */
     double          &x() { return observation.x(); }
     double          &y() { return observation.y(); }
+
+    /* \depicated Using this is discoraged */
+    void setObserveDir(const Vector3dd &dir) {
+        observDir = dir;
+    }
 
     std::string     getPointName();
 
     int             ensureDistorted(bool distorted = true);
     Vector2dd       getDistorted   (bool distorted = true) const;
+
+    /* */
+    Vector2dd       getUndist();
+    Vector2dd       getDist();
+
+    Vector2dd       setUndist(const Vector2dd &undist);
+    Vector2dd       setDist  (const Vector2dd &dist);
+
 
 private:
     FixtureCamera     *getCameraById(FixtureCamera::IdType id);
@@ -88,10 +112,16 @@ public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(observDir   , Vector3dd(0.0) , "observDir");
-        visitor.visit(observation , Vector2dd(0.0) , "observation");
-        visitor.visit(accuracy    , Vector2dd(0.0) , "accuracy");
-        visitor.visit(onDistorted , false          , "onDistorted");
+        visitor.visit(observDir    , Vector3dd(0.0) , "observDir");
+        visitor.visit(observation  , Vector2dd(0.0) , "observation");
+        visitor.visit(accuracy     , Vector2dd(0.0) , "accuracy");
+        visitor.visit(onDistorted  , false          , "onDistorted");
+        visitor.visit(validityFlags, ValidFlags::DIRECTION_VALID | ValidFlags::OBSERVATION_VALID, "validityFlags");
+
+        /* This is a compatibility block. Remove this when all data would be converted */
+#if 0
+
+#endif
 
         keyPointArea.accept<VisitorType>(visitor);
 

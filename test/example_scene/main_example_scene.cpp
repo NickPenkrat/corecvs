@@ -252,17 +252,17 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
     {
         SceneFeaturePoint *point = scene->featurePoints()[i];
         if (point->getObservation(camera1) != NULL) {
-            Vector2dd p = point->getObservation(camera1)->observation;
+            Vector2dd p = point->getObservation(camera1)->getDist();
             painter1.drawCircle(p.x(), p.y(), 3, point->color);
         }
 
         if (point->getObservation(camera2) != NULL) {
-            Vector2dd p = point->getObservation(camera2)->observation;
+            Vector2dd p = point->getObservation(camera2)->getDist();
             painter2.drawCircle(p.x(), p.y(), 3, point->color);
         }
 
         if (point->getObservation(camera3) != NULL) {
-            Vector2dd p = point->getObservation(camera3)->observation;
+            Vector2dd p = point->getObservation(camera3)->getDist();
             painter3.drawCircle(p.x(), p.y(), 3, point->color);
         }
     }

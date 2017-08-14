@@ -40,6 +40,50 @@ Vector2dd SceneObservation::getDistorted(bool distorted) const
     }
 }
 
+Vector2dd SceneObservation::getUndist()
+{
+    if (validityFlags & ValidFlags::DIRECTION_VALID) {
+        return observDir.xy();
+    }
+
+    if (camera != NULL && (validityFlags & ValidFlags::OBSERVATION_VALID))
+    {
+        // This is a temporary solution. Z value should be computed, not just set to focal
+        observDir = Vector3dd(camera->distortion.mapBackward(observDir.xy()), camera->intrinsics.focal.x());
+        validityFlags |= (int)ValidFlags::DIRECTION_VALID;
+        return observDir.xy();
+    }
+    return Vector2dd::Zero(); /* Should I return NaN? */
+}
+
+Vector2dd SceneObservation::getDist()
+{
+    if (validityFlags & ValidFlags::OBSERVATION_VALID) {
+        return observation;
+    }
+
+    if (camera != NULL && (validityFlags & ValidFlags::DIRECTION_VALID))
+    {
+        observation = camera->distortion.mapForward(observDir.xy());
+        validityFlags |= (int)ValidFlags::OBSERVATION_VALID;
+        return observation;
+    }
+    return Vector2dd::Zero(); /* Should I return NaN? */
+}
+
+Vector2dd SceneObservation::setUndist(const Vector2dd &undist)
+{
+    // This is a temporary solution. Z value should be computed, not just set to focal
+    observDir = Vector3dd(undist, camera->intrinsics.focal.x());
+    validityFlags = ValidFlags::DIRECTION_VALID;
+}
+
+Vector2dd SceneObservation::setDist(const Vector2dd &dist)
+{
+    observation = dist;
+    validityFlags = ValidFlags::OBSERVATION_VALID;
+}
+
 FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)
 {
     CORE_ASSERT_TRUE_S(featurePoint);
@@ -147,7 +191,8 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, boo
         {
             if (!mask || (ptr < mask->size() && (*mask)[ptr] == id))
             {
-                mct.addCamera(obs.first.u->getMMatrix(obs.first.v), obs.second.observation);
+                Vector2dd undist = obs.second.getUndist();
+                mct.addCamera(obs.first.u->getMMatrix(obs.first.v), undist);
                 if (mask && ptr + 1 < mask->size())
                     CORE_ASSERT_TRUE_S((*mask)[ptr] < (*mask)[ptr + 1]);
                 ++ptr;
@@ -294,7 +339,7 @@ std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL
         if ( !obs.first->projectPointFromWorld( reprojectedPosition, &xy ) )
             continue;
 
-        xy -= obs.second.observation;
+        xy -= obs.second.getUndist();
         out.push_back( xy.l2Metric() );
     }
         
@@ -313,7 +358,7 @@ std::vector< double > SceneFeaturePoint::estimateReprojectionErrorL2()
         if ( !obs.first->projectPointFromWorld( position, &xy ) )
             continue;
 
-        xy -= obs.second.observation;
+        xy -= obs.second.getUndist();
         out.push_back( xy.l2Metric() );
     }
 
@@ -398,10 +443,10 @@ void SceneFeaturePoint::projectForward(FixtureCamera *camera, CameraFixture *fix
 
     SceneObservation observation(camera, this, projection, fixture);
     if (!round) {
-        observation.observDir = worldCam.dirToPoint(position).normalised();  // direct
+        observation.setObserveDir(worldCam.dirToPoint(position).normalised());  // direct
     }
     else {
-        observation.observDir = worldCam.intrinsics.reverse(projection).normalised();  // indirect
+        observation.setObserveDir(worldCam.intrinsics.reverse(projection).normalised());  // indirect
     }
     /*if (direct.notTooFar(indirect, 1e-7))
     {

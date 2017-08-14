@@ -98,7 +98,7 @@ bool FixtureCamera::addObservation(SceneFeaturePoint *point, bool setUserType)
     obs.featurePoint = point;
     obs.camera = this;
     obs.cameraFixture = this->cameraFixture;
-    obs.observation = Vector2dd(0.0);
+    //obs.observation = Vector2dd(0.0);
 
     point->observations[this] = obs;
     if (setUserType) {
