@@ -147,7 +147,7 @@ public:
       double pyramidLength1
       double pyramidLength2
      **/
-    Polygon projectViewport(const CameraModel &right, double pyramidLength1, double pyramidLength2 ) const;
+    Polygon projectViewport(const CameraModel &right, double pyramidLength1 = -1, double pyramidLength2 = -1) const;
 
     /**
      * Only checks for the fact that point belongs to viewport.

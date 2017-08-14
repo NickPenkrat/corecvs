@@ -289,7 +289,7 @@ TEST(Cameramodel, testViewportProject)
 
     /* --------------------- */
 
-    Polygon viewport = m1.projectViewport(m2);
+    Polygon viewport = m1.projectViewport(m2, 1.0, 1.0);
     FlatPolygon fp;
     fp.polygon = viewport;
     fp.frame = m1.getVirtualScreen(5.1);

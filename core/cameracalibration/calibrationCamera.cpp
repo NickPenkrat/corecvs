@@ -124,8 +124,8 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
 #endif
 #endif
 
-    ConvexPolyhedron viewport0 =       getCameraViewport();
-    ConvexPolyhedron viewport1 = right.getCameraViewport();
+    ConvexPolyhedron viewport0 =       getCameraViewport(pyramidLength1);
+    ConvexPolyhedron viewport1 = right.getCameraViewport(pyramidLength2);
 
     /* We are inside other viewport. evey pixel is a possible projection */
     if (viewport1.isInside(extrinsics.toAffine3D().shift))
@@ -152,11 +152,13 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
 
     Ray3d  baseRays[] =
     {
-        right.rayFromPixel(p1) * pyramidLength2,  
-        right.rayFromPixel(p2) * pyramidLength2,
-        right.rayFromPixel(p3) * pyramidLength2,
-        right.rayFromPixel(p4) * pyramidLength2
+        right.rayFromPixel(p1),  
+        right.rayFromPixel(p2),
+        right.rayFromPixel(p3),
+        right.rayFromPixel(p4)
     };
+
+
     {
         Polygon  basePoints = right.getCameraViewportPolygon();
 
@@ -168,6 +170,9 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
                 Vector2dd p2 = basePoints.getNextPoint(point);
                 Vector2dd p = lerp(p1, p2, i, 0.0, SIDE_STEPS);
                 Ray3d r  = right.rayFromPixel(p);
+                if ( pyramidLength2 > 0 ) {
+                    r.a *= pyramidLength2;
+                }
                 rays1.push_back(r);
             }
         }
@@ -196,9 +201,9 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
             }
         }
     }
+#endif
 
     /* ==== */
-    ConvexPolyhedron viewport = getCameraViewport(pyramidLength1);
     Matrix44 T = getCameraMatrix();
 
     //cout << "Ray" << ray << endl;
@@ -216,10 +221,8 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         bool hasIntersection = viewport0.intersectWith(ray, t1, t2);
         if (hasIntersection && t2 > 0.0)
         {
-            if (t1 < 0.0) t1 = 0.0;
-            
-            
-            if ( t2 > 1.0 ) t2 = 1.0;
+            if (t1 < 0.0) t1 = 0.0;           
+            if ( t2 > 1.0 && pyramidLength2 > 0 ) t2 = 1.0;
 
 
             FixedVector<double, 4> out1 = (T * ray.getProjectivePoint(t1));
@@ -418,7 +421,7 @@ ConvexPolyhedron  CameraModel::getCameraViewport(double farPlane) const
     {
         Vector3dd position = extrinsics.position;
         Vector3dd center = extrinsics.camToWorld( intrinsics.reverse( intrinsics.principal ));
-        p.faces.push_back( Plane3d::FromNormalAndPoint( center, position + center.normalised() * farPlane));
+        p.faces.push_back( Plane3d::FromNormalAndPoint( -center, position + center.normalised() * farPlane));
      }
     return p;
 }
