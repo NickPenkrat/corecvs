@@ -207,6 +207,9 @@ public:
      **/
     vector<Vector4dd> getCameraViewportPyramid() const;
 
+    Polygon getCameraViewportPolygon() const;
+
+
 
 
     void copyModelFrom(const CameraModel &other) {

@@ -23,7 +23,10 @@ public:
 
     static bool isDir(const string &path);
 
-    static bool createDir(const string &path);
+    static bool createDir(const string &path, bool allowRecursive = true);
+
+    static void emptyDir(const string &path);       // delete folder to create it later probably
+
 };
 
 } // namespace corecvs

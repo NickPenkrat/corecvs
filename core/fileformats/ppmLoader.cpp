@@ -34,6 +34,41 @@ G12Buffer* PPMLoader::loadG12(string name)
     return loadMeta(name, nullptr);
 }
 
+G12Buffer* PPMLoader::loadG16(string name)
+{
+    if (HelperUtils::endsWith(name, prefix1))   // == pgm
+    {
+        return PPMLoader().g16BufferCreateFromPPM(name);
+    }
+
+    G12Buffer *result = NULL;
+    FILE *In = fopen(name.c_str(), "rb");
+    while (In != NULL)
+    {
+        uint32_t h = 0, w = 0;
+        if (fread(&h, sizeof(h), 1, In) != 1 ||
+            fread(&w, sizeof(w), 1, In) != 1 ||
+            h > 2000 || w > 2000)
+            break;
+
+        result = new G12Buffer(h, w);
+        if (result)
+        for (uint32_t i = 0; i < h; ++i) {
+            for (uint32_t j = 0; j < w; ++j) {
+                uint16_t d = 0;
+                if (fread(&d, sizeof(d), 1, In) != 1) {
+                    j = w, i = h;
+                    break;
+                }
+                result->element(i, j) = d;
+            }
+        }
+        fclose(In);
+        break;
+    }
+    return result;
+}
+
 G12Buffer* PPMLoader::loadMeta(const string& name, MetaData *metadata)
 {
     if (metadata != nullptr) {
@@ -43,14 +78,12 @@ G12Buffer* PPMLoader::loadMeta(const string& name, MetaData *metadata)
         DOTRACE(("Will load the file %s as PPM (ignoring any available metadata)\n ", name.c_str()));
     }
 
-    G12Buffer *toReturn = g12BufferCreateFromPGM(name, metadata);
-    return toReturn;
+    return g12BufferCreateFromPGM(name, metadata);
 }
 
 RGB48Buffer* PPMLoader::loadRGB(const string& name, MetaData *metadata)
 {
-    RGB48Buffer *toReturn = rgb48BufferCreateFromPPM(name, metadata);
-    return toReturn;
+    return rgb48BufferCreateFromPPM(name, metadata);
 }
 
 G12Buffer* PPMLoader::g12BufferCreateFromPGM(const string& name, MetaData *meta)

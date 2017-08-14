@@ -134,10 +134,7 @@ TEST(Raytrace, DISABLED_testRaytraceBase)
 
     BMPLoader().save("raytrace.bmp", buffer);
     delete_safe(buffer);
-
 }
-
-
 
 TEST(Raytrace, DISABLED_testRaytraceSpeedup)
 {
@@ -236,11 +233,8 @@ TEST(Raytrace, DISABLED_testRaytraceSpeedup)
         SYNC_PRINT(("Erorr"));
     }*/
 
-
     delete_safe(bufferS);
     delete_safe(bufferF);
-
-
 }
 
 class LaserPlaneLight : public RaytraceablePointLight, public Plane3d
@@ -261,7 +255,6 @@ public:
         }
         return false;
     }
-
 };
 
 TEST(Raytrace, DISABLED_testRaytraceChess)
@@ -613,7 +606,7 @@ TEST(Raytrace, testCylinder)
         cout << " P:" << ray.getPoint() << endl;
         //cout << " N:" << ray.normal << endl;
         } else  {
-            cout << "No Intersecution" << endl;
+            cout << "No Intersection" << endl;
         }
 
         mesh.addPoint(ray.getPoint());
@@ -713,10 +706,12 @@ TEST(Raytrace, testTransform)
         mesh.addLine(rays[i].getPoint(0), rays[i].getPoint(30));
         bool ok = object.intersect(ray);
 
-        cout << i << endl;
-        cout << " R:" << ray.ray << endl;
-        if (ok) {
-            cout << " P:" << ray.getPoint() << endl;
+        std::stringstream s;
+        s << i << endl;
+        s << " R:" << ray.ray << endl;
+        if (ok)
+        {
+            s << " P:" << ray.getPoint() << endl;
             mesh.setColor(RGBColor::Green());
             mesh.addPoint(ray.getPoint());
             ray.object->normal(ray);
@@ -724,10 +719,10 @@ TEST(Raytrace, testTransform)
             mesh.addLine(ray.getPoint(), ray.getPoint() + ray.normal * 5.0);
 
             //cout << " N:" << ray.normal << endl;
-        } else  {
-            cout << "No Intersecution" << endl;
+        } else {
+            s << "No Intersection" << endl;
         }
-
+        DOTRACE(s.str());
     }
 
     //object.toMesh(mesh);
@@ -759,8 +754,6 @@ public:
     {
         //F = this;
     }
-
-
 };
 
 TEST(Raytrace, DISABLED_testRaytraceSDF)

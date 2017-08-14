@@ -61,6 +61,7 @@ public:
 
         int imageSize = (int)mImages.size();
         visitor.visit(imageSize, 0, "image.size");
+        cout << "Camera will have " << imageSize << " images" << endl;
         setImageCount(imageSize);
 
         for (int i = 0; i < imageSize; i++)

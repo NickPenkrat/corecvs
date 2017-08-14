@@ -124,10 +124,27 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
 #endif
 #endif
 
-    std::vector<Ray3d> rays;
-    const int SIDE_STEPS = 100;
-    rays.reserve(SIDE_STEPS * 4);
+    ConvexPolyhedron viewport0 =       getCameraViewport();
+    ConvexPolyhedron viewport1 = right.getCameraViewport();
 
+    /* We are inside other viewport. evey pixel is a possible projection */
+    if (viewport1.isInside(extrinsics.toAffine3D().shift))
+    {
+        return getCameraViewportPolygon();
+    }
+
+    std::vector<Ray3d> rays1;
+
+
+    const int SIDE_STEPS = 50;
+    rays1  .reserve(SIDE_STEPS * 4);
+
+#if 0
+    rays2  .reserve(SIDE_STEPS * 4);
+    std::vector<Ray3d> rays2;
+    std::vector<Vector2dd> points2;
+    points2.reserve(SIDE_STEPS * 4);
+#endif
     Vector2dd p1 = Vector2dd::Zero();
     Vector2dd p3 = right.intrinsics.size;
     Vector2dd p2 = Vector2dd(p3.x(), p1.y());
@@ -140,14 +157,43 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         right.rayFromPixel(p3) * pyramidLength2,
         right.rayFromPixel(p4) * pyramidLength2
     };
-
-    for (size_t rayId = 0; rayId < CORE_COUNT_OF(baseRays); rayId++ )
     {
-        for (int i = 0; i < SIDE_STEPS; i++)
+        Polygon  basePoints = right.getCameraViewportPolygon();
+
+        for (size_t point = 0; point < basePoints.size(); point++ )
         {
-            Ray3d r1 = baseRays[rayId];
-            Ray3d r2 = baseRays[(rayId + 1) % CORE_COUNT_OF(baseRays)];
-            rays.push_back(Ray3d(lerp(r1.direction(), r2.direction(), i, 0.0, SIDE_STEPS), r1.origin() ));
+            for (int i = 0; i < SIDE_STEPS; i++)
+            {
+                Vector2dd p1 = basePoints.getPoint    (point);
+                Vector2dd p2 = basePoints.getNextPoint(point);
+                Vector2dd p = lerp(p1, p2, i, 0.0, SIDE_STEPS);
+                Ray3d r  = right.rayFromPixel(p);
+                rays1.push_back(r);
+            }
+        }
+    }
+
+#if 0
+    {
+        Vector2dd basePoints[] = {
+            Vector2dd::Zero(),
+            Vector2dd(intrinsics.w(), 0),
+            intrinsics.size,
+            Vector2dd(0, intrinsics.h()),
+
+        };
+
+        for (size_t point = 0; point < CORE_COUNT_OF(basePoints); point++ )
+        {
+            for (int i = 0; i < SIDE_STEPS; i++)
+            {
+                Vector2dd p1 = basePoints[point];
+                Vector2dd p2 = basePoints[(point + 1) % CORE_COUNT_OF(basePoints)];
+                Vector2dd p = lerp(p1, p2, i, 0.0, SIDE_STEPS);
+                Ray3d r  = rayFromPixel(p);
+                rays2  .push_back(r);
+                points2.push_back(p);
+            }
         }
     }
 
@@ -162,12 +208,12 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
      */
 
     vector<Vector2dd> points;
-    for (size_t rayId = 0; rayId < rays.size(); rayId++ )
+    for (size_t rayId = 0; rayId < rays1.size(); rayId++ )
     {
-        Ray3d &ray = rays[rayId];
+        Ray3d &ray = rays1[rayId];
         double t1 = 0;
         double t2 = 0;
-        bool hasIntersection = viewport.intersectWith(ray, t1, t2);
+        bool hasIntersection = viewport0.intersectWith(ray, t1, t2);
         if (hasIntersection && t2 > 0.0)
         {
             if (t1 < 0.0) t1 = 0.0;
@@ -185,8 +231,23 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         }
     }
 
+#if 0
+    for (size_t rayId = 0; rayId < rays2.size(); rayId++ )
+    {
+        Ray3d &ray = rays2[rayId];
+        double t1 = 0;
+        double t2 = 0;
+        bool hasIntersection = viewport0.intersectWith(ray, t1, t2);
+        if (hasIntersection && t1 > 0)
+        {
+            points.push_back(points2[rayId]);
+        }
+    }
+#endif
+
     return removeDuplicateVertices(ConvexHull::GrahamScan(points));
 }
+
 
 PinholeCameraIntrinsics::PinholeCameraIntrinsics(Vector2dd resolution, double hfov)
   : principal(resolution / 2.0)
@@ -407,6 +468,17 @@ vector<Vector4dd> CameraModel::getCameraViewportPyramid() const
     pyramid.push_back(d4);
 
     return pyramid;
+}
+
+Polygon CameraModel::getCameraViewportPolygon() const
+{
+    Polygon polygon = {
+        Vector2dd::Zero(),
+        Vector2dd(intrinsics.w(), 0),
+        intrinsics.size,
+        Vector2dd(0, intrinsics.h()),
+    };
+    return polygon;
 }
 
 

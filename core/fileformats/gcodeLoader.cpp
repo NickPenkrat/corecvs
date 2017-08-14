@@ -1,9 +1,8 @@
 #include "gcodeLoader.h"
+#include "utils.h"
 
 #include <sstream>
 #include <cctype>
-#include "utils.h"
-
 
 namespace corecvs {
 
@@ -15,9 +14,7 @@ using std::pair;
 GcodeLoader::GcodeLoader()
 {}
 
-
-
-vector<pair<char, double>> parseLine(string gline)
+vector<pair<char, double>> parseLine(const string& gline)
 {    
     vector<pair<char, double>> result;
     vector<string> split = HelperUtils::stringSplit(gline, ' ');
@@ -390,7 +387,10 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
     for (size_t num = 0; num < program.program.size(); num++)
     {
         const GCodeProgram::Code &c = program.program[num];
-        this->gcodeHook(c);
+        if (this->gcodeHook(c)) {
+            continue;
+        }
+
 
         if (c.area == ' ') {
             if (traceComment) {
@@ -399,14 +399,16 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
             continue;
         }
 
-        if (c.area == 'm') {
-            switch (c.number) {
+        if (c.area == 'm')
+        {
+            switch (c.number)
+            {
             case 82:
-                    state->extruderRealtive = false;
-                    break;
+                state->extruderRealtive = false;
+                break;
             case 83:
-                    state->extruderRealtive = true;
-                    break;
+                state->extruderRealtive = true;
+                break;
             case 104:
                     if (c.hasParameter('s')) {
                         state->extruderTemperature = c.getParameter('s');
@@ -431,7 +433,6 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
         {
             MachineState newState = *state;
 
-
             for (int i = 0; i < (int)c.parameters.size(); i++)
             {
                 GCodeProgram::Record r = c.parameters[i];
@@ -451,14 +452,14 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
                 //mesh.setColor(RGBColor::Gray());
                 //mesh.addLine(currentPosition, target);
                 straightHook(0, *state, newState);
-
-
-            } else if (c.number == 1) {
+            }
+            else if (c.number == 1) {
 //                cout << "G1 move" << endl;
                 //mesh.setColor(RGBColor::Blue());
                 //mesh.addLine(currentPosition, target);
                 straightHook(1, *state, newState);
-            } else if (c.number == 2 || c.number == 3) {
+            }
+            else if (c.number == 2 || c.number == 3) {
                 Vector3dd center = newState.position;
                 //mesh.setColor(RGBColor::Yellow());
 
@@ -501,13 +502,10 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
                     currentPosition = subTarget;
                 }
                 */
-
-
-
                 /*mesh.setColor(RGBColor::Pink());
                 mesh.addLine(currentPosition, target);*/
-
-            } else {
+            }
+            else {
                 errorHook();
                 /*mesh.setColor(RGBColor::Green());
                 mesh.addLine(currentPosition, target);*/
@@ -515,16 +513,18 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
 
             *state = newState;
         }
-
     }
-
 }
 
 
-/* These hooks could either return true - then implemenation update the machine state */
+/**
+ * These hooks could either
+ *  return true - when this method has taken care of the gcode
+ *  return flase - is you want default implemenation update the machine state
+ **/
 bool GCodeInterpreter::gcodeHook    ( const GCodeProgram::Code &/*code*/ )
 {
-    return true;
+    return false;
 }
 
 bool GCodeInterpreter::straightHook (int /*type*/, const MachineState &/*before*/, const MachineState &/*after*/)
@@ -538,10 +538,8 @@ bool GCodeInterpreter::arkHook(const MachineState &/*before*/, const MachineStat
     return true;
 }
 
-void GCodeInterpreter::errorHook( void )
-{
-
-}
+void GCodeInterpreter::errorHook(void)
+{}
 
 GCodeInterpreter::~GCodeInterpreter()
 {
@@ -615,6 +613,4 @@ int GCodeToMesh::renderToMesh(const GCodeProgram &in, Mesh3D &mesh)
 }
 
 
-
 } // namespace corecvs
-

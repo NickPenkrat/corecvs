@@ -393,9 +393,33 @@ public:
        return operator []((idx + 1) % size());
     }
 
+    int getNextIndex(int idx) const
+    {
+       return (idx + 1) % size();
+    }
+
     const Vector2dd &getNextPoint(int idx) const
     {
        return operator []((idx + 1) % size());
+    }
+
+    int getNextDifferentIndex(int idx) const
+    {
+        int idx1 = getNextIndex(idx);
+        Vector2dd next = getPoint(idx1);
+        while (next == getPoint(idx) && idx1 != idx)
+        {
+            idx1 = getNextIndex(idx1);
+            next = getPoint(idx1);
+        }
+        return idx1;
+
+    }
+
+
+    const Vector2dd &getNext2Point(int idx) const
+    {
+       return operator []((idx + 2) % size());
     }
 
     /** **/

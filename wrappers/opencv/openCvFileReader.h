@@ -5,7 +5,6 @@
 #include "bufferFactory.h"
 #include "bufferReaderProvider.h"
 
-
 class OpenCvBufferReader : public BufferReader
 {
 public:
@@ -31,7 +30,7 @@ public:
     OpenCVLoaderRGB24Loader();
     virtual bool acceptsFile(std::string name) override;
     virtual corecvs::RGB24Buffer *load(std::string name) override;
-    virtual std::string name() override {return "OpenCV";}
+    virtual std::string name() override { return "OpenCVRGB24Loader(multitype)"; }
 };
 
 class OpenCVLoaderRuntimeTypeBufferLoader : public corecvs::BufferLoader<corecvs::RuntimeTypeBuffer>
@@ -40,7 +39,7 @@ public:
     OpenCVLoaderRuntimeTypeBufferLoader();
     virtual bool acceptsFile(std::string name) override;
     virtual corecvs::RuntimeTypeBuffer *load(std::string name) override;
-    virtual std::string name() override {return "OpenCV";}
+    virtual std::string name() override { return "OpenCVRuntimeLoader(multitype)"; }
 };
 
 
@@ -49,4 +48,4 @@ extern "C"
     void init_opencv_reader_provider();
 }
 
-#endif
+#endif // OPENCVFILEREADER_H

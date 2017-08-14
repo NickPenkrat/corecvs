@@ -10,86 +10,121 @@ using std::string;
 
 namespace corecvs {
 
-string TempFolder::getTempFolderPath(const string &projectEnviromentVariable, bool clear)
+static string envBuildNumber = HelperUtils::getEnvVar("BUILD_NUMBER");
+static string envBuildJob    = HelperUtils::getEnvVar("JOB_NAME");
+
+string TempFolder::LocalTempPath(const string &projectEnviromentVariable)
+{
+    string res;
+#ifdef WIN32
+    res = HelperUtils::getEnvVar("TEMP");
+    if (res.empty())
+        res = HelperUtils::getEnvVar("TMP");
+    if (res.empty())
+    {
+        L_ERROR_P("The <TEMP> enviroment variable is not set.");
+        res = ".";
+    }
+#else
+    res = "/tmp";
+#endif
+    if (!STR_HAS_SLASH_AT_END(res)) {
+        res += PATH_SEPARATOR;                  // add slash if need
+    }
+    res += projectEnviromentVariable;
+    if (STR_HAS_SLASH_AT_END(res)) {
+        res.resize(res.length() - 1);           // kill the last slash
+    }
+
+    return res;
+}
+
+string TempFolder::TempFolderPath(const string &projectEnviromentVariable, bool clear, bool useLocal)
 {
     static vector<string> clearedFolders;
-    string tempPath = ".";
-    if (projectEnviromentVariable.empty())
-    {
-        L_ERROR_P("The 'projectEnviromentVariable' is empty.");
-        return tempPath;
-    }
 
-    cchar* sProjectPath = std::getenv(projectEnviromentVariable.c_str());
-    if (!sProjectPath)
+    string res;
+    if (useLocal)
     {
-        L_ERROR_P("The <%s> enviroment variable is not set.", projectEnviromentVariable.c_str());
-        return tempPath;
-    }
-
-    string projectPath = sProjectPath;
-    static const char* envBuildNumber = std::getenv("BUILD_NUMBER");
-    static const char* envBuildJob    = std::getenv("JOB_NAME");
-    if (envBuildNumber && envBuildJob)
-    {
-        tempPath = projectPath + PATH_SEPARATOR + "data" + PATH_SEPARATOR + 
-        "test_results" + PATH_SEPARATOR + envBuildJob + "_" + envBuildNumber + PATH_SEPARATOR + "temp";
+        res = LocalTempPath(projectEnviromentVariable);
+        if (!envBuildJob.empty())
+        {
+            res += PATH_SEPARATOR;                      // add slash
+            res += envBuildJob;
+        }
     }
     else
     {
-#ifdef WIN32
-        cchar * temp = std::getenv("TEMP");
-        if (temp == nullptr) temp = std::getenv("TMP");
-        if (temp != nullptr)
-            tempPath = temp;
-        else
-            L_ERROR_P("The <TEMP> enviroment variable is not set.", projectEnviromentVariable.c_str());
-#else
-        tempPath = "/tmp";
-#endif
-        tempPath += (PATH_SEPARATOR + projectEnviromentVariable);
+        res = UniqueBuildPath(projectEnviromentVariable) + PATH_SEPARATOR + "temp";
     }
-        
-    bool createFolder = false;
-    if (FolderScanner::isDir(tempPath))
-    {
-        if (clear)
-        {
-            bool found = false;
-            for (auto dir : clearedFolders)
-            {
-                if (projectEnviromentVariable == dir)
-                {
-                    found = true;
-                    break;
-                }
-            }
 
-            if (!found) // delete folder to create it later
-            {
-#ifdef WIN32
-                std::system(("rd /s /q " + tempPath).c_str());
-#else
-                std::system(("rm -rf " + tempPath).c_str());
-#endif
-                L_INFO_P("The <%s> folder is deleted.", tempPath.c_str());
+    bool createFolder = false;
+    if (FolderScanner::isDir(res))                  // dir exists: clear it if others have created it
+    {
+        if (clear)                                  // clear it only if others have created it, we're not
+        {
+            if (!contains(clearedFolders, projectEnviromentVariable))
+            {                                       // delete folder to create it later
+                FolderScanner::emptyDir(res);
                 createFolder = true;
             }
         }
     }
     else
-        createFolder = true;
-
-    if (createFolder) // create folder
     {
-        std::system(("mkdir " + tempPath).c_str());
-        L_INFO_P("The <%s> folder is created.", tempPath.c_str());
+        createFolder = true;                        // it doesn't exist, we need to create it
+    }
+
+    if (createFolder)
+    {
+        FolderScanner::createDir(res);              // folder creation with its subfolders
 
         // the created folder is automatically considered cleared
         clearedFolders.push_back(projectEnviromentVariable);
     }    
     
-    return tempPath;
+    return res;
 }
 
+std::string TempFolder::UniqueBuildPath(const std::string &projectEnviromentVariable, const std::string &subfolderRelPathJen)
+{
+    string res = ".";
+    if (projectEnviromentVariable.empty())
+    {
+        L_ERROR_P("The 'projectEnviromentVariable' is empty.");
+        return res;
+    }
+
+    string projectPath = HelperUtils::getEnvVar(projectEnviromentVariable.c_str());
+    if (projectPath.empty())
+    {
+        L_ERROR_P("The <%s> enviroment variable is not set.", projectEnviromentVariable.c_str());
+        return res;
+    }
+
+    if (!envBuildNumber.empty() && !envBuildJob.empty())
+    {
+        res = projectPath;
+        if (!STR_HAS_SLASH_AT_END(res)) {
+            res += PATH_SEPARATOR;                  // add slash if need
+        }
+
+        if (!subfolderRelPathJen.empty())
+        {
+            res += HelperUtils::toNativeSlashes(subfolderRelPathJen);
+            if (!STR_HAS_SLASH_AT_END(res)) {
+                res += PATH_SEPARATOR;              // add slash if need
+            }
+        }
+
+        res += envBuildJob + "_" + envBuildNumber;
+    }
+    else
+    {
+        res = LocalTempPath(projectEnviromentVariable);
+    }
+
+    return res;
 }
+
+} // namespace corecvs

@@ -72,7 +72,7 @@ namespace HelperUtils
 
     string          toNativeSlashes(const string& str);
 
-    string          getEnvDirPath(cchar *envVarName);
+    string          getEnvDirPath(cchar *envVarName);       // returns path to dir with slash at the end
     string          getEnvVar(cchar *envVarName);
     string          getFullPath(const string& envDirPath, cchar* path, cchar* filename = NULL);
 

@@ -276,7 +276,7 @@ public:
     static bool         shouldWrite(LogLevel messageLevel) { return messageLevel >= mMinLogLevel; }
 
     /** add needed log drains for the app */
-    static void         addAppLog(int argc, char* argv[], cchar* logFileName = NULL);
+    static void         addAppLog(int argc, char* argv[], cchar* logFileName = nullptr, cchar *projectEnvVar = nullptr);
 
     static LogLevel         mMinLogLevel;
     static LogDrainsKeeper  mLogDrains;
