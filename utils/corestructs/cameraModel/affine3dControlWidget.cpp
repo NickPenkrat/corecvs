@@ -55,6 +55,7 @@ Affine3DQ *Affine3dControlWidget::createParameters() const
 
 void Affine3dControlWidget::setParameters(const Affine3DQ &input)
 {
+    SYNC_PRINT(("Affine3dControlWidget::setParameters(): called"));
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
     ui->spinBoxX->setValue(input.shift.x());
