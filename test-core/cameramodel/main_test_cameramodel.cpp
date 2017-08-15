@@ -231,6 +231,39 @@ TEST(Cameramodel, newPinholeCameraIntrinsics)
 }
 
 
+TEST(Cameramodel, testViewport)
+{
+    CameraModel m1;
+    const double FOCAL    =  640;
+
+    const int RESOLUTION_X = 640;
+    const int RESOLUTION_Y = 480;
+    /***/
+
+    PinholeCameraIntrinsics pinhole(Vector2dd(RESOLUTION_X, RESOLUTION_Y), Vector2dd(RESOLUTION_X, RESOLUTION_Y) / 2, FOCAL);
+
+    m1.intrinsics = pinhole;
+    m1.setLocation(Affine3DQ::Identity());
+
+    ConvexPolyhedron viewport = m1.getCameraViewport(10);
+    Mesh3D mesh;
+    mesh.switchColor(true);
+
+    for (double ix = -20; ix < 20; ix++ )
+        for (double iy = -20; iy < 20; iy++ )
+            for (double iz = -20; iz < 20; iz++ )
+            {
+                Vector3dd p(ix, iy, iz);
+                if (viewport.isInside(p)) {
+                    mesh.setColor( viewport.isInside(p) ? RGBColor::Red() : RGBColor::Green());
+                    mesh.addPoint(p);
+                }
+            }
+
+    mesh.dumpPLY("view_pyr.ply");
+
+}
+
 TEST(Cameramodel, testViewportProject)
 {
     CameraModel m1;
@@ -296,7 +329,7 @@ TEST(Cameramodel, testViewportProject)
 
     mesh.setColor(RGBColor::Yellow());
     mesh.addFlatPolygon(fp);
-    cout << "Result viewport" << viewport;
+    cout << "Result viewport:" << viewport;
 
     mesh.dumpPLY("viewport.ply");
 
