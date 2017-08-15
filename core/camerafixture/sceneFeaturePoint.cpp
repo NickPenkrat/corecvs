@@ -33,14 +33,14 @@ int SceneObservation::ensureDistorted(bool distorted)
 Vector2dd SceneObservation::getDistorted(bool distorted) const
 {
     if (distorted) {
-        return  onDistorted ? observation : camera->distortion.mapForward(observation);  // undist => dist
+        return  getDist();
     }
     else {
-        return !onDistorted ? observation : camera->distortion.mapBackward(observation); // dist => undist
+        return getUndist();
     }
 }
 
-Vector2dd SceneObservation::getUndist()
+Vector2dd SceneObservation::getUndist() const
 {
     if (validityFlags & ValidFlags::DIRECTION_VALID) {
         return observDir.xy();
@@ -56,7 +56,7 @@ Vector2dd SceneObservation::getUndist()
     return Vector2dd::Zero(); /* Should I return NaN? */
 }
 
-Vector2dd SceneObservation::getDist()
+Vector2dd SceneObservation::getDist() const
 {
     if (validityFlags & ValidFlags::OBSERVATION_VALID) {
         return observation;
@@ -378,7 +378,7 @@ PointPath SceneFeaturePoint::getEpipath(FixtureCamera *camera1, FixtureCamera *c
         return result;
     }
 
-    Vector2dd m = obs1->getDistorted(false); /*We work with geometry, so we take projective undistorted objservation */
+    Vector2dd m = obs1->getUndist(); /*We work with geometry, so we take projective undistorted objservation */
 
     CameraModel model = camera1->getWorldCameraModel();
     Ray3d ray = model.rayFromPixel(m);
