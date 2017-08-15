@@ -142,7 +142,12 @@ public:
 
 
     PlaneFrame getVirtualScreen(double distance) const;
-    Polygon projectViewport(const CameraModel &right) const;
+
+    /** 
+      double pyramidLength1
+      double pyramidLength2
+     **/
+    Polygon projectViewport(const CameraModel &right, double pyramidLength1 = -1, double pyramidLength2 = -1) const;
 
     /**
      * Only checks for the fact that point belongs to viewport.
@@ -190,7 +195,7 @@ public:
 
     /* These methods ignore distortion */
     ConvexPolyhedron    getViewport(const Vector2dd &p1, const Vector2dd &p2) const;
-    ConvexPolyhedron    getCameraViewport() const;
+    ConvexPolyhedron    getCameraViewport( double farPlane = -1) const;
 
     /**
      * Sides of the viewport are triangles with points at infinity, so they are stored in projective space

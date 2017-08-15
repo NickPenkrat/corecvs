@@ -85,7 +85,19 @@ PlaneFrame CameraModel::getVirtualScreen(double distance) const
     return toReturn;
 }
 
-Polygon CameraModel::projectViewport(const CameraModel &right) const
+Polygon removeDuplicateVertices(const Polygon& polygon)
+{
+    Polygon filteredPolygon;
+    for (auto& vertex : polygon)
+    {
+        if (filteredPolygon.end() == std::find_if(filteredPolygon.begin(), filteredPolygon.end(), [&] ( const corecvs::Vector2dd& p ) -> bool { return (p - vertex).l2Metric() < 1.e-9; }))
+            filteredPolygon.push_back(vertex);
+    }
+
+    return filteredPolygon;
+}
+
+Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLength1, double pyramidLength2) const
 {
 #if 0 /* We use a shortcut here */
     vector<Vector4dd> pyramid = right.getCameraViewportPyramid();
@@ -112,8 +124,8 @@ Polygon CameraModel::projectViewport(const CameraModel &right) const
 #endif
 #endif
 
-    ConvexPolyhedron viewport0 =       getCameraViewport();
-    ConvexPolyhedron viewport1 = right.getCameraViewport();
+    ConvexPolyhedron viewport0 =       getCameraViewport(pyramidLength1);
+    ConvexPolyhedron viewport1 = right.getCameraViewport(pyramidLength2);
 
     /* We are inside other viewport. evey pixel is a possible projection */
     if (viewport1.isInside(extrinsics.toAffine3D().shift))
@@ -133,6 +145,19 @@ Polygon CameraModel::projectViewport(const CameraModel &right) const
     std::vector<Vector2dd> points2;
     points2.reserve(SIDE_STEPS * 4);
 #endif
+    Vector2dd p1 = Vector2dd::Zero();
+    Vector2dd p3 = right.intrinsics.size;
+    Vector2dd p2 = Vector2dd(p3.x(), p1.y());
+    Vector2dd p4 = Vector2dd(p1.x(), p3.y());
+
+    Ray3d  baseRays[] =
+    {
+        right.rayFromPixel(p1),  
+        right.rayFromPixel(p2),
+        right.rayFromPixel(p3),
+        right.rayFromPixel(p4)
+    };
+
 
     {
         Polygon  basePoints = right.getCameraViewportPolygon();
@@ -145,6 +170,9 @@ Polygon CameraModel::projectViewport(const CameraModel &right) const
                 Vector2dd p2 = basePoints.getNextPoint(point);
                 Vector2dd p = lerp(p1, p2, i, 0.0, SIDE_STEPS);
                 Ray3d r  = right.rayFromPixel(p);
+                if ( pyramidLength2 > 0 ) {
+                    r.a *= pyramidLength2;
+                }
                 rays1.push_back(r);
             }
         }
@@ -175,7 +203,6 @@ Polygon CameraModel::projectViewport(const CameraModel &right) const
     }
 #endif
 
-
     /* ==== */
     Matrix44 T = getCameraMatrix();
 
@@ -192,9 +219,11 @@ Polygon CameraModel::projectViewport(const CameraModel &right) const
         double t1 = 0;
         double t2 = 0;
         bool hasIntersection = viewport0.intersectWith(ray, t1, t2);
-        if (hasIntersection)
+        if (hasIntersection && t2 > 0.0)
         {
-            if (t1 < 0.0) t1 = 0.0;
+            if (t1 < 0.0) t1 = 0.0;           
+            if ( t2 > 1.0 && pyramidLength2 > 0 ) t2 = 1.0;
+
 
             FixedVector<double, 4> out1 = (T * ray.getProjectivePoint(t1));
             FixedVector<double, 4> out2 = (T * ray.getProjectivePoint(t2));
@@ -219,7 +248,7 @@ Polygon CameraModel::projectViewport(const CameraModel &right) const
     }
 #endif
 
-    return ConvexHull::GrahamScan(points);
+    return removeDuplicateVertices(ConvexHull::GrahamScan(points));
 }
 
 
@@ -383,9 +412,18 @@ ConvexPolyhedron CameraModel::getViewport(const Vector2dd &p1, const Vector2dd &
     return toReturn;
 }
 
-ConvexPolyhedron  CameraModel::getCameraViewport() const
+
+
+ConvexPolyhedron  CameraModel::getCameraViewport(double farPlane) const
 {
-    return getViewport(Vector2dd::Zero(), intrinsics.size);
+    ConvexPolyhedron p = getViewport( Vector2dd::Zero(), intrinsics.size );
+    if ( farPlane > 0 )
+    {
+        Vector3dd position = extrinsics.position;
+        Vector3dd center = extrinsics.camToWorld( intrinsics.reverse( intrinsics.principal ));
+        p.faces.push_back( Plane3d::FromNormalAndPoint( -center, position + center.normalised() * farPlane));
+     }
+    return p;
 }
 
 vector<GenericTriangle<Vector4dd> > CameraModel::getCameraViewportSides() const
