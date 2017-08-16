@@ -42,6 +42,15 @@ public:
         return faces[i].normal();
     }
 
+    friend ostream & operator <<(ostream &out, const ConvexPolyhedronGeneric &polyhedron)
+    {
+        out << "[";
+        for (const HalfspaceType &halfspace : polyhedron.faces) {
+            out << halfspace;
+        }
+        out << "]";
+        return out;
+    }
 
 };
 

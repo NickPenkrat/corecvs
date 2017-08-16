@@ -9,6 +9,8 @@
  */
 
 #include <iostream>
+#include <propertyList.h>
+#include <propertyListVisitor.h>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -321,6 +323,18 @@ TEST(Cameramodel, testViewportProject)
 
 
     /* --------------------- */
+    {
+        PropertyList list;
+        PropertyListWriterVisitor listSaver(&list);
+        listSaver.visit(m1, "Camera1");
+        list.save(cout);
+    }
+    {
+        PropertyList list;
+        PropertyListWriterVisitor listSaver(&list);
+        listSaver.visit(m2, "Camera2");
+        list.save(cout);
+    }
 
     Polygon viewport = m1.projectViewport(m2, 1.0, 1.0);
     FlatPolygon fp;
