@@ -44,6 +44,8 @@ struct MinresQLPParams
            ACondLim = 1e100,
            TranCond = 1e7;
     int maxIt = -1;
+    bool dumpTimings = false;
+    bool silent = true;
 };
 
 template<typename M>
@@ -100,16 +102,19 @@ public:
     }
     ~MinresQLP()
     {
-        double total = 0.0;
-        int column = 0;
-        for (auto& kv: timings)
+        if (dumpTimings)
         {
-            column = std::max(column, (int)kv.first.size());
-            total += kv.second;
-        }
-        for (auto& kv: timings)
-        {
-            std::cout << std::setw(column + 1) << kv.first << "\t" << kv.second / total * 100.0 << "\t" << kv.second << std::endl;
+            double total = 0.0;
+            int column = 0;
+            for (auto& kv: timings)
+            {
+                column = std::max(column, (int)kv.first.size());
+                total += kv.second;
+            }
+            for (auto& kv: timings)
+            {
+                std::cout << std::setw(column + 1) << kv.first << "\t" << kv.second / total * 100.0 << "\t" << kv.second << std::endl;
+            }
         }
     }
     MinresQLPStatus run()
@@ -147,8 +152,11 @@ public:
         }
         auto normAfter = !(A * x - b);
         auto relBefore = normBefore / !b, relAfter = normAfter / !b;
-        std::cout << normBefore << " (" << relBefore << ") > " << normAfter << " (" << relAfter << ") [" << normBefore / normAfter << "] @ " << iter << std::endl;
-        std::cout << (usePreconditioner ? "PRECONDITIONED-" : "") << "MINRES-QLP status: " << flag << std::endl;
+        if (!silent)
+        {
+            std::cout << normBefore << " (" << relBefore << ") > " << normAfter << " (" << relAfter << ") [" << normBefore / normAfter << "] @ " << iter << std::endl;
+            std::cout << (usePreconditioner ? "PRECONDITIONED-" : "") << "MINRES-QLP status: " << flag << std::endl;
+        }
 
         return flag;
     }
