@@ -289,6 +289,34 @@ TEST(Geometry, testIntersection3DFast)
 
 }
 
+TEST(Geometry, testIntersection)
+{
+    Ray3d r1 = Ray3d::FromOriginAndDirection( Vector3dd(0.0, 0.0, 100.0), Vector3dd(1.0, -0.375, 0.0));
+    Ray3d r2 = Ray3d::FromOriginAndDirection( Vector3dd(0.0, 0.0, 100.0), Vector3dd(1.0, -0.375, 1.7938e-16));
+
+    ConvexPolyhedron cp;
+
+    cp.faces.push_back(Plane3d(    0,  1, 0.375, -0));
+    cp.faces.push_back(Plane3d(-0.75,  0, 0.375, -0));
+    cp.faces.push_back(Plane3d(    0, -1, 0.375, -0));
+    cp.faces.push_back(Plane3d(0.75,   0, 0.375, -0));
+    cp.faces.push_back(Plane3d(  -0,  -0,    -1,  1));
+
+    {
+        double t1,t2;
+        bool b1 = cp.intersectWith(r1, t1, t2);
+        cout << b1 << " " << t1 << " " << t2 << endl;
+    }
+
+    {
+        double t1,t2;
+        bool b2 = cp.intersectWith(r2, t1, t2);
+        cout << b2 << " " << t1 << " " << t2 << endl;
+    }
+
+
+}
+
 
 
 TEST(Geometry, rayBasics)

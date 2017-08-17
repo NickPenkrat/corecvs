@@ -99,66 +99,30 @@ Polygon removeDuplicateVertices(const Polygon& polygon)
 
 Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLength1, double pyramidLength2) const
 {
-#if 0 /* We use a shortcut here */
-    vector<Vector4dd> pyramid = right.getCameraViewportPyramid();
-
-    Matrix44 T = getCameraMatrix();
-
-    vector<Vector3dd> pyramidP;
-    Polygon pyramidPSimple;
-
-
-    for (size_t i = 0; i < pyramid.size(); i++)
-    {
-        Vector4dd out = T * pyramid[i];
-        Vector3dd pos1 = Vector3dd( out[0], out[1], out[3]) / out[2];
-        pyramidP.push_back(pos1);
-        pyramidPSimple.push_back(Vector2dd( out[0], out[1]) / out[2]);
-    }
-
-#if 1
-    RGB24Buffer *buffer  = new RGB24Buffer(intrinsics.h(), intrinsics.w(), RGBColor::Black());
-    AbstractPainter<RGB24Buffer> painter(buffer);
-    painter.drawPolygon(pyramidPSimple, RGBColor::Magenta());
-    BMPLoader().save("debug.bmp", buffer);
-#endif
-#endif
+    static bool trace = false;
 
     ConvexPolyhedron viewport0 =       getCameraViewport(pyramidLength1);
     ConvexPolyhedron viewport1 = right.getCameraViewport(pyramidLength2);
 
+    if (trace) {
+        cout << "viewport0:" << viewport0 << endl;
+        cout << "viewport1:" << viewport1 << endl;
+    }
+
     /* We are inside other viewport. evey pixel is a possible projection */
     if (viewport1.isInside(extrinsics.toAffine3D().shift))
     {
+        if (trace) {
+            cout << "One viewport starts inside another" << endl;
+        }
         return getCameraViewportPolygon();
     }
 
     std::vector<Ray3d> rays1;
 
 
-    const int SIDE_STEPS = 50;
+    const int SIDE_STEPS = 30;
     rays1  .reserve(SIDE_STEPS * 4);
-
-#if 0
-    rays2  .reserve(SIDE_STEPS * 4);
-    std::vector<Ray3d> rays2;
-    std::vector<Vector2dd> points2;
-    points2.reserve(SIDE_STEPS * 4);
-#endif
-    Vector2dd p1 = Vector2dd::Zero();
-    Vector2dd p3 = right.intrinsics.size;
-    Vector2dd p2 = Vector2dd(p3.x(), p1.y());
-    Vector2dd p4 = Vector2dd(p1.x(), p3.y());
-
-    Ray3d  baseRays[] =
-    {
-        right.rayFromPixel(p1),  
-        right.rayFromPixel(p2),
-        right.rayFromPixel(p3),
-        right.rayFromPixel(p4)
-    };
-
-
     {
         Polygon  basePoints = right.getCameraViewportPolygon();
 
@@ -178,35 +142,15 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         }
     }
 
-#if 0
-    {
-        Vector2dd basePoints[] = {
-            Vector2dd::Zero(),
-            Vector2dd(intrinsics.w(), 0),
-            intrinsics.size,
-            Vector2dd(0, intrinsics.h()),
-
-        };
-
-        for (size_t point = 0; point < CORE_COUNT_OF(basePoints); point++ )
-        {
-            for (int i = 0; i < SIDE_STEPS; i++)
-            {
-                Vector2dd p1 = basePoints[point];
-                Vector2dd p2 = basePoints[(point + 1) % CORE_COUNT_OF(basePoints)];
-                Vector2dd p = lerp(p1, p2, i, 0.0, SIDE_STEPS);
-                Ray3d r  = rayFromPixel(p);
-                rays2  .push_back(r);
-                points2.push_back(p);
-            }
+    if (trace) {
+        cout << "Rays: ";
+        for (Ray3d &ray : rays1) {
+              cout << ray << endl;
         }
     }
-#endif
 
     /* ==== */
     Matrix44 T = getCameraMatrix();
-
-    //cout << "Ray" << ray << endl;
 
     /* We go with ray analysis instead of essential matrix beacause it possibly gives
      * more semanticly valuable info
@@ -219,6 +163,11 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         double t1 = 0;
         double t2 = 0;
         bool hasIntersection = viewport0.intersectWith(ray, t1, t2);
+
+        if (trace) {
+            cout << "Ray " << rayId << " i:" << (hasIntersection ? "true" :  "false") << " t1:" << t1 << " t2:" << t2 << endl;
+        }
+
         if (hasIntersection && t2 > 0.0)
         {
             if (t1 < 0.0) t1 = 0.0;           
@@ -234,21 +183,14 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         }
     }
 
-#if 0
-    for (size_t rayId = 0; rayId < rays2.size(); rayId++ )
-    {
-        Ray3d &ray = rays2[rayId];
-        double t1 = 0;
-        double t2 = 0;
-        bool hasIntersection = viewport0.intersectWith(ray, t1, t2);
-        if (hasIntersection && t1 > 0)
-        {
-            points.push_back(points2[rayId]);
+    if (trace) {
+        cout << "Points: ";
+        for (Vector2dd &point : points) {
+              cout << point << endl;
         }
     }
-#endif
-
-    return removeDuplicateVertices(ConvexHull::GrahamScan(points));
+    // return removeDuplicateVertices(ConvexHull::GrahamScan(points)); // No need for this now
+    return ConvexHull::GrahamScan(points);
 }
 
 
