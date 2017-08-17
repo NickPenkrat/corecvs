@@ -65,7 +65,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 
         bool isDir = fs::is_directory(pathChild);
 
-        L_DDEBUG_P("%s contains\t%s\tas a %s", p.string().c_str(), pathChild.string().c_str(), (isDir ? "dir" : "file"));
+        //L_DDEBUG_P("%s contains\t%s\tas a %s", p.string().c_str(), pathChild.string().c_str(), (isDir ? "dir" : "file"));
 
         if (!(findFiles ^ isDir))
             continue;
@@ -149,7 +149,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
             dir = isDir(childPath);
         }
 
-        L_DDEBUG_P("%s contains\t%s\tas a %s (d_type:0x%x)", path.c_str(), ep->d_name, (dir ? "dir" : "file"), ep->d_type);
+        //L_DDEBUG_P("%s contains\t%s\tas a %s (d_type:0x%x)", path.c_str(), ep->d_name, (dir ? "dir" : "file"), ep->d_type);
 
         if (!(findFiles ^ dir))
             continue;
