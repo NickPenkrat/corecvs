@@ -49,7 +49,7 @@ Vector2dd SceneObservation::getUndist() const
     if (camera != NULL && (validityFlags & ValidFlags::OBSERVATION_VALID))
     {
         // This is a temporary solution. Z value should be computed, not just set to focal
-        observDir = Vector3dd(camera->distortion.mapBackward(observDir.xy()), camera->intrinsics.focal.x());
+        observDir = Vector3dd(camera->distortion.mapBackward(observation), camera->intrinsics.focal.x());
         validityFlags |= (int)ValidFlags::DIRECTION_VALID;
         return observDir.xy();
     }
@@ -379,6 +379,8 @@ PointPath SceneFeaturePoint::getEpipath(FixtureCamera *camera1, FixtureCamera *c
     }
 
     Vector2dd m = obs1->getUndist(); /*We work with geometry, so we take projective undistorted objservation */
+    PrinterVisitor printer;
+    printer.visit(*obs1, "observation");
 
     CameraModel model = camera1->getWorldCameraModel();
     Ray3d ray = model.rayFromPixel(m);
