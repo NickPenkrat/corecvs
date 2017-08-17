@@ -16,13 +16,15 @@ void JSONGetter::init(const char *fileName)
 
         if (!init(array))
         {
-             SYNC_PRINT(("Fail parsing the data from <%s>\n", QSTR_DATA_PTR(mFileName)));
+            SYNC_PRINT(("Fail parsing the data from <%s> with error \"%s\"\n\n", QSTR_DATA_PTR(mFileName), parseError.errorString().toStdString().c_str()));
+            mHasError = true;
         }
-
+        object = document.object();
         file.close();
     }
     else {
-        qDebug() << "JSONGetter::init() : Can't open file <" << QSTR_DATA_PTR(mFileName) << ">";
+        SYNC_PRINT(("JSONGetter: couldn't open file <%s>", QSTR_DATA_PTR(mFileName)));
+        mHasError = true;
     }
 }
 

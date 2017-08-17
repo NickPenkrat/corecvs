@@ -134,7 +134,7 @@ void Log::addAppLog(int argc, char* argv[], cchar* logFileName, cchar *projectEn
 
     L_INFO_P("%s", corecvs::tbbInfo().c_str());
 
-    if (projectEnvVar)
+    if (projectEnvVar != nullptr)
     {
         auto path = corecvs::TempFolder::TempFolderPath(projectEnvVar, true);  // clear it
         L_INFO_P("Working temp dir is <%s>", path.c_str());
