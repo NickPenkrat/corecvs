@@ -134,6 +134,17 @@ public:
         return toReturn;
     }
 
+    static RealType FromOriginAndDirection(const VectorType &origin, const VectorType &direction)
+    {
+        return RealType(direction, origin);
+    }
+
+
+    static RealType FromDirectionAndOrigin(const VectorType &direction, const VectorType &origin)
+    {
+        return RealType(direction, origin);
+    }
+
     /**
      *
      * This method implements Cyrus-Beck algorithm
@@ -185,7 +196,15 @@ public:
 
             double numen = diff & n;
             double denum = a & n;
-            if (denum == 0.0) {
+            if (denum == 0.0) { /* We are parallel */
+                if (numen > 0) /* We are parallel and outside. Fail. Leaving. */
+                {
+                    t1 = -numeric_limits<double>::infinity();
+                    t2 =  numeric_limits<double>::infinity();
+                    return false;
+                }
+
+                /* We were on the right side. Still a chance for intersection */
                 continue;
             }
             double t = numen / denum;
@@ -208,6 +227,7 @@ public:
         out << ray.p << "->" << ray.a;
         return out;
     }
+
 };
 
 /**
@@ -365,7 +385,6 @@ public:
         }
         return FixedVector<double, 4>(getPoint(t), 1.0);
     }
-
 };
 
 #if 0
@@ -770,6 +789,17 @@ public:
         Plane3d result = *this;
         result.normalise();
         return result;
+    }
+
+    Plane3d flippedNormal(void) const
+    {
+        return Plane3d(-normal(), last());
+    }
+
+    void flipNormal(void)
+    {
+        for (int i = 0; i < size() - 1; i++)
+            element[i] = - element[i];
     }
 
     Vector3dd normal(void) const

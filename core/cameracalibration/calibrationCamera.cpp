@@ -99,16 +99,22 @@ Polygon removeDuplicateVertices(const Polygon& polygon)
 
 Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLength1, double pyramidLength2) const
 {
+    static bool trace = false;
+
     ConvexPolyhedron viewport0 =       getCameraViewport(pyramidLength1);
     ConvexPolyhedron viewport1 = right.getCameraViewport(pyramidLength2);
 
-    cout << "viewport0:" << viewport0 << endl;
-    cout << "viewport1:" << viewport0 << endl;
+    if (trace) {
+        cout << "viewport0:" << viewport0 << endl;
+        cout << "viewport1:" << viewport1 << endl;
+    }
 
     /* We are inside other viewport. evey pixel is a possible projection */
     if (viewport1.isInside(extrinsics.toAffine3D().shift))
     {
-        cout << "One viewport starts inside another" << endl;
+        if (trace) {
+            cout << "One viewport starts inside another" << endl;
+        }
         return getCameraViewportPolygon();
     }
 
@@ -136,15 +142,15 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         }
     }
 
-    cout << "Rays: ";
-    for (Ray3d &ray : rays1) {
-          cout << ray << endl;
+    if (trace) {
+        cout << "Rays: ";
+        for (Ray3d &ray : rays1) {
+              cout << ray << endl;
+        }
     }
 
     /* ==== */
     Matrix44 T = getCameraMatrix();
-
-    //cout << "Ray" << ray << endl;
 
     /* We go with ray analysis instead of essential matrix beacause it possibly gives
      * more semanticly valuable info
@@ -158,7 +164,9 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         double t2 = 0;
         bool hasIntersection = viewport0.intersectWith(ray, t1, t2);
 
-        cout << "Ray " << rayId << " i:" << (hasIntersection ? "true" :  "false") << " t1:" << t1 << " t2:" << t2 << endl;
+        if (trace) {
+            cout << "Ray " << rayId << " i:" << (hasIntersection ? "true" :  "false") << " t1:" << t1 << " t2:" << t2 << endl;
+        }
 
         if (hasIntersection && t2 > 0.0)
         {
@@ -175,10 +183,11 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         }
     }
 
-
-    cout << "Points: ";
-    for (Vector2dd &point : points) {
-          cout << point << endl;
+    if (trace) {
+        cout << "Points: ";
+        for (Vector2dd &point : points) {
+              cout << point << endl;
+        }
     }
     // return removeDuplicateVertices(ConvexHull::GrahamScan(points)); // No need for this now
     return ConvexHull::GrahamScan(points);
