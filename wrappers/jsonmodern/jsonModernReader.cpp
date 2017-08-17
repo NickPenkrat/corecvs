@@ -21,7 +21,8 @@ void JSONModernReader::init(const char *fileName)
         is.open(fileName, std::ifstream::in);
         is >> mDocument;
         mNodePath.push_back(&mDocument);
-    } catch (nlohmann::detail::exception &e)
+    }
+    catch (nlohmann::detail::exception &e)
     {
         SYNC_PRINT(("JSONModernReader::init(%s): json parsing had an exception <%s>\n", fileName, e.what()));
         mHasError = true;

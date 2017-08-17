@@ -269,7 +269,7 @@ public:
         mNodePath.pop_back();
     }
 
-    bool hasError()
+    bool hasError() const
     {
         return mHasError;
     }
@@ -277,11 +277,11 @@ public:
 private:
     void init(const char *fileName);
 
+    std::vector<nlohmann::json *>   mNodePath;
+    std::string                     mFileName;
+    nlohmann::json                  mDocument;
 
-    std::vector<nlohmann::json *> mNodePath;
-    std::string         mFileName;
-    nlohmann::json mDocument;
-    bool trace = false;
+    bool trace     = false;
     bool mHasError = false;
 };
 
