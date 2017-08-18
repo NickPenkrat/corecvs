@@ -276,7 +276,7 @@ public:
         mNodePath.pop_back();
     }
 
-    bool hasError()
+    bool hasError() const
     {
         return mHasError;
     }

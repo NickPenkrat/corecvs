@@ -1,6 +1,9 @@
 #ifndef JSONGETTER_H
 #define JSONGETTER_H
 
+#include <string>
+#include <vector>
+
 #include <QtCore/QString>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -26,7 +29,7 @@ class JSONGetter
 {
 public:
     bool isSaver () { return false;}
-    bool isLoader() { return true ;}
+    bool isLoader() { return true; }
 
 public:
     /**
@@ -238,13 +241,19 @@ public:
         mNodePath.pop_back();
     }
 
+    bool hasError() const
+    {
+        return mHasError;
+    }
+
 private:
     void init(const char *fileName);
     bool init(const QByteArray &array);
 
     std::vector<QJsonObject> mNodePath;
-    QString     mFileName;
-    QJsonObject mDocument;
+    QString                  mFileName;
+    QJsonObject              mDocument;
+    bool                     mHasError = false;
 };
 
 template <>
