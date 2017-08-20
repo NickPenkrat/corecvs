@@ -80,6 +80,9 @@ public:
     void visit(Type &field, const char *fieldName)
     {
         CONDITIONAL_TRACE(("JSONModernReader::visit(Type &field, %s)\n", fieldName));
+        if (mNodePath.empty() || mNodePath.back() == NULL) {
+            SYNC_PRINT(("JSONModernReader::visit(Type &field, %s)\n", fieldName));
+        }
         if (mNodePath.back()->count(fieldName) == 0) {
              SYNC_PRINT(("JSONModernReader::visit(): member %s not found\n", fieldName));
              return;
@@ -225,7 +228,7 @@ public:
     {
         CONDITIONAL_TRACE(("JSONModernReader::visit(type &field, type defaultValue, %s) v1 \n", fieldName ));
         if (mNodePath.back()->count(fieldName) == 0) {
-             SYNC_PRINT(("JSONModernReader::visit(): member not found\n"));
+             SYNC_PRINT(("JSONModernReader::visit v1(_,_,%s): member not found\n", fieldName));
              return;
         }
 
@@ -273,7 +276,7 @@ public:
         mNodePath.pop_back();
     }
 
-    bool hasError()
+    bool hasError() const
     {
         return mHasError;
     }
@@ -286,10 +289,10 @@ private:
     std::string                   mFileName;
     nlohmann::json               mDocument;
    
+    bool mHasError = false;
 public:
     bool trace = false;
     bool deepTrace = false;
-    bool mHasError = false;
 };
 
 #undef CONDITIONAL_TRACE
