@@ -16,10 +16,9 @@ void JSONGetter::init(const char *fileName)
 
         if (!init(array))
         {
-            SYNC_PRINT(("Fail parsing the data from <%s> with error \"%s\"\n\n", QSTR_DATA_PTR(mFileName), parseError.errorString().toStdString().c_str()));
+            SYNC_PRINT(("Fail parsing the data from <%s>", QSTR_DATA_PTR(mFileName)));
             mHasError = true;
-        }
-        object = document.object();
+        }     
         file.close();
     }
     else {
@@ -31,9 +30,12 @@ void JSONGetter::init(const char *fileName)
 bool JSONGetter::init(const QByteArray &array)
 {
     QJsonObject object;
-    QJsonDocument document = QJsonDocument::fromJson(array);
+    QJsonParseError parseError;
+    QJsonDocument document = QJsonDocument::fromJson(array, &parseError);
     if (document.isNull())
     {
+        SYNC_PRINT(("Fail parsing the data from <%s> with error \"%s\"\n\n", parseError.errorString().toStdString().c_str()));
+        mHasError = true;
         return false;
     }
     object = document.object();

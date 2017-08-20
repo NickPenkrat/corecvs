@@ -17,10 +17,12 @@
 #include <execinfo.h>
 #endif
 
-#include <sstream>
 
 #include "utils.h"
 #include <sstream>
+
+#include <experimental/filesystem>
+namespace fs = std::experimental::filesystem;
 
 
 namespace corecvs {
@@ -202,6 +204,69 @@ string unescapeString(const string &s, const std::unordered_map<char, char> &sym
     return out.str();
 }
 
+std::string addFileExtIfNotExist(const std::string &fileName, const std::string &ext)
+{
+    return endsWith(fileName, ext) ? fileName : fileName + ext;
+}
+
+std::string getDirectory(const std::string &absoluteFilePath)
+{
+    CORE_ASSERT_TRUE_S(!absoluteFilePath.empty());
+
+    fs::path filePath(absoluteFilePath);
+    return fs::absolute(filePath.parent_path());
+
+/*    QFileInfo info(absoluteFilePath);
+    return info.dir().absolutePath();*/
+}
+
+std::string getFileName(const std::string &fileName)
+{
+    fs::path filePath(fileName);
+    return filePath.filename();
+
+    /*QFileInfo info(fileName);
+    return info.fileName();*/
+}
+
+std::string concatPath(const std::string &path1, const std::string &path2)
+{
+   return fs::path(path1) / fs::path(path2);
+}
+
+bool isAbsolutePath(const std::string &path)
+{
+   return fs::path(path).is_absolute();
+}
+
+std::string getFileNameIfExist(const std::string &fileName, const std::string &relativePath)
+{
+    //std::cout << fileName.toStdString() << std::endl;
+
+    fs::path filePath(fileName);
+    if (fs::exists(filePath))
+        return fileName;
+
+    fs::path infoNew = fs::path(relativePath) / fs::path(fileName); /* this is concatenation */
+    if (fs::exists(infoNew))
+        return fs::absolute(infoNew);
+    std::cout << "couldn't locate <" << fileName << "> with relativePath:" << relativePath << std::endl;
+    return "";
+
+#if 0
+    QFileInfo info(fileName);
+    if (info.exists())
+        return fileName;
+
+    QFileInfo infoNew(relativePath + PATH_SEPARATOR + info.fileName());
+    if (infoNew.exists())
+        return infoNew.absoluteFilePath();
+
+    std::cout << "couldn't locate <" << fileName.toStdString() << "> with relativePath:" << relativePath.toStdString() << std::endl;
+    return "";
+#endif
+}
+
 } // namespace HelperUtils
 
 } //namespace corecvs
@@ -209,11 +274,11 @@ string unescapeString(const string &s, const std::unordered_map<char, char> &sym
 
 #if defined(DSP_TARGET) || defined(WIN32) || defined(WIN64)
 
-    // It is possible but quite hard and usually not needed to print stack trace on Win32.
-    // Debugging shall be done with debugger when possible, if not, minidump is better than stack trace
-    // http://stackoverflow.com/questions/105659/how-can-one-grab-a-stack-trace-in-c/127012#127012
-    //
-    void setStdTerminateHandler() {}
+// It is possible but quite hard and usually not needed to print stack trace on Win32.
+// Debugging shall be done with debugger when possible, if not, minidump is better than stack trace
+// http://stackoverflow.com/questions/105659/how-can-one-grab-a-stack-trace-in-c/127012#127012
+//
+void setStdTerminateHandler() {}
 
 #else
 
