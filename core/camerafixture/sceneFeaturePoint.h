@@ -73,6 +73,7 @@ public:
 
 private:
     Vector2dd           observation;
+    Vector2dd           accuracy;
     Vector3dd           observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
     bool                onDistorted;                /**< true when observation belongs to source-distorted image, def: we assume working with points on undistorted images */
     int validityFlags;
