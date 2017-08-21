@@ -276,7 +276,7 @@ public:
         mNodePath.pop_back();
     }
 
-    bool hasError()
+    bool hasError() const
     {
         return mHasError;
     }
@@ -286,14 +286,13 @@ private:
 
 
     std::vector<nlohmann::json *> mNodePath;
-    std::string         mFileName;
-    nlohmann::json mDocument;
+    std::string                   mFileName;
+    nlohmann::json               mDocument;
+   
     bool mHasError = false;
-
 public:
     bool trace = false;
     bool deepTrace = false;
-
 };
 
 #undef CONDITIONAL_TRACE

@@ -109,6 +109,15 @@ namespace HelperUtils
         return filePath.substr(0, pos) + suffix + (pos == string::npos ? "" : filePath.substr(pos));
     }
 
+    /* these wrappers are not essential, but it removes the clutter of handling fs:: namespace */
+    string concatPath(const string &path1, const string &path2);
+    bool isAbsolutePath(const std::string &path);
+
+    /* Qt rewritten to std */
+    string addFileExtIfNotExist(const string& fileName, const string& ext);
+    string getDirectory(const string& absoluteFilePath);
+    string getFileName(const string& fileName);
+    string getFileNameIfExist(const string& fileName, const string& relativePath);
 
 } // namespace HelperUtils
 

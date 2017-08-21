@@ -72,10 +72,16 @@ public:
     };
 
 private:
-    Vector2dd           observation;
-    Vector3dd           observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
-    bool                onDistorted;                /**< true when observation belongs to source-distorted image, def: we assume working with points on undistorted images */
-    int validityFlags;
+    mutable Vector2dd           observation;
+    mutable Vector3dd           observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
+
+    /**
+     * true when observation belongs to source-distorted image, def: we assume working with points on undistorted images
+     * You can't relay on this value. It is mostly for optimisation
+     **/
+    bool                onDistorted;
+
+    mutable int validityFlags;
 
 public:
 
@@ -95,11 +101,13 @@ public:
     std::string     getPointName();
 
     int             ensureDistorted(bool distorted = true);
+
+    /* */
     Vector2dd       getDistorted   (bool distorted = true) const;
 
     /* */
-    Vector2dd       getUndist();
-    Vector2dd       getDist();
+    Vector2dd       getUndist() const;
+    Vector2dd       getDist  () const;
 
     Vector2dd       setUndist(const Vector2dd &undist);
     Vector2dd       setDist  (const Vector2dd &dist);
@@ -116,11 +124,22 @@ public:
         visitor.visit(observation  , Vector2dd(0.0) , "observation");
         visitor.visit(accuracy     , Vector2dd(0.0) , "accuracy");
         visitor.visit(onDistorted  , false          , "onDistorted");
-        visitor.visit(validityFlags, ValidFlags::DIRECTION_VALID | ValidFlags::OBSERVATION_VALID, "validityFlags");
+        visitor.visit(validityFlags, 0, "validityFlags");
 
         /* This is a compatibility block. Remove this when all data would be converted */
-#if 0
-
+#if 1
+        if (visitor.isLoader())
+        {
+            if (validityFlags == 0) /* We expect that only legacy scenes would have this */
+            {
+                Vector2dd obs = observation;
+                if (onDistorted) {
+                    setDist(obs);
+                } else {
+                    setUndist(obs);
+                }
+            }
+        }
 #endif
 
         keyPointArea.accept<VisitorType>(visitor);

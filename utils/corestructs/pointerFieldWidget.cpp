@@ -1,11 +1,3 @@
-#include <string>
-
-#include <QPushButton>
-#include <QFileDialog>
-#include <QMessageBox>
-
-
-
 #include "pointerFieldWidget.h"
 #include "ui_pointerFieldWidget.h"
 
@@ -19,7 +11,15 @@
 #ifdef WITH_JSONMODERN
 #include "jsonModernReader.h"
 #endif
+#ifdef WITH_RAPIDJSON
+#include "rapidJSONReader.h"
+#endif
 
+#include <string>
+
+#include <QPushButton>
+#include <QFileDialog>
+#include <QMessageBox>
 
 using namespace corecvs;
 using namespace std;
@@ -113,7 +113,6 @@ void PointerFieldWidget::loadRGB24Buffer()
     if (std::string(fieldReflection->targetClass) != "corecvs::RGB24Buffer" )
         return;
 
-
     QString filename = QFileDialog::getOpenFileName(
                 this,
                 "Choose an file name",
@@ -121,12 +120,10 @@ void PointerFieldWidget::loadRGB24Buffer()
                 "Text (*.bmp *.jpeg *.png)"
                 );
 
-    BufferFactory *factory = BufferFactory::getInstance();
-
     /*TODO: This is a design flaw around this desctruction */
     corecvs::RGB24Buffer *buffer = static_cast<corecvs::RGB24Buffer *>(rawPointer);
     delete_safe(buffer);
-    rawPointer = factory->loadRGB24Bitmap(filename.toStdString());
+    rawPointer = BufferFactory::getInstance()->loadRGB24Bitmap(filename.toStdString());
     setValue(rawPointer);
 }
 
@@ -144,18 +141,14 @@ void PointerFieldWidget::showRGB24Buffer()
 }
 
 void PointerFieldWidget::loadG12Buffer()
-{
-
-}
+{}
 
 void PointerFieldWidget::showG12Buffer()
-{
-
-}
+{}
 
 void PointerFieldWidget::loadFixtureScene()
 {
-    if (std::string(fieldReflection->targetClass) != "corecvs::FixtureScene" )
+    if (std::string(fieldReflection->targetClass) != "corecvs::FixtureScene")
     {
         SYNC_PRINT(("PointerFieldWidget::loadFixtureScene(): internal type error"));
         return;
@@ -173,27 +166,26 @@ void PointerFieldWidget::loadFixtureScene()
     pointer = new corecvs::FixtureScene;
 
 #ifdef WITH_JSONMODERN
-        {
-            JSONModernReader getter(filename.toStdString());
-            if (!getter.hasError())
-            {
-                getter.visit(*pointer, "scene");
-            } else {
-                QMessageBox::information(this, "Unable to parse json", "Unable to parse json. See log for details");
-            }
-        }
+    typedef JSONModernReader JSONReader;
+#elif defined(WITH_RAPIDJSON)
+    typedef RapidJSONReader  JSONReader;
 #else
-        {
-            JSONGetter getter(filename);
+    typedef JSONGetter       JSONReader;
+#endif
+    {
+        JSONReader getter(QSTR_DATA_PTR(filename));
+        if (!getter.hasError()) {
             getter.visit(*pointer, "scene");
         }
-#endif
+        else {
+            QMessageBox::information(this, "Unable to parse json", "Unable to parse json. See log for details");
+        }
+    }
 
     rawPointer = pointer;
     setValue(rawPointer);
 
-   /* BufferFactory *factory = BufferFactory::getInstance();
-    rawPointer = factory->loadRGB24Bitmap(filename.toStdString());
+  /*rawPointer = BufferFactory::getInstance()->loadRGB24Bitmap(filename.toStdString());
     setValue(rawPointer);*/
 }
 
@@ -224,6 +216,4 @@ void PointerFieldWidget::showFixtureCamera()
 }
 
 void PointerFieldWidget::saveFixtureCamera()
-{
-
-}
+{}

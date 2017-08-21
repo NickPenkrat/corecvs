@@ -194,8 +194,8 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
         if (obs1 != NULL && obs2 != NULL)
         {
             Correspondence c;
-            Vector2dd startPixel = obs1->getDistorted(false);
-            Vector2dd endPixel   = obs2->getDistorted(false);
+            Vector2dd startPixel = obs1->getUndist();
+            Vector2dd endPixel   = obs2->getUndist();
 
             c.start = camera1->intrinsics.reverse(startPixel).xy();
             c.end   = camera2->intrinsics.reverse(endPixel  ).xy();
