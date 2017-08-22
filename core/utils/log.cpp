@@ -11,6 +11,7 @@
 #include "commandLineSetter.h"
 #include "tbbWrapper.h"
 #include "tempFolder.h"
+#include "utils.h"
 
 const char *Log::level_names[] =
 {
@@ -103,6 +104,12 @@ void Log::addAppLog(int argc, char* argv[], cchar* logFileName, cchar *projectEn
     corecvs::CommandLineSetter setter(argc, (const char **)argv);
     Log::LogLevel minLogLevel = (Log::LogLevel)setter.getInt("logLevel", Log::LEVEL_INFO);
     std::string   logFile = setter.getString("logFile", logFileName ? logFileName : "");
+    auto logLevel = corecvs::HelperUtils::getEnvVar("CVSDK_LOG_LEVEL");
+    if (!logLevel.empty())
+    {
+        minLogLevel = (Log::LogLevel)std::stoi(logLevel.c_str());
+        std::cout << "Detected minLogLevel env.var.: set to " << minLogLevel << std::endl;
+    }
 
     /** add needed log drains
     */
