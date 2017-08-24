@@ -42,7 +42,8 @@ CORE_SUBMODULES =       \
     graphs              \
     polynomial          \
     camerafixture       \
-    iterative
+    iterative           \
+    stereointerface     \
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
