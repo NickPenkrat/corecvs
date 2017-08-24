@@ -29,7 +29,6 @@ CONFIG += with_widgets
 #
 HEADERS += \
     frames.h \
-    trackPainter.h \
     framesources/imageCaptureInterface.h \
     framesources/cameraControlParameters.h \
     framesources/decoders/mjpegDecoder.h \
@@ -112,11 +111,11 @@ HEADERS += \
     3d/gCodeScene.h \
     corestructs/cameraModel/fixtureGeometryControlWidget.h \
     corestructs/pointerFieldWidget.h \
-    corestructs/widgetBlockHarness.h
+    corestructs/widgetBlockHarness.h \
+    corestructs/cameraModel/fixtureGlobalParametersWidget.h
 
 SOURCES += \
     frames.cpp \
-    trackPainter.cpp \
     framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
     framesources/cameraControlParameters.cpp \
     framesources/decoders/mjpegDecoder.cpp \
@@ -195,7 +194,8 @@ SOURCES += \
     3d/gCodeScene.cpp \
     corestructs/cameraModel/fixtureGeometryControlWidget.cpp \
     corestructs/pointerFieldWidget.cpp \
-    corestructs/widgetBlockHarness.cpp
+    corestructs/widgetBlockHarness.cpp \
+    corestructs/cameraModel/fixtureGlobalParametersWidget.cpp
 
 
 FORMS += \
@@ -210,7 +210,8 @@ FORMS += \
     corestructs/cameraModel/featurePointControlWidget.ui \
     3d/shadedSceneControlWidget.ui \
     corestructs/cameraModel/fixtureGeometryControlWidget.ui \
-    corestructs/pointerFieldWidget.ui
+    corestructs/pointerFieldWidget.ui \
+    corestructs/cameraModel/fixtureGlobalParametersWidget.ui
 
 # =============================================================
 

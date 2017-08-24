@@ -133,7 +133,7 @@ public:
     void visit(std::vector<inputType> &fields, const char* arrayName)
     {
         fields.clear();
-        nlohmann::json &mainNode = mNodePath.back();
+        nlohmann::json &mainNode = *mNodePath.back();
         if (mainNode[arrayName].is_array())
         {
             nlohmann::json array = mainNode[arrayName];

@@ -60,6 +60,13 @@ public:
         return true;
     }
 
+
+    bool registerSaver(BufferSaver<RGB24Buffer> * saver)
+    {
+        mSaversRGB24.push_back(saver);
+        return true;
+    }
+
     /** Main function to get a 12-bits buffer from the file with the given path name
      */
     virtual G12Buffer* loadG12Bitmap(string name);
@@ -75,6 +82,14 @@ public:
     /** Main function to get a 16-bits buffer from the file with the given path name
      */
     virtual G12Buffer* loadG16Bitmap(string name);
+
+
+
+
+    /**
+     */
+    virtual bool saveRGB24Bitmap(RGB24Buffer* buffer, string name, string saverHint);
+
 
     /**
      **/
@@ -99,7 +114,7 @@ private:
     vector<BufferLoader<RuntimeTypeBuffer> *> mLoadersRuntime;
 
     //vector<BufferSaver<RuntimeTypeBuffer> *> mSaversRuntime;
-    //vector<BufferSaver<RGB24Buffer> *> mSaversRGB24;
+    vector<BufferSaver<RGB24Buffer> *> mSaversRGB24;
 };
 
 } //namespace corecvs
