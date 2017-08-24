@@ -8,26 +8,35 @@
 void JSONGetter::init(const char *fileName)
 {
     mFileName = fileName;
-    QFile file(mFileName);
-    QJsonObject object;
+    QFile file(mFileName);    
 
     if (file.open(QFile::ReadOnly))
     {
         QByteArray array = file.readAll();
 
-        QJsonDocument document = QJsonDocument::fromJson(array);
-        if (document.isNull())
+        if (!init(array))
         {
-            SYNC_PRINT(("Fail parsing the data from <%s>\n", QSTR_DATA_PTR(mFileName)));
+             SYNC_PRINT(("Fail parsing the data from <%s>\n", QSTR_DATA_PTR(mFileName)));
         }
-        object = document.object();
+
         file.close();
     }
     else {
         qDebug() << "JSONGetter::init() : Can't open file <" << QSTR_DATA_PTR(mFileName) << ">";
     }
+}
 
+bool JSONGetter::init(const QByteArray &array)
+{
+    QJsonObject object;
+    QJsonDocument document = QJsonDocument::fromJson(array);
+    if (document.isNull())
+    {
+        return false;
+    }
+    object = document.object();
     mNodePath.push_back(object);
+    return true;
 }
 
 template <>
