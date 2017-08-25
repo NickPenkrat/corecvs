@@ -18,7 +18,7 @@
  * It sends newFrameReady signal immediately. More precise camera simulation
  * is done in FilePreciseCaptureInterface class
  * */
-class FileCaptureInterface : public virtual ImageFileCaptureInterface
+class FileCaptureInterface : public ImageFileCaptureInterface
 {
 public:
     FileCaptureInterface(string pathFmt, bool isVerbose = true);
