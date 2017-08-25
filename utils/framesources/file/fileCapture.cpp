@@ -71,6 +71,7 @@ FileCaptureInterface::FramePair FileCaptureInterface::getFrame()
     }
 
     increaseImageFileCounter();
+    nextFrame();
     return result;
 }
 
@@ -81,6 +82,14 @@ ImageCaptureInterface::CapErrorCode FileCaptureInterface::initCapture()
 
 ImageCaptureInterface::CapErrorCode FileCaptureInterface::startCapture()
 {
+    return ImageCaptureInterface::SUCCESS;
+}
+
+ImageCaptureInterface::CapErrorCode FileCaptureInterface::nextFrame()
+{
+    frame_data_t frameData;
+    frameData.timestamp = mCount * 10;
+    notifyAboutNewFrame(frameData);
     return ImageCaptureInterface::SUCCESS;
 }
 

@@ -27,6 +27,7 @@ public:
 
     virtual CapErrorCode initCapture();
     virtual CapErrorCode startCapture();
+    virtual CapErrorCode nextFrame();
 
     virtual ~FileCaptureInterface();
 };
