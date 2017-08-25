@@ -18,9 +18,10 @@
 #include "bufferFactory.h"
 
 /* File capture interface */
-FileCaptureInterface::FileCaptureInterface(string pathFmt, bool isVerbose)
+FileCaptureInterface::FileCaptureInterface(string pathFmt, bool isVerbose, bool isRGB)
     : ImageFileCaptureInterface(&pathFmt, isVerbose)
 {
+    mIsRgb = isRGB;
     cout << "Starting capture form file with pattern:" << mPathFmt << "\n";
 }
 

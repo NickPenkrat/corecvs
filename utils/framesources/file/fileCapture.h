@@ -21,7 +21,7 @@
 class FileCaptureInterface : public ImageFileCaptureInterface
 {
 public:
-    FileCaptureInterface(string pathFmt, bool isVerbose = true);
+    FileCaptureInterface(string pathFmt, bool isVerbose = true, bool isRGB = false);
 
     virtual FramePair    getFrame();
 

@@ -74,7 +74,7 @@ ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bo
     if (input.substr(0, file.size()).compare(file) == 0)
     {
         string tmp = input.substr(file.size());
-        return new ImageCaptureInterfaceWrapper<FileCaptureInterface>(tmp);
+        return new ImageCaptureInterfaceWrapper<FileCaptureInterface>(tmp, true, isRGB);
     }
 #endif
 
