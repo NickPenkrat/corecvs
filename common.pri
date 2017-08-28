@@ -476,13 +476,11 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 with_boost {
     BOOST_PATH=$$(BOOST_PATH)
     DEFINES += WITH_BOOST
-    !win32 {
-        # Since we are not (yet?) using any binary boost components,
-        # we can think about it as header-only lib
-        !isEmpty(BOOST_PATH) {
-            INCLUDEPATH += $$BOOST_PATH
-        }
-    } else {
+    
+    # Since we are not (yet?) using any binary boost components,
+    # we can think about it as header-only lib
+    !isEmpty(BOOST_PATH) {
+        INCLUDEPATH += $$BOOST_PATH
     }
 }
 
