@@ -82,12 +82,12 @@ bool Polygon::isConvex(bool *direction) const
 {
     double oldsign = 0;
 
-    const Vector2dd *curr  = &getPoint(0);
+    const Vector2dd *curr = &getPoint(0);
     int idx1 = getNextDifferentIndex(0);
     if (idx1 == 0)
         return true;
 
-    const Vector2dd *next  = &getPoint(idx1);
+    const Vector2dd *next = &getPoint(idx1);
 
     int idx2 = getNextIndex(idx1);
     const Vector2dd *nnext = NULL;
@@ -114,7 +114,6 @@ bool Polygon::isConvex(bool *direction) const
         idx2 = getNextIndex(idx2);
     }
 
-done:
     if (direction != NULL) {
         *direction =  (oldsign > 0);
     }
@@ -127,10 +126,10 @@ bool Polygon::hasSelfIntersection() const
     size_t len = size();
     for (size_t i = 0; i < len; i++)
     {
-       Segment2d s1 = getSegment(i);
+       Segment2d s1 = getSegment((int)i);
        for (size_t j = i + 2; j < len - 1; j++)
        {
-          Segment2d s2 = getSegment(j);
+          Segment2d s2 = getSegment((int)j);
           bool intersect;
           Segment2d::intersect(s1, s2, intersect);
 
@@ -140,12 +139,11 @@ bool Polygon::hasSelfIntersection() const
               return true;
        }
     }
-
     return false;
 }
 
-
-Polygon Polygon::RegularPolygon(int sides, const Vector2dd &center, double radius, double startAngleRad) {
+Polygon Polygon::RegularPolygon(int sides, const Vector2dd &center, double radius, double startAngleRad)
+{
     Polygon toReturn;
     toReturn.reserve(sides);
 
@@ -153,7 +151,7 @@ Polygon Polygon::RegularPolygon(int sides, const Vector2dd &center, double radiu
 
     for (int i = 0; i < sides; i++)
     {
-        toReturn.push_back(center + Vector2dd::FromPolar(step * i + startAngleRad, radius));
+        toReturn.emplace_back(center + Vector2dd::FromPolar(step * i + startAngleRad, radius));
     }
     return toReturn;
 }
@@ -165,7 +163,7 @@ Polygon Polygon::Reverse(const Polygon &p)
 
     for (auto ri = p.rbegin(); ri != p.rend(); ri++)
     {
-        toReturn.push_back(*ri);
+        toReturn.emplace_back(*ri);
     }
     return toReturn;
 }
@@ -198,7 +196,7 @@ Polygon Polygon::FromConvexPolygon(const ConvexPolygon &polygon)
                 }
             }
             if (inside) {
-                points.push_back(intersect);
+                points.emplace_back(intersect);
             }
         }
     }
@@ -217,9 +215,11 @@ Polygon Polygon::FromHalfplanes(const std::vector<Line2d> &halfplanes)
 ConvexPolygon Polygon::toConvexPolygon() const
 {
     ConvexPolygon result;
+    result.faces.reserve(size());
+
     for (size_t i = 0; i < size(); i++)
     {
-        result.faces.push_back(Line2d(Segment2d(getSegment(i))));
+        result.faces.emplace_back(Line2d(Segment2d(getSegment((int)i))));
     }
 
     return result;
@@ -510,7 +510,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
     const std::pair<size_t, size_t> &fst = intersections[startIntersection];
 
     size_t currentId = fst.first;
-    unsigned int currentChain = 0;
+    size_t currentChain = 0;
 
     SYNC_PRINT(("Exit condition A%d or B%d\n", (int)fst.first, (int)fst.second));
 
@@ -540,7 +540,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
 
         if (v.flag == COMMON)
         {
-            unsigned int otherChain  = 1 - currentChain;
+            size_t otherChain  = 1 - currentChain;
             size_t nextCurrent = ((currentId  + 1) % c[currentChain].size());
             size_t nextOther   = ((v.other    + 1) % c[otherChain  ].size());
 
@@ -668,7 +668,7 @@ vector<Polygon> PolygonCombiner::intersectionAll() const
         for (size_t v = 0; v < visited.size(); v++)
         {
             if (!visited[v]) {
-                p0 = v;
+                p0 = (int)v;
             }
         }
         if (p0 == -1)
@@ -801,7 +801,7 @@ Polygon ConvexHull::GrahamScan(std::vector<Vector2dd> points)
         return Polygon();
 
     //find value with lowest y-coordinate
-    int idx = 0;
+    size_t idx = 0;
     double yMin = std::numeric_limits<double>::max();
     for (size_t i = 1; i < points.size(); i++)
     {

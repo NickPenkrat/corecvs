@@ -118,23 +118,21 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         return getCameraViewportPolygon();
     }
 
-    std::vector<Ray3d> rays1;
-
-
     const int SIDE_STEPS = 30;
-    rays1  .reserve(SIDE_STEPS * 4);
+    std::vector<Ray3d> rays1;
+    rays1.reserve(SIDE_STEPS * 4);
     {
-        Polygon  basePoints = right.getCameraViewportPolygon();
+        Polygon basePoints = right.getCameraViewportPolygon();
 
-        for (size_t point = 0; point < basePoints.size(); point++ )
+        for (size_t point = 0; point < basePoints.size(); point++)
         {
             for (int i = 0; i < SIDE_STEPS; i++)
             {
-                Vector2dd p1 = basePoints.getPoint    (point);
-                Vector2dd p2 = basePoints.getNextPoint(point);
+                Vector2dd p1 = basePoints.getPoint    ((int)point);
+                Vector2dd p2 = basePoints.getNextPoint((int)point);
                 Vector2dd p = lerp(p1, p2, i, 0.0, SIDE_STEPS);
                 Ray3d r  = right.rayFromPixel(p);
-                if ( pyramidLength2 > 0 ) {
+                if (pyramidLength2 > 0) {
                     r.a *= pyramidLength2;
                 }
                 rays1.push_back(r);
@@ -171,13 +169,12 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
         if (hasIntersection && t2 > 0.0)
         {
             if (t1 < 0.0) t1 = 0.0;           
-            if ( t2 > 1.0 && pyramidLength2 > 0 ) t2 = 1.0;
-
+            if (t2 > 1.0 && pyramidLength2 > 0) t2 = 1.0;
 
             FixedVector<double, 4> out1 = (T * ray.getProjectivePoint(t1));
             FixedVector<double, 4> out2 = (T * ray.getProjectivePoint(t2));
-            Vector2dd pos1 = Vector2dd( out1[0], out1[1]) / out1[2];
-            Vector2dd pos2 = Vector2dd( out2[0], out2[1]) / out2[2];
+            Vector2dd pos1 = Vector2dd(out1[0], out1[1]) / out1[2];
+            Vector2dd pos2 = Vector2dd(out2[0], out2[1]) / out2[2];
             points.push_back(pos1);
             points.push_back(pos2);
         }
@@ -186,7 +183,7 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
     if (trace) {
         cout << "Points: ";
         for (Vector2dd &point : points) {
-              cout << point << endl;
+            cout << point << endl;
         }
     }
     // return removeDuplicateVertices(ConvexHull::GrahamScan(points)); // No need for this now
