@@ -11,7 +11,7 @@ HEADERS += \
     utils/atomicOps.h \
     utils/typesafeBitmaskEnums.h \
     utils/statusTracker.h \
-    utils/abstractImageNamer.cpp \
+    utils/abstractImageNamer.h \
 
 SOURCES += \
     utils/memhooks.c \
