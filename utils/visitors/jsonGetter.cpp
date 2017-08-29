@@ -10,21 +10,20 @@ void JSONGetter::init(const char *fileName)
     mFileName = fileName;
     QFile file(mFileName);
 
-
 #if 1
     if (file.open(QFile::ReadOnly))
     {
         QByteArray array = file.readAll();
-
         if (!init(array))
         {
              SYNC_PRINT(("Fail parsing the data from <%s>\n", QSTR_DATA_PTR(mFileName)));
+             mHasError = true;
         }
-
         file.close();
     }
     else {
-        qDebug() << "JSONGetter::init() : Can't open file <" << QSTR_DATA_PTR(mFileName) << ">";
+        SYNC_PRINT(("JSONGetter: couldn't open file <%s>\n", QSTR_DATA_PTR(mFileName)));
+        mHasError = true;
     }
 #else
     QJsonObject object;
@@ -98,7 +97,6 @@ void JSONGetter::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, cons
             }
         }
     }
-
 }
 
 
