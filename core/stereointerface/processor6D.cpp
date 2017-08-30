@@ -41,3 +41,15 @@ Processor6D *Processor6DFactoryHolder::getProcessor(const std::string &name)
     }
     return NULL;
 }
+
+vector<std::string> Processor6DFactoryHolder::getHints()
+{
+    vector<std::string> hints;
+
+    Processor6DFactoryHolder *holder = getInstance();
+    for (Processor6DFactory *provider : holder->mProviders)
+    {
+        hints.push_back(provider->getName());
+    }
+    return hints;
+}

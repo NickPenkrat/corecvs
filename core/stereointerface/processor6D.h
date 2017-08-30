@@ -53,6 +53,9 @@ public:
     virtual int endFrame() = 0;
 
 
+    virtual std::map<std::string, DynamicObject> getParameters() = 0;
+    virtual bool setParameters(std::string name, const DynamicObject &param) = 0;
+
     virtual int setParameteri(int parameterName, int parameterValue) = 0;
     virtual int requestResultsi(int parameterValue) = 0;
 
@@ -88,7 +91,9 @@ public:
 
     static Processor6DFactoryHolder* getInstance();
     static Processor6D *getProcessor(const std::string &name);
+    static vector<std::string> getHints();
     static void printCaps();
+
 
     bool registerProcessor(Processor6DFactory * factory)
     {
