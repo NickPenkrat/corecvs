@@ -54,6 +54,8 @@ public:
 
 
     virtual int setParameteri(int parameterName, int parameterValue) = 0;
+    virtual vector<DynamicObject> getParameterPointers() = 0;
+
     virtual int requestResultsi(int parameterValue) = 0;
 
     /* This method computes flow form current frame to previous */

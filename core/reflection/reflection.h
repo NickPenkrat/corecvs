@@ -1048,7 +1048,8 @@ class DynamicObject
 {
 public:
     const Reflection *reflection;
-    void       *rawObject;
+    void             *rawObject;
+    bool              ownsObject = false;
 
     DynamicObject(
         const Reflection *reflection = NULL,
@@ -1064,6 +1065,15 @@ public:
         rawObject((void *) object)
     {}
 
+    template<typename Object>
+    DynamicObject Dynamise(Object *object)
+    {
+        DynamicObject dynamic(BaseReflection<Object>::getReflection());
+        Object *newObject = new Object(*object);
+        dynamic.rawObject = newObject;
+        dynamic.ownsObject= true;
+        return dynamic;
+    }
 
     /**
      *   Please note due to stupid alignment issues on ARM there could be some problems
@@ -1080,6 +1090,15 @@ public:
     }
 
     bool simulateConstructor();
+
+#if 0
+    ~DynamicObject()
+    {
+        if (ownsObject) {
+            delete(rawObject);
+        }
+    }
+#endif
 
 };
 
