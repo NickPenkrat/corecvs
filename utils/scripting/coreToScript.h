@@ -36,7 +36,7 @@ template<class ExposeType>
     {
           corecvs::Reflection *reflection = &ExposeType::reflection;
 
-          corecvs::DynamicObject input(&s);
+          corecvs::DynamicObjectWrapper input(&s);
 
           QScriptValue obj = engine->newObject();
           if (reflection == NULL)
@@ -125,7 +125,7 @@ template<class ExposeType>
     {
         corecvs::Reflection *reflection = &ExposeType::reflection;
 
-        corecvs::DynamicObject input(&s);
+        corecvs::DynamicObjectWrapper input(&s);
 
         if (reflection == NULL)
         {

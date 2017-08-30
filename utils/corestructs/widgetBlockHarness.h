@@ -11,7 +11,7 @@ class WidgetBlockHarness : public QWidget
 {
     Q_OBJECT
 public:
-    corecvs::DynamicObject *blockReflection = NULL;
+    corecvs::DynamicObjectWrapper *blockReflection = NULL;
     NewStyleBlock *block = NULL;
 
 
@@ -20,7 +20,7 @@ public:
     ReflectionWidget *outputs = NULL;
 
 
-    WidgetBlockHarness(corecvs::DynamicObject *blockReflection, NewStyleBlock *block, QWidget *parent = NULL);
+    WidgetBlockHarness(corecvs::DynamicObjectWrapper *blockReflection, NewStyleBlock *block, QWidget *parent = NULL);
 
 public slots:
     void executeCalled();

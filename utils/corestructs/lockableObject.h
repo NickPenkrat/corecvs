@@ -4,14 +4,14 @@
 #include <QMutex>
 #include "reflection.h"
 
-class LockableObject : public corecvs::DynamicObject
+class LockableObject : public corecvs::DynamicObjectWrapper
 {
     QMutex mutex;
 public:
     LockableObject() {}
 
     template<typename Object>
-    LockableObject(Object *object) : corecvs::DynamicObject(object)
+    LockableObject(Object *object) : corecvs::DynamicObjectWrapper(object)
     {}
 
     void lock() {
