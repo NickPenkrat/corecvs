@@ -1110,7 +1110,7 @@ public:
         reflection(BaseReflection<Object>::getReflection())
     {
         rawObject = malloc(std::max((size_t)reflection->objectSize, sizeof(Object)));
-        *static_cast<Object *>(&rawObject) = *object;
+        *static_cast<Object *>(rawObject) = *object;
     }
 
     DynamicObject(DynamicObject&& other)
