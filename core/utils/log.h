@@ -76,31 +76,30 @@ public:
         }
     }
 
-   void add(LogDrain* p)
-   {
-       mMutex.lock();
-       push_back(p);
-       mMutex.unlock();
-   }
+    void add(LogDrain* p)
+    {
+        std::lock_guard<std::mutex> locker(mMutex);
+        push_back(p);
+    }
 
-   void detach(LogDrain* p)
-   {
-       mMutex.lock();
-       const auto &it = std::find(begin(), end(), p);
-       if (it != end()) {
-           erase(it);
-       }
-       mMutex.unlock();
-   }
+    void detach(LogDrain* p)
+    {
+        std::lock_guard<std::mutex> locker(mMutex);
+        const auto &it = std::find(begin(), end(), p);
+        if (it != end()) {
+            erase(it);
+        }
+    }
 
-   void detachLastAddedLog()
-   {
-       if (size() > 1) {                // detach a log just have been added before
-           LogDrain* log = (*this)[size() - 1];
-           detach(log);
-           delete_safe(log);
-       }
-   }
+    void detachLastAddedLog()
+    {
+        std::lock_guard<std::mutex> locker(mMutex);
+        if (size() > 1) {                // detach a log just have been added before
+            LogDrain* log = (*this)[size() - 1];
+            detach(log);
+            delete_safe(log);
+        }
+    }
 };
 
 /** \class Log
