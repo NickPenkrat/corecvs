@@ -29,6 +29,8 @@ BufferFactory* BufferFactory::getInstance()
 
         sThis.get()->registerLoader(new PPMLoaderRGB24());
         sThis.get()->registerLoader(new BMPLoaderRGB24());
+
+        sThis.get()->registerSaver(new BMPSaverRGB24());
     }
     return sThis.get();
 }

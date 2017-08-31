@@ -88,7 +88,7 @@ public:
     }
 
     virtual std::string name() override { return "BMPLoaderG12"; }
-    virtual std::vector<std::string> resolutions() override {
+    virtual std::vector<std::string> extentions() override {
         return std::vector<std::string>({ BMPLoaderBase::prefix1 });
     }
 };
@@ -107,7 +107,7 @@ public:
     }
 
     virtual std::string name() override { return "BMPLoaderRGB24"; }
-    virtual std::vector<std::string> resolutions() override {
+    virtual std::vector<std::string> extentions() override {
         return std::vector<std::string>({ BMPLoaderBase::prefix1 });
     }
 };
@@ -122,7 +122,7 @@ class BMPSaverRGB24 : public BufferSaver<RGB24Buffer>, public BMPLoaderBase
     }
 
     virtual std::string              name()        override { return "BMPSaverRGB24"; }
-    virtual std::vector<std::string> resolutions() override {
+    virtual std::vector<std::string> extentions() override {
         return std::vector<std::string>({BMPLoaderBase::prefix1});
     }
     virtual ~BMPSaverRGB24() {}

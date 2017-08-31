@@ -239,6 +239,11 @@ bool isAbsolutePath(const std::string &path)
    return fs::path(path).is_absolute();
 }
 
+bool pathExists(const std::string &path)
+{
+    return fs::exists(path);
+}
+
 std::string getFileNameIfExist(const std::string &fileName, const std::string &relativePath)
 {
     //std::cout << fileName.toStdString() << std::endl;

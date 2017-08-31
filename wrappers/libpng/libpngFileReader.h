@@ -42,7 +42,7 @@ class LibpngFileSaver : public corecvs::BufferSaver<corecvs::RGB24Buffer>
     }
 
     virtual std::string              name()        override { return "LibpngFileSaver"; }
-    virtual std::vector<std::string> resolutions() override {
+    virtual std::vector<std::string> extentions() override {
         return std::vector<std::string>({LibpngFileReader::prefix1});
     }
     virtual ~LibpngFileSaver() {}
