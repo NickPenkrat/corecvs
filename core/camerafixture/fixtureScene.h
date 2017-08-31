@@ -52,6 +52,14 @@ public:
 
     FixtureCamera              *camera = NULL;
 
+    /**
+     *   Some Id that allows to identify the image.
+     *   If it is a path and scene has a relative path then methods such as getImage would be able to load it.
+     *
+     *   Image would be loaded if (see getImageScenePath() for details)
+     *     1. mImagePath is a valid absolute path
+     *     2. ownerScene is not null and scene holds a relative path that could be prepended
+     **/
     std::string                 mImagePath;
     std::string                 mRelativeImagePath;
     std::string                 mUndistortedImagePath;
@@ -62,7 +70,36 @@ public:
         visitor.visit(mImagePath, std::string(""), "imagePath");
     }
 
-    RGB24Buffer* getRGB24Buffer();
+    /**
+     *
+     **/
+    std::string getImageScenePath() const;
+
+    /**
+     * This constructs new buffer with loaded image. On failure returns NULL
+     *
+     * This function is for compatibility mostly. Use RGB24Buffer() instead - it would provide caching
+     **/
+    RGB24Buffer* getRGB24BufferPtr();
+
+    /**
+     * This function returns an pointer to the newly loaded image
+     *
+     * if detach is false - cache is created and ImageRelatedData would hold it and return for new calls.
+     * if detach is true  - you would be granted a new copy of the image or cached image.
+     *
+     **/
+    std::shared_ptr<RGB24Buffer> getImage(bool detach = false, bool forceReload = false);
+
+    /** There functions use RGB24 cache but don't cache it's result **/
+    G12Buffer* getG12BufferPtr();
+    G8Buffer * getG8BufferPtr();
+
+
+    void cleanCache();
+
+private:
+    std::shared_ptr<RGB24Buffer> mCache;
 
 };
 
@@ -103,8 +140,6 @@ public:
     Affine3DQ                     worldFrameToCameraFrame;
 
     std::string                   nameId;
-
-    std::string                   relativeImageDataPath;
 
     bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
 
@@ -238,6 +273,7 @@ protected:
     virtual FixtureSceneGeometry *fabricateSceneGeometry();
     virtual ImageRelatedData     *fabricateImageData();
 
+    std::string                   relativeImageDataPath;
 public:
 
     /**
@@ -299,6 +335,17 @@ public:
     // Transforms the whole world using scale*(QX+T) (FixtureCamera's inside CameraFixtures are not moved)
     virtual void transform(const corecvs::Affine3DQ &transformation, const double scale = 1.0);
 
+
+    /* Call this every time you need a search path */
+    virtual std::string getImageSearchPath() const
+    {
+        return relativeImageDataPath;
+    }
+
+    void setImageSearchPath(std::string &path)
+    {
+        relativeImageDataPath = path;
+    }
 
     size_t totalObservations() const
     {

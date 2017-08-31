@@ -206,3 +206,14 @@ RuntimeTypeBuffer *QTRuntimeLoader::load(std::string name)
 
 QTRuntimeLoader::~QTRuntimeLoader()
 {}
+
+bool QTRGB24Saver::acceptsFile(std::string name)
+{
+    return true;
+}
+
+bool QTRGB24Saver::save(RGB24Buffer &buffer, std::string name)
+{
+    QTFileLoader().save(name, &buffer, 100);
+    return true;
+}

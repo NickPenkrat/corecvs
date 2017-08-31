@@ -133,7 +133,7 @@ public:
     void visit(std::vector<inputType> &fields, const char* arrayName)
     {
         fields.clear();
-        nlohmann::json &mainNode = mNodePath.back();
+        nlohmann::json &mainNode = *mNodePath.back();
         if (mainNode[arrayName].is_array())
         {
             nlohmann::json array = mainNode[arrayName];
@@ -276,7 +276,7 @@ public:
         mNodePath.pop_back();
     }
 
-    bool hasError()
+    bool hasError() const
     {
         return mHasError;
     }
@@ -286,14 +286,13 @@ private:
 
 
     std::vector<nlohmann::json *> mNodePath;
-    std::string         mFileName;
-    nlohmann::json mDocument;
+    std::string                   mFileName;
+    nlohmann::json               mDocument;
+   
     bool mHasError = false;
-
 public:
     bool trace = false;
     bool deepTrace = false;
-
 };
 
 #undef CONDITIONAL_TRACE

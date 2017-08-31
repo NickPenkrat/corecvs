@@ -186,7 +186,7 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, 
             } else {
             }
 
-            Ray3d ray = rawCam.rayFromPixel(observ.getDistorted(false));
+            Ray3d ray = rawCam.rayFromPixel(observ.getUndist());
             Vector3dd p2 = ray.getPoint(projectionRayLength() * scale);
             mesh.addLine(ray.p, p2);
 

@@ -80,3 +80,15 @@ public:
 
     virtual ~QTRuntimeLoader();
 };
+
+class QTRGB24Saver : public corecvs::BufferSaver<corecvs::RGB24Buffer>
+{
+    virtual bool acceptsFile(std::string name) override;
+    virtual bool save(corecvs::RGB24Buffer &buffer, std::string name);
+
+    virtual std::string              name()        override { return "QTRGB24Saver(multitype)"; }
+    virtual std::vector<std::string> resolutions() override {
+        return std::vector<std::string>({"*.jpeg"});
+    }
+    virtual ~QTRGB24Saver() {}
+};
