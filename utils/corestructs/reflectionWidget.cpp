@@ -300,7 +300,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
 
 BaseReflectionStatic *ReflectionWidget::createParametersVirtual() const
 {
-    DynamicObject obj;
+    DynamicObjectWrapper obj;
     obj.reflection = reflection;
     obj.rawObject = malloc(reflection->objectSize);
     obj.simulateConstructor();
@@ -310,7 +310,7 @@ BaseReflectionStatic *ReflectionWidget::createParametersVirtual() const
 
 bool ReflectionWidget::getParameters(void *param) const
 {
-    DynamicObject obj(reflection, param);
+    DynamicObjectWrapper obj(reflection, param);
 
     for (size_t i = 0; i < positionToField.size(); i++)
     {
@@ -422,7 +422,7 @@ bool ReflectionWidget::getParameters(void *param) const
 
 bool ReflectionWidget::setParameters(void *param) const
 {
-    DynamicObject obj(reflection, param);
+    DynamicObjectWrapper obj(reflection, param);
 
     for (size_t i = 0; i < positionToField.size(); i++)
     {

@@ -1044,14 +1044,14 @@ public:
  * the object is compleatly managed be the reflection
  *
  **/
-class DynamicObject
+class DynamicObjectWrapper
 {
 public:
     const Reflection *reflection;
     void             *rawObject;
     bool              ownsObject = false;
 
-    DynamicObject(
+    DynamicObjectWrapper(
         const Reflection *reflection = NULL,
         void       *rawObject = NULL
     ) :
@@ -1060,7 +1060,7 @@ public:
     {}
 
     template<typename Object>
-    DynamicObject(Object *object):
+    DynamicObjectWrapper(Object *object):
         reflection(BaseReflection<Object>::getReflection()),
         rawObject((void *) object)
     {}
@@ -1102,6 +1102,79 @@ public:
 
 };
 
+class DynamicObject {
+public:
+    const Reflection *reflection = NULL;
+    void       *rawObject = NULL;
+
+    DynamicObject(
+        const Reflection *reflection = NULL
+    ) :
+        reflection(reflection)
+    {
+        if (reflection != NULL)
+        {
+            rawObject = malloc(reflection->objectSize);
+            DynamicObjectWrapper(reflection, rawObject).simulateConstructor();
+        }
+    }
+
+    ~DynamicObject()
+    {
+        free(rawObject);
+    }
+
+    template<typename Object>
+    DynamicObject(Object *object):
+        reflection(BaseReflection<Object>::getReflection())
+    {
+        rawObject = malloc(std::max((size_t)reflection->objectSize, sizeof(Object)));
+        *static_cast<Object *>(rawObject) = *object;
+    }
+
+    DynamicObject(DynamicObject&& other)
+    {
+        reflection = other.reflection;
+        rawObject = other.rawObject;
+        other.rawObject = NULL;
+        other.reflection = NULL;
+    }
+
+
+    /**
+     *   Please note due to stupid alignment issues on ARM there could be some problems
+     **/
+    template<typename Type>
+    Type *getField(int fieldId)
+    {
+        return (Type *)&(((uint8_t*)rawObject)[reflection->fields[fieldId]->offset]);
+    }
+
+    const BaseField* getFieldReflection(int fieldId)
+    {
+        return reflection->fields[fieldId];
+    }
+
+    bool simulateConstructor();
+
+    template<typename Type>
+    bool copyTo(Type *target) const
+    {
+        Reflection *targetRef = BaseReflection<Type>::getReflection();
+        if (targetRef->name.name != reflection->name.name)
+        {
+            SYNC_PRINT(("Seem to copyTo object of the wrong type"));
+            return false;
+        }
+        target = static_cast<Type *>(rawObject);
+        return true;
+    }
+
+private:
+    DynamicObject(const DynamicObject& other) = delete;
+    DynamicObject& operator=(const DynamicObject& other) = delete;
+
+};
 
 
 } //namespace corecvs

@@ -15,7 +15,7 @@ ReflectionDirectory *ReflectionDirectoryHolder::getReflectionDirectory()
 }
 
 
-bool DynamicObject::simulateConstructor()
+bool DynamicObjectWrapper::simulateConstructor()
 {
     if (reflection == NULL || rawObject == NULL)
         return false;
@@ -70,7 +70,7 @@ bool DynamicObject::simulateConstructor()
                             ));
                 break;
             }
-            DynamicObject obj(tfield->reflection, getField<void *>(count));
+            DynamicObjectWrapper obj(tfield->reflection, getField<void *>(count));
             obj.simulateConstructor();
             break;
         }
