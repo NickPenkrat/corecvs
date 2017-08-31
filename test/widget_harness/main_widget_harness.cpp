@@ -81,7 +81,7 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    DynamicObject blockReflection;
+    DynamicObjectWrapper blockReflection;
     NewStyleBlock *block = NULL;
 
     if ( mode == "block")
@@ -92,17 +92,17 @@ int main(int argc, char **argv)
 
         if (blockName == "homography") {
             HomographyReconstructorBlock *theBlock = new HomographyReconstructorBlock();
-            blockReflection = DynamicObject(static_cast<HomorgaphyReconstructorBlockBase *>(theBlock));
+            blockReflection = DynamicObjectWrapper(static_cast<HomorgaphyReconstructorBlockBase *>(theBlock));
             block = theBlock;
         }
         if (blockName == "stereo_aligner") {
             SceneStereoAlignerBlock *theBlock = new SceneStereoAlignerBlock();
-            blockReflection = DynamicObject(static_cast<SceneStereoAlignerBlockBase *>(theBlock));
+            blockReflection = DynamicObjectWrapper(static_cast<SceneStereoAlignerBlockBase *>(theBlock));
             block = theBlock;
         }
         if (blockName == "adder_test") {
             AdderSubstractor *theBlock = new AdderSubstractor();
-            blockReflection = DynamicObject(static_cast<AdderSubstractorParametersBase *>(theBlock));
+            blockReflection = DynamicObjectWrapper(static_cast<AdderSubstractorParametersBase *>(theBlock));
             block = theBlock;
         }
 
