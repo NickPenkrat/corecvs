@@ -282,16 +282,16 @@ SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType i
     return ownerScene->getPointById(id);
 }
 
-std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL2()
+std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL2() const
 {
     std::vector< double > out;
-    if ( !hasKnownReprojectedPosition )
-        return out;
+    //if (!hasKnownReprojectedPosition)
+    //    return out;
 
-    for ( auto& obs : observations )
+    for (auto& obs : observations)
     { 
         Vector2dd xy;
-        if ( !obs.first->projectPointFromWorld( reprojectedPosition, &xy ) )
+        if (!obs.first->projectPointFromWorld(reprojectedPosition, &xy))
             continue;
 
         xy -= obs.second.observation;
@@ -301,20 +301,20 @@ std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL
     return out;
 }
 
-std::vector< double > SceneFeaturePoint::estimateReprojectionErrorL2()
+std::vector< double > SceneFeaturePoint::estimateReprojectionErrorL2() const
 {
     std::vector< double > out;
-    if (!hasKnownPosition)
-        return out;
+    //if (!hasKnownPosition)
+    //    return out;
 
-    for ( auto& obs : observations )
+    for (auto& obs : observations)
     {
         Vector2dd xy;
-        if ( !obs.first->projectPointFromWorld( position, &xy ) )
+        if (!obs.first->projectPointFromWorld(position, &xy))
             continue;
 
         xy -= obs.second.observation;
-        out.push_back( xy.l2Metric() );
+        out.push_back(xy.l2Metric());
     }
 
     return out;

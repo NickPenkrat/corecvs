@@ -306,8 +306,8 @@ public:
     void projectForward(FixtureCamera *camera, CameraFixture *fixture, bool round);
 
     /* L2 reprojection error per observation */
-    std::vector< double > estimateReconstructedReprojectionErrorL2();
-    std::vector< double > estimateReprojectionErrorL2();
+    std::vector< double > estimateReconstructedReprojectionErrorL2() const;
+    std::vector< double > estimateReprojectionErrorL2() const;
 
     static bool checkTriangulationAngle(const corecvs::Vector3dd& point, const corecvs::Vector3dd& camera0, const corecvs::Vector3dd& camera1, double thresholdCos = triangulatorCosAngleThreshold);
     static bool checkTriangulationAngle(const corecvs::Vector3dd& point, const std::vector<corecvs::Vector3dd>& cameras, double thresholdCos = triangulatorCosAngleThreshold);
