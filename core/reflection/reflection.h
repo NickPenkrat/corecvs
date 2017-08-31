@@ -1065,16 +1065,6 @@ public:
         rawObject((void *) object)
     {}
 
-    template<typename Object>
-    DynamicObject Dynamise(Object *object)
-    {
-        DynamicObject dynamic(BaseReflection<Object>::getReflection());
-        Object *newObject = new Object(*object);
-        dynamic.rawObject = newObject;
-        dynamic.ownsObject= true;
-        return dynamic;
-    }
-
     /**
      *   Please note due to stupid alignment issues on ARM there could be some problems
      **/

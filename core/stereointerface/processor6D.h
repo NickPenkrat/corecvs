@@ -57,7 +57,6 @@ public:
     virtual bool setParameters(std::string name, const DynamicObject &param) = 0;
 
     virtual int setParameteri(int parameterName, int parameterValue) = 0;
-    virtual vector<DynamicObject> getParameterPointers() = 0;
 
     virtual int requestResultsi(int parameterValue) = 0;
 
