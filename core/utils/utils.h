@@ -110,8 +110,10 @@ namespace HelperUtils
     }
 
     /* these wrappers are not essential, but it removes the clutter of handling fs:: namespace */
-    string concatPath(const string &path1, const string &path2);
-    bool isAbsolutePath(const std::string &path);
+    string concatPath  (const string &path1, const string &path2);
+    bool isAbsolutePath(const string &path);
+    bool pathExists    (const string &path);
+
 
     /* Qt rewritten to std */
     string addFileExtIfNotExist(const string& fileName, const string& ext);

@@ -24,22 +24,57 @@ public:
 };
 
 /**/
-class OpenCVLoaderRGB24Loader : public corecvs::BufferLoader<corecvs::RGB24Buffer>
+class OpenCVRGB24Loader : public corecvs::BufferLoader<corecvs::RGB24Buffer>
 {
 public:
-    OpenCVLoaderRGB24Loader();
+    OpenCVRGB24Loader();
+
+    static int registerMyself()
+    {
+        corecvs::BufferFactory::getInstance()->registerLoader(new OpenCVRGB24Loader());
+        return 0;
+    }
+
     virtual bool acceptsFile(std::string name) override;
     virtual corecvs::RGB24Buffer *load(std::string name) override;
     virtual std::string name() override { return "OpenCVRGB24Loader(multitype)"; }
 };
 
-class OpenCVLoaderRuntimeTypeBufferLoader : public corecvs::BufferLoader<corecvs::RuntimeTypeBuffer>
+class OpenCVRuntimeTypeBufferLoader : public corecvs::BufferLoader<corecvs::RuntimeTypeBuffer>
 {
 public:
-    OpenCVLoaderRuntimeTypeBufferLoader();
+    static int registerMyself()
+    {
+        corecvs::BufferFactory::getInstance()->registerLoader(new OpenCVRuntimeTypeBufferLoader());
+        return 0;
+    }
+
+    OpenCVRuntimeTypeBufferLoader();
     virtual bool acceptsFile(std::string name) override;
     virtual corecvs::RuntimeTypeBuffer *load(std::string name) override;
     virtual std::string name() override { return "OpenCVRuntimeLoader(multitype)"; }
+};
+
+/**/
+
+class OpenCVRGB24Saver : public corecvs::BufferSaver<corecvs::RGB24Buffer>
+{
+public:
+
+    static int registerMyself()
+    {
+        corecvs::BufferFactory::getInstance()->registerSaver(new OpenCVRGB24Saver());
+        return 0;
+    }
+
+    virtual bool acceptsFile(std::string name) override;
+    virtual bool save(corecvs::RGB24Buffer &buffer, std::string name) override;
+    virtual std::string              name()        override { return "OpenCVRGB24Saver"; }
+    virtual std::vector<std::string> extentions() override {
+        return std::vector<std::string>({".bmp", ".BMP", ".jpg", ".JPG", ".png", ".PNG"});
+    }
+    virtual ~OpenCVRGB24Saver() {}
+
 };
 
 
