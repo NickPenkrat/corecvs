@@ -148,6 +148,7 @@ void corecvs::StatusTracker::setCompleted()
     {
         WRITE_LOCK;
         currentStatus.isCompleted = true;
+        currentStatus.completedGlobalActions = currentStatus.totalGlobalActions;
     }
     std::cout << "StatusTracker::setCompleted" << std::endl;
 }
