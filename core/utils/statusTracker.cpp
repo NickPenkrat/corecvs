@@ -148,9 +148,17 @@ void corecvs::StatusTracker::setCompleted()
     {
         WRITE_LOCK;
         currentStatus.isCompleted = true;
-        currentStatus.completedGlobalActions = currentStatus.totalGlobalActions;
+        currentStatus.completedGlobalActions++;
+        //CORE_ASSERT_TRUE_S(currentStatus.completedGlobalActions <= currentStatus.totalGlobalActions); // we are not right often with global steps estimation for some methods...
     }
     std::cout << "StatusTracker::setCompleted" << std::endl;
+
+    {
+        READ_LOCK;
+        if (currentStatus.completedGlobalActions != currentStatus.totalGlobalActions) {
+            std::cout << "StatusTracker::setCompleted: globalCounter error, STATUS::: " << currentStatus << std::endl;
+        }
+    }
 }
 
 void corecvs::StatusTracker::setFailed()
