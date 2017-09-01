@@ -55,12 +55,14 @@ void BufferFactory::printCaps()
 template<typename BufferType>
 BufferType *loadBuffer(string name, vector<BufferLoader<BufferType> *> &loaders)
 {
+    bool found = false;
     for (auto it : loaders)
     {
         //SYNC_PRINT(("BufferFactory::load(%s): loader <%s>\n", name.c_str(), it->name().c_str()));
 
         if (!(it->acceptsFile(name)))
             continue;
+        found = true;
 
         BufferType *result = NULL;
         try {
@@ -68,7 +70,7 @@ BufferType *loadBuffer(string name, vector<BufferLoader<BufferType> *> &loaders)
         }
         catch (std::exception &)
         {
-            SYNC_PRINT(("BufferFactory::load(): loader <%s> violates contract by throwing unexpected exception", it->name().c_str()));
+            SYNC_PRINT(("BufferFactory::load(): loader <%s> violates contract by throwing unexpected exception\n", it->name().c_str()));
         }
 
         if (result != NULL) {
@@ -77,6 +79,10 @@ BufferType *loadBuffer(string name, vector<BufferLoader<BufferType> *> &loaders)
 
         SYNC_PRINT(("BufferFactory::load(%s):  loader <%s> agreed to load, but failed\n", name.c_str(), it->name().c_str()));
     }
+
+    if (!found)
+        SYNC_PRINT(("BufferFactory::load(%s):  no loaders for it!\n", name.c_str()));
+
     return NULL;
 }
 
