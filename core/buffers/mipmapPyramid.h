@@ -50,7 +50,7 @@ public:
         levels[0] = new BufferType(input);
         for (int i = 1; i < _levelNumber; i++)
         {
-            levels[i] = downsample(levels[i-1], factor);
+            levels[i] = downsampleSmall(levels[i-1], factor);
         }
     }
 
