@@ -1081,6 +1081,14 @@ public:
 
     bool simulateConstructor();
 
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+
+
+    }
+
 #if 0
     ~DynamicObject()
     {
