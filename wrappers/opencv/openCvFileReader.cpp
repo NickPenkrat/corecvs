@@ -61,18 +61,20 @@ RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
     return convert(img);
 }
 
-void OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std::string &s)
+bool OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std::string &s)
 {
     auto* b = OpenCVTools::getCVImageFromRGB24Buffer(&const_cast<corecvs::RGB24Buffer&>(buffer));
     CVMAT_FROM_IPLIMAGE( mat, b, false );
-    cv::imwrite(s, mat);
+    bool success = cv::imwrite(s, mat);
     cvReleaseImage(&b);
+    return success;
 }
 
-void OpenCvBufferReader::write(const RuntimeTypeBuffer &buffer, const std::string &s)
+bool OpenCvBufferReader::write(const RuntimeTypeBuffer &buffer, const std::string &s)
 {
     cv::Mat img = convert(buffer);
-    cv::imwrite(s, img);
+    bool success = cv::imwrite(s, img);
+    return success;
 }
 
 
@@ -133,5 +135,5 @@ bool OpenCVRGB24Saver::acceptsFile(string name)
 
 bool OpenCVRGB24Saver::save(RGB24Buffer &buffer, string name)
 {
-    OpenCvBufferReader().writeRgb(buffer, name);
+    return OpenCvBufferReader().writeRgb(buffer, name);
 }

@@ -18,8 +18,8 @@ public:
     virtual corecvs::RuntimeTypeBuffer read   (const std::string &s) = 0;
     virtual corecvs::RGB24Buffer       readRgb(const std::string &s) = 0;
 
-    virtual void write   (const corecvs::RuntimeTypeBuffer& buffer, const std::string &s) = 0;
-    virtual void writeRgb(const corecvs::RGB24Buffer      & buffer, const std::string &s) = 0;
+    virtual bool write   (const corecvs::RuntimeTypeBuffer& buffer, const std::string &s) = 0;
+    virtual bool writeRgb(const corecvs::RGB24Buffer      & buffer, const std::string &s) = 0;
 	virtual ~BufferReader() {}
 };
 

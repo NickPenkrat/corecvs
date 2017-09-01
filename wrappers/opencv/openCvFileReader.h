@@ -10,8 +10,8 @@ class OpenCvBufferReader : public BufferReader
 public:
     corecvs::RuntimeTypeBuffer read(const std::string &s);
     corecvs::RGB24Buffer readRgb(const std::string &s);
-    void write(const corecvs::RuntimeTypeBuffer& buffer, const std::string &s);
-    void writeRgb(const corecvs::RGB24Buffer& buffer, const std::string &s);
+    bool write(const corecvs::RuntimeTypeBuffer& buffer, const std::string &s);
+    bool writeRgb(const corecvs::RGB24Buffer& buffer, const std::string &s);
     ~OpenCvBufferReader() {}
 };
 

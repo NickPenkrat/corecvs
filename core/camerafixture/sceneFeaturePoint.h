@@ -109,8 +109,8 @@ public:
     Vector2dd       getUndist() const;
     Vector2dd       getDist  () const;
 
-    Vector2dd       setUndist(const Vector2dd &undist);
-    Vector2dd       setDist  (const Vector2dd &dist);
+    void            setUndist(const Vector2dd &undist);
+    void            setDist  (const Vector2dd &dist);
 
 
 private:

@@ -71,14 +71,14 @@ Vector2dd SceneObservation::getDist() const
     return Vector2dd::Zero(); /* Should I return NaN? */
 }
 
-Vector2dd SceneObservation::setUndist(const Vector2dd &undist)
+void SceneObservation::setUndist(const Vector2dd &undist)
 {
     // This is a temporary solution. Z value should be computed, not just set to focal
     observDir = Vector3dd(undist, camera->intrinsics.focal.x());
     validityFlags = ValidFlags::DIRECTION_VALID;
 }
 
-Vector2dd SceneObservation::setDist(const Vector2dd &dist)
+void SceneObservation::setDist(const Vector2dd &dist)
 {
     observation = dist;
     validityFlags = ValidFlags::OBSERVATION_VALID;
