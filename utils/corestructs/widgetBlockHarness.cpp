@@ -7,7 +7,7 @@
 
 using namespace corecvs;
 
-WidgetBlockHarness::WidgetBlockHarness(corecvs::DynamicObject *blockReflection, NewStyleBlock *block, QWidget *parent) :
+WidgetBlockHarness::WidgetBlockHarness(corecvs::DynamicObjectWrapper *blockReflection, NewStyleBlock *block, QWidget *parent) :
     QWidget(parent),
     blockReflection(blockReflection),
     block(block)

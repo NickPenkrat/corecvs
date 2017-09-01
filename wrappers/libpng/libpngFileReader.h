@@ -16,9 +16,9 @@ using std::string;
 
 class LibpngFileReader : public corecvs::BufferLoader<corecvs::RGB24Buffer>
 {
+public:
     static string prefix1;
 
-public:
     static int registerMyself()
     {
         corecvs::BufferFactory::getInstance()->registerLoader(new LibpngFileReader());
@@ -31,6 +31,23 @@ public:
     virtual bool save(corecvs::string name, corecvs::RGB24Buffer *buffer);
 
 };
+
+class LibpngFileSaver : public corecvs::BufferSaver<corecvs::RGB24Buffer>
+{
+    virtual bool acceptsFile(string name) {
+        return LibpngFileSaver::acceptsFile(name);
+    }
+    virtual bool save(corecvs::RGB24Buffer &buffer, string name) override {
+        return LibpngFileReader().save(name, &buffer);
+    }
+
+    virtual std::string              name()        override { return "LibpngFileSaver"; }
+    virtual std::vector<std::string> extentions() override {
+        return std::vector<std::string>({LibpngFileReader::prefix1});
+    }
+    virtual ~LibpngFileSaver() {}
+};
+
 
 
 #endif // LIBPNGFILEREADER_H

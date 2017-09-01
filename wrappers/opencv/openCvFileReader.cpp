@@ -1,3 +1,4 @@
+#include "utils.h"
 #include "openCvFileReader.h"
 #include "openCvKeyPointsWrapper.h"
 #include "OpenCVTools.h"
@@ -27,8 +28,8 @@ void init_opencv_reader_provider()
 {
     BufferReaderProvider::getInstance().add(new OpenCvBufferReaderProvider);
 
-    BufferFactory::getInstance()->registerLoader(new OpenCVLoaderRGB24Loader());   // TODO: memory leak: this loader is never destroyed!!!
-    BufferFactory::getInstance()->registerLoader(new OpenCVLoaderRuntimeTypeBufferLoader());   // TODO: memory leak: this loader is never destroyed!!!
+    BufferFactory::getInstance()->registerLoader(new OpenCVRGB24Loader());   // TODO: memory leak: this loader is never destroyed!!!
+    BufferFactory::getInstance()->registerLoader(new OpenCVRuntimeTypeBufferLoader());   // TODO: memory leak: this loader is never destroyed!!!
 }
 
 static void throwInvalidArg(const std::string &name)
@@ -76,17 +77,17 @@ void OpenCvBufferReader::write(const RuntimeTypeBuffer &buffer, const std::strin
 
 
 /* Remove copypaste here*/
-OpenCVLoaderRGB24Loader::OpenCVLoaderRGB24Loader()
+OpenCVRGB24Loader::OpenCVRGB24Loader()
 {}
 
-bool OpenCVLoaderRGB24Loader::acceptsFile(std::string name)
+bool OpenCVRGB24Loader::acceptsFile(std::string name)
 {
     CORE_UNUSED(name);
     return true;
 }
 
 /* I don't see how an inability to load particular format is an exceptional situation */
-RGB24Buffer *OpenCVLoaderRGB24Loader::load(std::string name)
+RGB24Buffer *OpenCVRGB24Loader::load(std::string name)
 {
     cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_COLOR);
     if (!(img.rows && img.cols && img.data)) {
@@ -96,16 +97,16 @@ RGB24Buffer *OpenCVLoaderRGB24Loader::load(std::string name)
     return OpenCVTools::getRGB24BufferFromCVImage(&ip);
 }
 
-OpenCVLoaderRuntimeTypeBufferLoader::OpenCVLoaderRuntimeTypeBufferLoader()
+OpenCVRuntimeTypeBufferLoader::OpenCVRuntimeTypeBufferLoader()
 {}
 
-bool OpenCVLoaderRuntimeTypeBufferLoader::acceptsFile(std::string name)
+bool OpenCVRuntimeTypeBufferLoader::acceptsFile(std::string name)
 {
      CORE_UNUSED(name);
      return true;
 }
 
-RuntimeTypeBuffer *OpenCVLoaderRuntimeTypeBufferLoader::load(std::string name)
+RuntimeTypeBuffer *OpenCVRuntimeTypeBufferLoader::load(std::string name)
 {
     cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_GRAYSCALE);
     if (!(img.rows && img.cols && img.data)) {
@@ -114,4 +115,23 @@ RuntimeTypeBuffer *OpenCVLoaderRuntimeTypeBufferLoader::load(std::string name)
     RuntimeTypeBuffer *header = new RuntimeTypeBuffer;
     *header = convert(img);
     return header;
+}
+
+
+bool OpenCVRGB24Saver::acceptsFile(string name)
+{
+    std::vector<std::string> extList  = extentions();
+    for (auto ext : extList)
+    {
+        if (HelperUtils::endsWith(name, ext))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool OpenCVRGB24Saver::save(RGB24Buffer &buffer, string name)
+{
+    OpenCvBufferReader().writeRgb(buffer, name);
 }

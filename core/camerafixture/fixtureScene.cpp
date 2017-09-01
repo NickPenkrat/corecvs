@@ -2,6 +2,7 @@
 #include <bufferFactory.h>
 
 #include "affine.h"
+#include "utils.h"
 
 #include "multicameraTriangulator.h"
 #include "cameraFixture.h"
@@ -1021,11 +1022,51 @@ void FixtureSceneFactory::print()
     }
 }
 
-RGB24Buffer *ImageRelatedData::getRGB24Buffer()
+std::string ImageRelatedData::getImageScenePath() const
+{
+    if (ownerScene == NULL || HelperUtils::isAbsolutePath(mImagePath) ) {
+        return mImagePath;
+    }
+    return HelperUtils::concatPath(ownerScene->getImageSearchPath(), mImagePath);
+}
+
+RGB24Buffer *ImageRelatedData::getRGB24BufferPtr()
 {
     RGB24Buffer* toReturn = BufferFactory::getInstance()->loadRGB24Bitmap(mImagePath) ;
 
     return toReturn;
+}
+
+std::shared_ptr<RGB24Buffer> ImageRelatedData::getImage(bool detach, bool forceReload)
+{
+    if (forceReload || mCache == NULL){
+        mCache = std::shared_ptr<RGB24Buffer>(BufferFactory::getInstance()->loadRGB24Bitmap(getImageScenePath()));
+    }
+
+    if (detach) {
+        if (mCache == NULL) {
+            return NULL;
+        } else {
+            return std::shared_ptr<RGB24Buffer>(new RGB24Buffer(mCache.get()));
+        }
+    } else {
+        return mCache;
+    }
+}
+
+G12Buffer *ImageRelatedData::getG12BufferPtr()
+{
+    return getImage(false).get()->toG12Buffer();
+}
+
+G8Buffer *ImageRelatedData::getG8BufferPtr()
+{
+    return getImage(false).get()->getChannel(ImageChannel::LUMA);
+}
+
+void ImageRelatedData::cleanCache()
+{
+    mCache.reset();
 }
 
 

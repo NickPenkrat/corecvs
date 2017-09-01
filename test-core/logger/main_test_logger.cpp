@@ -33,6 +33,8 @@ TEST(Logger, testDummy)  // TODO: add log to file and then check its content!
     Log::MessageScoped(&logger, Log::LEVEL_ERROR, "A", 0, "F");
 
     cout << Log::formatted("Here we go %d\n", 1, 2, "three");
+   // Note that std::endl is designed to work with std::basic_ostream. Thus it is not supported
+   // L_INFO << "corecvs::Log sucks" << std::endl;
 }
 
 class Foo {

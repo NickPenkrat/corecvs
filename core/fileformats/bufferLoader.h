@@ -27,7 +27,7 @@ public:
     virtual BufferType *load(string name) = 0;
 
     virtual std::string              name()        { return "noname"; }
-    virtual std::vector<std::string> resolutions() { return std::vector<std::string>(); }
+    virtual std::vector<std::string> extentions() { return std::vector<std::string>(); }
     virtual ~BufferLoader() {}
 };
 
@@ -38,10 +38,10 @@ public:
     BufferSaver() {}
 
     virtual bool acceptsFile(string name) = 0;
-    virtual bool load(BufferType &buffer, string name) = 0;
+    virtual bool save(BufferType &buffer, string name) = 0;
 
     virtual std::string              name()        { return "noname"; }
-    virtual std::vector<std::string> resolutions() { return std::vector<std::string>(); }
+    virtual std::vector<std::string> extentions() { return std::vector<std::string>(); }
     virtual ~BufferSaver() {}
 };
 

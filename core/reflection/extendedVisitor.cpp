@@ -26,7 +26,7 @@ void *CreatorFabric::createObject(std::string &name)
 
     void *result = malloc(reflection->objectSize);
 
-    DynamicObject object(reflection, result);
+    DynamicObjectWrapper object(reflection, result);
     object.simulateConstructor();
 
     return result;

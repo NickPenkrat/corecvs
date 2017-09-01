@@ -127,14 +127,16 @@ int SceneStereoAlignerBlock::operator ()()
 
                 if (obs1 != NULL)
                 {
-                    Vector2dd pos1 = leftTransform * obs1->observation;
+                    Vector2dd undist = obs1->getUndist();
+                    Vector2dd pos1 = leftTransform * undist;
                     SceneObservation observation(cam1, point, pos1, fixture);
                     point->observations[cam1] = observation;
                 }
 
                 if (obs2 != NULL)
                 {
-                    Vector2dd pos2 = rightTransform * obs2->observation;
+                    Vector2dd undist = obs2->getUndist();
+                    Vector2dd pos2 = rightTransform * undist;
                     SceneObservation observation(cam2, point, pos2, fixture);
                     point->observations[cam2] = observation;
                 }

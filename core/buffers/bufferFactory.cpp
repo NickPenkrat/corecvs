@@ -29,6 +29,8 @@ BufferFactory* BufferFactory::getInstance()
 
         sThis.get()->registerLoader(new PPMLoaderRGB24());
         sThis.get()->registerLoader(new BMPLoaderRGB24());
+
+        sThis.get()->registerSaver(new BMPSaverRGB24());
     }
     return sThis.get();
 }
@@ -50,6 +52,12 @@ void BufferFactory::printCaps()
 
     cout << "  RuntimeType loader" << endl;
     for (auto it : factory->mLoadersRuntime) cout << "\t" << it->name() << endl;
+
+    cout << "----" << endl;
+
+    cout << "  RGB24 saver" << endl;
+    for (auto it : factory->mSaversRGB24) cout << "\t" << it->name() << endl;
+
 }
 
 template<typename BufferType>
@@ -80,6 +88,34 @@ BufferType *loadBuffer(string name, vector<BufferLoader<BufferType> *> &loaders)
     return NULL;
 }
 
+
+template<typename BufferType>
+bool saveBuffer(BufferType *buffer, string name, string preferedProvider, vector<BufferSaver<BufferType> *> &savers)
+{
+    SYNC_PRINT(("BufferFactory::save(%s)", name.c_str()));
+
+    BufferSaver<BufferType> *saver = NULL;
+
+    for (auto it : savers)
+    {
+        if (!(it->acceptsFile(name)))
+            continue;
+
+        if (saver == NULL) saver = it;
+
+        if (it->name() == preferedProvider)
+        {
+            saver = it;
+        }
+    }
+
+    if (saver) {
+        return saver->save(*buffer, name);
+    }
+    return false;
+}
+
+
 G12Buffer *BufferFactory::loadG12Bitmap(string name)
 {
     return loadBuffer(name, mLoadersG12);
@@ -88,6 +124,11 @@ G12Buffer *BufferFactory::loadG12Bitmap(string name)
 G12Buffer *BufferFactory::loadG16Bitmap(string name)
 {
     return loadBuffer(name, mLoadersG16);
+}
+
+bool BufferFactory::saveRGB24Bitmap(RGB24Buffer *buffer, std::string name, std::string saverHint)
+{
+    return saveBuffer(buffer, name, saverHint, mSaversRGB24);
 }
 
 RGB24Buffer *BufferFactory::loadRGB24Bitmap(string name)
@@ -130,6 +171,9 @@ BufferFactory::~BufferFactory()
 
     for (auto it : mLoadersRuntime) { delete_safe(it); }
     mLoadersRuntime.clear();
+
+    for (auto it : mSaversRGB24) { delete_safe(it); }
+    mSaversRGB24.clear();
 
     //printf("BufferFactory has been destroyed.\n");
 }

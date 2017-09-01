@@ -5,13 +5,8 @@
 #include <iostream>
 
 #ifdef __GNUC__
-#ifdef CORE_UNSAFE_DEPS
 # include <experimental/filesystem>
   namespace fs = std::experimental::filesystem;  
-#else
-    #include <sys/types.h>
-    #include <dirent.h>
-#endif
 #endif
 
 
@@ -21,9 +16,6 @@
 #endif
 
 namespace corecvs {
-
-
-#if defined(CORE_UNSAFE_DEPS) || defined (_MSC_VER)
 
 bool FolderScanner::isDir(const string &path)
 {
@@ -83,7 +75,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
     return true;
 }
 
-#else
+#if defined(FILESYSTEM_WORKAROUND)
 
 bool FolderScanner::isDir(const string &path)
 {

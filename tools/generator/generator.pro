@@ -27,7 +27,7 @@ INCLUDEPATH += \
 SOURCES += $$COREDIR/utils/util.c
 SOURCES += $$COREDIR/utils/utils.cpp
 
-
+LIBS += -lstdc++fs
 
 
 # ACTUAL GENERATOR

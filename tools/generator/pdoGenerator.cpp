@@ -704,7 +704,7 @@ void PDOGenerator::generatePDOCpp()
                      ",\n";
         result+=
     "          new EnumReflection("+QString::number(enumOptions->options.size())+"\n" ;
-        for(int enumCount = 0; enumCount < enumOptions->options.size(); enumCount++)
+        for(size_t enumCount = 0; enumCount < enumOptions->options.size(); enumCount++)
         {
             const EnumOption *option = enumOptions->options[enumCount];
             if(option->presentationHint == NULL)

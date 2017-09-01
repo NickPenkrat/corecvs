@@ -42,7 +42,8 @@ CORE_SUBMODULES =       \
     graphs              \
     polynomial          \
     camerafixture       \
-    iterative
+    iterative           \
+    stereointerface     \
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
@@ -114,11 +115,10 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted): !contains(TA
 
 # The filesystem module needs this
 with_unorthodox {
-    !win32  {
-        LIBS += -lstdc++fs
-    }
     DEFINES += CORE_UNSAFE_DEPS
 }
+
+LIBS += -lstdc++fs
 
 } # !contains(CORECVS_INCLUDED, "core.pri")
 
