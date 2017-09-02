@@ -71,14 +71,14 @@ Vector2dd SceneObservation::getDist() const
     return Vector2dd::Zero(); /* Should I return NaN? */
 }
 
-Vector2dd SceneObservation::setUndist(const Vector2dd &undist)
+void SceneObservation::setUndist(const Vector2dd &undist)
 {
     // This is a temporary solution. Z value should be computed, not just set to focal
     observDir = Vector3dd(undist, camera->intrinsics.focal.x());
     validityFlags = ValidFlags::DIRECTION_VALID;
 }
 
-Vector2dd SceneObservation::setDist(const Vector2dd &dist)
+void SceneObservation::setDist(const Vector2dd &dist)
 {
     observation = dist;
     validityFlags = ValidFlags::OBSERVATION_VALID;
@@ -327,16 +327,16 @@ SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType i
     return ownerScene->getPointById(id);
 }
 
-std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL2()
+std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL2() const
 {
     std::vector< double > out;
-    if ( !hasKnownReprojectedPosition )
-        return out;
+    //if (!hasKnownReprojectedPosition)
+    //    return out;
 
-    for ( auto& obs : observations )
+    for (auto& obs : observations)
     { 
         Vector2dd xy;
-        if ( !obs.first->projectPointFromWorld( reprojectedPosition, &xy ) )
+        if (!obs.first->projectPointFromWorld(reprojectedPosition, &xy))
             continue;
 
         xy -= obs.second.getUndist();
@@ -346,20 +346,20 @@ std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL
     return out;
 }
 
-std::vector< double > SceneFeaturePoint::estimateReprojectionErrorL2()
+std::vector< double > SceneFeaturePoint::estimateReprojectionErrorL2() const
 {
     std::vector< double > out;
-    if (!hasKnownPosition)
-        return out;
+    //if (!hasKnownPosition)
+    //    return out;
 
-    for ( auto& obs : observations )
+    for (auto& obs : observations)
     {
         Vector2dd xy;
-        if ( !obs.first->projectPointFromWorld( position, &xy ) )
+        if (!obs.first->projectPointFromWorld(position, &xy))
             continue;
 
         xy -= obs.second.getUndist();
-        out.push_back( xy.l2Metric() );
+        out.push_back(xy.l2Metric());
     }
 
     return out;

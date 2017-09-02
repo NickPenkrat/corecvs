@@ -214,7 +214,7 @@ std::string getDirectory(const std::string &absoluteFilePath)
     CORE_ASSERT_TRUE_S(!absoluteFilePath.empty());
 
     fs::path filePath(absoluteFilePath);
-    return fs::absolute(filePath.parent_path());
+    return fs::absolute(filePath.parent_path()).string();
 
 /*    QFileInfo info(absoluteFilePath);
     return info.dir().absolutePath();*/
@@ -223,7 +223,7 @@ std::string getDirectory(const std::string &absoluteFilePath)
 std::string getFileName(const std::string &fileName)
 {
     fs::path filePath(fileName);
-    return filePath.filename();
+    return filePath.filename().string();
 
     /*QFileInfo info(fileName);
     return info.fileName();*/
@@ -231,7 +231,7 @@ std::string getFileName(const std::string &fileName)
 
 std::string concatPath(const std::string &path1, const std::string &path2)
 {
-   return fs::path(path1) / fs::path(path2);
+   return (fs::path(path1) / fs::path(path2)).string();
 }
 
 bool isAbsolutePath(const std::string &path)
@@ -254,7 +254,7 @@ std::string getFileNameIfExist(const std::string &fileName, const std::string &r
 
     fs::path infoNew = fs::path(relativePath) / fs::path(fileName); /* this is concatenation */
     if (fs::exists(infoNew))
-        return fs::absolute(infoNew);
+        return fs::absolute(infoNew).string();
     std::cout << "couldn't locate <" << fileName << "> with relativePath:" << relativePath << std::endl;
     return "";
 
