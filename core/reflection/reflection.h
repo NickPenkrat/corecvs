@@ -1081,6 +1081,72 @@ public:
 
     bool simulateConstructor();
 
+    template<typename VisitorType>
+    void accept(const VisitorType &visitor)
+    {
+        if (reflection == NULL || rawObject == NULL)
+            return;
+
+        for (int count = 0; count < reflection->fieldNumber(); count++)
+        {
+            const BaseField *field = reflection->fields[count];
+            switch (field->type) {
+            case BaseField::TYPE_BOOL:
+            {
+                visitor.visit(*getField<bool>(count),  static_cast<const corecvs::BoolField *>(field));
+                break;
+            }
+            case BaseField::TYPE_INT:
+            {
+                visitor.visit(*getField<int>(count),  static_cast<const corecvs::IntField *>(field));
+                break;
+            }
+            case BaseField::TYPE_DOUBLE:
+            {
+                visitor.visit(*getField<double>(count),  static_cast<const corecvs::DoubleField *>(field));
+                break;
+            }
+            case BaseField::TYPE_STRING:
+            {
+                visitor.visit(*getField<std::string>(count),  static_cast<const corecvs::StringField *>(field));
+                break;
+            }
+            case BaseField::TYPE_WSTRING:
+            {
+                visitor.visit(*getField<std::wstring>(count),  static_cast<const corecvs::WStringField *>(field));
+                break;
+            }
+            case (BaseField::FieldType)(BaseField::TYPE_VECTOR_BIT | BaseField::TYPE_DOUBLE) :
+            {
+                visitor.visit(*getField<vector<double> >(count),  static_cast<const corecvs::DoubleVectorField *>(field));
+                break;
+            }
+
+            case BaseField::TYPE_COMPOSITE:
+            {
+                const CompositeField *tfield = static_cast<const CompositeField *>(field);
+                if (tfield->reflection == NULL)
+                {
+                    SYNC_PRINT(("DynamicObject::simulateConstructor(%s): composite field (%d : %s) has empty reflection",
+                                reflection->name.name, count, tfield->name.name
+                                ));
+                    break;
+                }
+                DynamicObjectWrapper obj(tfield->reflection, getField<void *>(count));
+                visitor.visit(obj, tfield->name.name);
+                break;
+            }
+
+            default:
+                break;
+            }
+        }
+
+
+    }
+
+
+
 #if 0
     ~DynamicObject()
     {
@@ -1098,14 +1164,17 @@ public:
     void       *rawObject = NULL;
 
     DynamicObject(
-        const Reflection *reflection = NULL
+        const Reflection *reflection = NULL,
+        bool construct = true
     ) :
         reflection(reflection)
     {
         if (reflection != NULL)
         {
             rawObject = malloc(reflection->objectSize);
-            DynamicObjectWrapper(reflection, rawObject).simulateConstructor();
+            if (construct) {
+                DynamicObjectWrapper(reflection, rawObject).simulateConstructor();
+            }
         }
     }
 
@@ -1128,6 +1197,18 @@ public:
         rawObject = other.rawObject;
         other.rawObject = NULL;
         other.reflection = NULL;
+    }
+
+    /**
+     * I call separate method clone instead of copy constructor/operator =.
+     *
+     * This is done not to create an illusion that it is a fast operation. It is a deep copy and needs allocation on heap.
+     */
+    DynamicObject clone()
+    {
+        DynamicObject toReturn(reflection, false);
+        memcpy(toReturn.rawObject, rawObject, reflection->objectSize);
+        return  toReturn;
     }
 
 
