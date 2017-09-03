@@ -1082,7 +1082,7 @@ public:
     bool simulateConstructor();
 
     template<typename VisitorType>
-    void accept(const VisitorType &visitor)
+    void accept(VisitorType &visitor)
     {
         if (reflection == NULL || rawObject == NULL)
             return;
@@ -1091,34 +1091,37 @@ public:
         {
             const BaseField *field = reflection->fields[count];
             switch (field->type) {
+
             case BaseField::TYPE_BOOL:
             {
-                visitor.visit(*getField<bool>(count),  static_cast<const corecvs::BoolField *>(field));
+                const corecvs::BoolField *descr = static_cast<const BoolField *>(field);
+                bool &value = *getField<bool>(count);
+                visitor.visit(value,  descr);
                 break;
             }
             case BaseField::TYPE_INT:
             {
-                visitor.visit(*getField<int>(count),  static_cast<const corecvs::IntField *>(field));
+                visitor.visit(*getField<int>(count),  static_cast<const IntField *>(field));
                 break;
             }
             case BaseField::TYPE_DOUBLE:
             {
-                visitor.visit(*getField<double>(count),  static_cast<const corecvs::DoubleField *>(field));
+                visitor.visit(*getField<double>(count),  static_cast<const DoubleField *>(field));
                 break;
             }
             case BaseField::TYPE_STRING:
             {
-                visitor.visit(*getField<std::string>(count),  static_cast<const corecvs::StringField *>(field));
+                visitor.visit(*getField<std::string>(count),  static_cast<const StringField *>(field));
                 break;
             }
             case BaseField::TYPE_WSTRING:
             {
-                visitor.visit(*getField<std::wstring>(count),  static_cast<const corecvs::WStringField *>(field));
+                visitor.visit(*getField<std::wstring>(count),  static_cast<const WStringField *>(field));
                 break;
             }
             case (BaseField::FieldType)(BaseField::TYPE_VECTOR_BIT | BaseField::TYPE_DOUBLE) :
             {
-                visitor.visit(*getField<vector<double> >(count),  static_cast<const corecvs::DoubleVectorField *>(field));
+                visitor.visit(*getField<vector<double> >(count),  static_cast<const DoubleVectorField *>(field));
                 break;
             }
 
@@ -1239,6 +1242,12 @@ public:
         }
         target = static_cast<Type *>(rawObject);
         return true;
+    }
+
+    template<typename VisitorType>
+    void accept(VisitorType &visitor)
+    {
+         DynamicObjectWrapper(reflection, rawObject).accept<VisitorType>(visitor);
     }
 
 private:

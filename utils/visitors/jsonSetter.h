@@ -13,6 +13,7 @@ using corecvs::DoubleField;
 using corecvs::FloatField;
 using corecvs::BoolField;
 using corecvs::StringField;
+using corecvs::WStringField;
 using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
@@ -190,6 +191,9 @@ void JSONSetter::visit<bool>(bool &boolField, bool defaultValue, const char *fie
 template <>
 void JSONSetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName);
 
+template <>
+void JSONSetter::visit<std::wstring>(std::wstring &wstringField, std::wstring defaultValue, const char *fieldName);
+
 
 /* New style visitor */
 
@@ -213,6 +217,9 @@ void JSONSetter::visit<bool, BoolField>(bool &field, const BoolField *fieldDescr
 
 template <>
 void JSONSetter::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
+
+template <>
+void JSONSetter::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
 
 template <>
 void JSONSetter::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor);

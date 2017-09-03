@@ -137,7 +137,15 @@ void XmlSetter::visit<bool, BoolField>(bool &field, const BoolField *fieldDescri
 template <>
 void XmlSetter::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor)
 {
-	saveValue(fieldDescriptor->name.name, field.c_str());
+    saveValue(fieldDescriptor->name.name, QString::fromStdString(field));
+}
+
+
+template <>
+void XmlSetter::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor)
+{
+//    SYNC_PRINT(("XML doesn't support wide strings so far"));
+    saveValue(fieldDescriptor->name.name, QString::fromStdWString(field));
 }
 
 template <>

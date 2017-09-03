@@ -93,6 +93,18 @@ void JSONGetter::visit<std::string>(std::string &stringField, std::string defaul
     }
 }
 
+template <>
+void JSONGetter::visit<std::wstring>(std::wstring &stringField, std::wstring defaultValue, const char *fieldName)
+{
+    QJsonValue value = mNodePath.back().value(fieldName);
+
+    if (value.isString()) {
+        stringField = value.toString().toStdWString();
+    } else {
+        stringField = defaultValue;
+    }
+}
+
 /* And new style visitor method */
 
 template <>
@@ -138,6 +150,13 @@ void JSONGetter::visit<std::string, StringField>(std::string &stringField, const
 {
     visit<std::string>(stringField, fieldDescriptor->defaultValue, fieldDescriptor->name.name);
 }
+
+template <>
+void JSONGetter::visit<std::wstring, WStringField>(std::wstring &stringField, const WStringField *fieldDescriptor)
+{
+     visit<std::wstring>(stringField, fieldDescriptor->defaultValue, fieldDescriptor->name.name);
+}
+
 
 template <>
 void JSONGetter::visit<void *, PointerField>(void * &/*field*/, const PointerField * /*fieldDescriptor*/)

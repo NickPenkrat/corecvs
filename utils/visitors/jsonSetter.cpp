@@ -51,6 +51,12 @@ void JSONSetter::visit<std::string>(std::string &stringField, std::string /*defa
     mNodePath.back().insert(fieldName, QString::fromStdString(stringField));
 }
 
+template <>
+void JSONSetter::visit<std::wstring>(std::wstring &wstringField, std::wstring /*defaultValue*/, const char *fieldName)
+{
+    mNodePath.back().insert(fieldName, QString::fromStdWString(wstringField));
+}
+
 
 /* And new style visitor method */
 
@@ -98,6 +104,13 @@ void JSONSetter::visit<std::string, StringField>(std::string &stringField, const
 {
     visit<std::string>(stringField, fieldDescriptor->defaultValue, fieldDescriptor->name.name);
 }
+
+template <>
+void JSONSetter::visit<std::wstring, WStringField>(std::wstring &wstringField, const WStringField *fieldDescriptor)
+{
+    visit<std::wstring>(wstringField, fieldDescriptor->defaultValue, fieldDescriptor->name.name);
+}
+
 
 template <>
 void JSONSetter::visit<void *, PointerField>(void * &/*field*/, const PointerField * /*fieldDescriptor*/)

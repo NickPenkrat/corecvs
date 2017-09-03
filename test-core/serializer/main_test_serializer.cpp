@@ -10,6 +10,7 @@
 
 #include <unordered_map>
 #include <iostream>
+#include <checkerboardDetectionParameters.h>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -130,4 +131,17 @@ TEST(Serializer, printIterable)
     visitor.visit(vectorOfVector, "vector of vector2dd");
 
     //visitor.visit(mapIntToVec, "map of int to vector2dd");
+}
+
+TEST(Serializer, printReflection)
+{
+    PrinterVisitor visitor;
+    CheckerboardDetectionParameters params;
+
+
+    DynamicObject obj(&params);
+    BoolField testField(0,0,false, "me");
+    bool me;
+    visitor.visit(me, &testField);
+    visitor.visit(obj, "example");
 }

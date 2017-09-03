@@ -124,6 +124,9 @@ template <>
 void XmlSetter::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
 
 template <>
+void XmlSetter::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
+
+template <>
 void XmlSetter::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor);
 
 template <>

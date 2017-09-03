@@ -9,6 +9,7 @@ using corecvs::DoubleField;
 using corecvs::FloatField;
 using corecvs::BoolField;
 using corecvs::StringField;
+using corecvs::WStringField;
 using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
@@ -109,6 +110,9 @@ void SettingsSetter::visit<bool, BoolField>(bool &field, const BoolField *fieldD
 
 template <>
 void SettingsSetter::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
+
+template <>
+void SettingsSetter::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
 
 template <>
 void SettingsSetter::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor);

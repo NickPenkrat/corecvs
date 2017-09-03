@@ -41,6 +41,7 @@ template<>
         output->setStringProperty(getChildPath(fieldName), stringField);
     }
 
+
 /* New style fields*/
 
 template<>
@@ -71,6 +72,13 @@ template <>
     void PropertyListWriterVisitor::visit<std::string,   StringField>(std::string &field, const StringField *fieldDescriptor)
     {
         output->setStringProperty(fieldDescriptor->getSimpleName(), field);
+    }
+
+template <>
+    void PropertyListWriterVisitor::visit<std::wstring,   WStringField>(std::wstring &field, const WStringField *fieldDescriptor)
+    {
+        SYNC_PRINT(("Wide strings are not supported yet\n"));
+        //output->setStringProperty(fieldDescriptor->getSimpleName(), field);
     }
 
 
@@ -156,6 +164,14 @@ template <>
     {
         field = input->getStringProperty(fieldDescriptor->getSimpleName(), field);
     }
+
+template <>
+    void PropertyListReaderVisitor::visit<std::wstring,   WStringField>(std::wstring &field, const WStringField *fieldDescriptor)
+    {
+        SYNC_PRINT(("Wide strings are not supported yet\n"));
+        field = fieldDescriptor->defaultValue;
+    }
+
 
 
 template <>

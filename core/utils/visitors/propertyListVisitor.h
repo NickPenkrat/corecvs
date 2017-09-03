@@ -137,6 +137,9 @@ template <>
 template <>
     void PropertyListWriterVisitor::visit<std::string,   StringField>(std::string &field, const StringField *fieldDescriptor);
 
+template <>
+    void PropertyListWriterVisitor::visit<std::wstring,   WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
+
 
 /* Typed arrays */
 template <>
@@ -264,6 +267,9 @@ template <>
 
 template <>
     void PropertyListReaderVisitor::visit<std::string,   StringField>(std::string &field, const StringField *fieldDescriptor);
+
+template <>
+    void PropertyListReaderVisitor::visit<std::wstring,   WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
 
 
 /* Typed arrays */
