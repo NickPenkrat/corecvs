@@ -197,6 +197,7 @@ template <class Type>
 
 private:
 
+    static std::string escapeString(const std::string &str);
     static std::string decorateName(const BaseField *field);
     static std::string decorateName(const char *field);
 };

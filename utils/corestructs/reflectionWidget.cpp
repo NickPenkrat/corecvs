@@ -12,6 +12,7 @@
 #include "reflectionWidget.h"
 #include "vectorWidget.h"
 #include "exponentialSlider.h"
+#include "dynamicObject.h"
 
 using namespace corecvs;
 

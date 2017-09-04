@@ -2,6 +2,7 @@
 #define CORETOSCRIPT_H
 
 #include "reflection.h"
+#include "dynamicObject.h"
 
 #include "axisAlignedBoxParameters.h"
 

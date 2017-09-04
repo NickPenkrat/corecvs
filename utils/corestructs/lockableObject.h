@@ -3,6 +3,7 @@
 
 #include <QMutex>
 #include "reflection.h"
+#include "dynamicObject.h"
 
 class LockableObject : public corecvs::DynamicObjectWrapper
 {
