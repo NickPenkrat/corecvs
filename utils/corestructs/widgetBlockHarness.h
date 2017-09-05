@@ -6,6 +6,7 @@
 #include "newStyleBlock.h"
 #include "reflection.h"
 #include "reflectionWidget.h"
+#include "dynamicObject.h"
 
 class WidgetBlockHarness : public QWidget
 {

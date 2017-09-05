@@ -11,6 +11,7 @@
 #include <unordered_map>
 #include <iostream>
 #include <checkerboardDetectionParameters.h>
+#include <jsonPrinter.h>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -20,6 +21,7 @@
 #include "propertyListVisitor.h"
 #include "triangulator.h"
 #include "printerVisitor.h"
+#include "dynamicObject.h"
 
 
 using namespace corecvs;
@@ -144,4 +146,21 @@ TEST(Serializer, printReflection)
     bool me;
     visitor.visit(me, &testField);
     visitor.visit(obj, "example");
+}
+
+TEST(Serializer, jsonEscape)
+{
+    std::ostringstream os;
+    {
+        JSONPrinter printer(&os);
+        std::string in("ABC\\ \n \t \r \b \"");
+        std::string def;
+        printer.visit<std::string>(in, def, "test");
+    }
+    std::string out(
+    "{\n"
+    "\"test\":\"ABC\\\\ \\n \\t \\r \\b \\\"\"\n"
+    "}");
+    CORE_ASSERT_TRUE_P(os.str() == out, ("<%s> and <%s>", os.str().c_str(), out.c_str() ));
+    std::cout << os.str() << endl;
 }

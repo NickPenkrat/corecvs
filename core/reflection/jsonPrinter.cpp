@@ -1,4 +1,5 @@
 #include "jsonPrinter.h"
+#include "utils.h"
 
 namespace corecvs {
 
@@ -19,6 +20,7 @@ const std::string JSONPrinter::FIELD_VALUE_SEPARATOR = ":";
 
 const std::string JSONPrinter::NAME_DECORATOR = "\"";
 
+
 std::string JSONPrinter::decorateName(const BaseField *field)
 {
     return JSONPrinter::NAME_DECORATOR + field->getSimpleName() + JSONPrinter::NAME_DECORATOR;
@@ -27,6 +29,18 @@ std::string JSONPrinter::decorateName(const BaseField *field)
 std::string JSONPrinter::decorateName(const char *field)
 {
     return JSONPrinter::NAME_DECORATOR + field + JSONPrinter::NAME_DECORATOR;
+}
+
+std::string JSONPrinter::escapeString(const std::string &str)
+{
+    return HelperUtils::escapeString(str,
+    {{'"', '"'},
+     {'\\', '\\'},
+     {'\b','b'},
+     {'\f', 'f'},
+     {'\r', 'r'},
+     {'\n', 'n'},
+     {'\t', 't'}},"\\");
 }
 
 template <>
@@ -70,7 +84,7 @@ template <>
 void JSONPrinter::visit<string, StringField>(std::string &field, const StringField *fieldDescriptor)
 {
     if (stream == NULL) return;
-    *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  NAME_DECORATOR << field << NAME_DECORATOR;
+    *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  NAME_DECORATOR << escapeString(field) << NAME_DECORATOR;
 }
 
 template <>
@@ -122,7 +136,7 @@ template <>
 void JSONPrinter::visit<std::string>(std::string &stringField, std::string /*defaultValue*/, const char *fieldName)
 {
     if (stream == NULL) return;
-    *stream << separate() << indent() << decorateName(fieldName) <<  FIELD_VALUE_SEPARATOR << NAME_DECORATOR << stringField << NAME_DECORATOR;
+    *stream << separate() << indent() << decorateName(fieldName) <<  FIELD_VALUE_SEPARATOR << NAME_DECORATOR << escapeString(stringField) << NAME_DECORATOR;
 }
 
 

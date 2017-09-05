@@ -12,6 +12,8 @@
 
 #include "global.h"
 
+#include "dynamicObject.h"
+
 #include "g12Buffer.h"
 #include "flowBuffer.h"
 #include "sixDBuffer.h"
