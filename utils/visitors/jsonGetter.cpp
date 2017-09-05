@@ -17,6 +17,7 @@ void JSONGetter::init(const char *fileName)
         if (!init(array))
         {
             SYNC_PRINT(("Fail parsing the data from <%s>", QSTR_DATA_PTR(mFileName)));
+             mHasError = true;
             mHasError = true;
         }     
         file.close();

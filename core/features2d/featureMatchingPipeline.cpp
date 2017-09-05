@@ -112,9 +112,8 @@ public:
 
             ss1 << image.filename << ", ";
 
-            // corecvs::BufferFactory::printCaps();
-
 			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
+            CORE_ASSERT_TRUE_P((bool)img, ("Invalid image to extract features. See log for details."));
 
 			img->downsample(downsampleFactor);
 
@@ -261,6 +260,7 @@ public:
             ss1 << image.filename << ", ";
 
 			std::unique_ptr<corecvs::RuntimeTypeBuffer> img(corecvs::BufferFactory::getInstance()->loadRuntimeTypeBitmap(image.filename));
+            CORE_ASSERT_TRUE_P((bool)img, ("Invalid image to extract descriptors. See log for details."));
 
             img->downsample(downsampleFactor);
 
@@ -274,6 +274,8 @@ public:
             if (downsampleFactor == 1 && keypointsColor)
             {
 				std::unique_ptr<corecvs::RGB24Buffer> bufferRGB(corecvs::BufferFactory::getInstance()->loadRGB24Bitmap(image.filename));
+                CORE_ASSERT_TRUE_P((bool)bufferRGB, ("Invalid image to extract colors of features. See log for details."));
+
                 for (auto& kp : image.keyPoints.keyPoints)
                 {
 					corecvs::RGB24Buffer::RGBEx32 mean(corecvs::RGBColor::Black());

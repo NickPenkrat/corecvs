@@ -54,17 +54,17 @@ public:
     /* */
     std::mt19937 rng;
 
-    Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters()) :
-        RansacParameters(params),
-        sampleNumber(_sampleNumber)
+    Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters())
+        : RansacParameters(params)
+        , sampleNumber(_sampleNumber)
     {
         samples.reserve(sampleNumber);
         rng.seed();
     }
 
-    virtual void randomSelect ()
+    virtual void randomSelect()
     {        
-        std::uniform_int_distribution<int> uniform(0, data->size() - 1);
+        std::uniform_int_distribution<int> uniform(0, (int)data->size() - 1);
         samples.clear();
         for (int i = 0; i < sampleNumber; i++)
         {
@@ -115,15 +115,12 @@ public:
                 if (trace) {
                     std::cout << "Fininshing:" << std::endl;
                     std::cout << "BestInliers:" << bestInliers << std::endl;
-
                 }
-
                 return bestModel;
             }
             iteration++;
         }
     }
-
 
     ModelType getModelRansacMultimodel()
     {
@@ -161,9 +158,7 @@ public:
                     if (trace) {
                         std::cout << "Fininshing:" << std::endl;
                         std::cout << "BestInliers:" << bestInliers << std::endl;
-
                     }
-
                     return bestModel;
                 }
             }
@@ -175,10 +170,6 @@ public:
     {}
 };
 
-
-
 } //namespace corecvs
+
 #endif  //RANSAC_H_
-
-
-

@@ -305,6 +305,12 @@ isEmpty(CCACHE_TOOLCHAIN_ON) {
         # Since [Qt5.5.0 + msvc2013] pdb management is added automatically into bin folder
     }
 
+    # msvc floating point model: "strict" helped to unify results on different compiler versions
+    # For more info look at: https://msdn.microsoft.com/en-us/library/e7s85ffb%28v=vs.120%29.aspx
+    #
+    QMAKE_CFLAGS   += /fp:strict
+    QMAKE_CXXFLAGS += /fp:strict
+
     # add debug info for release build rules to catch app crash details
     #
     QMAKE_LFLAGS_RELEASE   += /DEBUG     # add debug info to the linked module
@@ -476,13 +482,11 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 with_boost {
     BOOST_PATH=$$(BOOST_PATH)
     DEFINES += WITH_BOOST
-    !win32 {
-        # Since we are not (yet?) using any binary boost components,
-        # we can think about it as header-only lib
-        !isEmpty(BOOST_PATH) {
-            INCLUDEPATH += $$BOOST_PATH
-        }
-    } else {
+    
+    # Since we are not (yet?) using any binary boost components,
+    # we can think about it as header-only lib
+    !isEmpty(BOOST_PATH) {
+        INCLUDEPATH += $$BOOST_PATH
     }
 }
 

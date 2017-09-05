@@ -43,6 +43,13 @@ struct Status
         os << *this << std::endl;
         return os;
     }
+
+    std::tuple<double, double> getProgress() 
+    {
+        auto t1 = (double)completedGlobalActions / totalGlobalActions;
+        auto t2 = (double)completedActions / totalActions;
+        return std::make_tuple(t1, t2);
+    }
 };
 
 class StatusTracker;
