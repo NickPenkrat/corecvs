@@ -37,7 +37,7 @@ struct Registrant
         std::cout << "Registering in spmvwisdom" << std::endl;
         corecvs::SPMVWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::HOMEBREW, [](int, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_homebrew(v, trans); });
 #ifdef WITH_CUSPARSE
-        corecvs::SPMVWisdom::Register(AcceleratorTypes::CUDA, SparseImplementations::CUSPARSE, [](int id, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_cusparse(v, trans, id); });
+        corecvs::SPMVWisdom::Register(corecvs::AcceleratorTypes::CUDA, corecvs::SparseImplementations::CUSPARSE, [](int id, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_cusparse(v, trans, id); });
 #endif
 #ifdef WITH_MKL
         corecvs::SPMVWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::MKL,      [](int, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_mkl(v, trans); });
@@ -46,7 +46,7 @@ struct Registrant
         corecvs::TRSVWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::HOMEBREW, [](int, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_homebrew(v, trans, up, N); });
 #if 1
 #ifdef WITH_CUSPARSE
-        TRSVWisdom::Register(AcceleratorTypes::CUDA, SparseImplementations::CUSPARSE, [](int dev, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_cusparse(v, trans, up, N, dev); });
+        TRSVWisdom::Register(corecvs::AcceleratorTypes::CUDA, corecvs::SparseImplementations::CUSPARSE, [](int dev, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_cusparse(v, trans, up, N, dev); });
 #endif
 #ifdef WITH_MKL
         corecvs::TRSVWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::MKL, [](int, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_mkl(v, trans, up, N); });
@@ -56,7 +56,7 @@ struct Registrant
         corecvs::SPMMWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::HOMEBREW, [](int, const corecvs::SPMMC::inner_type& t) { return std::get<0>(t).spmm_homebrew(std::get<1>(t), std::get<2>(t), std::get<3>(t)); });
 #if 1
 #ifdef WITH_CUSPARSE
-        SPMMWisdom::Register(AcceleratorTypes::CUDA,  SparseImplementations::CUSPARSE, [](int dev, const SPMMC::inner_type& t) { return std::get<0>(t).spmm_cusparse(std::get<1>(t), std::get<2>(t), std::get<3>(t), dev); });
+        SPMMWisdom::Register(corecvs::AcceleratorTypes::CUDA, corecvs::SparseImplementations::CUSPARSE, [](int dev, const SPMMC::inner_type& t) { return std::get<0>(t).spmm_cusparse(std::get<1>(t), std::get<2>(t), std::get<3>(t), dev); });
 #endif
 #endif
 #ifdef WITH_MKL
@@ -2181,7 +2181,7 @@ bool SparseMatrix::linSolveSchurComplement(const corecvs::Vector &B, const std::
 
 #endif // #	if !defined(_WIN32) || defined(_WIN64)
 
-std::ostream& corecvs::operator<<(std::ostream& os, const SparseImplementations &si)
+std::ostream& corecvs::operator<<(std::ostream& os, const corecvs::SparseImplementations &si)
 {
     switch (si)
     {
