@@ -41,7 +41,7 @@ static void throwInvalidArg(const std::string &name)
 
 corecvs::RGB24Buffer OpenCvBufferReader::readRgb(const std::string &s)
 {
-    cv::Mat img = cv::imread(s, CV_LOAD_IMAGE_COLOR);
+    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(s), CV_LOAD_IMAGE_COLOR);
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(s);
     }
@@ -54,7 +54,7 @@ corecvs::RGB24Buffer OpenCvBufferReader::readRgb(const std::string &s)
 
 RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
 {
-    cv::Mat img = cv::imread(s, CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(s), CV_LOAD_IMAGE_GRAYSCALE);
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(s);
     }
@@ -64,8 +64,8 @@ RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
 bool OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std::string &s)
 {
     auto* b = OpenCVTools::getCVImageFromRGB24Buffer(&const_cast<corecvs::RGB24Buffer&>(buffer));
-    CVMAT_FROM_IPLIMAGE( mat, b, false );
-    bool success = cv::imwrite(s, mat);
+    CVMAT_FROM_IPLIMAGE(mat, b, false);
+    bool success = cv::imwrite(corecvs::HelperUtils::toNativeSlashes(s), mat);
     cvReleaseImage(&b);
     return success;
 }
@@ -73,7 +73,7 @@ bool OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std:
 bool OpenCvBufferReader::write(const RuntimeTypeBuffer &buffer, const std::string &s)
 {
     cv::Mat img = convert(buffer);
-    bool success = cv::imwrite(s, img);
+    bool success = cv::imwrite(corecvs::HelperUtils::toNativeSlashes(s), img);
     return success;
 }
 
@@ -91,7 +91,7 @@ bool OpenCVRGB24Loader::acceptsFile(std::string name)
 /* I don't see how an inability to load particular format is an exceptional situation */
 RGB24Buffer *OpenCVRGB24Loader::load(std::string name)
 {
-    cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_COLOR);
+    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(name), CV_LOAD_IMAGE_COLOR);
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(name);
     }
@@ -110,7 +110,7 @@ bool OpenCVRuntimeTypeBufferLoader::acceptsFile(std::string name)
 
 RuntimeTypeBuffer *OpenCVRuntimeTypeBufferLoader::load(std::string name)
 {
-    cv::Mat img = cv::imread(name, CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(name), CV_LOAD_IMAGE_GRAYSCALE);
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(name);
     }
@@ -135,5 +135,5 @@ bool OpenCVRGB24Saver::acceptsFile(string name)
 
 bool OpenCVRGB24Saver::save(RGB24Buffer &buffer, string name)
 {
-    return OpenCvBufferReader().writeRgb(buffer, name);
+    return OpenCvBufferReader().writeRgb(buffer, corecvs::HelperUtils::toNativeSlashes(name));
 }

@@ -444,6 +444,8 @@ void SceneFeaturePoint::projectForward(FixtureCamera *camera, CameraFixture *fix
     }
 
     SceneObservation observation(camera, this, projection, fixture);
+    observation.setUndist(projection);
+
     if (!round) {
         observation.setObserveDir(worldCam.dirToPoint(position).normalised());  // direct
     }

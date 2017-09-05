@@ -1056,11 +1056,13 @@ std::shared_ptr<RGB24Buffer> ImageRelatedData::getImage(bool detach, bool forceR
 
 G12Buffer *ImageRelatedData::getG12BufferPtr()
 {
+    CORE_ASSERT_TRUE_P(getImage(false).get(), ("Invalid image"));
     return getImage(false).get()->toG12Buffer();
 }
 
 G8Buffer *ImageRelatedData::getG8BufferPtr()
 {
+    CORE_ASSERT_TRUE_P(getImage(false).get(), ("Invalid image"));
     return getImage(false).get()->getChannel(ImageChannel::LUMA);
 }
 
