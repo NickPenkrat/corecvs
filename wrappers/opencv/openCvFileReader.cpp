@@ -135,5 +135,5 @@ bool OpenCVRGB24Saver::acceptsFile(string name)
 
 bool OpenCVRGB24Saver::save(RGB24Buffer &buffer, string name)
 {
-    return OpenCvBufferReader().writeRgb(buffer, corecvs::HelperUtils::toNativeSlashes(name));
+    return OpenCvBufferReader().writeRgb(buffer, name);
 }

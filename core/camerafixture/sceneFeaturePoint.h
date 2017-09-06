@@ -126,22 +126,6 @@ public:
         visitor.visit(onDistorted  , false          , "onDistorted");
         visitor.visit(validityFlags, 0, "validityFlags");
 
-        /* This is a compatibility block. Remove this when all data would be converted */
-#if 1
-        if (visitor.isLoader())
-        {
-            if (validityFlags == 0) /* We expect that only legacy scenes would have this */
-            {
-                Vector2dd obs = observation;
-                if (onDistorted) {
-                    setDist(obs);
-                } else {
-                    setUndist(obs);
-                }
-            }
-        }
-#endif
-
         keyPointArea.accept<VisitorType>(visitor);
 
         FixtureCamera::IdType id = 0;
@@ -157,6 +141,22 @@ public:
                 cameraFixture = camera->cameraFixture;
             }
         }
+
+        /* This is a compatibility block. Remove this when all data would be converted */
+#if 1
+        if (visitor.isLoader())
+        {
+            if (validityFlags == 0) /* We expect that only legacy scenes would have this */
+            {
+                Vector2dd obs = observation;
+                if (onDistorted) {
+                    setDist(obs);
+                } else {
+                    setUndist(obs);
+                }
+            }
+        }
+#endif
     }
 };
 
