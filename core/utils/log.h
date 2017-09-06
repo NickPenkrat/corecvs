@@ -96,7 +96,8 @@ public:
         std::lock_guard<std::mutex> locker(mMutex);
         if (size() > 1) {                // detach a log just have been added before
             LogDrain* log = (*this)[size() - 1];
-            detach(log);
+            //detach(log);                  // to don't lock twice
+            resize(size() - 1);
             delete_safe(log);
         }
     }
