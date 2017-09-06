@@ -14,7 +14,7 @@ using corecvs::BaseReflectionStatic;
 
 void TreeSceneController::paramtersChanged()
 {
-    SYNC_PRINT(("TreeSceneController::paramtersChanged()\n"));
+    // SYNC_PRINT(("TreeSceneController::paramtersChanged()\n"));
 
     if (mObject.isNull() || mParametersWidget == NULL)
         return;

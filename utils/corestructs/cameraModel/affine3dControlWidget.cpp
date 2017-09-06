@@ -3,8 +3,9 @@
 
 #include <QClipboard>
 
-Affine3dControlWidget::Affine3dControlWidget(QWidget *parent) :
+Affine3dControlWidget::Affine3dControlWidget(QWidget *parent, bool presenationWorldStyle) :
     ParametersControlWidgetBase(parent),
+    mWorld(presenationWorldStyle),
     ui(new Ui::Affine3dControlWidget)
 {
     ui->setupUi(this);
@@ -32,14 +33,26 @@ void Affine3dControlWidget::getParameters(Affine3DQ& params) const
     params.shift.y() = ui->spinBoxY->value();
     params.shift.z() = ui->spinBoxZ->value();
 
-    CameraLocationAngles angles;
-    angles.setYaw  (ui->widgetYaw  ->value());
-    angles.setPitch(ui->widgetPitch->value());
-    angles.setRoll (ui->widgetRoll ->value());
+    if (mWorld)
+    {
+        WorldLocationAngles angles;
+        angles.setYaw  (ui->widgetYaw  ->value());
+        angles.setPitch(ui->widgetPitch->value());
+        angles.setRoll (ui->widgetRoll ->value());
 
-    qDebug("Affine3dControlWidget::getParameters(): called" );
-    angles.prettyPrint();
-    params.rotor = angles.toQuaternion();
+        qDebug("Affine3dControlWidget::getParameters(world): called" );
+        angles.prettyPrint();
+        params.rotor = angles.toQuaternion();
+    } else {
+        CameraLocationAngles angles;
+        angles.setYaw  (ui->widgetYaw  ->value());
+        angles.setPitch(ui->widgetPitch->value());
+        angles.setRoll (ui->widgetRoll ->value());
+
+        qDebug("Affine3dControlWidget::getParameters(camera): called" );
+        angles.prettyPrint();
+        params.rotor = angles.toQuaternion();
+    }
 }
 
 Affine3DQ *Affine3dControlWidget::createParameters() const
@@ -55,18 +68,27 @@ Affine3DQ *Affine3dControlWidget::createParameters() const
 
 void Affine3dControlWidget::setParameters(const Affine3DQ &input)
 {
-    SYNC_PRINT(("Affine3dControlWidget::setParameters(): called"));
+    SYNC_PRINT(("Affine3dControlWidget::setParameters(): called\n"));
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
     ui->spinBoxX->setValue(input.shift.x());
     ui->spinBoxY->setValue(input.shift.y());
     ui->spinBoxZ->setValue(input.shift.z());
 
-    CameraLocationAngles angles = CameraLocationAngles::FromQuaternion(input.rotor);
+    if (mWorld)
+    {
+        WorldLocationAngles angles = WorldLocationAngles::FromQuaternion(input.rotor);
 
-    ui->widgetYaw  ->setValue(angles.yaw  ());
-    ui->widgetPitch->setValue(angles.pitch());
-    ui->widgetRoll ->setValue(angles.roll ());
+        ui->widgetYaw  ->setValue(angles.yaw  ());
+        ui->widgetPitch->setValue(angles.pitch());
+        ui->widgetRoll ->setValue(angles.roll ());
+    } else {
+        CameraLocationAngles angles = CameraLocationAngles::FromQuaternion(input.rotor);
+
+        ui->widgetYaw  ->setValue(angles.yaw  ());
+        ui->widgetPitch->setValue(angles.pitch());
+        ui->widgetRoll ->setValue(angles.roll ());
+    }
 
     blockSignals(wasBlocked);
     emit paramsChanged();
@@ -100,4 +122,10 @@ void Affine3dControlWidget::copyText()
     clipboard->setText(result);
     qDebug() << result;
 
+}
+
+void Affine3dControlWidget::setPresentationStyle(bool worldCoord)
+{
+    mWorld = worldCoord;
+    update();
 }
