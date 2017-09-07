@@ -83,6 +83,7 @@ public:
 
 class QTRGB24Saver : public corecvs::BufferSaver<corecvs::RGB24Buffer>
 {
+public:
     static int registerMyself()
     {
         corecvs::BufferFactory::getInstance()->registerSaver(new QTRGB24Saver());
