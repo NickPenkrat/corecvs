@@ -8,6 +8,8 @@ FixtureControlWidget::FixtureControlWidget(QWidget *parent) :
     ui(new Ui::FixtureControlWidget)
 {
     ui->setupUi(this);
+    /* Fixtures should be in World coordinates */
+    ui->locationWidget->setPresentationStyle(true);
 
     QObject::connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadPressed()));
     QObject::connect(ui->savePushButton, SIGNAL(released()), this, SLOT(savePressed()));

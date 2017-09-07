@@ -15,7 +15,7 @@ class Affine3dControlWidget : public ParametersControlWidgetBase
     Q_OBJECT
 
 public:
-    explicit Affine3dControlWidget(QWidget *parent = 0);
+    explicit Affine3dControlWidget(QWidget *parent = 0, bool presenationWorldStyle = false);
     ~Affine3dControlWidget();
 
     Affine3DQ* createParameters() const;
@@ -25,11 +25,13 @@ public:
 
 public slots:
     void copyText();
+    void setPresentationStyle(bool worldCoord);
 signals:
     void valueChanged();
     void paramsChanged();
 
 private:
+    bool mWorld;
     Ui::Affine3dControlWidget *ui;
 };
 

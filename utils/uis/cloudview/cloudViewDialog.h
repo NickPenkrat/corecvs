@@ -59,6 +59,8 @@ public slots:
     void clockRotate();
     void anticlockRotate();
 
+    void backgroundColorChanged();
+
     void resetCameraPos();
     void resetCamera();
     void resetCameraSlot();
@@ -161,6 +163,11 @@ public:
         ORTHO_TOP,
         ORTHO_LEFT,
         ORTHO_FRONT,
+
+        ORTHO_TOP_LEFT,
+        ORTHO_LEFT_LEFT,
+        ORTHO_FRONT_LEFT,
+
         PINHOLE_AT_0,
         RIGHT_CAMERA,
         LEFT_CAMERA,
@@ -172,7 +179,9 @@ public:
 
     bool isOrtho(CameraType type)
     {
-        if (type == ORTHO_TOP || type == ORTHO_LEFT || type == ORTHO_FRONT || type == USER_ORTHO_CAMERA)
+        if (type == ORTHO_TOP      || type == ORTHO_LEFT      || type == ORTHO_FRONT      ||
+            type == ORTHO_TOP_LEFT || type == ORTHO_LEFT_LEFT || type == ORTHO_FRONT_LEFT ||
+            type == USER_ORTHO_CAMERA)
         {
             return true;
         }
@@ -188,6 +197,8 @@ public:
     void addMesh(QString name, Mesh3D *mesh);
 private:
     GLuint                      mCameraTexture[Frames::MAX_INPUTS_NUMBER];
+
+    RGBColor mBackgroundColor;
 
 protected:
   //vector<TreeSceneController*> mControllers;
