@@ -73,9 +73,15 @@ Vector2dd SceneObservation::getDist() const
 
 void SceneObservation::setUndist(const Vector2dd &undist)
 {
-    // This is a temporary solution. Z value should be computed, not just set to focal
-    observDir = Vector3dd(undist, camera->intrinsics.focal.x());
-    validityFlags = ValidFlags::DIRECTION_VALID;
+    if (camera != NULL)
+    {
+        // This is a temporary solution. Z value should be computed, not just set to focal
+        observDir = Vector3dd(undist, camera->intrinsics.focal.x());
+        validityFlags = ValidFlags::DIRECTION_VALID;
+    }
+    else {
+        SYNC_PRINT(("SceneObservation::setUndist(): ignored coord as camera is nul\n"));
+    }
 }
 
 void SceneObservation::setDist(const Vector2dd &dist)
