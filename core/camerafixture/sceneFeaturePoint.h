@@ -8,7 +8,6 @@
 #include "imageKeyPoints.h"
 #include "wildcardablePointerPair.h"
 
-
 /* Presentation related */
 #include "rgbColor.h"
 
@@ -47,7 +46,6 @@ public:
         , accuracy(0.0)
         , observation(obs)
         , observDir(0.0)
-        , onDistorted(false)
         , validityFlags(ValidFlags::OBSERVATION_VALID)
     {}
 
@@ -72,49 +70,31 @@ public:
     };
 
 private:
-    mutable Vector2dd           observation;
-    mutable Vector3dd           observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
-
-    /**
-     * true when observation belongs to source-distorted image, def: we assume working with points on undistorted images
-     * You can't relay on this value. It is mostly for optimisation
-     **/
-    bool                onDistorted;
-
-    mutable int validityFlags;
+    mutable Vector2dd   observation;                /**< distorted position at the image */
+    mutable Vector3dd   observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
+    mutable int         validityFlags;
 
 public:
-
-  //MetaContainer       meta;                       /* not used */
-
-    KeyPointArea    keyPointArea;
+    KeyPointArea        keyPointArea;
 
     /* \depicated Using this is discoraged */
-    double          &x() { return observation.x(); }
-    double          &y() { return observation.y(); }
+    double              &x() { return observation.x(); }
+    double              &y() { return observation.y(); }
 
     /* \depicated Using this is discoraged */
-    void setObserveDir(const Vector3dd &dir) {
-        observDir = dir;
-    }
+    void                setObserveDir(const Vector3dd &dir) { observDir = dir; }
 
-    std::string     getPointName();
-
-    int             ensureDistorted(bool distorted = true);
+    std::string         getPointName();
 
     /* */
-    Vector2dd       getDistorted   (bool distorted = true) const;
+    Vector2dd           getUndist() const;
+    Vector2dd           getDist  () const;
 
-    /* */
-    Vector2dd       getUndist() const;
-    Vector2dd       getDist  () const;
-
-    void            setUndist(const Vector2dd &undist);
-    void            setDist  (const Vector2dd &dist);
-
+    void                setUndist(const Vector2dd &undist);
+    void                setDist  (const Vector2dd &dist);
 
 private:
-    FixtureCamera     *getCameraById(FixtureCamera::IdType id);
+    FixtureCamera      *getCameraById(FixtureCamera::IdType id);
 
 public:
     template<class VisitorType>
@@ -123,8 +103,7 @@ public:
         visitor.visit(observDir    , Vector3dd(0.0) , "observDir");
         visitor.visit(observation  , Vector2dd(0.0) , "observation");
         visitor.visit(accuracy     , Vector2dd(0.0) , "accuracy");
-        visitor.visit(onDistorted  , false          , "onDistorted");
-        visitor.visit(validityFlags, 0, "validityFlags");
+        visitor.visit(validityFlags, 0              , "validityFlags");
 
         keyPointArea.accept<VisitorType>(visitor);
 
@@ -148,6 +127,8 @@ public:
         {
             if (validityFlags == 0) /* We expect that only legacy scenes would have this */
             {
+                bool onDistorted;
+                visitor.visit(onDistorted, false, "onDistorted");
                 Vector2dd obs = observation;
                 if (onDistorted) {
                     setDist(obs);
@@ -277,8 +258,6 @@ public:
     SceneObservation *getObservation(FixtureCamera *cam);
 
     void removeObservation(SceneObservation *);
-
-    int  ensureDistortedObservations(bool distorted = true);    // convert to the needed type of all observations
 
     /* Let it be so far like this */
     template<class VisitorType>
