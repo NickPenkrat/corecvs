@@ -670,10 +670,10 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
     cam->sequenceNumber = (int)fixture->cameras.size() - 1;
 }
 
-int FixtureScene::getObeservationNumber(CameraFixture *fixture)
+int FixtureScene::getObservationNumber(CameraFixture *fixture)
 {
     int count = 0;
-    for(size_t i = 0; i <mSceneFeaturePoints.size(); i++)
+    for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
     {
         SceneFeaturePoint *point = mSceneFeaturePoints[i];
         for (auto it = point->observations.begin(); it != point->observations.end(); ++it)
@@ -686,10 +686,10 @@ int FixtureScene::getObeservationNumber(CameraFixture *fixture)
     return count;
 }
 
-int FixtureScene::getObeservationNumber(FixtureCamera *cam)
+int FixtureScene::getObservationNumber(FixtureCamera *cam)
 {
     int count = 0;
-    for(size_t i = 0; i < mSceneFeaturePoints.size(); i++)
+    for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
     {
         SceneFeaturePoint *point = mSceneFeaturePoints[i];
         if (point->observations.find( cam ) != point->observations.end())
@@ -908,7 +908,6 @@ FixtureCamera *FixtureScene::getCameraByNumber(int fixtureNumber, int cameraNumb
 }
 
 
-
 FixtureScene::~FixtureScene()
 {
     clear();
@@ -962,9 +961,7 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
     for (FixtureCamera* fc: mOrphanCameras)
     {
         fc->extrinsics.transform(transformation, scale);
-
     }
-
 
     for (CameraFixture* cf: mFixtures)
     {
@@ -1025,7 +1022,8 @@ void FixtureSceneFactory::print()
 
 std::string ImageRelatedData::getImageScenePath() const
 {
-    if (ownerScene == NULL || HelperUtils::isAbsolutePath(mImagePath) ) {
+    if (ownerScene == NULL || HelperUtils::isAbsolutePath(mImagePath))
+    {
         return mImagePath;
     }
     return HelperUtils::concatPath(ownerScene->getImageSearchPath(), mImagePath);
@@ -1033,26 +1031,24 @@ std::string ImageRelatedData::getImageScenePath() const
 
 RGB24Buffer *ImageRelatedData::getRGB24BufferPtr()
 {
-    RGB24Buffer* toReturn = BufferFactory::getInstance()->loadRGB24Bitmap(mImagePath) ;
-
+    RGB24Buffer* toReturn = BufferFactory::getInstance()->loadRGB24Bitmap(mImagePath);
     return toReturn;
 }
 
 std::shared_ptr<RGB24Buffer> ImageRelatedData::getImage(bool detach, bool forceReload)
 {
-    if (forceReload || mCache == NULL){
+    if (forceReload || mCache == NULL)
+    {
         mCache = std::shared_ptr<RGB24Buffer>(BufferFactory::getInstance()->loadRGB24Bitmap(getImageScenePath()));
     }
 
-    if (detach) {
-        if (mCache == NULL) {
-            return NULL;
-        } else {
-            return std::shared_ptr<RGB24Buffer>(new RGB24Buffer(mCache.get()));
-        }
-    } else {
+    if (!detach)
         return mCache;
-    }
+
+    if (mCache == NULL)
+        return NULL;
+
+    return std::shared_ptr<RGB24Buffer>(new RGB24Buffer(mCache.get()));
 }
 
 G12Buffer *ImageRelatedData::getG12BufferPtr()
