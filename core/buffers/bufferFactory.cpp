@@ -11,28 +11,49 @@
 #include "rawLoader.h"
 #include "bmpLoader.h"
 
-namespace corecvs {
+//#if __cplusplus > 199711L
+#if defined(WIN32) && (_MSC_VER < 1900) // we need a threadsafety singleton initialization described in §6.7.4 of the C++11 standard, msvc2013 doesn't support it fully... Don't care about gcc-versions
+#include <mutex>
+#include <atomic>
+static std::mutex mtx;
+std::atomic<corecvs::BufferFactory *> instance(nullptr);
+#endif
 
-CountedPtr<BufferFactory> BufferFactory::sThis;
+namespace corecvs {
 
 //static
 BufferFactory* BufferFactory::getInstance()
 {
-    CORE_ASSERT_TRUE(sThis.get() != NULL, "Out of memory!");
-
-    if (sThis.get()->mLoadersG12.size() == 0)
+#if defined(WIN32) && (_MSC_VER < 1900) // we need a threadsafety singleton initialization
+    auto *p = instance.load(std::memory_order_acquire);
+    if (!p)
     {
-        sThis.get()->registerLoader(new PPMLoaderG12());
-        sThis.get()->registerLoader(new RAWLoader());
-        sThis.get()->registerLoader(new BMPLoaderG12());
-        sThis.get()->registerLoaderG16(new PPMLoaderG16());     // specific reader to load 16bits data PPMs
-
-        sThis.get()->registerLoader(new PPMLoaderRGB24());
-        sThis.get()->registerLoader(new BMPLoaderRGB24());
-
-        sThis.get()->registerSaver(new BMPSaverRGB24());
+        std::lock_guard<std::mutex> lck(mtx);
+        p = instance.load(std::memory_order_relaxed);
+        if (!p)
+        {
+            p = new BufferFactory;
+            instance.store(p, std::memory_order_release);
+        }
     }
-    return sThis.get();
+    return p;
+#else
+    static BufferFactory instance;
+    return &instance;
+#endif
+}
+
+BufferFactory::BufferFactory()
+{
+    registerLoader(new PPMLoaderG12());
+    registerLoader(new RAWLoader());
+    registerLoader(new BMPLoaderG12());
+    registerLoaderG16(new PPMLoaderG16());     // specific reader to load 16bits data PPMs
+
+    registerLoader(new PPMLoaderRGB24());
+    registerLoader(new BMPLoaderRGB24());
+
+    registerSaver(new BMPSaverRGB24());
 }
 
 void BufferFactory::printCaps()
@@ -94,11 +115,10 @@ BufferType *loadBuffer(string name, vector<BufferLoader<BufferType> *> &loaders)
     return NULL;
 }
 
-
 template<typename BufferType>
 bool saveBuffer(BufferType *buffer, string name, string preferedProvider, vector<BufferSaver<BufferType> *> &savers)
 {
-    SYNC_PRINT(("BufferFactory::save(%s)", name.c_str()));
+    SYNC_PRINT(("BufferFactory::save(%s, preffered:%s)\n", name.c_str(), preferedProvider.c_str()));
 
     BufferSaver<BufferType> *saver = NULL;
 
@@ -120,7 +140,6 @@ bool saveBuffer(BufferType *buffer, string name, string preferedProvider, vector
     }
     return false;
 }
-
 
 G12Buffer *BufferFactory::loadG12Bitmap(string name)
 {

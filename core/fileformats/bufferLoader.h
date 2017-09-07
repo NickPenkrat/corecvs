@@ -23,10 +23,10 @@ class BufferLoader
 public:
     BufferLoader() {}
 
-    virtual bool acceptsFile(string name) = 0;
-    virtual BufferType *load(string name) = 0;
+    virtual bool acceptsFile(string name) abstract;
+    virtual BufferType *load(string name) abstract;
 
-    virtual std::string              name()        { return "noname"; }
+    virtual std::string              name()       { return "noname"; }
     virtual std::vector<std::string> extentions() { return std::vector<std::string>(); }
     virtual ~BufferLoader() {}
 };
@@ -37,10 +37,10 @@ class BufferSaver
 public:
     BufferSaver() {}
 
-    virtual bool acceptsFile(string name) = 0;
-    virtual bool save(BufferType &buffer, string name) = 0;
+    virtual bool acceptsFile(string name) abstract;
+    virtual bool save(BufferType &buffer, string name) abstract;
 
-    virtual std::string              name()        { return "noname"; }
+    virtual std::string              name()       { return "noname"; }
     virtual std::vector<std::string> extentions() { return std::vector<std::string>(); }
     virtual ~BufferSaver() {}
 };

@@ -121,13 +121,11 @@ class BMPSaverRGB24 : public BufferSaver<RGB24Buffer>, public BMPLoaderBase
         return BMPLoaderBase::save(name, &buffer);
     }
 
-    virtual std::string              name()        override { return "BMPSaverRGB24"; }
+    virtual std::string name() override { return "BMPSaverRGB24"; }
     virtual std::vector<std::string> extentions() override {
         return std::vector<std::string>({BMPLoaderBase::prefix1});
     }
     virtual ~BMPSaverRGB24() {}
-
-
 };
 
 } //namespace corecvs

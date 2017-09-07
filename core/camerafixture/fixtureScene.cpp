@@ -987,7 +987,8 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
 
 std::unique_ptr<FixtureSceneFactory> FixtureSceneFactory::instance;
 
-FixtureSceneFactory *FixtureSceneFactory::getInstance() {
+FixtureSceneFactory *FixtureSceneFactory::getInstance()
+{
     if (!instance) {
         instance.reset(new FixtureSceneFactory());
     }
