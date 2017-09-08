@@ -74,11 +74,8 @@ void BufferFactory::printCaps()
     cout << "  RuntimeType loader" << endl;
     for (auto it : factory->mLoadersRuntime) cout << "\t" << it->name() << endl;
 
-    cout << "----" << endl;
-
     cout << "  RGB24 saver" << endl;
     for (auto it : factory->mSaversRGB24) cout << "\t" << it->name() << endl;
-
 }
 
 template<typename BufferType>
