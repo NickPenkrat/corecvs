@@ -1033,8 +1033,17 @@ std::string ImageRelatedData::getImageScenePath() const
 RGB24Buffer *ImageRelatedData::getRGB24BufferPtr()
 {
     RGB24Buffer* toReturn = BufferFactory::getInstance()->loadRGB24Bitmap(mImagePath) ;
-
     return toReturn;
+}
+
+RGB24Buffer *ImageRelatedData::getUndistRGB24BufferPtr()
+{
+    DisplacementBuffer transform = camera->transform(DistortionApplicationParameters());
+    corecvs::RGB24Buffer* buffer = getImage()->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(
+                &transform,
+                camera->intrinsics.size.y(),
+                camera->intrinsics.size.x());
+    return buffer;
 }
 
 std::shared_ptr<RGB24Buffer> ImageRelatedData::getImage(bool detach, bool forceReload)
