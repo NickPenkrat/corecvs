@@ -53,31 +53,31 @@ template<class ExposeType>
                   case corecvs::BaseField::TYPE_INT:
                   {
                       //const IntField *iField = static_cast<const IntField *>(field);
-                      obj.setProperty(name, *(input.template getField<int>(i)));
+                      obj.setProperty(name, *(input.template getField<int>((int)i)));
                       break;
                   }
                   case corecvs::BaseField::TYPE_DOUBLE:
                   {
                       //const DoubleField *dField = static_cast<const DoubleField *>(field);
-                      obj.setProperty(name, *input.template getField<double>(i));
+                      obj.setProperty(name, *input.template getField<double>((int)i));
                       break;
                   }
                   case corecvs::BaseField::TYPE_STRING:
                   {
                       //const StringField *sField = static_cast<const StringField *>(field);
-                      obj.setProperty(name, QString::fromStdString(*input.template getField<std::string>(i)));
+                      obj.setProperty(name, QString::fromStdString(*input.template getField<std::string>((int)i)));
                       break;
                   }
                   case corecvs::BaseField::TYPE_WSTRING:
                   {
                       //const StringField *sField = static_cast<const StringField *>(field);
-                      obj.setProperty(name, QString::fromStdWString(*input.template getField<std::wstring>(i)));
+                      obj.setProperty(name, QString::fromStdWString(*input.template getField<std::wstring>((int)i)));
                       break;
                   }
                   case corecvs::BaseField::TYPE_BOOL:
                   {
                       //const BoolField *bField = static_cast<const BoolField *>(field);
-                      obj.setProperty(name, *input.template getField<bool>(i));
+                      obj.setProperty(name, *input.template getField<bool>((int)i));
                       break;
                   }
                   case corecvs::BaseField::TYPE_ENUM:
@@ -143,27 +143,27 @@ template<class ExposeType>
             switch (field->type) {
                 case corecvs::BaseField::TYPE_INT:
                 {
-                    *(input.template getField<int>(i)) = value.toInt32();
+                    *(input.template getField<int>((int)i)) = value.toInt32();
                     break;
                 }
                 case corecvs::BaseField::TYPE_DOUBLE:
                 {
-                    *input.template getField<double>(i) = value.toNumber();
+                    *input.template getField<double>((int)i) = value.toNumber();
                     break;
                 }
                 case corecvs::BaseField::TYPE_STRING:
                 {
-                    *input.template getField<std::string>(i) = value.toString().toStdString();
+                    *input.template getField<std::string>((int)i) = value.toString().toStdString();
                     break;
                 }
                 case corecvs::BaseField::TYPE_WSTRING:
                 {
-                    *input.template getField<std::wstring>(i) = value.toString().toStdWString();
+                    *input.template getField<std::wstring>((int)i) = value.toString().toStdWString();
                     break;
                 }
                 case corecvs::BaseField::TYPE_BOOL:
                 {
-                    *input.template getField<bool>(i) = value.toBool();
+                    *input.template getField<bool>((int)i) = value.toBool();
                     break;
                 }
                 case corecvs::BaseField::TYPE_ENUM:
