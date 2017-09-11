@@ -11,20 +11,20 @@ exists(../../../../config.pri) {
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
 exists($$ROOT_DIR/siblings/gtest) {
-    message(Using local gtest from siblings/gtest)
+    !build_pass: message(Using local gtest from siblings/gtest)
 
     INCLUDEPATH += $$ROOT_DIR/siblings/gtest/
     INCLUDEPATH += $$ROOT_DIR/siblings/gtest/include
 
     SOURCES += $$ROOT_DIR/siblings/gtest/src/gtest-all.cc
-    HEADERS += $$ROOT_DIR/siblings/gtest/src/*.h
+    HEADERS += $$ROOT_DIR/siblings/gtest/include/gtest/*.h
 
 } else {
 
     GTEST_PATH = "$$(GTEST_PATH)"
     isEmpty(GTEST_PATH) {
         win32 {
-            message(GTEST_PATH not configured!)
+            !build_pass: message(GTEST_PATH not configured!)
         } else {
             LIBS += -lgtest
         }
@@ -44,6 +44,6 @@ exists($$ROOT_DIR/siblings/gtest) {
             LIBS += -L"$$GTEST_PATH_BUILD/Release" -lgtest
         }
 
-        !build_pass:message(Using gtest from <$$GTEST_PATH/build/Release|Debug>)
+        !build_pass: message(Using gtest from <$$GTEST_PATH/build/Release|Debug>)
     }
 }

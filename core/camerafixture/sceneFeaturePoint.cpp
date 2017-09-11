@@ -15,31 +15,6 @@ std::string SceneObservation::getPointName()
     return featurePoint ? featurePoint->name : "";
 }
 
-int SceneObservation::ensureDistorted(bool distorted)
-{
-    if (!(distorted ^ onDistorted))                         // if we have what is requested, use it
-        return false;
-
-    //cout << "SceneObservation::ensureDistorted: convert to " << (distorted ? "dist" : "undist") << " coords" << endl;
-    //auto obs = observation;
-
-    observation = getDistorted(distorted);
-    onDistorted = distorted;                        // this must be after the function above call!
-
-    //cout << "SceneObservation::ensureDistorted(" << (distorted ? "dist" : "undist") << ") " << obs << " => " << observation << endl;
-    return true;
-}
-
-Vector2dd SceneObservation::getDistorted(bool distorted) const
-{
-    if (distorted) {
-        return  getDist();
-    }
-    else {
-        return getUndist();
-    }
-}
-
 Vector2dd SceneObservation::getUndist() const
 {
     if (validityFlags & ValidFlags::DIRECTION_VALID) {
@@ -73,9 +48,15 @@ Vector2dd SceneObservation::getDist() const
 
 void SceneObservation::setUndist(const Vector2dd &undist)
 {
-    // This is a temporary solution. Z value should be computed, not just set to focal
-    observDir = Vector3dd(undist, camera->intrinsics.focal.x());
-    validityFlags = ValidFlags::DIRECTION_VALID;
+    if (camera != NULL)
+    {
+        // This is a temporary solution. Z value should be computed, not just set to focal
+        observDir = Vector3dd(undist, camera->intrinsics.focal.x());
+        validityFlags = ValidFlags::DIRECTION_VALID;
+    }
+    else {
+        SYNC_PRINT(("SceneObservation::setUndist(): ignored coord as camera is nul\n"));
+    }
 }
 
 void SceneObservation::setDist(const Vector2dd &dist)
@@ -119,16 +100,6 @@ void SceneFeaturePoint::removeObservation(SceneObservation *in)
     }
 
     observations.erase(it);
-}
-
-int SceneFeaturePoint::ensureDistortedObservations(bool distorted)
-{
-    int toReturn = 0;
-    for (auto& obs : observations)      // we need to calc dist/undist coords for all observations if need
-    {
-        toReturn += obs.second.ensureDistorted(distorted);
-    }
-    return toReturn;
 }
 
 bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& point, const corecvs::Vector3dd& camera0, const corecvs::Vector3dd& camera1, double thresholdCos)
@@ -214,7 +185,7 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, boo
             //CORE_ASSERT_TRUE_S(obs.cameraFixture != NULL);
             if ((obs.cameraFixture != NULL) && (!mask || (ptr < mask->size() && (*mask)[ptr] == id)))
             {
-                Vector2dd projection = obs.getDistorted(false);     // convert projection 'dist => undist' if need
+                Vector2dd projection = obs.getUndist();     // convert projection 'dist => undist' if need
                 FixtureCamera worldCam = cam->cameraFixture->getWorldCamera(cam);
                 mct.addCamera(worldCam.getCameraMatrix(), projection);
 

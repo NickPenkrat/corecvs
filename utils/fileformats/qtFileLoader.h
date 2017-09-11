@@ -83,12 +83,19 @@ public:
 
 class QTRGB24Saver : public corecvs::BufferSaver<corecvs::RGB24Buffer>
 {
+public:
+    static int registerMyself()
+    {
+        corecvs::BufferFactory::getInstance()->registerSaver(new QTRGB24Saver());
+        return 0;
+    }
+
     virtual bool acceptsFile(std::string name) override;
     virtual bool save(corecvs::RGB24Buffer &buffer, std::string name);
 
     virtual std::string              name()        override { return "QTRGB24Saver(multitype)"; }
     virtual std::vector<std::string> extentions() override {
-        return std::vector<std::string>({"*.jpeg"});
+        return std::vector<std::string>({"*.jpeg", ".jpg", ".JPG" });
     }
     virtual ~QTRGB24Saver() {}
 };
