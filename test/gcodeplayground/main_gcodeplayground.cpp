@@ -10,6 +10,8 @@ using namespace corecvs;
 
 int vynilCutter (double offset)
 {
+    CORE_UNUSED(offset);
+
     std::string input = "in.gcode";
     std::string output = "out.gcode";
 

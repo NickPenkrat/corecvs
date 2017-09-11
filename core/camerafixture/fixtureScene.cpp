@@ -1035,6 +1035,16 @@ RGB24Buffer *ImageRelatedData::getRGB24BufferPtr()
     return toReturn;
 }
 
+RGB24Buffer *ImageRelatedData::getUndistRGB24BufferPtr()
+{
+    DisplacementBuffer transform = camera->transform(DistortionApplicationParameters());
+    corecvs::RGB24Buffer* buffer = getImage()->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(
+                &transform,
+                camera->intrinsics.size.y(),
+                camera->intrinsics.size.x());
+    return buffer;
+}
+
 std::shared_ptr<RGB24Buffer> ImageRelatedData::getImage(bool detach, bool forceReload)
 {
     if (forceReload || mCache == NULL)

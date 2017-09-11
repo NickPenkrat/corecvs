@@ -48,6 +48,7 @@ public:
         PRIVATECOLOR_ID,
         LARGEPOINTS_ID,
         DRAWFIXTURECAMS_ID,
+        SOLIDCAMERAS_ID,
         DRAWOBSERVATIONS_ID,
         DRAWTRUELINES_ID,
         PROJECTION_RAY_LENGTH_ID,
@@ -110,6 +111,12 @@ public:
      * drawFixtureCams 
      */
     bool mDrawFixtureCams;
+
+    /** 
+     * \brief solidCameras 
+     * solidCameras 
+     */
+    bool mSolidCameras;
 
     /** 
      * \brief drawObservations 
@@ -190,6 +197,11 @@ public:
         return mDrawFixtureCams;
     }
 
+    bool solidCameras() const
+    {
+        return mSolidCameras;
+    }
+
     bool drawObservations() const
     {
         return mDrawObservations;
@@ -256,6 +268,11 @@ public:
         mDrawFixtureCams = drawFixtureCams;
     }
 
+    void setSolidCameras(bool solidCameras)
+    {
+        mSolidCameras = solidCameras;
+    }
+
     void setDrawObservations(bool drawObservations)
     {
         mDrawObservations = drawObservations;
@@ -290,6 +307,7 @@ template<class VisitorType>
         visitor.visit(mPrivateColor,              static_cast<const corecvs::BoolField *>(fields()[PRIVATECOLOR_ID]));
         visitor.visit(mLargePoints,               static_cast<const corecvs::BoolField *>(fields()[LARGEPOINTS_ID]));
         visitor.visit(mDrawFixtureCams,           static_cast<const corecvs::BoolField *>(fields()[DRAWFIXTURECAMS_ID]));
+        visitor.visit(mSolidCameras,              static_cast<const corecvs::BoolField *>(fields()[SOLIDCAMERAS_ID]));
         visitor.visit(mDrawObservations,          static_cast<const corecvs::BoolField *>(fields()[DRAWOBSERVATIONS_ID]));
         visitor.visit(mDrawTrueLines,             static_cast<const corecvs::BoolField *>(fields()[DRAWTRUELINES_ID]));
         visitor.visit(mProjectionRayLength,       static_cast<const corecvs::DoubleField *>(fields()[PROJECTION_RAY_LENGTH_ID]));
@@ -312,6 +330,7 @@ template<class VisitorType>
         , bool privateColor
         , bool largePoints
         , bool drawFixtureCams
+        , bool solidCameras
         , bool drawObservations
         , bool drawTrueLines
         , double projectionRayLength
@@ -327,6 +346,7 @@ template<class VisitorType>
         mPrivateColor = privateColor;
         mLargePoints = largePoints;
         mDrawFixtureCams = drawFixtureCams;
+        mSolidCameras = solidCameras;
         mDrawObservations = drawObservations;
         mDrawTrueLines = drawTrueLines;
         mProjectionRayLength = projectionRayLength;

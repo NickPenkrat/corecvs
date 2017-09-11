@@ -77,7 +77,8 @@ template <>
 template <>
     void PropertyListWriterVisitor::visit<std::wstring,   WStringField>(std::wstring &field, const WStringField *fieldDescriptor)
     {
-        SYNC_PRINT(("Wide strings are not supported yet\n"));
+        CORE_UNUSED(field);
+        SYNC_PRINT(("Wide strings are not supported yet. <%s> won't be saved\n", fieldDescriptor->name.name));
         //output->setStringProperty(fieldDescriptor->getSimpleName(), field);
     }
 

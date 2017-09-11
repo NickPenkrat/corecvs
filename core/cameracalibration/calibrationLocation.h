@@ -34,7 +34,7 @@ public:
         EulerAngles(yaw, pitch, roll)
     {}
 
-    static CameraLocationAngles FromAngles(double yawDeg, double pitchDeg, double rollDeg)
+    static CameraLocationAngles FromAnglesDeg(double yawDeg, double pitchDeg, double rollDeg)
     {
         return CameraLocationAngles(degToRad(yawDeg), degToRad(pitchDeg), degToRad(rollDeg));
     }
@@ -141,6 +141,161 @@ public:
     void prettyPrint (ostream &out = cout);
 
 };
+
+
+
+/**
+ *    The classical rotation storage is in format yaw, pitch and roll.
+ *    This class works in WORLD reference frame with
+ *
+ *     X - to the North
+ *     Y - to the East
+ *     Z - to the sky
+ *
+ *
+ *    Yaw/Athimuth [0..2pi]
+ *    Pitch
+ *    Roll
+ *
+ *    Order of application while rotating the object is Yaw first, Pitch, Roll last
+ *
+ **/
+class WorldLocationAngles : public EulerAngles
+{
+public:
+    WorldLocationAngles(double yaw = 0.0, double pitch = 0.0, double roll = 0.0) :
+        EulerAngles(roll, pitch, yaw)
+    {}
+
+    static WorldLocationAngles FromAngles(double yawDeg, double pitchDeg, double rollDeg)
+    {
+        return WorldLocationAngles(degToRad(yawDeg), degToRad(pitchDeg), degToRad(rollDeg));
+    }
+
+    double  yaw() const
+    {
+        return gamma;
+    }
+
+    void setYaw(double yaw)
+    {
+        gamma = yaw;
+    }
+
+    double  pitch() const
+    {
+        return beta;
+    }
+
+    void setPitch(double pitch)
+    {
+        beta = pitch;
+    }
+
+    double  roll() const
+    {
+        return alpha;
+    }
+
+    void setRoll(double roll)
+    {
+        alpha = roll;
+    }
+
+    Matrix33 toMatrix() const
+    {
+        return
+            Matrix33::RotationZ(yaw()) *
+            Matrix33::RotationY(pitch()) *
+            Matrix33::RotationX(roll());
+    }
+
+    Quaternion toQuaternion() const
+    {
+        return
+            Quaternion::RotationZ(yaw()) ^
+            Quaternion::RotationY(pitch()) ^
+            Quaternion::RotationX(roll());
+    }
+
+    /**
+     *  \f[
+     *  \pmatrix{ \phi \cr \theta \cr \psi } =
+     *
+     *  \pmatrix{
+     *     atan2  (2(q_0 q_1 + q_2 q_3),1 - 2(q_1^2 + q_2^2)) \cr
+     *     arcsin (2(q_0 q_2 - q_3 q_1)) \cr
+     *     atan2  (2(q_0 q_3 + q_1 q_2),1 - 2(q_2^2 + q_3^2))
+     *  }
+     *
+     *  \f]
+     *
+     */
+    static WorldLocationAngles FromQuaternion(const Quaternion &Q)
+    {
+        /*
+        double roll  = asin  (2.0 * (Q.t() * Q.y() - Q.z() * Q.x()));
+        double pitch = atan2 (2.0 * (Q.t() * Q.x() + Q.y() * Q.z()),1.0 - 2.0 * (Q.x() * Q.x() + Q.y() * Q.y()));
+        double yaw   = atan2 (2.0 * (Q.t() * Q.z() + Q.x() * Q.y()),1.0 - 2.0 * (Q.y() * Q.y() + Q.z() * Q.z()));
+        */
+
+        double roll, pitch, yaw;
+        // roll (x-axis rotation)
+        double sinr = +2.0 * (Q.t() * Q.x() + Q.y() * Q.z());
+        double cosr = +1.0 - 2.0 * (Q.x() * Q.x() + Q.y() * Q.y());
+        roll = atan2(sinr, cosr);
+
+        // pitch (y-axis rotation)
+        double sinp = +2.0 * (Q.t() * Q.y() - Q.z() * Q.x());
+            if (fabs(sinp) >= 1)
+                pitch = copysign(M_PI / 2, sinp); // use 90 degrees if out of range
+            else
+            pitch = asin(sinp);
+
+        // yaw (z-axis rotation)
+        double siny = +2.0 * (Q.t() * Q.z() + Q.x() * Q.y());
+        double cosy = +1.0 - 2.0 * (Q.y() * Q.y() + Q.z() * Q.z());
+        yaw = atan2(siny, cosy);
+        return WorldLocationAngles(yaw, pitch, roll);
+    }
+
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(gamma, 0.0, "yaw"  );
+        visitor.visit(beta , 0.0, "pitch");
+        visitor.visit(alpha, 0.0, "roll" );
+    }
+
+    WorldLocationAngles toDeg() const {
+        return WorldLocationAngles(
+                    radToDeg(yaw()),
+                    radToDeg(pitch()),
+                    radToDeg(roll())
+                    );
+    }
+
+    WorldLocationAngles toRad() const {
+        return WorldLocationAngles(
+                    degToRad(yaw()),
+                    degToRad(pitch()),
+                    degToRad(roll())
+                    );
+    }
+
+    friend ostream& operator << (ostream &out, WorldLocationAngles &toSave)
+    {
+        PrinterVisitor printer(out);
+        toSave.accept<PrinterVisitor>(printer);
+        return out;
+    }
+
+    void prettyPrint (ostream &out = cout);
+
+};
+
+
 
 
 

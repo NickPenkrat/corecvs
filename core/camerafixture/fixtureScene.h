@@ -86,6 +86,7 @@ public:
      * This function is for compatibility mostly. Use RGB24Buffer() instead - it would provide caching
      **/
     RGB24Buffer* getRGB24BufferPtr();
+    RGB24Buffer *getUndistRGB24BufferPtr();
 
     /**
      * This function returns an pointer to the newly loaded image
@@ -102,6 +103,7 @@ public:
 
 
     void cleanCache();
+
 
 private:
     std::shared_ptr<RGB24Buffer> mCache;

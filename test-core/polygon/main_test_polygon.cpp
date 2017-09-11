@@ -351,16 +351,16 @@ TEST(ConvexHullTest, wrapClose)
     double radius = 1.0;
     double eps = 1e-6;
     size_t N = 10;
-    for (int i = 0; i < N; i++)
+    for (size_t i = 0; i < N; i++)
     {
-        double angle = 2*M_PI/N*i;
+        double angle = 2 * M_PI / N * i;
         points.emplace_back(radius*std::cos(angle), radius*std::sin(angle));
     }
 
-    for (int i = 0; i < N; i++)
+    for (size_t i = 0; i < N; i++)
     {
-        double angle = 2*M_PI/N*i;
-        double rho = radius*(1.0 - eps);
+        double angle = 2 * M_PI / N * i;
+        double rho = radius * (1.0 - eps);
         points.emplace_back(rho*std::cos(angle), rho*std::sin(angle));
     }
 
@@ -374,19 +374,19 @@ TEST(ConvexHullTest, wrapClose)
     ASSERT_TRUE(p2.isConvex());
 
 
-    for (int i = 0; i < N; i++)
+    for (size_t i = 0; i < N; i++)
     {
-        double angle = 2*M_PI/N*i;
-        double rho = radius*(1.0 - eps);
+        double angle = 2 * M_PI / N * i;
+        double rho = radius * (1.0 - eps);
         Vector2dd point = Vector2dd(rho*std::cos(angle), rho*std::sin(angle));
         ASSERT_TRUE(p1.isInsideConvex(point));
         ASSERT_TRUE(p2.isInsideConvex(point));
     }
 
-    for (int i = 0; i < N; i++)
+    for (size_t i = 0; i < N; i++)
     {
-        double angle = 2*M_PI/N*i;
-        double rho = radius*(1.0 + eps);
+        double angle = 2 * M_PI / N * i;
+        double rho = radius * (1.0 + eps);
         Vector2dd point = Vector2dd(rho*std::cos(angle), rho*std::sin(angle));
         ASSERT_FALSE(p1.isInsideConvex(point));
         ASSERT_FALSE(p2.isInsideConvex(point));

@@ -439,6 +439,16 @@ public:
         return RGBColor(255, 255, 0);
     }
 
+    static RGBColor Goldenrod()
+    {
+        return RGBColor(218, 165, 32);
+    }
+
+    static RGBColor Khaki()
+    {
+        return RGBColor(195, 176, 145);
+    }
+
     static RGBColor Green()
     {
         return RGBColor(0, 255, 0);
@@ -457,6 +467,11 @@ public:
     static RGBColor Blue()
     {
         return RGBColor(0, 0, 255);
+    }
+
+    static RGBColor TiffanyBlue()
+    {
+        return RGBColor(129, 216, 208);
     }
 
     static RGBColor Indigo()
