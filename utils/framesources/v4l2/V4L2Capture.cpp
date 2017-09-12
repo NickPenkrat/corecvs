@@ -594,14 +594,14 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::startCapture()
     return (CapErrorCode) ((bool) res[Frames::LEFT_FRAME] + (bool) res[Frames::RIGHT_FRAME]);
 }
 
-ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::getCaptureName(QString &value)
+ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::getCaptureName(string &value)
 {
     string name;
     if (camera[0].getCaptureName(name) != 0)
     {
         camera[1].getCaptureName(name);
     }
-    value = QString(name.c_str());
+    value = name;
     return ImageCaptureInterface::SUCCESS;
 }
 
@@ -614,18 +614,18 @@ ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::getFormats(int *num, I
     return ImageCaptureInterface::SUCCESS;
 }
 
-QString V4L2CaptureInterface::getInterfaceName()
+string V4L2CaptureInterface::getInterfaceName()
 {
-    return QString("v4l2:") + QString(interfaceName.c_str());
+    return std::string("v4l2:") + interfaceName;
 }
 
-ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::getDeviceName(int num, QString &name)
+ImageCaptureInterface::CapErrorCode V4L2CaptureInterface::getDeviceName(int num, string &name)
 {
     if (num  < 0 || num >= Frames::MAX_INPUTS_NUMBER)
     {
         return ImageCaptureInterface::FAILURE;
     }
-    name = QString(deviceName[num].c_str());
+    name = deviceName[num];
     return ImageCaptureInterface::SUCCESS;
 }
 

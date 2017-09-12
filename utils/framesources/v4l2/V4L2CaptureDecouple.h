@@ -36,7 +36,7 @@ public:
 
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameter) override;
 
-    virtual QString getInterfaceName() override;
+    virtual std::string getInterfaceName() override;
 
     virtual CapErrorCode initCapture() override;
     virtual CapErrorCode startCapture() override;
