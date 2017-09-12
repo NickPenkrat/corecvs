@@ -60,14 +60,18 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkM
     size_t observationNum = point->observations.size();
     if (observationNum < 2)
     {
-        SYNC_PRINT(("FixtureScene::triangulate(): too few observations (%d)", (int)observationNum));
+        SYNC_PRINT(("FixtureScene::triangulate(): too few observations (%d)\n", (int)observationNum));
         return false;
     }
 
     bool ok = true;
     Vector3dd point3d = point->triangulate(false, nullptr, &ok, trace, checkMinimalAngle);
-    if (!ok) {
-        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
+    if (fixtures().size() == 2 && !ok) // case of failed angle check for two cameras
+    {
+        SYNC_PRINT(("FixtureScene::triangulate(): WARNING - point has not passed trangulation angle check, but is triangulated anyways\n"));
+    }
+    else if (!ok) {
+        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false\n"));
         return false;
     }
 
