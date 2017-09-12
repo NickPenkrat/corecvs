@@ -17,7 +17,7 @@
 #include <iostream>
 
 #include "frames.h"
-#include "imageCaptureInterface.h"
+#include "imageCaptureInterfaceQt.h"
 
 #include "filterGraph.h"
 
