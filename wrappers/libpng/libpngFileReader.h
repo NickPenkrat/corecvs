@@ -36,7 +36,7 @@ class LibpngFileSaver : public corecvs::BufferSaver<corecvs::RGB24Buffer>
 public:
     static int registerMyself()
     {
-        corecvs::BufferFactory::getInstance()->registerLoader(new LibpngFileSaver());
+        corecvs::BufferFactory::getInstance()->registerSaver(new LibpngFileSaver());
         return 0;
     }
     
