@@ -75,7 +75,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                     if (iField->step != 0) {
                         spinBox->setSingleStep(iField->step);
                     }
-                    qDebug("ReflectionWidget::Setting limits(%d %d %d)", iField->min, iField->max, iField->step);
+                    // qDebug("ReflectionWidget::Setting limits(%d %d %d)", iField->min, iField->max, iField->step);
                 }
                 spinBox->setValue(iField->defaultValue);
                 if (iField->suffixHint != NULL)
@@ -293,8 +293,8 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
     }*/
 
     setLayout(gridLayout);
-    qDebug() << "Reflection had: " << reflection->fields.size();
-    qDebug() << "Widget has positions: " << position;
+    // qDebug() << "Reflection had: " << reflection->fields.size();
+    // qDebug() << "Widget has positions: " << position;
 
 
 }
@@ -424,6 +424,8 @@ bool ReflectionWidget::getParameters(void *param) const
 bool ReflectionWidget::setParameters(void *param) const
 {
     DynamicObjectWrapper obj(reflection, param);
+    //SYNC_PRINT(("ReflectionWidget::setParameters(): called for %s\n", reflection->name.name));
+    // obj.printRawObject();
 
     for (size_t i = 0; i < positionToField.size(); i++)
     {

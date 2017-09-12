@@ -30,6 +30,7 @@ CalibrationDrawHelpersParametersControlWidget::CalibrationDrawHelpersParametersC
     QObject::connect(mUi->privateColorCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->largePointsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->drawFixtureCamsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->solidCamerasCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->drawObservationsCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->drawTrueLinesCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->projectionRayLengthSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
@@ -78,6 +79,7 @@ CalibrationDrawHelpersParameters *CalibrationDrawHelpersParametersControlWidget:
         , mUi->privateColorCheckBox->isChecked()
         , mUi->largePointsCheckBox->isChecked()
         , mUi->drawFixtureCamsCheckBox->isChecked()
+        , mUi->solidCamerasCheckBox->isChecked()
         , mUi->drawObservationsCheckBox->isChecked()
         , mUi->drawTrueLinesCheckBox->isChecked()
         , mUi->projectionRayLengthSpinBox->value()
@@ -98,6 +100,7 @@ void CalibrationDrawHelpersParametersControlWidget::setParameters(const Calibrat
     mUi->privateColorCheckBox->setChecked(input.privateColor());
     mUi->largePointsCheckBox->setChecked(input.largePoints());
     mUi->drawFixtureCamsCheckBox->setChecked(input.drawFixtureCams());
+    mUi->solidCamerasCheckBox->setChecked(input.solidCameras());
     mUi->drawObservationsCheckBox->setChecked(input.drawObservations());
     mUi->drawTrueLinesCheckBox->setChecked(input.drawTrueLines());
     mUi->projectionRayLengthSpinBox->setValue(input.projectionRayLength());

@@ -30,7 +30,8 @@ const double CloudViewDialog::START_Z = 1 * Grid3DScene::GRID_SIZE * Grid3DScene
 CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     : ViAreaWidget(parent)
     , mCameraZoom(1.0)
-    , mIsTracking(false)
+    , mBackgroundColor(RGBColor::Black())
+    , mIsTracking(false)    
 {
     if (!name.isEmpty()) {
         setWindowTitle(name);
@@ -65,6 +66,8 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
 
     connect(mUi.rotateClockPushButton,      SIGNAL(pressed()), this, SLOT(    clockRotate()));
     connect(mUi.rotateAntiClockPushButton,  SIGNAL(pressed()), this, SLOT(anticlockRotate()));
+
+    connect(mUi.backgroudColorWidget, SIGNAL(paramsChanged()), this, SLOT(backgroundColorChanged()));
 
 
     connect(mUi.centerButton, SIGNAL(pressed()), this, SLOT(resetCameraSlot ()));
@@ -267,6 +270,12 @@ void CloudViewDialog::anticlockRotate()
     mUi.widget->scheduleUpdate();
 }
 
+void CloudViewDialog::backgroundColorChanged()
+{
+    mBackgroundColor = mUi.backgroudColorWidget->getColor();
+    mUi.widget->scheduleUpdate();
+}
+
 
 void CloudViewDialog::setZoom(double value)
 {
@@ -387,13 +396,21 @@ void CloudViewDialog::resetCamera()
 
             glLoadIdentity();
             // TODO: Check if it is changed correctly (e.g. it is the RH projection)
-            glOrtho(width / 2.0, -width / 2.0, height / 2.0, -height / 2.0, farPlane, -farPlane);
+            glOrtho(-width / 2.0, width / 2.0, height / 2.0, -height / 2.0, farPlane, -farPlane);
             //cout << "Old Matrix" << endl << OpenGLTools::glGetProjectionMatrix() << endl;
             glScalef(mCameraZoom, mCameraZoom, mCameraZoom);
             //cout << "New Matrix" << endl << OpenGLTools::glGetProjectionMatrix() << endl;
 
          //   glRotated(90, 1.0, 0.0, 0.0);
             break;
+        case ORTHO_TOP_LEFT:
+        case ORTHO_FRONT_LEFT:
+        case ORTHO_LEFT_LEFT:
+            glLoadIdentity();
+            glOrtho(width / 2.0, -width / 2.0, height / 2.0, -height / 2.0, farPlane, -farPlane);
+            glScalef(mCameraZoom, mCameraZoom, mCameraZoom);
+            break;
+
         case PINHOLE_AT_0:
         default:
         {
@@ -761,6 +778,7 @@ void CloudViewDialog::repaintGLSlot()
         resetCameraPos();
     }
 
+    glClearColor(mBackgroundColor.r() / 255.0, mBackgroundColor.g() / 255.0, mBackgroundColor.b() / 255.0, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

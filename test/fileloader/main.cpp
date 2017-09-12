@@ -10,7 +10,6 @@
 #include "libpngFileReader.h"
 #endif
 
-
 using namespace std;
 using namespace corecvs;
 
@@ -38,10 +37,5 @@ int main(int argc, char *argv[])
     BMPLoader().save("out.bmp", out);
     delete_safe(out);
 
-#ifdef WITH_
-#endif
-
-
     return 0;
 }
-

@@ -209,6 +209,7 @@ QTRuntimeLoader::~QTRuntimeLoader()
 
 bool QTRGB24Saver::acceptsFile(std::string name)
 {
+    CORE_UNUSED(name);
     return true;
 }
 

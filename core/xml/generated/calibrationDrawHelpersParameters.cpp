@@ -156,6 +156,18 @@ int CalibrationDrawHelpersParameters::staticInit()
     /*  */ 
     BoolField* field9 = new BoolField
         (
+          CalibrationDrawHelpersParameters::SOLIDCAMERAS_ID,
+          offsetof(CalibrationDrawHelpersParameters, mSolidCameras),
+          false,
+          "solidCameras",
+          "solidCameras",
+          "solidCameras"
+        );
+    field9->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field9);
+    /*  */ 
+    BoolField* field10 = new BoolField
+        (
           CalibrationDrawHelpersParameters::DRAWOBSERVATIONS_ID,
           offsetof(CalibrationDrawHelpersParameters, mDrawObservations),
           false,
@@ -163,10 +175,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "drawObservations",
           "drawObservations"
         );
-    field9->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field9);
+    field10->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field10);
     /*  */ 
-    BoolField* field10 = new BoolField
+    BoolField* field11 = new BoolField
         (
           CalibrationDrawHelpersParameters::DRAWTRUELINES_ID,
           offsetof(CalibrationDrawHelpersParameters, mDrawTrueLines),
@@ -175,10 +187,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "drawTrueLines",
           "drawTrueLines"
         );
-    field10->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field10);
+    field11->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field11);
     /*  */ 
-    DoubleField* field11 = new DoubleField
+    DoubleField* field12 = new DoubleField
         (
           CalibrationDrawHelpersParameters::PROJECTION_RAY_LENGTH_ID,
           offsetof(CalibrationDrawHelpersParameters, mProjectionRayLength),
@@ -190,11 +202,11 @@ int CalibrationDrawHelpersParameters::staticInit()
          0.01,
          1000
         );
-    field11->widgetHint=BaseField::SPIN_BOX;
-    field11->precision=2;
-    fields().push_back(field11);
+    field12->widgetHint=BaseField::SPIN_BOX;
+    field12->precision=2;
+    fields().push_back(field12);
     /*  */ 
-    BoolField* field12 = new BoolField
+    BoolField* field13 = new BoolField
         (
           CalibrationDrawHelpersParameters::DRAWRAYS_ID,
           offsetof(CalibrationDrawHelpersParameters, mDrawRays),
@@ -203,8 +215,8 @@ int CalibrationDrawHelpersParameters::staticInit()
           "drawRays",
           "drawRays"
         );
-    field12->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field12);
+    field13->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field13);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Calibration Draw Helpers Parameters")]= &reflection;

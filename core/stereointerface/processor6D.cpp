@@ -21,7 +21,6 @@ Processor6DFactoryHolder *Processor6DFactoryHolder::getInstance()
 
 void Processor6DFactoryHolder::printCaps()
 {
-
     cout << "Processor6DFactoryHolder has providers:" << endl;
     Processor6DFactoryHolder *holder = getInstance();
     for (Processor6DFactory *provider : holder->mProviders)
@@ -35,7 +34,7 @@ Processor6D *Processor6DFactoryHolder::getProcessor(const std::string &name)
     Processor6DFactoryHolder *holder = getInstance();
     for (Processor6DFactory *provider : holder->mProviders)
     {
-        if(provider->getName() == name) {
+        if (provider->getName() == name) {
             return provider->getProcessor();
         }
     }
