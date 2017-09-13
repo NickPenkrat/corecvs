@@ -10,8 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-//#include <QtCore/QMetaType>
-
 #include "global.h"
 
 #include "imageCaptureInterface.h"
@@ -51,7 +49,7 @@ void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 ImageCaptureInterface::ImageCaptureInterface()
    : mIsRgb(false)
 {
-    qRegisterMetaType<frame_data_t>("frame_data_t");
+
     imageInterfaceReceiver = NULL;
     SYNC_PRINT(("ImageCaptureInterface::ImageCaptureInterface(): called\n"));
 }
@@ -99,7 +97,7 @@ ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getCaptureProperty(in
     return FAILURE;
 }
 
-ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getCaptureName(std::__cxx11::string & /*value*/)
+ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getCaptureName(std::string & /*value*/)
 {
     return FAILURE;
 }
@@ -119,7 +117,7 @@ std::string ImageCaptureInterface::getInterfaceName()
     return "";
 }
 
-ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getDeviceName(int /*num*/, std::__cxx11::string & /*name*/)
+ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getDeviceName(int /*num*/, std::string & /*name*/)
 {
     return FAILURE;
 }
@@ -151,7 +149,7 @@ ImageCaptureInterface::CapErrorCode ImageCaptureInterface::nextFrame()
 
 ImageCaptureInterface::CapErrorCode ImageCaptureInterface::queryCameraParameters(CameraParameters &parameter)
 {
-    Q_UNUSED(parameter)
+    CORE_UNUSED(parameter);
     return ImageCaptureInterface::SUCCESS;
 }
 

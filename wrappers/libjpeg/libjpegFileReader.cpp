@@ -99,13 +99,13 @@ LibjpegFileReader::~LibjpegFileReader()
 }
 
 
-bool LibjpegRuntimeTypeBufferLoader::acceptsFile(std::__cxx11::string name)
+bool LibjpegRuntimeTypeBufferLoader::acceptsFile(std::string name)
 {
     return HelperUtils::endsWith(name, LibjpegFileReader::prefix1) ||
            HelperUtils::endsWith(name, LibjpegFileReader::prefix2) ;
 }
 
-RuntimeTypeBuffer *LibjpegRuntimeTypeBufferLoader::load(std::__cxx11::string name)
+RuntimeTypeBuffer *LibjpegRuntimeTypeBufferLoader::load(std::string name)
 {
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;

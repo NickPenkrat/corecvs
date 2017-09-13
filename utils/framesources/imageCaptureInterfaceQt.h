@@ -33,6 +33,7 @@ public:
 
     ImageCaptureInterfaceQt()
     {
+        qRegisterMetaType<frame_data_t>("frame_data_t");
         imageInterfaceReceiver = this;
         SYNC_PRINT(("Constructing ImageCaptureInterfaceQt::ImageCaptureInterfaceQt()\n"));
     }
