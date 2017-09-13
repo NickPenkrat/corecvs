@@ -49,9 +49,9 @@ RGB24Buffer *LibjpegFileReader::load(string name)
     (void) jpeg_read_header(&cinfo, TRUE);
     (void) jpeg_start_decompress(&cinfo);
 
-    SYNC_PRINT(("Parsed header [%dx%d] out = [%dx%d]\n",
+    /*SYNC_PRINT(("Parsed header [%dx%d] out = [%dx%d]\n",
                 cinfo.image_width,  cinfo.image_height,
-                cinfo.output_width, cinfo.output_height));
+                cinfo.output_width, cinfo.output_height));*/
 
     RGB24Buffer *result = new RGB24Buffer(cinfo.output_height, cinfo.output_width);
 
