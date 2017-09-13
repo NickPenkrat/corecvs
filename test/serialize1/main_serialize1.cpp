@@ -14,14 +14,11 @@
 #include "xmlSetter.h"
 #include "xmlGetter.h"
 
-#include "jsonGetter.h"
+#include "jsonGetter.h"   // it depends on Qt!
 #include "jsonSetter.h"
-
 #ifdef WITH_RAPIDJSON
     #include "rapidJSONReader.h"
 #endif
-
-
 #ifdef WITH_JSONMODERN
     #include "jsonModernReader.h"
 #endif

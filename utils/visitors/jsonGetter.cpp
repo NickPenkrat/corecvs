@@ -35,7 +35,7 @@ bool JSONGetter::init(const QByteArray &array)
     QJsonDocument document = QJsonDocument::fromJson(array, &parseError);
     if (document.isNull())
     {
-        SYNC_PRINT(("Fail parsing the data from with error \"%s\"\n\n", parseError.errorString().toStdString().c_str()));
+        SYNC_PRINT(("Fail parsing the data from <%s> with error \"%s\"\n\n", QSTR_DATA_PTR(mFileName), QSTR_DATA_PTR(parseError.errorString())));
         mHasError = true;
         return false;
     }

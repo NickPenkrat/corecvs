@@ -486,7 +486,7 @@ with_boost {
     # Since we are not (yet?) using any binary boost components,
     # we can think about it as header-only lib
     !isEmpty(BOOST_PATH) {
-        INCLUDEPATH += $$BOOST_PATH
+        INCLUDEPATH += "$$BOOST_PATH"
     }
 }
 
@@ -534,7 +534,7 @@ with_cusparse {
     CUDA_PATH = $$(CUDA_PATH)
     !isEmpty(CUDA_PATH) {
         exists("$$CUDA_PATH"/include/cusparse_v2.h) {
-            INCLUDEPATH += $(CUDA_PATH)/include
+            INCLUDEPATH += "$(CUDA_PATH)"/include
             !win32 {
                 LIBS += -L"$$CUDA_PATH"/lib64
 	    } else {
@@ -561,7 +561,7 @@ with_openblas {
         !isEmpty(BLAS_PATH) {
             exists("$$BLAS_PATH"/include/cblas.h) {
                 !build_pass: message(Using BLAS from <$$BLAS_PATH>)
-                INCLUDEPATH += $(BLAS_PATH)/include
+                INCLUDEPATH += "$(BLAS_PATH)"/include
                 LIBS        += -lopenblas
                 DEFINES     += WITH_OPENBLAS
                 DEFINES     += WITH_BLAS
@@ -602,7 +602,7 @@ with_fftw {
         }
         exists("$$FFTW_PREFIX"/include/fftw3.h) {
             !build_pass: message(Using FFTW from <$$FFTW_PREFIX>)
-            INCLUDEPATH += $(FFTW_PREFIX)/include
+            INCLUDEPATH += "$(FFTW_PREFIX)"/include
             LIBS        += -lfftw3
             DEFINES     += WITH_FFTW
         }

@@ -7,12 +7,15 @@
 #include "bufferFactory.h"
 #include "fixtureScene.h"
 
-#include "jsonGetter.h"
 #ifdef WITH_JSONMODERN
-#include "jsonModernReader.h"
-#endif
-#ifdef WITH_RAPIDJSON
-#include "rapidJSONReader.h"
+#   include "jsonModernReader.h"
+    typedef JSONModernReader JSONReader;
+#elif defined(WITH_RAPIDJSON)
+#   include "rapidJSONReader.h"
+    typedef RapidJSONReader  JSONReader;
+#else
+#   include "jsonGetter.h"   // it depends on Qt!
+    typedef JSONGetter       JSONReader;
 #endif
 
 #include <string>
@@ -165,13 +168,6 @@ void PointerFieldWidget::loadFixtureScene()
     delete_safe(pointer);
     pointer = new corecvs::FixtureScene;
 
-#ifdef WITH_JSONMODERN
-    typedef JSONModernReader JSONReader;
-#elif defined(WITH_RAPIDJSON)
-    typedef RapidJSONReader  JSONReader;
-#else
-    typedef JSONGetter       JSONReader;
-#endif
     {
         JSONReader getter(QSTR_DATA_PTR(filename));
         if (!getter.hasError()) {

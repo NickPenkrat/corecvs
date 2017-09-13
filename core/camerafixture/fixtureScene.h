@@ -1,6 +1,10 @@
 #ifndef FIXTURE_SCENE_H_
 #define FIXTURE_SCENE_H_
 
+#include <string>
+#include <map>
+#include <functional>
+
 #include "fixtureScenePart.h"
 #include "fixtureCamera.h"
 #include "cameraFixture.h"
@@ -14,8 +18,8 @@ namespace corecvs {
 class CameraFixture;
 class StatusTracker;
 
-class FixtureSceneFactory {
-
+class FixtureSceneFactory
+{
 public:
     typedef std::function<FixtureScene *()> FixtureSceneCreateFunctor;
 
@@ -39,7 +43,8 @@ public:
 };
 
 
-class ImageRelatedData : public FixtureScenePart {
+class ImageRelatedData : public FixtureScenePart
+{
 public:
 
     ImageRelatedData(FixtureScene * owner = NULL) : FixtureScenePart(owner) {}
@@ -81,6 +86,7 @@ public:
      * This function is for compatibility mostly. Use RGB24Buffer() instead - it would provide caching
      **/
     RGB24Buffer* getRGB24BufferPtr();
+    RGB24Buffer *getUndistRGB24BufferPtr();
 
     /**
      * This function returns an pointer to the newly loaded image
@@ -97,6 +103,7 @@ public:
 
 
     void cleanCache();
+
 
 private:
     std::shared_ptr<RGB24Buffer> mCache;
@@ -115,8 +122,6 @@ public:
     typedef SceneFeaturePoint    PointType;
     typedef FixtureSceneGeometry GeometryType;
     typedef ImageRelatedData     ImageType;
-
-
 
     FixtureScene();
 
@@ -325,8 +330,8 @@ public:
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
     /**/
-    virtual int getObeservationNumber(CameraFixture *fixture);
-    virtual int getObeservationNumber(FixtureCamera *cam);
+    virtual int getObservationNumber(CameraFixture *fixture);
+    virtual int getObservationNumber(FixtureCamera *cam);
 
 
     /* Some debugger helpers */
@@ -386,7 +391,7 @@ public:
                 bool loadGeometry = true)
     {
         visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
-        visitor.visit(hasTargetCoordSystem, false, "hasTargetCoordSystem");
+        visitor.visit(hasTargetCoordSystem, false           , "hasTargetCoordSystem");
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
@@ -482,7 +487,6 @@ public:
          * During this process scene may be invalid. */
     virtual void beforeChange() {}
     virtual void afterChange () {}
-
 
 };
 

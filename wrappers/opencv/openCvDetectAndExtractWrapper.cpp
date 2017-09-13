@@ -204,7 +204,7 @@ void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(corecvs::RuntimeTypeBuf
     sortingData.resize(kps.size());
 
     for (size_t i = 0; i < kps.size(); i++)
-        sortingData[i] = std::pair< int, float >(i, kps[i].response);
+        sortingData[i] = std::pair< int, float >((int)i, kps[i].response);
 
     std::sort(sortingData.begin(), sortingData.end(), [](const std::pair< int, float > &l, const std::pair< int, float > &r) { return l.second > r.second; });
 

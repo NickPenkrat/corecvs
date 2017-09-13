@@ -14,6 +14,8 @@
 
 #include "polygons.h"
 #include "pinholeCameraIntrinsics.h"
+#include "radialCorrection.h"
+#include "displacementBuffer.h"
 
 namespace corecvs {
 
@@ -259,6 +261,21 @@ public:
         PrinterVisitor printer(out);
         toSave.accept<PrinterVisitor>(printer);
         return out;
+    }
+
+    DisplacementBuffer transform(const DistortionApplicationParameters &applicationParams)
+    {
+        estimateUndistortedSize(applicationParams);
+        int newW = (int)intrinsics.size.x();
+        int newH = (int)intrinsics.size.y();
+        if (newH < 0 || newW < 0)
+        {
+            SYNC_PRINT(("invalid distortion data for camId=%s outSize(%dx%d)", nameId.c_str(), newW, newH));
+            return DisplacementBuffer();
+        }
+
+        return RadialCorrection(distortion).getUndistortionTransformation(intrinsics.size
+            ,intrinsics.distortedSize, 0.25, false);
     }
 
     void prettyPrint(std::ostream &out = cout);

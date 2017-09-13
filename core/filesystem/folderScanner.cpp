@@ -8,8 +8,6 @@
 # include <experimental/filesystem>
   namespace fs = std::experimental::filesystem;  
 #endif
-
-
 #ifdef _MSC_VER
 # include <filesystem>
   namespace fs = std::tr2::sys;

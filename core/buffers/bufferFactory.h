@@ -15,7 +15,6 @@
 #include "rgb24Buffer.h"
 #include "bufferLoader.h"
 #include "runtimeTypeBuffer.h"
-#include "countedPtr.h"
 
 namespace corecvs {
 
@@ -84,11 +83,9 @@ public:
     virtual G12Buffer* loadG16Bitmap(string name);
 
 
-
-
-    /**
+    /** Main function to save a 32-bits buffer to the file with the given path name
      */
-    virtual bool saveRGB24Bitmap(RGB24Buffer* buffer, string name, string saverHint);
+    virtual bool saveRGB24Bitmap(RGB24Buffer* buffer, string name, string saverHint = "");
 
 
     /**
@@ -99,11 +96,8 @@ public:
 
 
 private:
-    friend class CountedPtr<BufferFactory>;                 // this class will create/destroy the factory indeed
-    BufferFactory() {}
+    BufferFactory();
     virtual ~BufferFactory();
-
-    static CountedPtr<BufferFactory> sThis;
 
     /**
      * List of loaders - the supported formats

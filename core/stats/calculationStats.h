@@ -416,7 +416,7 @@ template <class StreamType>
         {
             if (stat.type == SingleStat::TIME)
             {
-                printf("%-*s : %7" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
+                printf("%-*s : %8" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
                     length,
                     name.c_str(),
                     stat.mean(),
@@ -425,7 +425,7 @@ template <class StreamType>
                 return;
             }
 
-            printf("%-*s : %7" PRIu64 "\n",
+            printf("%-*s : %8" PRIu64 "\n",
                 length,
                 name.c_str(),
                 stat.mean());

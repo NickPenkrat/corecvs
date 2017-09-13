@@ -87,7 +87,7 @@ exists($$COREDIR/../../../config.pri) {
 
 #message(Corebindir is $$COREBINDIR)
 
-contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted): !contains(TARGET, topcon_core) {
+contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     win32-msvc* {
         DEPENDPATH += $$COREDIR/xml                 # helps to able including sources by generated.pri from their dirs
     } else {
