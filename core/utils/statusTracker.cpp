@@ -91,7 +91,6 @@ void StatusTracker::incrementStarted()
         totalActions   = currentStatus.totalActions;
     }
     CORE_ASSERT_TRUE_S(startedActions <= totalActions);
-    onProgress(currentStatus.getProgressGlobal(), currentStatus.getProgressLocal());
     std::cout << "Started: " << startedActions << std::endl;
 }
 
