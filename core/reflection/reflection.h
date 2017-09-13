@@ -698,6 +698,50 @@ public:
         embeds.clear();
 #endif
     }
+
+    static const char* printableType (BaseField::FieldType type)
+    {
+        switch(type)
+        {
+            case BaseField::TYPE_INT:
+                return "int";
+            case BaseField::TYPE_TIMESTAMP:
+                return "int64_t";
+            case BaseField::TYPE_DOUBLE:
+                return "double";
+            case BaseField::TYPE_BOOL:
+                return "bool";
+            case BaseField::TYPE_STRING:
+                return "std::string";
+            case BaseField::TYPE_WSTRING:
+                return "std::wstring";
+            default:
+                break;
+        }
+        return "na";
+    }
+
+    void print()
+    {
+        printf("%20.20s %20.20s (%s)\n", name.name, name.decription, name.comment);
+        printf("Size: %d\n", (int)objectSize);
+        printf("--------- Fields -----------\n");
+        for (size_t fieldId = 0; fieldId < fields.size(); fieldId++)
+        {
+            const BaseField *bf = fields[fieldId];
+            printf("%35.35s | %d | %8.8s\n" , bf->name.name, bf->offset, printableType(bf->type));
+        }
+        if (!embeds.empty())
+        {
+            printf("--------- Embeds -----------\n");
+            for (size_t embedsId = 0; embedsId < embeds.size(); embedsId++)
+            {
+                const EmbedSubclass *em = embeds[embedsId];
+                printf("%35.35s \n" , em->name.name);
+            }
+        }
+    }
+
 };
 
 

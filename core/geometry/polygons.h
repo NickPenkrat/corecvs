@@ -82,7 +82,8 @@ public:
     {      
         Ray3d normal = Ray3d(getNormal(), point);
         double t, u, v;
-        intersectWithRay(normal, t, u, v);
+        if (!intersectWithRay(normal, t, u, v))
+            return Vector2dd::Zero(); /* This is impossible */
         return Vector2dd(u, v);
     }
 
