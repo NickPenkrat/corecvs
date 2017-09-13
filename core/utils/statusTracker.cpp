@@ -11,7 +11,7 @@ void        StatusTracker::IncrementStarted(StatusTracker *st)                  
 void        StatusTracker::IncrementCompleted(StatusTracker *st)                                   { if (st) st->incrementCompleted(); }
 AutoTracker StatusTracker::CreateAutoTrackerCalculationObject(StatusTracker *st)                   { return st ? st->createAutoTrackerCalculationObject() : AutoTracker(nullptr); }
 void        StatusTracker::SetCompleted(StatusTracker *st)                                         { if (st) st->setCompleted(); }
-void        StatusTracker::SetFailed(StatusTracker *st)                                            { if (st) st->setFailed();    }
+void        StatusTracker::SetFailed(StatusTracker *st, const char* error)                         { if (st) st->setFailed(error); }
 void        StatusTracker::SetToCancel(StatusTracker *st)                                          { if (st) st->setToCancel();  }
 void        StatusTracker::SetCanceled(StatusTracker *st)                                          { if (st) st->setCanceled();  }
 bool        StatusTracker::IsCompleted(const StatusTracker *st)                                    { return st ? st->isCompleted() : false; }
@@ -76,6 +76,7 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
         currentStatus.totalActions = totalActions;
         status = currentStatus;
     }
+    onProgress(currentStatus.getProgressGlobal(), currentStatus.getProgressLocal());
     std::cout << "StatusTracker::reset " << status << std::endl;
 }
 
@@ -90,7 +91,7 @@ void StatusTracker::incrementStarted()
         totalActions   = currentStatus.totalActions;
     }
     CORE_ASSERT_TRUE_S(startedActions <= totalActions);
-
+    onProgress(currentStatus.getProgressGlobal(), currentStatus.getProgressLocal());
     std::cout << "Started: " << startedActions << std::endl;
 }
 
@@ -108,6 +109,7 @@ void StatusTracker::incrementCompleted()
         currentStatus.completedActions++;
         status = currentStatus;
     }
+    onProgress(status.getProgressGlobal(), status.getProgressLocal());
     std::cout << "StatusTracker::incrementCompleted " << status << std::endl;
 
     CORE_ASSERT_TRUE_S(status.completedActions <= status.totalActions);
@@ -152,21 +154,23 @@ void corecvs::StatusTracker::setCompleted()
         //CORE_ASSERT_TRUE_S(currentStatus.completedGlobalActions <= currentStatus.totalGlobalActions); // we are not right often with global steps estimation for some methods...
     }
     std::cout << "StatusTracker::setCompleted" << std::endl;
-
+    
     {
         READ_LOCK;
         if (currentStatus.completedGlobalActions != currentStatus.totalGlobalActions) {
             std::cout << "StatusTracker::setCompleted: globalCounter error, STATUS::: " << currentStatus << std::endl;
         }
     }
+    onFinished();
 }
 
-void corecvs::StatusTracker::setFailed()
+void corecvs::StatusTracker::setFailed(const char* error)
 {
     {
         WRITE_LOCK;
         currentStatus.isFailed = true;
     }
+    onError(error);
     std::cout << "StatusTracker::setFailed" << std::endl;
 }
 
