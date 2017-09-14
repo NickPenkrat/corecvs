@@ -264,8 +264,11 @@ void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
         FixtureSceneGeometry *geometry = mGeomtery[i];
         vectorErase(geometry->relatedPoints, point);
     }
-
-    vectorErase(mSceneFeaturePoints, point);
+    if (mSceneFeaturePoints.back() == point) {
+        mSceneFeaturePoints.pop_back();
+    } else {
+        vectorErase(mSceneFeaturePoints, point);
+    }
     delete_safe(point);
 
 }
@@ -291,6 +294,8 @@ void FixtureScene::clear()
 {
     SYNC_PRINT(("FixtureScene::clear(): called\n"));
 
+    PreciseTimer dest = PreciseTimer::currentTime();
+
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
 
     /** Just purge all heap **/
@@ -306,6 +311,14 @@ void FixtureScene::clear()
     mSceneFeaturePoints.clear();
     mGeomtery.clear();
 #else
+    
+    while (!mGeomtery.empty()) {
+        deleteSceneGeometry(mGeomtery.back());
+    }
+
+    while (!mImages.empty()) {
+        deleteImage(mImages.back());
+    }
 
     while (!mFixtures.empty())
     {
@@ -323,15 +336,9 @@ void FixtureScene::clear()
     while (!mSceneFeaturePoints.empty()) {
         deleteFeaturePoint(mSceneFeaturePoints.back());
     }
-
-    while (!mGeomtery.empty()) {
-        deleteSceneGeometry(mGeomtery.back());
-    }
-
-    while (!mImages.empty()) {
-        deleteImage(mImages.back());
-    }
 #endif
+
+    SYNC_PRINT(("FixtureScene::clear(): Detruction took %2.2lf ms\n", dest.usecsToNow() / 1000.0));
 
 }
 
