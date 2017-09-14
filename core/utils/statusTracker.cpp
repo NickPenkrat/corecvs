@@ -76,7 +76,9 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
         currentStatus.totalActions = totalActions;
         status = currentStatus;
     }
-    onProgress(status.getProgressGlobal(), status.getProgressLocal());
+    if (onProgress) {
+        onProgress(status.getProgressGlobal(), status.getProgressLocal());
+    }
     std::cout << "StatusTracker::reset " << status << std::endl;
 }
 
@@ -108,7 +110,9 @@ void StatusTracker::incrementCompleted()
         currentStatus.completedActions++;
         status = currentStatus;
     }
-    onProgress(status.getProgressGlobal(), status.getProgressLocal());
+    if (onProgress) {
+        onProgress(status.getProgressGlobal(), status.getProgressLocal());
+    }
     std::cout << "StatusTracker::incrementCompleted " << status << std::endl;
 
     CORE_ASSERT_TRUE_S(status.completedActions <= status.totalActions);
@@ -160,7 +164,9 @@ void corecvs::StatusTracker::setCompleted()
             std::cout << "StatusTracker::setCompleted: globalCounter error, STATUS::: " << currentStatus << std::endl;
         }
     }
-    onFinished();
+    if (onFinished) {
+        onFinished();
+    }
 }
 
 void corecvs::StatusTracker::setFailed(const char* error)
@@ -169,7 +175,9 @@ void corecvs::StatusTracker::setFailed(const char* error)
         WRITE_LOCK;
         currentStatus.isFailed = true;
     }
-    onError(error);
+    if (onError) {
+        onError(error);
+    }
     std::cout << "StatusTracker::setFailed" << std::endl;
 }
 
