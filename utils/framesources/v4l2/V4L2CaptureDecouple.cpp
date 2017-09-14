@@ -232,9 +232,9 @@ V4L2CaptureDecoupleInterface::CapErrorCode V4L2CaptureDecoupleInterface::queryCa
     return SUCCESS;
 }
 
-QString V4L2CaptureDecoupleInterface::getInterfaceName()
+string V4L2CaptureDecoupleInterface::getInterfaceName()
 {
-    return QString("v4l2d:") + QString(devname.c_str());
+    return std::string("v4l2d:") + devname;
 }
 
 V4L2CaptureDecoupleInterface::~V4L2CaptureDecoupleInterface()

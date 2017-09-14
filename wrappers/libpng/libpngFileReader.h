@@ -41,7 +41,7 @@ public:
     }
     
     virtual bool acceptsFile(string name) {
-        return LibpngFileSaver::acceptsFile(name);
+        return LibpngFileReader().acceptsFile(name);
     }
     virtual bool save(corecvs::RGB24Buffer &buffer, string name) override {
         return LibpngFileReader().save(name, &buffer);
