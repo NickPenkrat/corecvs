@@ -76,7 +76,7 @@ void corecvs::StatusTracker::reset(const std::string &action, size_t totalAction
         currentStatus.totalActions = totalActions;
         status = currentStatus;
     }
-    onProgress(currentStatus.getProgressGlobal(), currentStatus.getProgressLocal());
+    onProgress(status.getProgressGlobal(), status.getProgressLocal());
     std::cout << "StatusTracker::reset " << status << std::endl;
 }
 
