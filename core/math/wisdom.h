@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <tuple>
 #include <iomanip>
+#include <functional>
 
 #include "global.h"
 #include "tbbWrapper.h"

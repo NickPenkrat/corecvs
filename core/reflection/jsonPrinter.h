@@ -5,8 +5,10 @@
 #include <stdint.h>
 #include <iostream>
 #include <sstream>
+#include <fstream>
 
 #include "reflection.h"
+#include "log.h"
 
 namespace corecvs {
 
@@ -26,10 +28,11 @@ public:
 
 
 public:
-    std::ostream *stream;
-    int indentation;
-    int dIndent;
-    bool isFirst;
+    std::ostream *stream = nullptr;
+    int indentation = 0;
+    int dIndent = 1;
+    bool isFirst = true;
+    bool isFile = false;
 
     static const std::string LF;
 
@@ -47,34 +50,42 @@ public:
     static const std::string NAME_DECORATOR;
 
 
-
-    explicit  JSONPrinter(ostream *_stream) :
-        stream(_stream),
-        indentation(0),
-        dIndent(1)
+    explicit  JSONPrinter(ostream *_stream) : stream(_stream)
     {
         prologue();
     }
 
-    explicit  JSONPrinter(ostream &_stream = cout) :
-        stream(&_stream),
-        indentation(0),
-        dIndent(1)
+    explicit  JSONPrinter(ostream &_stream = cout) : stream(&_stream)
     {
         prologue();
     }
 
-    explicit  JSONPrinter(int indent, int dindent, ostream &_stream = cout) :
-        stream(&_stream),
-        indentation(indent),
-        dIndent(dindent)
+    explicit  JSONPrinter(int indent, int dindent, ostream &_stream = cout)
+        : stream(&_stream), indentation(indent), dIndent(dindent)
     {
+        prologue();
+    }
+
+    explicit  JSONPrinter(const string &filepath)
+        : stream(new std::ofstream(filepath.c_str(), std::ofstream::out))
+        , isFile(true)
+    {
+        if (!(*stream))
+        {
+            L_ERROR_P("Couldn't open for wrtting the file <%s>", filepath.c_str());
+            delete_safe(stream);
+            isFile = false;
+            return;
+        }
+        L_INFO_P("saving to <%s>", filepath.c_str());
         prologue();
     }
 
     ~JSONPrinter()
     {
         epilogue();
+        if (isFile && stream)
+            delete stream;
     }
 
     std::string indent() {
@@ -85,7 +96,6 @@ public:
     void prologue() {
         if (stream == NULL) return;
         (*stream) << PROLOGUE;
-        isFirst = true;
     }
 
     void epilogue() {
@@ -93,14 +103,9 @@ public:
         (*stream) << LF << EPILOGUE << std::flush;
     }
 
-    std::string separate() {
-        std::string result;
-        if (!isFirst && (stream != NULL))
-        {
-            result = ",\n";
-        } else {
-            result = "\n";
-        }
+    std::string separate()
+    {
+        std::string result = (!isFirst && (stream != NULL)) ? ",\n" : "\n";
         isFirst = false;
         return result;
     }

@@ -199,16 +199,25 @@ void corecvs::StatusTracker::setCanceled()
     std::cout << "StatusTracker::setCanceled" << std::endl;
 }
 
+void corecvs::StatusTracker::cancelExecution() const
+{
+    std::cout << "StatusTracker::checkToCancel cancel_group_execution" << std::endl;
+#ifdef WITH_TBB
+    task::self().cancel_group_execution();
+#endif
+    std::cout << "StatusTracker::checkToCancel throw..." << std::endl;
+    throw CancelExecutionException("Cancel");
+}
+
 void corecvs::StatusTracker::checkToCancel() const
 {
+    if (onCheckToCancel && onCheckToCancel()) {//controlled outside using cvsdk taskcontrol
+        cancelExecution();
+    }
+
     if (isToCancel())
     {
-        std::cout << "StatusTracker::checkToCancel cancel_group_execution" << std::endl;
-#ifdef WITH_TBB
-        task::self().cancel_group_execution();
-#endif
-        std::cout << "StatusTracker::checkToCancel throw..." << std::endl;
-        throw CancelExecutionException("Cancel");
+        cancelExecution();
     }
 }
 
