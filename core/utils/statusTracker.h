@@ -97,6 +97,7 @@ public:
     std::function<void(std::string)> onError;
     std::function<void()> onFinished;
     std::function<void(double global, double local)> onProgress;
+    std::function<bool()> onCheckToCancel;
 
 protected:
     void    setTotalActions(size_t totalActions);
@@ -131,6 +132,7 @@ protected:
 
 private:
     Status  currentStatus;
+    void cancelExecution() const;
 
 #ifdef WITH_TBB
     typedef tbb::reader_writer_lock::scoped_lock_read read_lock;
