@@ -72,7 +72,7 @@ public slots:
     {
         //mUi->selectorPushButton->setS;
     }
-
+#if 0
     void pickerClicked(QMouseEvent * /*event*/)
     {
         mColorPicker.show();
@@ -110,6 +110,7 @@ public slots:
 
         painter.fillRect(who->rect(),color);
     }
+#endif
 
 signals:
     void valueChanged();
