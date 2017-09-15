@@ -60,14 +60,18 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkM
     size_t observationNum = point->observations.size();
     if (observationNum < 2)
     {
-        SYNC_PRINT(("FixtureScene::triangulate(): too few observations (%d)", (int)observationNum));
+        SYNC_PRINT(("FixtureScene::triangulate(): too few observations (%d)\n", (int)observationNum));
         return false;
     }
 
     bool ok = true;
     Vector3dd point3d = point->triangulate(false, nullptr, &ok, trace, checkMinimalAngle);
-    if (!ok) {
-        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
+    if (fixtures().size() == 2 && !ok) // case of failed angle check for two cameras
+    {
+        SYNC_PRINT(("FixtureScene::triangulate(): WARNING - point has not passed trangulation angle check, but is triangulated anyways\n"));
+    }
+    else if (!ok) {
+        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false\n"));
         return false;
     }
 
@@ -260,8 +264,11 @@ void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
         FixtureSceneGeometry *geometry = mGeomtery[i];
         vectorErase(geometry->relatedPoints, point);
     }
-
-    vectorErase(mSceneFeaturePoints, point);
+    if (mSceneFeaturePoints.back() == point) {
+        mSceneFeaturePoints.pop_back();
+    } else {
+        vectorErase(mSceneFeaturePoints, point);
+    }
     delete_safe(point);
 
 }
@@ -287,6 +294,8 @@ void FixtureScene::clear()
 {
     SYNC_PRINT(("FixtureScene::clear(): called\n"));
 
+    PreciseTimer dest = PreciseTimer::currentTime();
+
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
 
     /** Just purge all heap **/
@@ -302,6 +311,14 @@ void FixtureScene::clear()
     mSceneFeaturePoints.clear();
     mGeomtery.clear();
 #else
+    
+    while (!mGeomtery.empty()) {
+        deleteSceneGeometry(mGeomtery.back());
+    }
+
+    while (!mImages.empty()) {
+        deleteImage(mImages.back());
+    }
 
     while (!mFixtures.empty())
     {
@@ -319,15 +336,9 @@ void FixtureScene::clear()
     while (!mSceneFeaturePoints.empty()) {
         deleteFeaturePoint(mSceneFeaturePoints.back());
     }
-
-    while (!mGeomtery.empty()) {
-        deleteSceneGeometry(mGeomtery.back());
-    }
-
-    while (!mImages.empty()) {
-        deleteImage(mImages.back());
-    }
 #endif
+
+    SYNC_PRINT(("FixtureScene::clear(): Detruction took %2.2lf ms\n", dest.usecsToNow() / 1000.0));
 
 }
 

@@ -11,7 +11,7 @@
 
 bool AviCapture::avCodecInited = false;
 
-AviCapture::AviCapture(const std::__cxx11::string &params)
+AviCapture::AviCapture(const std::string &params)
     : /*AbstractFileCapture(params),*/
        mName(params)
      , mFormatContext(NULL)

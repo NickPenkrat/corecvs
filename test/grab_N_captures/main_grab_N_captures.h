@@ -1,10 +1,11 @@
 #include "global.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/QObject>
-#include "imageCaptureInterface.h"
+#include <QSignalMapper>
+
 #include "qtFileLoader.h"
 #include "qtHelper.h"
-#include <QSignalMapper>
+#include "imageCaptureInterfaceQt.h"
 #include "log.h"
 #include "g12Image.h"
 

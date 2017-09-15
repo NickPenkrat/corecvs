@@ -49,9 +49,9 @@ RGB24Buffer *LibjpegFileReader::load(string name)
     (void) jpeg_read_header(&cinfo, TRUE);
     (void) jpeg_start_decompress(&cinfo);
 
-    SYNC_PRINT(("Parsed header [%dx%d] out = [%dx%d]\n",
+    /*SYNC_PRINT(("Parsed header [%dx%d] out = [%dx%d]\n",
                 cinfo.image_width,  cinfo.image_height,
-                cinfo.output_width, cinfo.output_height));
+                cinfo.output_width, cinfo.output_height));*/
 
     RGB24Buffer *result = new RGB24Buffer(cinfo.output_height, cinfo.output_width);
 
@@ -99,13 +99,13 @@ LibjpegFileReader::~LibjpegFileReader()
 }
 
 
-bool LibjpegRuntimeTypeBufferLoader::acceptsFile(std::__cxx11::string name)
+bool LibjpegRuntimeTypeBufferLoader::acceptsFile(std::string name)
 {
     return HelperUtils::endsWith(name, LibjpegFileReader::prefix1) ||
            HelperUtils::endsWith(name, LibjpegFileReader::prefix2) ;
 }
 
-RuntimeTypeBuffer *LibjpegRuntimeTypeBufferLoader::load(std::__cxx11::string name)
+RuntimeTypeBuffer *LibjpegRuntimeTypeBufferLoader::load(std::string name)
 {
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;

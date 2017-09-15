@@ -5,7 +5,7 @@
 #include <ostream>
 
 #include "tbbWrapper.h"
-
+#include <functional>
 #include "global.h"
 
 struct CancelExecutionException : public AssertException
@@ -44,11 +44,12 @@ struct Status
         return os;
     }
 
-    std::tuple<double, double> getProgress() 
-    {
-        auto t1 = (double)completedGlobalActions / totalGlobalActions;
-        auto t2 = (double)completedActions / totalActions;
-        return std::make_tuple(t1, t2);
+    double getProgressGlobal() {
+        return (double)completedGlobalActions / totalGlobalActions;
+    }
+
+    double getProgressLocal() {
+        return (double)(double)completedActions / totalActions;
     }
 };
 
@@ -77,7 +78,7 @@ public:
     static AutoTracker CreateAutoTrackerCalculationObject(StatusTracker *tracker);
 
     static void    SetCompleted(StatusTracker *tracker);
-    static void    SetFailed(StatusTracker *tracker);
+    static void    SetFailed(StatusTracker *tracker, const char* error);
     static void    SetToCancel(StatusTracker *tracker);
     static void    SetCanceled(StatusTracker *tracker);
 
@@ -93,6 +94,11 @@ public:
 
     static Status  GetStatus(const StatusTracker *tracker);
 
+    std::function<void(std::string)> onError;
+    std::function<void()> onFinished;
+    std::function<void(double global, double local)> onProgress;
+    std::function<bool()> onCheckToCancel;
+
 protected:
     void    setTotalActions(size_t totalActions);
     void    reset(const std::string &action, size_t totalActions);
@@ -102,7 +108,7 @@ protected:
     AutoTracker createAutoTrackerCalculationObject();
 
     void    setCompleted();
-    void    setFailed();
+    void    setFailed(const char* error);
     void    setToCancel();
     void    setCanceled();
 
@@ -126,6 +132,7 @@ protected:
 
 private:
     Status  currentStatus;
+    void cancelExecution() const;
 
 #ifdef WITH_TBB
     typedef tbb::reader_writer_lock::scoped_lock_read read_lock;

@@ -29,26 +29,29 @@ public:
     virtual corecvs::RGB24Buffer * load(string name) override;
     virtual std::string name() override { return "LibPNG"; }
     virtual bool save(corecvs::string name, corecvs::RGB24Buffer *buffer);
-
 };
 
 class LibpngFileSaver : public corecvs::BufferSaver<corecvs::RGB24Buffer>
 {
+public:
+    static int registerMyself()
+    {
+        corecvs::BufferFactory::getInstance()->registerSaver(new LibpngFileSaver());
+        return 0;
+    }
+    
     virtual bool acceptsFile(string name) {
-        return LibpngFileSaver::acceptsFile(name);
+        return LibpngFileReader().acceptsFile(name);
     }
     virtual bool save(corecvs::RGB24Buffer &buffer, string name) override {
         return LibpngFileReader().save(name, &buffer);
     }
 
-    virtual std::string              name()        override { return "LibpngFileSaver"; }
+    virtual std::string              name()       override { return "LibpngFileSaver"; }
     virtual std::vector<std::string> extentions() override {
         return std::vector<std::string>({LibpngFileReader::prefix1});
     }
     virtual ~LibpngFileSaver() {}
 };
 
-
-
 #endif // LIBPNGFILEREADER_H
-

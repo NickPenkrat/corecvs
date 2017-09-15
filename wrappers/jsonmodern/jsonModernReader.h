@@ -84,8 +84,8 @@ public:
             SYNC_PRINT(("JSONModernReader::visit(Type &field, %s)\n", fieldName));
         }
         if (mNodePath.back()->count(fieldName) == 0) {
-             SYNC_PRINT(("JSONModernReader::visit(): member %s not found\n", fieldName));
-             return;
+            CONDITIONAL_TRACE(("JSONModernReader::visit(): member %s not found\n", fieldName));
+            return;
         }
         pushChild(fieldName);
             field.accept(*this);
@@ -102,8 +102,8 @@ public:
     void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
         if (mNodePath.back()->count(fieldDescriptor->getSimpleName()) == 0) {
-             SYNC_PRINT(("JSONModernReader::visit(): member %s not found\n", fieldDescriptor->getSimpleName()));
-             return;
+            CONDITIONAL_TRACE(("JSONModernReader::visit(): member %s not found\n", fieldDescriptor->getSimpleName()));
+            return;
         }
 
         pushChild(fieldDescriptor->getSimpleName());
@@ -228,8 +228,8 @@ public:
     {
         CONDITIONAL_TRACE(("JSONModernReader::visit(type &field, type defaultValue, %s) v1 \n", fieldName ));
         if (mNodePath.back()->count(fieldName) == 0) {
-             SYNC_PRINT(("JSONModernReader::visit v1(_,_,%s): member not found\n", fieldName));
-             return;
+            CONDITIONAL_TRACE(("JSONModernReader::visit v1(_,_,%s): member not found\n", fieldName));
+            return;
         }
 
         nlohmann::json &value = (*mNodePath.back())[fieldName];
