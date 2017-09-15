@@ -31,6 +31,8 @@ public:
     int dIndent;
     bool isFirst;
 
+    static const std::string LF;
+
     static const std::string PROLOGUE;
     static const std::string EPILOGUE;
 
@@ -88,7 +90,7 @@ public:
 
     void epilogue() {
         if (stream == NULL) return;
-        (*stream) << std::endl << EPILOGUE;
+        (*stream) << LF << EPILOGUE << std::flush;
     }
 
     std::string separate() {
@@ -101,6 +103,32 @@ public:
         }
         isFirst = false;
         return result;
+    }
+
+    /* */
+    template <typename innerType>
+    void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
+    {
+        *stream << separate() << indent() << decorateName(arrayName) << FIELD_VALUE_SEPARATOR << ARRAY_OPEN;
+        indentation += dIndent;
+        isFirst = true;
+        for (size_t i = 0; i < fields.size(); i++)
+        {
+            *stream << separate() << indent() << ARRAY_OPEN;
+            indentation += dIndent;
+            isFirst = true;
+            for (size_t j = 0; j < fields[i].size(); j++)
+            {
+                *stream << separate() << indent() << OBJECT_OPEN;            isFirst = true;
+                isFirst = true;
+                fields[i][j].accept(*this);
+                *stream << LF << indent() << OBJECT_CLOSE;
+            }
+            indentation -= dIndent;
+            *stream << LF << indent() << ARRAY_CLOSE;
+        }
+        indentation -= dIndent;
+        *stream << LF << indent() << ARRAY_CLOSE;
     }
 
     /**
@@ -148,7 +176,7 @@ template <typename inputType, typename reflectionType>
         indentation -= dIndent;
 
         if (stream != NULL) {
-            *stream << std::endl << indent() << OBJECT_CLOSE;
+            *stream << LF << indent() << OBJECT_CLOSE;
         }
     }
 
@@ -168,7 +196,7 @@ template <class Type>
         indentation -= dIndent;
 
         if (stream != NULL) {
-            *stream << std::endl << indent() << OBJECT_CLOSE;
+            *stream << LF << indent() << OBJECT_CLOSE;
         }
     }
 

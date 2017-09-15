@@ -62,6 +62,9 @@ public:
      */
     explicit JSONModernReader(std::string const & fileName) { init(fileName.c_str()); }
 
+
+    explicit JSONModernReader(std::istream &is);
+
 #if 1
     /**
      *  Create a getter object that will use data from a given JSON

@@ -6,6 +6,8 @@ namespace corecvs {
 using std::string;
 using std::endl;
 
+const std::string JSONPrinter::LF = "\n";
+
 const std::string JSONPrinter::PROLOGUE = "{";
 const std::string JSONPrinter::EPILOGUE = "}";
 
