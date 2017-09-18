@@ -196,6 +196,7 @@ void corecvs::StatusTracker::setCanceled()
         WRITE_LOCK;
         currentStatus.isCanceled = true;
     }
+
     std::cout << "StatusTracker::setCanceled" << std::endl;
 }
 
@@ -206,6 +207,9 @@ void corecvs::StatusTracker::cancelExecution() const
     task::self().cancel_group_execution();
 #endif
     std::cout << "StatusTracker::checkToCancel throw..." << std::endl;
+    if (onFinished) {
+        onFinished();
+    }
     throw CancelExecutionException("Cancel");
 }
 
