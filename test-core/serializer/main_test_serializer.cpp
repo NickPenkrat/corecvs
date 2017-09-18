@@ -164,3 +164,23 @@ TEST(Serializer, jsonEscape)
     CORE_ASSERT_TRUE_P(os.str() == out, ("<%s> and <%s>", os.str().c_str(), out.c_str() ));
     std::cout << os.str() << endl;
 }
+
+TEST(Serializer, jsonDoubleArray)
+{
+    std::vector<std::vector<RgbColorParameters>> rgbArray;
+    for (int i = 0; i < 3; i++) {
+        rgbArray.push_back(std::vector<RgbColorParameters>());
+    }
+    rgbArray[0].push_back(RGBColor::Amber().toRGBParameters());
+    rgbArray[0].push_back(RGBColor::Indigo().toRGBParameters());
+    rgbArray[1].push_back(RGBColor::Yellow().toRGBParameters());
+    rgbArray[2].push_back(RGBColor::Black().toRGBParameters());
+    rgbArray[2].push_back(RGBColor::Blue().toRGBParameters());
+
+    std::ostringstream os;
+    {
+        JSONPrinter printer(&os);
+        printer.visit(rgbArray, "test");
+    }
+    std::cout << os.str() << endl;
+}

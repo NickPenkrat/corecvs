@@ -614,6 +614,11 @@ template<class VisitorType>
         return Vector3df(r(), g(), b());
     }
 
+    RgbColorParameters toRGBParameters() const
+    {
+        return RgbColorParameters(r(), g(), b());
+    }
+
     uint32_t toRGBInt() const
     {
         return ((uint32_t)r() << 16) | ((uint32_t)g() << 8) | ((uint32_t)b());
