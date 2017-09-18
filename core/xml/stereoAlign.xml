@@ -7,6 +7,9 @@
 
 
   <class name="Iterative Estimate Parameters">
+      <comment>Parameters for step by step convergence to solution. We make an estimation and throw out outliers, then throw away again</comment>
+      <field type="int"      name="Limit Samples"      defaultValue="-1"    min="-1"     max="99999999"   step="1" />
+
       <field type="int"      name="Iterations Number"  defaultValue="5"    min="1"       max="9999999"   step="1" />
       <field type="bool"     name="Use initial"        defaultValue="true"/>
       <field type="double"   name="Initial Sigma"      defaultValue="5.0"  min=" 0"      max="9999999"   step="1" />

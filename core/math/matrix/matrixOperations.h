@@ -225,19 +225,19 @@ public:
 
     ReturnType mul(const RealType& V)
     {
-        CORE_ASSERT_TRUE(this->w == V.h, "Matrices have wrong sizes");
+        CORE_ASSERT_TRUE(this->_width() == V._height(), "Matrices have wrong sizes");
         ReturnType result = _createMatrix(_height(), V._width());
 
         int row, column, runner;
         for (row = 0; row < result._height(); row++)
             for (column = 0; column < result._width(); column++)
             {
-                ElementType sum = 0;
+                ElementType sum = ElementType(0);
                 for (runner = 0; runner < _width(); runner++)
                 {
                     sum += _atm(row, runner) * V._atm(runner, column);
                 }
-                result->atm(row, column) = sum;
+                result.atm(row, column) = sum;
             }
 
         return result;
@@ -312,6 +312,14 @@ public:
     }
     const Element &atm(int i, int j) const {
         return this->element(i, j);
+    }
+
+    inline int height() const {
+        return this->h;
+    }
+
+    inline int width() const {
+        return this->w;
     }
 
     static AbsMatrixFixed createMatrix(int /*h*/, int /*w*/) {return AbsMatrixFixed(); }

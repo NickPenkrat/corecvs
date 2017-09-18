@@ -80,12 +80,12 @@ public:
                samples(_samples)
         {}
         double getCost(const EssentialMatrix &matrix) const;
-        virtual void operator()(const double in[], double out[]);
-        virtual Matrix getJacobian(const double in[], double delta = 1e-7);
+        virtual void operator()(const double in[], double out[]) override;
+        virtual Matrix getJacobian(const double in[], double delta = 1e-7) override;
     };
 
 
-    /**
+     /**
      *  Function that normalizes the current state.
      *  It makes quaternion have module of 1 and also makes 1 a length of the
      *  direction vector
@@ -114,7 +114,16 @@ public:
             samples(_samples)
         {}
 
-        virtual void operator()(const double in[], double out[]);
+        virtual void operator()(const double in[], double out[]) override;
+    };
+
+    class CostFunction7toNPacked : public CostFunction7toN {
+    public:
+        CostFunction7toNPacked(const vector<Correspondence *> *_samples) :
+               CostFunction7toN(_samples)
+        {}
+
+        virtual Matrix getJacobian(const double in[], double delta = 1e-7)  override;
     };
 
 

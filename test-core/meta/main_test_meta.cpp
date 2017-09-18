@@ -7,6 +7,7 @@
  *
  * \ingroup autotest
  */
+#include <essentialEstimator.h>
 #include <iostream>
 #include "gtest/gtest.h"
 
@@ -336,3 +337,28 @@ TEST(meta, testMetaNodeFunction)
     cout << F.getCCode();
 }
 #endif
+
+
+TEST(meta, testEssentialCostFunction)
+{
+
+    double in[7] = {1/2, 1/2, -1/2, 1/2, 2, 2, 1};
+
+    vector<Correspondence> data;
+    for (int i = 0; i < 10; i++) {
+        data.push_back(Correspondence(Vector2dd(i,i+10), Vector2dd(sqrt(i), -i)));
+    }
+
+    vector<Correspondence *> dataPtr;
+    for (int i = 0; i < 10; i++) {
+        dataPtr.push_back(&data[i]);
+    }
+
+    EssentialEstimator::CostFunction7toN     old   (&dataPtr);
+    EssentialEstimator::CostFunction7toNPacked modern(&dataPtr);
+
+    cout << "Old\n" << old.getJacobian(in) << endl;
+    cout << "New\n" << modern.getJacobian(in) << endl;
+
+
+}
