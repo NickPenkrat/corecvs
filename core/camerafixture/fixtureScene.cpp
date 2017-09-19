@@ -715,7 +715,7 @@ void FixtureScene::dumpInfo(ostream &out, bool brief)
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 #endif
-    out << "name: " << nameId << "\trelPath: " << relativeImageDataPath << "\thasTargetCoordSystem: " << hasTargetCoordSystem << endl;
+    out << "name: " << nameId << "\trelPath: " << relativeImageDataPath << "\thasTargetCoordSystem: " << (int)hasTargetCoordSystem << endl;
 
     out << "Camera Prototypes: " << mCameraPrototypes.size() << endl;
     if (!brief)

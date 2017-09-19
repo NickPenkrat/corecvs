@@ -146,7 +146,16 @@ public:
 
     std::string                   nameId;
 
-    bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
+    Matrix44                      localToWorld = Matrix44::Identity(); ///< symilarity transform
+
+    enum CoordinateSystemState
+    {
+        initial = 0,                ///< initial state and "localToWorld" matrix is invalid
+        final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
+        convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
+    };
+
+    CoordinateSystemState         hasTargetCoordSystem = CoordinateSystemState::initial;  ///< true if scene doesn't require coordinate system transformation
 
     StatusTracker *               processState = nullptr;
 
@@ -390,8 +399,9 @@ public:
                 bool loadPrototypes = true,
                 bool loadGeometry = true)
     {
-        visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
-        visitor.visit(hasTargetCoordSystem, false           , "hasTargetCoordSystem");
+        visitor.visit(relativeImageDataPath, std::string(""),                              "relativeImageDataPath");
+        visitor.visit(hasTargetCoordSystem, CoordinateSystemState::initial,                "hasTargetCoordSystem");
+        visitor.visit(localToWorld, Matrix44::Identity(),                                  "localToWorld");
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
