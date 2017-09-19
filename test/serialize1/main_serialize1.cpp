@@ -1,22 +1,20 @@
 #include <stdio.h>
-#ifndef WIN32
-#include <jsonPrinter.h>
-#include <unistd.h>
-#endif
-#include <QtXml/QDomDocument>
 #include <vector>
 
+#include <QtXml/QDomDocument>
+
+#ifndef WIN32
+#include <unistd.h>
+#endif
 #include "abstractPainter.h"
 #include "bmpLoader.h"
-
 #include "fixtureScene.h"
-
 #include "vector3d.h"
 #include "xmlSetter.h"
 #include "xmlGetter.h"
-
-#include "jsonGetter.h"   // it depends on Qt!
+#include "jsonPrinter.h"
 #include "jsonSetter.h"
+#include "jsonGetter.h"
 #ifdef WITH_RAPIDJSON
     #include "rapidJSONReader.h"
 #endif
