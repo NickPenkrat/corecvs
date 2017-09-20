@@ -535,7 +535,7 @@ TEST(meta, genEssentialCostFunction1)
 {
     typedef EssentialEstimator::CostFunction7toNPacked::Matrix33Diff Matrix33Diff;
 
-    std::ofstream file("src/open/core/xml/generated/essentialDerivative1.cpp");
+    std::ofstream file("src/open/core/xml/generated/essentialDerivative2.cpp");
     ASTRenderDec style("", "", false, file);
 
     Matrix33Diff matrixRaw = EssentialEstimator::CostFunction7toNPacked::essentialAST();
@@ -569,13 +569,17 @@ TEST(meta, genEssentialCostFunction1)
         "a20", "a21", "a22",
     };
 
+    file << "   double m[9];\n";
+    file << "   double md[7 * 9];\n";
+
+
     int c = 0;
     for (int i = 0; i < 3; i++)
     {
         for (int j = 0; j < 3; j++)
         {
             ASTNodeInt *node = matrixRaw.atm(i,j).p->compute();
-            file << "    double " << tnames[c] << " = ";
+            file << "    m["<< c << "] = ";
             node->codeGenCpp(2, style);
             file << ";\n\n";
 
@@ -585,15 +589,18 @@ TEST(meta, genEssentialCostFunction1)
 
             for (int k = 0; k < EssentialEstimator::CostFunctionBase::VECTOR_SIZE; k++)
             {
-                file << "     double " << tnames[c] << "d" << names[k] << " = ";
+                ostringstream namer;
+                namer << "md[" << c * 7 + k  << "]";
+
+                file << "     " << namer.str() << "= ";
                 node->derivative(names[k])->compute()->codeGenCpp(2, style);
                 file << ";\n";
                 //cout << "k" << k << endl << "    " << names[k] << endl;
 
                 function[c].params     [k] = names[k];
-                function[c].derivatives[k] = std::string(tnames[c]) + "d" + names[k];
+                function[c].derivatives[k] = namer.str();
             }
-            file << "\n";
+            file <<"\n";
 
             c++;
         }
@@ -631,9 +638,7 @@ TEST(meta, genEssentialCostFunction1)
         nodeFinal->derivative(names[k])->compute()->codeGenCpp(2, style);
         file << ";\n";
         file << "         if (v < 0) result.element(i," << k << ") = -result.element(i," << k << ");\n";
-    }
-    file <<
-    "   }\n";
+    };
 
 
     file <<
