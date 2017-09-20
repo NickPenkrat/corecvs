@@ -24,3 +24,8 @@ SOURCES += \
     rectification/multicameraTriangulator.cpp \
     $$PWD/sceneStereoAlignerBlock.cpp
 
+SOURCES += \
+    xml/generated/essentialDerivative.cpp \
+    xml/generated/essentialDerivative1.cpp \
+
+

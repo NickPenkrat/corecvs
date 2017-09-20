@@ -236,8 +236,18 @@ public:
             return;
         stats->setValue(str, value);
     }
-};
 
+
+    friend ostream & operator <<(ostream &out, const Statistics &stats)
+    {
+        for(auto &stat : stats.mValues)
+        {
+            out << stat.first << " -> " << stat.second.value << "\n";
+        }
+        return out;
+    }
+
+};
 
 class BaseTimeStatisticsCollector
 {
@@ -276,6 +286,10 @@ public:
     vector<OrderFilter *> mOrderFilters;
 
     BaseTimeStatisticsCollector() {}
+    BaseTimeStatisticsCollector(const Statistics &stats)
+    {
+        addStatistics(stats);
+    }
 
     virtual void reset()
     {

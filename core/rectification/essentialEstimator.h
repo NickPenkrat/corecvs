@@ -1,3 +1,5 @@
+#ifndef ESSENTIALESTIMATOR_H_
+#define ESSENTIALESTIMATOR_H_
 /**
  * \file essentialEstimator.h
  * \brief Add Comment Here
@@ -6,14 +8,18 @@
  * \author alexander
  */
 
-#ifndef ESSENTIALESTIMATOR_H_
-#define ESSENTIALESTIMATOR_H_
 #include <vector>
 #include "correspondenceList.h"
 #include "essentialMatrix.h"
 #include "function.h"
 #include "quaternion.h"
+
+#include "astNode.h"
+#include "matrixOperations.h"
+
 namespace corecvs {
+
+class ASTNodeInt;
 
 class EssentialEstimator
 {
@@ -120,6 +126,32 @@ public:
     class CostFunction7toNPacked : public CostFunction7toN {
     public:
         CostFunction7toNPacked(const vector<Correspondence *> *_samples) :
+               CostFunction7toN(_samples)
+        {}
+
+        typedef FixMatrixFixed<ASTNode, 3, 3> Matrix33Diff;
+        typedef GenericQuaternion< ASTNode >   QuaternionDiff;
+        typedef Vector2d< ASTNode >   Vector2dDiff;
+        typedef Vector3d< ASTNode >   Vector3dDiff;
+
+        static Matrix33Diff essentialAST();
+        static ASTNodeInt* derivative(const Matrix33Diff &input);
+        virtual Matrix getJacobian(const double in[], double delta = 1e-7)  override;
+    };
+
+
+    class CostFunction7toNGenerated : public CostFunction7toN {
+    public:
+        CostFunction7toNGenerated(const vector<Correspondence *> *_samples) :
+               CostFunction7toN(_samples)
+        {}
+
+        virtual Matrix getJacobian(const double in[], double delta = 1e-7)  override;
+    };
+
+    class CostFunction7toNGenerated1 : public CostFunction7toN {
+    public:
+        CostFunction7toNGenerated1(const vector<Correspondence *> *_samples) :
                CostFunction7toN(_samples)
         {}
 
