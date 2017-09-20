@@ -3,6 +3,7 @@
 
 #include "function.h"
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 
 class ReprojectionCostFunction : public FunctionArgs
 {

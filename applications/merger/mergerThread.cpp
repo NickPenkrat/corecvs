@@ -19,6 +19,7 @@
 
 #include "bufferFactory.h"
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "calibrationDrawHelpers.h"
 
 #include "legacy/spherical_lut.h"
