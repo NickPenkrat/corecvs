@@ -155,7 +155,9 @@ public:
         convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
     };
 
-    CoordinateSystemState         hasTargetCoordSystem = CoordinateSystemState::initial;  ///< true if scene doesn't require coordinate system transformation
+    //CoordinateSystemState         hasTargetCoordSystem = CoordinateSystemState::initial;  ///< true if scene doesn't require coordinate system transformation
+    bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
+    bool                          hasValidConversionMatrix = false;  ///< true if localToWorld is valid
 
     StatusTracker *               processState = nullptr;
 
@@ -399,9 +401,23 @@ public:
                 bool loadPrototypes = true,
                 bool loadGeometry = true)
     {
+        if (hasTargetCoordSystem)
+        {
+            hasValidConversionMatrix = true;
+            localToWorld = Matrix44::Identity();
+        }
+            
         visitor.visit(relativeImageDataPath, std::string(""),                              "relativeImageDataPath");
-        visitor.visit(hasTargetCoordSystem, CoordinateSystemState::initial,                "hasTargetCoordSystem");
+        //visitor.visit(hasTargetCoordSystem, CoordinateSystemState::initial,                "hasTargetCoordSystem");
+        visitor.visit(hasTargetCoordSystem, false,                                         "hasTargetCoordSystem" );
+        visitor.visit(hasValidConversionMatrix, false,                                     "hasValidConversionMatrix" );
         visitor.visit(localToWorld, Matrix44::Identity(),                                  "localToWorld");
+
+        if (hasTargetCoordSystem)
+        {
+            hasValidConversionMatrix = true;
+            localToWorld = Matrix44::Identity();
+        }         
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
