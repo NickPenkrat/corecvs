@@ -4,6 +4,7 @@
 #include "g12Image.h"
 #include "rgb24Buffer.h"
 #include "fixtureCamera.h"
+#include "cameraFixture.h"
 #include "bufferFactory.h"
 #include "fixtureScene.h"
 
