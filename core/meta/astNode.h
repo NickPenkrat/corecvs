@@ -274,8 +274,23 @@ public:
      * NB This function actually modifies the tree elements.
      **/
     void extractConstPool(const std::string &poolname, std::unordered_map<double, std::string> &pool);
-    /* Computes hash and height */
+
+    /**
+     * Computes hash and height
+     * Most functions don't change the syntax tree, so after it is constructed you may call rehash
+     * and use it for a while to identify node with out deep comparison.
+     *
+     * Hash equal for equal trees
+     *
+     **/
     void rehash();
+
+    /**
+     *   This method is not changing the tree, it only collectes hashes of the nodes that are different.
+     *   Actual CSE would be done on second path
+     *
+     *
+     **/
     void cseR(std::unordered_map<uint64_t, ASTNodeInt *> &cse);
 
     size_t memoryFootprint();

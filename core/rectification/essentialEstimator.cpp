@@ -466,9 +466,15 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
 
 EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples, const Quaternion &rotation, const Vector3dd &translation)
 {
-    //CostFunction7toN costFunction(&samples);            // 41009
-    //CostFunction7toNPacked costFunction(&samples);      // 296492s
-    CostFunction7toNGenerated1 costFunction(&samples);    // 327208s
+    CostFunction7toN costFunction(&samples);            //      41009
+    //CostFunction7toNPacked costFunction(&samples);      //      296492s
+    // CostFunction7toNGenerated1 costFunction(&samples); //      327208s
+    //CostFunction7toNGenerated1 costFunction(&samples);    // cse  332843s
+                                                          // man1 321038
+                                                          // man2 271804
+                                                          // man3 268170
+
+
 
 
     NormalizeFunction normalise;
@@ -1108,9 +1114,9 @@ EssentialEstimator::~EssentialEstimator()
 {
 }
 
-void derivative(const double in[], double out[], Correspondence *c);
-Matrix derivative(const double in[], const vector<Correspondence *> *samples);
-
+void   derivative (const double in[], double out[], Correspondence *c);
+Matrix derivative (const double in[], const vector<Correspondence *> *samples);
+Matrix derivative2(const double in[], const vector<Correspondence *> *samples);
 
 Matrix EssentialEstimator::CostFunction7toNGenerated::getJacobian(const double in[], double delta)
 {
@@ -1131,7 +1137,7 @@ Matrix EssentialEstimator::CostFunction7toNGenerated::getJacobian(const double i
 
 Matrix EssentialEstimator::CostFunction7toNGenerated1::getJacobian(const double in[], double delta)
 {
-    return derivative(in, samples);
+    return derivative2(in, samples);
 }
 
 

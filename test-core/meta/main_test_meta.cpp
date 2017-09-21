@@ -535,7 +535,7 @@ TEST(meta, genEssentialCostFunction1)
 {
     typedef EssentialEstimator::CostFunction7toNPacked::Matrix33Diff Matrix33Diff;
 
-    std::ofstream file("src/open/core/xml/generated/essentialDerivative2.cpp");
+    std::ofstream file("src/open/core/xml/generated/essentialDerivative3.cpp");
     ASTRenderDec style("", "", false, file);
 
     Matrix33Diff matrixRaw = EssentialEstimator::CostFunction7toNPacked::essentialAST();
@@ -550,7 +550,7 @@ TEST(meta, genEssentialCostFunction1)
     "using namespace std;\n"
     "namespace corecvs {\n"
     "\n"
-    "Matrix derivative(const double in[], const vector<Correspondence *> *samples) {\n"
+    "Matrix derivative2(const double in[], const vector<Correspondence *> *samples) {\n"
     "    Matrix result(samples->size(), EssentialEstimator::CostFunctionBase::VECTOR_SIZE);\n"
     "    double Qx = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_X]; \n"
     "    double Qy = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Y]; \n"
@@ -563,14 +563,18 @@ TEST(meta, genEssentialCostFunction1)
 
 
     ASTNodeShortcutFunction function[9];
-    const char *tnames[9] = {
+    /*const char *tnames[9] = {
         "a00", "a01", "a02",
         "a10", "a11", "a12",
         "a20", "a21", "a22",
-    };
+    };*/
 
     file << "   double m[9];\n";
     file << "   double md[7 * 9];\n";
+
+
+    vector <ASTNodeInt *> elements;
+    vector <std::string>  elementNames;
 
 
     int c = 0;
@@ -578,12 +582,14 @@ TEST(meta, genEssentialCostFunction1)
     {
         for (int j = 0; j < 3; j++)
         {
-            ASTNodeInt *node = matrixRaw.atm(i,j).p->compute();
-            file << "    m["<< c << "] = ";
-            node->codeGenCpp(2, style);
-            file << ";\n\n";
+            ostringstream namer;
+            namer << "m[" << c << "]";
 
-            function[c].name = tnames[c];
+            ASTNodeInt *node = matrixRaw.atm(i,j).p->compute();
+            elements    .push_back(node);
+            elementNames.push_back(namer.str());
+
+            function[c].name = namer.str();
             function[c].params     .resize(EssentialEstimator::CostFunctionBase::VECTOR_SIZE);
             function[c].derivatives.resize(EssentialEstimator::CostFunctionBase::VECTOR_SIZE);
 
@@ -592,19 +598,83 @@ TEST(meta, genEssentialCostFunction1)
                 ostringstream namer;
                 namer << "md[" << c * 7 + k  << "]";
 
-                file << "     " << namer.str() << "= ";
+                /*file << "     " << namer.str() << "= ";
                 node->derivative(names[k])->compute()->codeGenCpp(2, style);
-                file << ";\n";
-                //cout << "k" << k << endl << "    " << names[k] << endl;
+                file << ";\n";*/
+                elements.push_back(node->derivative(names[k])->compute());
+                elementNames.push_back(namer.str());
 
                 function[c].params     [k] = names[k];
                 function[c].derivatives[k] = namer.str();
             }
-            file <<"\n";
-
             c++;
         }
     }
+
+    /* Ok. CSE. */
+    /*Compute hashes*/
+    SYNC_PRINT(("Hashing...\n"));
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        elements[i]->rehash();
+    }
+    /* Form subtree dictionary to check for common subexpresstions */
+    SYNC_PRINT(("Making cse dictionary...\n"));
+
+    std::unordered_map<uint64_t, ASTNodeInt *> subexpDictionary;
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        elements[i]->cseR(subexpDictionary);
+    }
+
+    /* Ok let's sort cse by height */
+    vector<ASTNodeInt *> commonSubexpressions;
+    for (auto it : subexpDictionary)
+    {
+        if (it.second->cseCount == 0)
+            continue;
+        commonSubexpressions.push_back(it.second);
+        it.second->cseName = commonSubexpressions.size();
+    }
+    std::sort(commonSubexpressions.begin(), commonSubexpressions.end(),
+              [](ASTNodeInt *a, ASTNodeInt *b){return a->height < b->height;});
+
+    SYNC_PRINT(("finished - size = %" PRISIZE_T "\n", commonSubexpressions.size() ));
+
+    style.cse = &subexpDictionary;
+
+    SYNC_PRINT(("Dumping cse trees...\n"));
+    for (auto it : commonSubexpressions)
+    {
+        int cseName = it->cseName;
+        file << "   const double " << "cse" << std::hex << cseName << std::dec << " = ";
+
+        /* Hack node not to be selference. Restore it back afterwards */
+        uint64_t hash = it->hash;
+        it->hash = 0;
+        it->codeGenCpp(0, style);
+        it->hash = hash;
+        file << ";\n";
+    }
+
+
+    SYNC_PRINT(("Dumping main code...\n"));
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        if (i < elementNames.size()) {
+            file << elementNames[i];
+        } else {
+            char buffer[100];
+            snprintf2buf(buffer, "out[%d]", i);
+            file << buffer;
+        }
+        file << " = ";
+
+        elements[i]->codeGenCpp(0, style);
+        file << ";\n";
+    }
+
+
 
     /* Ok... All done with fixed part of function */
     file <<
@@ -642,6 +712,7 @@ TEST(meta, genEssentialCostFunction1)
 
 
     file <<
+    "   }\n"
     "   return result;\n"
     "}\n"
     "} // namespace\n";
