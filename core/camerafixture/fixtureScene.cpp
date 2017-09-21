@@ -1,13 +1,8 @@
-#include <algorithm>
-#include <bufferFactory.h>
-
+#include "fixtureScene.h"
+#include "bufferFactory.h"
 #include "affine.h"
 #include "utils.h"
-
-#include "multicameraTriangulator.h"
 #include "cameraFixture.h"
-#include "fixtureScene.h"
-#include "statusTracker.h"
 
 namespace corecvs {
 
@@ -66,9 +61,10 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkM
 
     bool ok = true;
     Vector3dd point3d = point->triangulate(false, nullptr, &ok, trace, checkMinimalAngle);
+
     if (fixtures().size() == 2 && !ok) // case of failed angle check for two cameras
     {
-        SYNC_PRINT(("FixtureScene::triangulate(): WARNING - point has not passed trangulation angle check, but is triangulated anyways\n"));
+        SYNC_PRINT(("FixtureScene::triangulate(): WARNING - point has not passed trangulation angle check, but is triangulated anyway\n"));
     }
     else if (!ok) {
         SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false\n"));
@@ -338,8 +334,7 @@ void FixtureScene::clear()
     }
 #endif
 
-    SYNC_PRINT(("FixtureScene::clear(): Detruction took %2.2lf ms\n", dest.usecsToNow() / 1000.0));
-
+    SYNC_PRINT(("FixtureScene::clear(): destruction took %2.2lf ms\n", dest.usecsToNow() / 1000.0));
 }
 
 void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
@@ -422,9 +417,7 @@ bool FixtureScene::checkIntegrity()
                 }
             }
 #endif
-
         }
-
     }
 
     for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
@@ -652,7 +645,6 @@ void FixtureScene::merge(FixtureScene *other)
             newPoint->observations.insert(std::pair<FixtureCamera *, SceneObservation>(thisCam, newObserv));
         }
     }
-
 }
 
 
@@ -981,7 +973,6 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
         for (FixtureCamera *fc : cf->cameras)
         {
             fc->extrinsics.transform(Affine3DQ::Identity(), scale);
-
         }
     }
 

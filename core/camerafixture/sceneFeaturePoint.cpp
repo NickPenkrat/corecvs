@@ -1,5 +1,6 @@
 #include "sceneFeaturePoint.h"
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "multicameraTriangulator.h"
 #include "propertyListVisitor.h"
 

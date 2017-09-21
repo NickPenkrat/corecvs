@@ -10,6 +10,7 @@
 #include "bmpLoader.h"
 
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 
 #include "vector3d.h"
 #include "xmlSetter.h"

@@ -9,6 +9,7 @@
 #include "abstractPainter.h"
 #include "bmpLoader.h"
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "vector3d.h"
 #include "xmlSetter.h"
 #include "xmlGetter.h"
