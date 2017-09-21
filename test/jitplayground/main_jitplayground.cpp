@@ -7,6 +7,7 @@
 #include <random>
 
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "calibrationDrawHelpers.h"
 #include "mesh3d.h"
 

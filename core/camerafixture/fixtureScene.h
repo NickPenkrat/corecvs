@@ -7,7 +7,6 @@
 
 #include "fixtureScenePart.h"
 #include "fixtureCamera.h"
-#include "cameraFixture.h"
 #include "sceneFeaturePoint.h"
 
 /* In future Scene would like to control memory management for child objects */
@@ -148,7 +147,7 @@ public:
 
     bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
 
-    StatusTracker *               processState = nullptr;
+    StatusTracker *               processState = nullptr;        ///< it's owned on the external side
 
     /* This is for future, when all the heap/memory will be completed */
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT

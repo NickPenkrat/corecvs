@@ -13,6 +13,7 @@
 
 #include "global.h"
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "printerVisitor.h"
 #include "jsonPrinter.h"
 
