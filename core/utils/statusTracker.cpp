@@ -18,7 +18,7 @@ bool        StatusTracker::IsCompleted(const StatusTracker *st)                 
 bool        StatusTracker::IsFailed(const StatusTracker *st)                                       { return st ? st->isFailed()    : false; }
 bool        StatusTracker::IsToCancel(const StatusTracker *st)                                     { return st ? st->isToCancel()  : false; }
 bool        StatusTracker::IsCanceled(const StatusTracker *st)                                     { return st ? st->isCanceled()  : false; }
-void        StatusTracker::CheckToCancel(const StatusTracker *st)                                  { if (st) st->checkToCancel(); }
+void        StatusTracker::CheckToCancel(StatusTracker *st)                                  { if (st) st->checkToCancel(); }
 bool        StatusTracker::IsActionCompleted(const StatusTracker *st, const std::string &action)   { return st ? st->isActionCompleted(action) : false; }
 Status      StatusTracker::GetStatus(const StatusTracker *st)                                      { return st ? st->getStatus() : Status(); }
 
@@ -196,6 +196,7 @@ void corecvs::StatusTracker::setCanceled()
         WRITE_LOCK;
         currentStatus.isCanceled = true;
     }
+
     std::cout << "StatusTracker::setCanceled" << std::endl;
 }
 
@@ -205,19 +206,24 @@ void corecvs::StatusTracker::cancelExecution() const
 #ifdef WITH_TBB
     task::self().cancel_group_execution();
 #endif
+    if (onFinished) {
+        onFinished();
+    }
     std::cout << "StatusTracker::checkToCancel throw..." << std::endl;
     throw CancelExecutionException("Cancel");
 }
 
-void corecvs::StatusTracker::checkToCancel() const
+void corecvs::StatusTracker::checkToCancel()
 {
     if (onCheckToCancel && onCheckToCancel()) {//controlled outside using cvsdk taskcontrol
+        setToCancel();
         cancelExecution();
     }
-
-    if (isToCancel())
-    {
-        cancelExecution();
+    else {
+        if (isToCancel())
+        {
+            cancelExecution();
+        }
     }
 }
 

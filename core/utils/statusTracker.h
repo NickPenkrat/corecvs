@@ -88,7 +88,7 @@ public:
     static bool    IsToCancel(const StatusTracker *tracker);
 
     static bool    IsCanceled(const StatusTracker *tracker);
-    static void    CheckToCancel(const StatusTracker *tracker);
+    static void    CheckToCancel(StatusTracker *tracker);
 
     static bool    IsActionCompleted(const StatusTracker *tracker, const std::string &action);
 
@@ -124,7 +124,7 @@ protected:
     /// \return Returns whether the processing task was canceled and has been stopped
     ///
     bool    isCanceled() const;
-    void    checkToCancel() const;
+    void    checkToCancel();
 
     bool    isActionCompleted(const std::string &action) const;
 

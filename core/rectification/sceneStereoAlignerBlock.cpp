@@ -1,5 +1,6 @@
 #include "rgb24Buffer.h"
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "affine.h"
 #include "sceneStereoAlignerBlock.h"
 #include "stereoAligner.h"
@@ -7,9 +8,7 @@
 namespace corecvs {
 
 SceneStereoAlignerBlock::SceneStereoAlignerBlock()
-{
-
-}
+{}
 
 int SceneStereoAlignerBlock::operator ()()
 {
@@ -76,7 +75,6 @@ int SceneStereoAlignerBlock::operator ()()
     EssentialMatrix Ix;
     cout << (leftTransform.transposed() * Ix * rightTransform) / F << endl;
 
-
     /* Forming new images*/
     ProjectiveTransform  leftTransformInv =  leftTransform.inv();
     ProjectiveTransform rightTransformInv = rightTransform.inv();
@@ -89,7 +87,6 @@ int SceneStereoAlignerBlock::operator ()()
 
     setOutImage1(resImage1);
     setOutImage2(resImage2);
-
 
     /*Forming new Fixture*/
     if (mParameters.produceCameras())
@@ -110,7 +107,6 @@ int SceneStereoAlignerBlock::operator ()()
 
         cam1->extrinsics = CameraLocationData(Affine3DQ::Identity());
         cam2->extrinsics = CameraLocationData(relativeTransform);
-
 
         cam1->intrinsics = camera1->intrinsics;
         cam2->intrinsics = camera2->intrinsics;
@@ -140,8 +136,6 @@ int SceneStereoAlignerBlock::operator ()()
                     SceneObservation observation(cam2, point, pos2, fixture);
                     point->observations[cam2] = observation;
                 }
-
-
             }
         }
         setOutCamera1(cam1);
@@ -149,8 +143,6 @@ int SceneStereoAlignerBlock::operator ()()
     }
 
     return 0;
-
 }
 
 } //namespace corecvs
-
