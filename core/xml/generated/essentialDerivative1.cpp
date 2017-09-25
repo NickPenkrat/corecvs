@@ -6,7 +6,7 @@ using namespace std;
 namespace corecvs {
 
 Matrix derivative(const double in[], const vector<Correspondence *> *samples) {
-    Matrix result(samples->size(), EssentialEstimator::CostFunctionBase::VECTOR_SIZE);
+    Matrix result(samples->size(), EssentialEstimator::CostFunctionBase::VECTOR_SIZE, false);
     double Qx = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_X]; 
     double Qy = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Y]; 
     double Qz = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Z]; 

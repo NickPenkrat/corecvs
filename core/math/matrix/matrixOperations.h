@@ -364,7 +364,7 @@ public:
 
 
     /* Additional helper function */
-    void fillWithArgs(const ElementType value, va_list marker)
+    void fillWithArgsList(const ElementType value, va_list marker)
     {
         this->atm(0, 0) = value;
         for (int i = 0; i < this->height(); i++)
@@ -377,7 +377,7 @@ public:
     {
         va_list  marker;
         va_start(marker, value);
-        fillWithArgs(value, marker);
+        fillWithArgsList(value, marker);
         va_end(marker);
     }
 

@@ -6,7 +6,7 @@ using namespace std;
 namespace corecvs {
 
 Matrix derivative2(const double in[], const vector<Correspondence *> *samples) {
-    Matrix result(samples->size(), EssentialEstimator::CostFunctionBase::VECTOR_SIZE);
+    Matrix result(samples->size(), EssentialEstimator::CostFunctionBase::VECTOR_SIZE, false);
     double Qx = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_X]; 
     double Qy = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Y]; 
     double Qz = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Z]; 
@@ -15,7 +15,7 @@ Matrix derivative2(const double in[], const vector<Correspondence *> *samples) {
     double Ty = in[EssentialEstimator::CostFunctionBase::TRANSLATION_Y]; 
     double Tz = in[EssentialEstimator::CostFunctionBase::TRANSLATION_Z]; 
    double m[9];
-   double md[7 * 9];
+   double md[7 * 9 + 7];
    const double cse1 = 0-Ty;
    const double cse3c = Qz*Qz;
    const double cse43 = 0-Tz;
@@ -276,6 +276,7 @@ md[62] = 0;
 
         double v = v1 /sqrt1;
 
+#ifndef WITH_AVX2
          for (int j = 0; j < 7; j++)
          {
                 double l1 = (startx*md[0+j]+starty*md[21+j])+md[42+j];
@@ -288,6 +289,59 @@ md[62] = 0;
 
                 result.element(i,j) = (v < 0) ? -r : r;
          }
+#else
+         {
+             Doublex4 vstartx(startx);
+             Doublex4 vstarty(starty);
+             Doublex4 vendx(endx);
+             Doublex4 vendy(endy);
+
+             Doublex4 vm1(m1);
+             Doublex4 vm2(m2);
+
+             Doublex4 vdenum(denum);
+             Doublex4 vsqrt1(sqrt1);
+             Doublex4 vv1(v1);
+
+             Doublex4 l1 = (vstartx * Doublex4(&md[ 0]) + vstarty * Doublex4(&md[21]) + Doublex4(&md[42]));
+             Doublex4 l2 = (vstartx * Doublex4(&md[ 7]) + vstarty * Doublex4(&md[28]) + Doublex4(&md[49]));
+             Doublex4 l3 = (vstartx * Doublex4(&md[14]) + vstarty * Doublex4(&md[35]) + Doublex4(&md[56]));
+
+             Doublex4 r =
+             ((l1*vendx + l2*vendy + l3)*vsqrt1-(vv1)*((vm1*l1+l2*vm2) / vsqrt1))/vdenum;
+
+             if (v < 0) r = -r;
+             r.save(&result.element(i,0));
+
+             Doublex4 l1a = (vstartx * Doublex4(&md[ 0 + 4]) + vstarty * Doublex4(&md[21 + 4]) + Doublex4(&md[42 + 4]));
+             Doublex4 l2a = (vstartx * Doublex4(&md[ 7 + 4]) + vstarty * Doublex4(&md[28 + 4]) + Doublex4(&md[49 + 4]));
+             Doublex4 l3a = (vstartx * Doublex4(&md[14 + 4]) + vstarty * Doublex4(&md[35 + 4]) + Doublex4(&md[56 + 4]));
+
+             Doublex4 r1 =
+             ((l1a*vendx + l2a*vendy + l3a)*vsqrt1-(vv1)*((vm1*l1a+l2a*vm2) / vsqrt1))/vdenum;
+
+             if (v < 0) r1 = -r1;
+             r1.save(&result.element(i,4));
+
+
+             /*for (int j = 4; j < 7; j++)
+             {
+                    double l1 = (startx*md[0+j]+starty*md[21+j])+md[42+j];
+                    double l2 = (startx*md[7+j]+starty*md[28+j])+md[49+j];
+                    double l3 = (startx*md[14+j]+starty*md[35+j])+md[56+j];
+
+                    double r =
+                    ((l1*endx + l2*endy + l3)*sqrt1-
+                     (v1)*((m1*l1+l2*m2) / sqrt1))/denum;
+
+                    result.element(i,j) = (v < 0) ? -r : r;
+             }*/
+
+         }
+#endif
+
+
+
    }
    return result;
 }

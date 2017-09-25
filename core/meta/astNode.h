@@ -85,7 +85,7 @@ public:
     virtual void f(double in[], double out[]) {}
     virtual std::string getCCode();
     virtual ASTNodeFunctionPayload *derivative(int input);
-    virtual ASTNodeInt *derivative(const std::string &name) {}
+    virtual ASTNodeInt *derivative(const std::string &/*name*/) { return NULL; }
 };
 
 /**

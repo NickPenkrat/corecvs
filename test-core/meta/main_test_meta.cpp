@@ -364,8 +364,8 @@ TEST(meta, testEssentialCostFunction)
     double in[7] = {-0.00913099, 0.0054594, -0.00347481, 0.999937, -0.999999, -0.00125867, -0.00011209};
 
     vector<Correspondence> data;
-    for (int i = 0; i < 1000; i+=5) {
-        for (int j = 0; j < 200; j+=5) {
+    for (int i = 0; i < 1000; i+=10) {
+        for (int j = 0; j < 200; j+=10) {
             Vector2dd input(i - 500, j - 10);
             input /= 500.0;
 
@@ -388,11 +388,11 @@ TEST(meta, testEssentialCostFunction)
     cout << "Gen1\n" << gen1  .getJacobian(in) << endl;
     cout << "Old \n" << old   .getJacobian(in) << endl;
     cout << "New \n" << modern.getJacobian(in) << endl;
-    cout << "Gen \n" << gen   .getJacobian(in) << endl;
+    //cout << "Gen \n" << gen   .getJacobian(in) << endl;
 #endif
 
 
-    static int LIMIT = 1000;
+    static int LIMIT = 50;
 
     Statistics stats;
     double noopt = 0;

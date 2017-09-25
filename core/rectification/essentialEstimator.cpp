@@ -466,14 +466,13 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
 
 EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples, const Quaternion &rotation, const Vector3dd &translation)
 {
-    CostFunction7toN costFunction(&samples);            //      41009
+    //CostFunction7toN costFunction(&samples);            //      41009
     //CostFunction7toNPacked costFunction(&samples);      //      296492s
     // CostFunction7toNGenerated1 costFunction(&samples); //      327208s
-    //CostFunction7toNGenerated1 costFunction(&samples);    // cse  332843s
+    CostFunction7toNGenerated1 costFunction(&samples);    // cse  332843s
                                                           // man1 321038
                                                           // man2 271804
                                                           // man3 268170
-
 
 
 
@@ -955,7 +954,7 @@ Matrix EssentialEstimator::CostFunction7toNPacked::getJacobian(const double in[]
     typedef GenericQuaternion< PackedDerivative<EssentialEstimator::CostFunctionBase::VECTOR_SIZE> >   QuaternionDiff;
     typedef Vector3d< PackedDerivative<EssentialEstimator::CostFunctionBase::VECTOR_SIZE> >   VectorDiff;
 
-    Matrix result(outputs, inputs);
+    Matrix result(outputs, inputs, false);
     QuaternionDiff inRot(
             PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_X], ROTATION_Q_X),
             PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_Y], ROTATION_Q_Y),
