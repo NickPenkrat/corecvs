@@ -1,5 +1,5 @@
-#ifndef STATUS_TRACKER_CATCH
-#define STATUS_TRACKER_CATCH
+#ifndef STATUS_TRACKER_CATCHER
+#define STATUS_TRACKER_CATCHER
 
 #include <string>
 #include <ostream>
@@ -93,4 +93,4 @@ namespace {
 
 } // namespace corecvs
 
-#endif // STATUS_TRACKER_CATCH
+#endif // STATUS_TRACKER_CATCHER
