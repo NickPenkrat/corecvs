@@ -33,7 +33,7 @@ public:
 
     PolygonSpanIterator(const Polygon &polygon) : polygon(polygon)
     {
-        /* Prepare the sorted array. We don't need is do far, we only need max and min. But non-convex polygon support */
+        /* Prepare the sorted array. We don't need is so far, we only need max and min. But non-convex polygon support */
         side.resize(polygon.size());
         sortedIndex.reserve(polygon.size());
         for (unsigned i = 0; i < polygon.size(); i++)
@@ -48,7 +48,7 @@ public:
             idx = (idx + 1) % polygon.size();
         }
 
-        /** So far only convex poligons are supported **/
+        /** So far only convex polygons are supported **/
         bool orientation = true;
         bool isConvex = polygon.isConvex(&orientation);
         if (!isConvex) {
@@ -81,17 +81,17 @@ public:
         cout << "Indexes:" << currentIndex << " " << deep << " " << shallow << endl;
 #endif
 
-        if (polygon.y(deep) < polygon.y(shallow)) std::swap(deep, shallow);
+        if (polygon.y(deep) < polygon.y(shallow))
+            std::swap(deep, shallow);
 
         double longslope = (polygon.x(deep) - origin.x()) / (polygon.y(deep) - origin.y());
         double centerx1 = origin.x() + longslope * (polygon.y(shallow) - origin.y());
         double centerx2 = polygon.x(shallow);
 
-        if (centerx2 < centerx1) std::swap(centerx2, centerx1);
-
+        if (centerx2 < centerx1)
+            std::swap(centerx2, centerx1);
 
         part = TrapezoidSpanIterator(origin.y(), polygon.y(shallow), origin.x(), origin.x(), centerx1, centerx2);
-
     }
 
     void step()
