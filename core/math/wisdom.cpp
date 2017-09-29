@@ -23,22 +23,12 @@ std::ostream& operator<<(std::ostream& os, const AcceleratorTypes &type)
     return os;
 }
 
-static std::unique_ptr<CpuController> ptr_c;
-void* cpuptr()
-{
-    if (!ptr_c)
-        ptr_c.reset(new CpuController());
-    return ptr_c.get();
-}
+static std::unique_ptr<CpuController> ptr_c(new CpuController());
+void* cpuptr() { return ptr_c.get(); }
 
 #ifdef WITH_CUDA
-static std::unique_ptr<CudaGpuController> ptr_g;
-void* gpuptr()
-{
-    if (!ptr_g)
-        ptr_g.reset(new CudaGpuController());
-    return ptr_g.get();
-}
+static std::unique_ptr<CudaGpuController> ptr_g(new CudaGpuController());
+void* gpuptr() { return ptr_g.get(); }
 #endif
 
 
