@@ -82,7 +82,7 @@ public:
     virtual int inputNumber() {return 0;}
     virtual int outputNumber() {return 0;}
 
-    virtual void f(double in[], double out[]) {}
+    virtual void f(double in[], double out[]) { CORE_UNUSED(in); CORE_UNUSED(out); }
     virtual std::string getCCode();
     virtual ASTNodeFunctionPayload *derivative(int input);
     virtual ASTNodeInt *derivative(const std::string &/*name*/) { return NULL; }
