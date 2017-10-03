@@ -7,7 +7,10 @@
  *
  * \ingroup autotest
  */
+#include <essentialEstimator.h>
 #include <iostream>
+#include <fstream>
+#include <calculationStats.h>
 #include "gtest/gtest.h"
 
 #include "global.h"
@@ -335,4 +338,385 @@ TEST(meta, testMetaNodeFunction)
 
     cout << F.getCCode();
 }
+#endif
+
+
+TEST(meta, testShortcutDerivative)
+{
+    ASTNodeShortcutFunction function;
+    function.name = "F(x,y)";
+    function.params.push_back("x");
+    function.params.push_back("y");
+    function.derivatives.push_back("dF/dx");
+    function.derivatives.push_back("dF/dy");
+
+    ASTNode example = ASTNode(5) * ASTNode("x") +  ASTNode("y") * ASTNode("F", &function);
+    example.p->derivative("x")->codeGenCpp(0, ASTNodeInt::identSymLine);
+
+}
+
+
+TEST(meta, testEssentialCostFunction)
+{
+
+    //double in[7] = {1/2, 1/2, -1/2, 1/2, 0.4, 0.2, 0.3};
+
+    double in[7] = {-0.00913099, 0.0054594, -0.00347481, 0.999937, -0.999999, -0.00125867, -0.00011209};
+
+    vector<Correspondence> data;
+    for (int i = 0; i < 1000; i+=10) {
+        for (int j = 0; j < 200; j+=10) {
+            Vector2dd input(i - 500, j - 10);
+            input /= 500.0;
+
+            Vector2dd out = input + Vector2dd(((i / 10 + j) % 10) / 100.0, ((i/ 10 + j) / 2000.0));
+            data.push_back(Correspondence(input, out));
+        }
+    }
+
+    vector<Correspondence *> dataPtr;
+    for (int i = 0; i < data.size(); i++) {
+        dataPtr.push_back(&data[i]);
+    }
+
+    EssentialEstimator::CostFunction7toN             old(&dataPtr);
+    EssentialEstimator::CostFunction7toNPacked    modern(&dataPtr);
+    //EssentialEstimator::CostFunction7toNGenerated    gen(&dataPtr);
+    EssentialEstimator::CostFunction7toNGenerated1  gen1(&dataPtr);
+
+#if 0
+    cout << "Gen1\n" << gen1  .getJacobian(in) << endl;
+    cout << "Old \n" << old   .getJacobian(in) << endl;
+    cout << "New \n" << modern.getJacobian(in) << endl;
+    //cout << "Gen \n" << gen   .getJacobian(in) << endl;
+#endif
+
+
+    static int LIMIT = 50;
+
+    Statistics stats;
+    double noopt = 0;
+
+    for (int i=0; i < LIMIT; i++) {
+        Matrix test = gen1.getJacobian(in);
+        noopt += test.a(test.h / 2, test.w / 2);
+    }
+    for (int i=0; i < LIMIT; i++) {
+        Matrix test = modern.getJacobian(in);
+        noopt += test.a(test.h / 2, test.w / 2);
+    }
+    for (int i=0; i < LIMIT; i++) {
+        Matrix test = old.getJacobian(in);
+        noopt += test.a(test.h / 2, test.w / 2);
+    }
+    /*for (int i=0; i < LIMIT; i++) {
+        Matrix test = gen.getJacobian(in);
+        noopt += test.a(test.h / 2, test.w / 2);
+    }*/
+
+    /*============================*/
+    stats.startInterval();
+    for (int i=0; i < LIMIT; i++) {
+        Matrix test = gen1.getJacobian(in);
+        noopt += test.a(test.h / 2, test.w / 2);
+    }
+    stats.endInterval("Gen1");
+
+    stats.startInterval();
+    for (int i=0; i < LIMIT; i++) {
+        Matrix test = modern.getJacobian(in);
+        noopt += test.a(test.h / 2, test.w / 2);
+    }
+    stats.endInterval("New");
+
+    stats.startInterval();
+    for (int i=0; i < LIMIT; i++) {
+        Matrix test = old.getJacobian(in);
+        noopt += test.a(test.h / 2, test.w / 2);
+    }
+    stats.endInterval("Old");
+
+/*    stats.startInterval();
+    for (int i=0; i < LIMIT; i++) {
+        Matrix test = gen.getJacobian(in);
+        noopt += test.a(test.h / 2, test.w / 2);
+    }
+    stats.endInterval("Gen");*/
+
+    cout << stats << endl;
+    BaseTimeStatisticsCollector(stats).printAdvanced();
+    cout << noopt << endl;
+}
+
+#if 1
+TEST(meta, genEssentialCostFunction)
+{
+    ASTNodeInt *nodeRaw = EssentialEstimator::CostFunction7toNPacked::derivative(EssentialEstimator::CostFunction7toNPacked::essentialAST());
+    ASTNodeInt *node = nodeRaw->compute();
+
+    ASTNodeInt *dqx = node->derivative("Qx")->compute();
+    ASTNodeInt *dqy = node->derivative("Qy")->compute();
+    ASTNodeInt *dqz = node->derivative("Qz")->compute();
+    ASTNodeInt *dqt = node->derivative("Qt")->compute();
+
+
+    ASTNodeInt *dtx = node->derivative("Tx")->compute();
+    ASTNodeInt *dty = node->derivative("Ty")->compute();
+    ASTNodeInt *dtz = node->derivative("Tz")->compute();
+
+    std::ofstream file("src/open/core/xml/generated/essentialDerivative.cpp");
+
+    ASTRenderDec style("", "", false, file);
+
+
+    file <<
+    "#include \"correspondenceList.h\"\n"
+    "#include \"essentialEstimator.h\"\n"
+    "\n"
+    "namespace corecvs {\n"
+    "\n"
+    "    void derivative(const double in[], double out[], Correspondence *c) {\n"
+    "    double Qx = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_X]; \n"
+    "    double Qy = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Y]; \n"
+    "    double Qz = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Z]; \n"
+    "    double Qt = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_T]; \n"
+
+    "    double Tx = in[EssentialEstimator::CostFunctionBase::TRANSLATION_X]; \n"
+    "    double Ty = in[EssentialEstimator::CostFunctionBase::TRANSLATION_Y]; \n"
+    "    double Tz = in[EssentialEstimator::CostFunctionBase::TRANSLATION_Z]; \n"
+
+    "    Vector2dd start = c->start;\n"
+    "    Vector2dd end   = c->end;\n";
+
+    file << "   double value = ";
+    node->codeGenCpp(2, style);
+    file << ";\n";
+
+    file << "   out[EssentialEstimator::CostFunctionBase::ROTATION_Q_X]=";
+    dqx->codeGenCpp(2, style);
+    file << ";\n";
+
+    file << "   out[EssentialEstimator::CostFunctionBase::ROTATION_Q_X]=";
+    dqx->codeGenCpp(2, style);
+    file << ";\n";
+
+    file << "   out[EssentialEstimator::CostFunctionBase::ROTATION_Q_Y]=";
+    dqy->codeGenCpp(2, style);
+    file << ";\n";
+
+    file << "   out[EssentialEstimator::CostFunctionBase::ROTATION_Q_Z]=";
+    dqz->codeGenCpp(2, style);
+    file << ";\n";
+
+    file << "   out[EssentialEstimator::CostFunctionBase::ROTATION_Q_T]=";
+    dqt->codeGenCpp(2, style);
+    file << ";\n";
+
+    file << "   out[EssentialEstimator::CostFunctionBase::TRANSLATION_X]=";
+    dtx->codeGenCpp(2, style);
+    file << ";\n";
+
+    file << "   out[EssentialEstimator::CostFunctionBase::TRANSLATION_Y]=";
+    dty->codeGenCpp(2, style);
+    file << ";\n";
+
+    file << "   out[EssentialEstimator::CostFunctionBase::TRANSLATION_Z]=";
+    dtz->codeGenCpp(2, style);
+    file << ";\n";
+
+    file <<
+    "if (value < 0)\n"
+    " for (int i = 0; i < EssentialEstimator::CostFunctionBase::VECTOR_SIZE; i++) out[i] = -out[i];\n";
+    file << "} }";
+}
+
+
+TEST(meta, genEssentialCostFunction1)
+{
+    typedef EssentialEstimator::CostFunction7toNPacked::Matrix33Diff Matrix33Diff;
+
+    std::ofstream file("src/open/core/xml/generated/essentialDerivative3.cpp");
+    ASTRenderDec style("", "", false, file);
+
+    Matrix33Diff matrixRaw = EssentialEstimator::CostFunction7toNPacked::essentialAST();
+
+    const char *names[] = {"Qx", "Qy", "Qz", "Qt", "Tx", "Ty", "Tz"};
+
+    file <<
+    "#include <vector>\n"
+    "#include \"correspondenceList.h\"\n"
+    "#include \"essentialEstimator.h\"\n"
+    "\n"
+    "using namespace std;\n"
+    "namespace corecvs {\n"
+    "\n"
+    "Matrix derivative2(const double in[], const vector<Correspondence *> *samples) {\n"
+    "    Matrix result(samples->size(), EssentialEstimator::CostFunctionBase::VECTOR_SIZE);\n"
+    "    double Qx = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_X]; \n"
+    "    double Qy = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Y]; \n"
+    "    double Qz = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_Z]; \n"
+    "    double Qt = in[EssentialEstimator::CostFunctionBase::ROTATION_Q_T]; \n"
+
+    "    double Tx = in[EssentialEstimator::CostFunctionBase::TRANSLATION_X]; \n"
+    "    double Ty = in[EssentialEstimator::CostFunctionBase::TRANSLATION_Y]; \n"
+    "    double Tz = in[EssentialEstimator::CostFunctionBase::TRANSLATION_Z]; \n";
+
+
+    ASTNodeShortcutFunction function[9];
+    /*const char *tnames[9] = {
+        "a00", "a01", "a02",
+        "a10", "a11", "a12",
+        "a20", "a21", "a22",
+    };*/
+
+    file << "   double m[9];\n";
+    file << "   double md[7 * 9];\n";
+
+
+    vector <ASTNodeInt *> elements;
+    vector <std::string>  elementNames;
+
+
+    int c = 0;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            ostringstream namer;
+            namer << "m[" << c << "]";
+
+            ASTNodeInt *node = matrixRaw.atm(i,j).p->compute();
+            elements    .push_back(node);
+            elementNames.push_back(namer.str());
+
+            function[c].name = namer.str();
+            function[c].params     .resize(EssentialEstimator::CostFunctionBase::VECTOR_SIZE);
+            function[c].derivatives.resize(EssentialEstimator::CostFunctionBase::VECTOR_SIZE);
+
+            for (int k = 0; k < EssentialEstimator::CostFunctionBase::VECTOR_SIZE; k++)
+            {
+                ostringstream namer;
+                namer << "md[" << c * 7 + k  << "]";
+
+                /*file << "     " << namer.str() << "= ";
+                node->derivative(names[k])->compute()->codeGenCpp(2, style);
+                file << ";\n";*/
+                elements.push_back(node->derivative(names[k])->compute());
+                elementNames.push_back(namer.str());
+
+                function[c].params     [k] = names[k];
+                function[c].derivatives[k] = namer.str();
+            }
+            c++;
+        }
+    }
+
+    /* Ok. CSE. */
+    /*Compute hashes*/
+    SYNC_PRINT(("Hashing...\n"));
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        elements[i]->rehash();
+    }
+    /* Form subtree dictionary to check for common subexpresstions */
+    SYNC_PRINT(("Making cse dictionary...\n"));
+
+    std::unordered_map<uint64_t, ASTNodeInt *> subexpDictionary;
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        elements[i]->cseR(subexpDictionary);
+    }
+
+    /* Ok let's sort cse by height */
+    vector<ASTNodeInt *> commonSubexpressions;
+    for (auto it : subexpDictionary)
+    {
+        if (it.second->cseCount == 0)
+            continue;
+        commonSubexpressions.push_back(it.second);
+        it.second->cseName = commonSubexpressions.size();
+    }
+    std::sort(commonSubexpressions.begin(), commonSubexpressions.end(),
+              [](ASTNodeInt *a, ASTNodeInt *b){return a->height < b->height;});
+
+    SYNC_PRINT(("finished - size = %" PRISIZE_T "\n", commonSubexpressions.size() ));
+
+    style.cse = &subexpDictionary;
+
+    SYNC_PRINT(("Dumping cse trees...\n"));
+    for (auto it : commonSubexpressions)
+    {
+        int cseName = it->cseName;
+        file << "   const double " << "cse" << std::hex << cseName << std::dec << " = ";
+
+        /* Hack node not to be selference. Restore it back afterwards */
+        uint64_t hash = it->hash;
+        it->hash = 0;
+        it->codeGenCpp(0, style);
+        it->hash = hash;
+        file << ";\n";
+    }
+
+
+    SYNC_PRINT(("Dumping main code...\n"));
+    for (size_t i = 0; i < elements.size(); i++)
+    {
+        if (i < elementNames.size()) {
+            file << elementNames[i];
+        } else {
+            char buffer[100];
+            snprintf2buf(buffer, "out[%d]", i);
+            file << buffer;
+        }
+        file << " = ";
+
+        elements[i]->codeGenCpp(0, style);
+        file << ";\n";
+    }
+
+
+
+    /* Ok... All done with fixed part of function */
+    file <<
+    "\n"
+    "   for (size_t i = 0; i < samples->size(); i++)\n"
+    "   {\n"
+    "        double startx = (*samples)[i]->start.x();\n"
+    "        double starty = (*samples)[i]->start.y();\n"
+    "        double endx   = (*samples)[i]->end.x();\n"
+    "        double endy   = (*samples)[i]->end.y();\n"
+    "   \n";
+
+    Matrix33Diff matrix;
+    for (int i = 0; i < 3; i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            int c = i * 3 + j;
+            matrix.atm(i,j) = ASTNode(function[c].name.c_str(), &function[c]);
+        }
+    }
+    ASTNodeInt *nodeFinal = EssentialEstimator::CostFunction7toNPacked::derivative(matrix);
+
+    file << "         double v = ";
+    nodeFinal->compute()->codeGenCpp(2, style);
+    file << ";\n";
+
+    for (int k = 0; k < EssentialEstimator::CostFunctionBase::VECTOR_SIZE; k++)
+    {
+        file << "         result.element(i," << k << ") = ";
+        nodeFinal->derivative(names[k])->compute()->codeGenCpp(2, style);
+        file << ";\n";
+        file << "         if (v < 0) result.element(i," << k << ") = -result.element(i," << k << ");\n";
+    };
+
+
+    file <<
+    "   }\n"
+    "   return result;\n"
+    "}\n"
+    "} // namespace\n";
+
+}
+
 #endif

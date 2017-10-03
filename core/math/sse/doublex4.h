@@ -116,7 +116,15 @@ template<int idx>
         return 0;
     }
 
+
+
+
     /* Arithmetics operations */
+    Doublex4 operator -()
+    {
+        return Doublex4::Zero() - *this;
+    }
+
     friend Doublex4 operator +(const Doublex4 &left, const Doublex4 &right);
     friend Doublex4 operator -(const Doublex4 &left, const Doublex4 &right);
 

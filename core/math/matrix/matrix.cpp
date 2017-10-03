@@ -297,7 +297,7 @@ Vector operator *(const Matrix &M, const Vector &V)
 
 Vector operator *(const Vector &V, const Matrix &M)
 {
-    CORE_ASSERT_TRUE(M.h == V.size(), "Matrix and vector have wrong sizes");
+    CORE_ASSERT_TRUE_P(M.h == V.size(), ("Matrix and vector have wrong sizes [%dx%d] %d", M.h, M.w, V.size()));
     Vector result(M.w);
 
 #ifdef WITH_BLAS

@@ -1,5 +1,8 @@
 #ifndef LINE_H_
 #define LINE_H_
+
+#include <cmath>
+
 #include "vector2d.h"
 #include "vector3d.h"
 #include "matrix44.h"
@@ -278,7 +281,7 @@ public:
     Ray3d(const BaseRay<Ray3d, Vector3dd> &base) : BaseRay<Ray3d, Vector3dd>(base)
     {}
 
-        double distanceTo(const Ray3d &other ) const
+    double distanceTo(const Ray3d &other ) const
     {
         Vector3dd denum = a ^ other.a;
         Vector3dd dp = p - other.p;

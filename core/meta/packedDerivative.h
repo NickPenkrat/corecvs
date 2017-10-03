@@ -22,6 +22,13 @@ public:
             derivative[i] = 0.0;
     }
 
+    explicit PackedDerivative(int value) :
+        value(value)
+    {
+        for (int i = 0; i < dimension; i++)
+            derivative[i] = 0.0;
+    }
+
     explicit PackedDerivative(double value, const double _derivative[dimension]) :
         value(value)
     {
@@ -101,6 +108,16 @@ public:
         return result;
     }
 
+    friend inline PackedDerivative operator -(const PackedDerivative &right)
+    {
+        PackedDerivative result(-right.value);
+
+        for (int i = 0; i < dimension; i++)
+            result.derivative[i] = -right.derivative[i];
+
+        return result;
+    }
+
     friend inline PackedDerivative operator /(const PackedDerivative &left, const PackedDerivative &right)
     {
         PackedDerivative result(left.value / right.value);
@@ -124,6 +141,19 @@ public:
     }
 
     /* King Midas style operators. This could be optimized. */
+
+    PackedDerivative operator =(const double &right)
+    {
+        *this = PackedDerivative(right);
+        return *this;
+    }
+
+    PackedDerivative operator =(const int &right)
+    {
+        *this = PackedDerivative(right);
+        return *this;
+    }
+
 
     friend inline PackedDerivative operator *(const PackedDerivative &left, const double &right)
     {

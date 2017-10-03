@@ -82,11 +82,11 @@ public:
     virtual int inputNumber() {return 0;}
     virtual int outputNumber() {return 0;}
 
-    virtual void f(double in[], double out[]) = 0;
+    virtual void f(double in[], double out[]) {}
     virtual std::string getCCode();
     virtual ASTNodeFunctionPayload *derivative(int input);
+    virtual ASTNodeInt *derivative(const std::string &/*name*/) { return NULL; }
 };
-
 
 /**
  *  Internal data structure for ASTTree - it records all operations with ASTNode.
@@ -208,6 +208,21 @@ public:
         _init();
     }
 
+    explicit ASTNodeInt(const std::string &_name) :
+        op   (OPREATOR_ID),
+        val  (0),
+        name (_name)
+    {
+        _init();
+    }
+
+    explicit ASTNodeInt(const char *_name, ASTNodeFunctionPayload *_payload) :
+        op (OPERATOR_FUNCTION),
+        name(_name),
+        payload(_payload)
+    {
+    }
+
     ~ASTNodeInt()
     {
         if (ASTContext::MAIN_CONTEXT == NULL)
@@ -259,8 +274,23 @@ public:
      * NB This function actually modifies the tree elements.
      **/
     void extractConstPool(const std::string &poolname, std::unordered_map<double, std::string> &pool);
-    /* Computes hash and height */
+
+    /**
+     * Computes hash and height
+     * Most functions don't change the syntax tree, so after it is constructed you may call rehash
+     * and use it for a while to identify node with out deep comparison.
+     *
+     * Hash equal for equal trees
+     *
+     **/
     void rehash();
+
+    /**
+     *   This method is not changing the tree, it only collectes hashes of the nodes that are different.
+     *   Actual CSE would be done on second path
+     *
+     *
+     **/
     void cseR(std::unordered_map<uint64_t, ASTNodeInt *> &cse);
 
     size_t memoryFootprint();
@@ -289,7 +319,7 @@ private:
 public:
     virtual int inputNumber() override;
     virtual int outputNumber()  override;
-    virtual void f(double in[], double out[])  override;
+    virtual void f(double in[], double out[]);
     virtual std::string getCCode()  override;
     virtual ASTNodeFunctionPayload *derivative(int input)  override;
 };
@@ -321,14 +351,32 @@ public:
 //        SYNC_PRINT(("ASTNode(\"%s\"): with id %p\n", _value, static_cast<void*>(p)));
     }
 
+    explicit ASTNode(const char *prefix, const char *postfix) :
+        p(new ASTNodeInt(std::string(prefix) + std::string(postfix)))
+    {
+//        SYNC_PRINT(("ASTNode(\"%s\"): with id %p\n", _value, static_cast<void*>(p)));
+    }
+
+    explicit ASTNode(const std::string &name) :
+        p(new ASTNodeInt(name))
+    {
+//        SYNC_PRINT(("ASTNode(\"%s\"): with id %p\n", _value, static_cast<void*>(p)));
+    }
+
     ASTNode(ASTNodeInt::Operator _op, const ASTNode &_left, const ASTNode &_right) :
         p(new ASTNodeInt(_op, _left.p, _right.p))
     {
     }
 
+    ASTNode(const char *name, ASTNodeFunctionPayload *payload) :
+        p(new ASTNodeInt(name, payload))
+    {
+    }
 
-//    friend ASTNode operator *(ASTNode left, ASTNode right);
-
+    inline friend ASTNode sqrt(const ASTNode &left)
+    {
+        return ASTNode(ASTNodeInt::OPERATOR_POW, left, ASTNode(0.5));
+    }
 
 };
 
@@ -359,10 +407,6 @@ inline ASTNode operator /(const ASTNode &left, const ASTNode &right)
     return ASTNode(ASTNodeInt::OPERATOR_DIV, left, right);
 }
 
-inline ASTNode sqrt(const ASTNode &left)
-{
-    return ASTNode(ASTNodeInt::OPERATOR_POW, left, ASTNode(0.5));
-}
 
 /* King Midas style operators */
 
@@ -412,6 +456,30 @@ inline ASTNode operator /(const ASTNode &left, const double &right)
 {
     return ASTNode(ASTNodeInt::OPERATOR_DIV, left,  ASTNode(right));
 }
+
+
+class ASTNodeShortcutFunction : public ASTNodeFunctionPayload
+{
+public:
+    std::string name;
+    std::vector<std::string> params;
+    std::vector<std::string> derivatives;
+
+    ASTNodeShortcutFunction()
+    {}
+
+    ASTNodeShortcutFunction(
+            std::string _name,
+            std::vector<std::string> _params,
+            std::vector<std::string> _derivatives
+    ) :
+        name(_name),
+        params(_params),
+        derivatives(_derivatives)
+    {}
+
+    virtual ASTNodeInt *derivative(const std::string &varname);
+};
 
 
 } //namespace corecvs

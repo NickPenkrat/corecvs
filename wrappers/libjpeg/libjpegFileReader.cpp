@@ -10,12 +10,15 @@ using namespace corecvs;
 
 string  LibjpegFileReader::prefix1(".jpg");
 string  LibjpegFileReader::prefix2(".jpeg");
-
+string  LibjpegFileReader::prefix3(".JPG");
+string  LibjpegFileReader::prefix4(".JPEG");
 
 bool LibjpegFileReader::acceptsFile(string name)
 {
     return HelperUtils::endsWith(name, prefix1) ||
-           HelperUtils::endsWith(name, prefix2) ;
+           HelperUtils::endsWith(name, prefix2) ||
+           HelperUtils::endsWith(name, prefix3) ||
+           HelperUtils::endsWith(name, prefix4);
 }
 
 RGB24Buffer *LibjpegFileReader::load(string name)

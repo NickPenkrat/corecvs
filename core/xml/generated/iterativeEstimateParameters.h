@@ -33,12 +33,13 @@
 
 /**
  * \brief Iterative Estimate Parameters 
- * Iterative Estimate Parameters 
+ * Parameters for step by step convergence to solution. We make an estimation and throw out outliers, then throw away again 
  **/
 class IterativeEstimateParameters : public corecvs::BaseReflection<IterativeEstimateParameters>
 {
 public:
     enum FieldId {
+        LIMIT_SAMPLES_ID,
         ITERATIONS_NUMBER_ID,
         USE_INITIAL_ID,
         INITIAL_SIGMA_ID,
@@ -47,6 +48,12 @@ public:
     };
 
     /** Section with variables */
+
+    /** 
+     * \brief Limit Samples 
+     * Limit Samples 
+     */
+    int mLimitSamples;
 
     /** 
      * \brief Iterations Number 
@@ -82,6 +89,11 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
+    int limitSamples() const
+    {
+        return mLimitSamples;
+    }
+
     int iterationsNumber() const
     {
         return mIterationsNumber;
@@ -103,6 +115,11 @@ public:
     }
 
     /* Section with setters */
+    void setLimitSamples(int limitSamples)
+    {
+        mLimitSamples = limitSamples;
+    }
+
     void setIterationsNumber(int iterationsNumber)
     {
         mIterationsNumber = iterationsNumber;
@@ -128,6 +145,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
+        visitor.visit(mLimitSamples,              static_cast<const corecvs::IntField *>(fields()[LIMIT_SAMPLES_ID]));
         visitor.visit(mIterationsNumber,          static_cast<const corecvs::IntField *>(fields()[ITERATIONS_NUMBER_ID]));
         visitor.visit(mUseInitial,                static_cast<const corecvs::BoolField *>(fields()[USE_INITIAL_ID]));
         visitor.visit(mInitialSigma,              static_cast<const corecvs::DoubleField *>(fields()[INITIAL_SIGMA_ID]));
@@ -141,12 +159,14 @@ template<class VisitorType>
     }
 
     IterativeEstimateParameters(
-          int iterationsNumber
+          int limitSamples
+        , int iterationsNumber
         , bool useInitial
         , double initialSigma
         , double sigmaFactor
     )
     {
+        mLimitSamples = limitSamples;
         mIterationsNumber = iterationsNumber;
         mUseInitial = useInitial;
         mInitialSigma = initialSigma;
