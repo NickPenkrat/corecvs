@@ -3,10 +3,11 @@
 
 #include <string>
 #include <ostream>
+#include <functional>
+
+#include "global.h"
 
 #include "tbbWrapper.h"
-#include <functional>
-#include "global.h"
 
 struct CancelExecutionException : public AssertException
 {
@@ -45,11 +46,11 @@ struct Status
     }
 
     double getProgressGlobal() {
-        return (double)completedGlobalActions / totalGlobalActions;
+        return (double)completedGlobalActions / CORE_MAX(1, totalGlobalActions);
     }
 
     double getProgressLocal() {
-        return (double)(double)completedActions / totalActions;
+        return (double)completedActions / CORE_MAX(1, totalActions);
     }
 };
 
@@ -60,79 +61,87 @@ struct AutoTracker
     AutoTracker(StatusTracker* st);
     AutoTracker(AutoTracker &&other);
     AutoTracker& operator=(AutoTracker &&other);
-    ~AutoTracker();
+   ~AutoTracker();
+
 private:
     AutoTracker(const AutoTracker &other) = delete;
     AutoTracker& operator=(const AutoTracker &other) = delete;
+
     StatusTracker* st;
 };
 
 class StatusTracker
 {
 public:
-    static void SetTotalActions(StatusTracker *tracker, size_t totalActions);
-    static void Reset(StatusTracker *tracker, const std::string &action, size_t totalActions);
+    static void         SetTotalActions(StatusTracker *tracker, size_t totalActions);
+    static void         Reset(StatusTracker *tracker, const std::string &action, size_t totalActions);
 
-    static void IncrementStarted(StatusTracker *tracker);
-    static void IncrementCompleted(StatusTracker *tracker);
-    static AutoTracker CreateAutoTrackerCalculationObject(StatusTracker *tracker);
+    static void         IncrementStarted(StatusTracker *tracker);
+    static void         IncrementCompleted(StatusTracker *tracker);
+    static AutoTracker  CreateAutoTrackerCalculationObject(StatusTracker *tracker);
 
-    static void    SetCompleted(StatusTracker *tracker);
-    static void    SetFailed(StatusTracker *tracker, const char* error);
-    static void    SetToCancel(StatusTracker *tracker);
-    static void    SetCanceled(StatusTracker *tracker);
+    static void         SetCompleted(StatusTracker *tracker);
+    static void         SetFailed(StatusTracker *tracker, const char* error);
+    static void         SetToCancel(StatusTracker *tracker);
+    static void         SetCanceled(StatusTracker *tracker);
 
-    static bool    IsCompleted(const StatusTracker *tracker);
-    static bool    IsFailed(const StatusTracker *tracker);
+    static bool         IsCompleted(const StatusTracker *tracker);
+    static bool         IsFailed(const StatusTracker *tracker);
 
-    static bool    IsToCancel(const StatusTracker *tracker);
+    static bool         IsToCancel(const StatusTracker *tracker);
 
-    static bool    IsCanceled(const StatusTracker *tracker);
-    static void    CheckToCancel(StatusTracker *tracker);
+    static bool         IsCanceled(const StatusTracker *tracker);
+    static void         CheckToCancel(StatusTracker *tracker);
 
-    static bool    IsActionCompleted(const StatusTracker *tracker, const std::string &action);
+    static bool         IsActionCompleted(const StatusTracker *tracker, const std::string &action);
 
-    static Status  GetStatus(const StatusTracker *tracker);
+    static Status       GetStatus(const StatusTracker *tracker);
 
-    std::function<void(std::string)> onError;
-    std::function<void()> onFinished;
-    std::function<void(double global, double local)> onProgress;
-    std::function<bool()> onCheckToCancel;
+    std::function<void(std::string)>                    onError;
+    std::function<void()>                               onFinished;
+    std::function<void(double global, double local)>    onProgress;
+    std::function<bool()>                               onCheckToCancel;
+
+    StatusTracker() : onError(0), onFinished(0), onProgress(0), onCheckToCancel(0)
+    {}
+
+    StatusTracker& operator=(const StatusTracker&) = delete;
+    StatusTracker(StatusTracker&) = delete;
 
 protected:
-    void    setTotalActions(size_t totalActions);
-    void    reset(const std::string &action, size_t totalActions);
+    void                setTotalActions(size_t totalActions);
+    void                reset(const std::string &action, size_t totalActions);
 
-    void    incrementStarted();
-    void    incrementCompleted();
-    AutoTracker createAutoTrackerCalculationObject();
+    void                incrementStarted();
+    void                incrementCompleted();
+    AutoTracker         createAutoTrackerCalculationObject();
 
-    void    setCompleted();
-    void    setFailed(const char* error);
-    void    setToCancel();
-    void    setCanceled();
+    void                setCompleted();
+    void                setFailed(const char* error);
+    void                setToCancel();
+    void                setCanceled();
 
-    bool    isCompleted() const;
-    bool    isFailed() const;
+    bool                isCompleted() const;
+    bool                isFailed() const;
     ///
     /// \brief isToCancel
     /// \return Returns whether the processing task should be canceled asap
     ///
-    bool    isToCancel() const;
+    bool                isToCancel() const;
     ///
     /// \brief isCanceled
     /// \return Returns whether the processing task was canceled and has been stopped
     ///
-    bool    isCanceled() const;
-    void    checkToCancel();
+    bool                isCanceled() const;
+    void                checkToCancel();
 
-    bool    isActionCompleted(const std::string &action) const;
+    bool                isActionCompleted(const std::string &action) const;
 
-    Status  getStatus() const;
+    Status              getStatus() const;
 
 private:
-    Status  currentStatus;
-    void cancelExecution() const;
+    Status              currentStatus;
+    void                cancelExecution() const;
 
 #ifdef WITH_TBB
     typedef tbb::reader_writer_lock::scoped_lock_read read_lock;

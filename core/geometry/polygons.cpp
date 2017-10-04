@@ -92,7 +92,7 @@ bool Polygon::isConvex(bool *direction) const
     int idx2 = getNextIndex(idx1);
     const Vector2dd *nnext = NULL;
 
-    cout << "We have taken as first ones" << *curr << " " << *next << endl;
+    //cout << "We have taken as first ones: " << *curr << " " << *next << endl;
 
     while (idx2 != idx1)
     {

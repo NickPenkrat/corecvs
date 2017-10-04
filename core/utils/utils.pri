@@ -12,6 +12,7 @@ HEADERS += \
     utils/typesafeBitmaskEnums.h \
     utils/statusTracker.h \
     utils/abstractImageNamer.h \
+    utils/statusTrackerCatcher.h \
 
 SOURCES += \
     utils/memhooks.c \
