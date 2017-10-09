@@ -400,17 +400,20 @@ public:
                 bool loadPrototypes = true,
                 bool loadGeometry = true)
     {
-        bool hasTargetCoordSystem = false;
-        visitor.visit(relativeImageDataPath, std::string(""),                              "relativeImageDataPath");
-        visitor.visit(coordinateSystemState, CoordinateSystemState::initial,               "coordinateSystemState");
-        visitor.visit(hasTargetCoordSystem, false,                                         "hasTargetCoordSystem" ); // for compartibility with old scenes
-        visitor.visit(localToWorld, Matrix44::Identity(),                                  "localToWorld");
+        visitor.visit(relativeImageDataPath, std::string(""),                "relativeImageDataPath");
+        visitor.visit(coordinateSystemState, CoordinateSystemState::initial, "coordinateSystemState");
+        visitor.visit(localToWorld, Matrix44::Identity(),                    "localToWorld");
 
-        if (hasTargetCoordSystem)
+        if (visitor.isLoader())
         {
-            coordinateSystemState = CoordinateSystemState::final;
-            localToWorld = Matrix44::Identity();
-        }         
+            bool hasTargetCoordSystem = false;
+            visitor.visit(hasTargetCoordSystem, false, "hasTargetCoordSystem"); // for compatibility with old scenes
+            if (hasTargetCoordSystem)
+            {
+                coordinateSystemState = CoordinateSystemState::final;
+                localToWorld = Matrix44::Identity();
+            }
+        }
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
