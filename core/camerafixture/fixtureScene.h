@@ -153,10 +153,7 @@ public:
         final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
         convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
     };
-
     CoordinateSystemState         coordinateSystemState = CoordinateSystemState::initial;  
-    //bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
-    //bool                          hasValidConversionMatrix = false;  ///< true if localToWorld is valid
 
     StatusTracker *               processState = nullptr;        ///< it's owned on the external side
 
