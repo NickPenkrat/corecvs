@@ -81,33 +81,37 @@ void BufferFactory::printCaps()
 template<typename BufferType>
 BufferType *loadBuffer(string name, vector<BufferLoader<BufferType> *> &loaders)
 {
-    bool found = false;
-    for (auto it : loaders)
+    vector<size_t> idxs;
+    for (size_t i = 0; i < loaders.size(); ++i)
     {
-        //SYNC_PRINT(("BufferFactory::load(%s): loader <%s>\n", name.c_str(), it->name().c_str()));
-
-        if (!(it->acceptsFile(name)))
+        if (!(loaders[i]->acceptsFile(name)))
             continue;
-        found = true;
-
-        BufferType *result = NULL;
-        try {
-            result = it->load(name);
-        }
-        catch (std::exception &)
-        {
-            SYNC_PRINT(("BufferFactory::load(): loader <%s> violates contract by throwing unexpected exception\n", it->name().c_str()));
-        }
-
-        if (result != NULL) {
-            return result;
-        }
-
-        SYNC_PRINT(("BufferFactory::load(%s):  loader <%s> agreed to load, but failed\n", name.c_str(), it->name().c_str()));
+        idxs.push_back(i);
+    }
+    if (!idxs.size())
+    {
+        SYNC_PRINT(("BufferFactory::load(%s): no loaders for it!\n", name.c_str()));
+        return NULL;
     }
 
-    if (!found)
-        SYNC_PRINT(("BufferFactory::load(%s):  no loaders for it!\n", name.c_str()));
+    for (auto idx : idxs)
+    {
+        //SYNC_PRINT(("BufferFactory::load(%s): loader <%s>\n", name.c_str(), loaders[idx]->name().c_str()));
+        CORE_ASSERT_TRUE_S((loaders[idx]->acceptsFile(name)));
+
+        try {
+            BufferType *result = loaders[idx]->load(name);
+            if (result)
+                return result;
+        }
+        catch (std::exception &ex)
+        {
+            SYNC_PRINT(("BufferFactory::load(): loader <%s> has thrown exception: <%s>\n", loaders[idx]->name().c_str(), ex.what()));
+            if (idxs.size() == 1)
+                throw ex;                           // there's no other readers, nothing to do further, throw ex outside
+        }
+        SYNC_PRINT(("BufferFactory::load(%s): loader <%s> agreed to load, but failed\n", name.c_str(), loaders[idx]->name().c_str()));
+    }
 
     return NULL;
 }
