@@ -6,7 +6,6 @@
  * \date Jun 22, 2010
  * \author alexander
  */
-
 #ifndef QUATERNION_H_
 #define QUATERNION_H_
 
@@ -154,7 +153,6 @@ public:
      */
     friend inline GenericQuaternion hamilton1(const GenericQuaternion &Q1, const GenericQuaternion &Q2)
     {
-
         ElementType tt = (Q1.z() + Q1.x()) * (Q2.x() + Q2.y());
         ElementType yy = (Q1.t() - Q1.y()) * (Q2.t() + Q2.z());
         ElementType zz = (Q1.t() + Q1.y()) * (Q2.t() - Q2.z());
@@ -207,14 +205,14 @@ public:
         t() = cosa2;
     }
 
-
     /**
      * This function is a reworked function form somewhere in Internet. License is unclear
      * This also takes square roots which is very funny :-D and very corecvs-ish (i.e. dumb
      * 'cause you'll get a squared square root in the denominator)
      * */
     template <class MatrixType>
-    inline MatrixType toMatrixGeneric() const  {
+    inline MatrixType toMatrixGeneric() const
+    {
         typename MatrixType::ElementType wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
         typename MatrixType::ElementType s  = 2.0 / this->operator !();
         x2 = x() * s;
@@ -225,13 +223,11 @@ public:
         wx = t() * x2;   wy = t() * y2;   wz = t() * z2;
 
         MatrixType toReturn = MatrixType::createMatrix(3, 3);
-
         toReturn.fillWithArgs(
-        1.0 - (yy + zz),     xy - wz     ,     xz + wy,
-             xy + wz   , 1.0 - (xx + zz) ,     yz - wx,
-             xz - wy   ,     yz + wx     ,  1.0 - (xx + yy)
+            1.0 - (yy + zz),         xy - wz ,         xz + wy,
+                   xy + wz ,  1.0 - (xx + zz),         yz - wx,
+                   xz - wy ,         yz + wx ,  1.0 - (xx + yy)
         );
-
         return toReturn;
     }
 
@@ -538,12 +534,11 @@ template<class VisitorType>
         out << "Rotation around: " << axis << " angle " << angle << "(" << angle << " deg)" << std::endl;
     }
 
-
 };
 
 typedef GenericQuaternion<double> Quaternion;
 
 
 } //namespace corecvs
-#endif /* QUATERNION_H_ */
 
+#endif /* QUATERNION_H_ */
