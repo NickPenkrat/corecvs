@@ -196,25 +196,25 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
 
 void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraPrototype)
 {
-     mOrphanCameras.erase(
-        std::remove_if(mOrphanCameras.begin(), mOrphanCameras.end(),
-            [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
-        mOrphanCameras.end()
-     );
+     //mOrphanCameras.erase(
+     //   std::remove_if(mOrphanCameras.begin(), mOrphanCameras.end(),
+     //       [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
+     //   mOrphanCameras.end()
+     //);
 
-     for (size_t i = 0; i < mFixtures.size(); i++)
-     {
-        CameraFixture *station = mFixtures[i];
-        if (station == NULL)
-            continue;
+     //for (size_t i = 0; i < mFixtures.size(); i++)
+     //{
+     //   CameraFixture *station = mFixtures[i];
+     //   if (station == NULL)
+     //       continue;
 
-        auto cameras = station->cameras;
-        cameras.erase(
-           std::remove_if(cameras.begin(), cameras.end(),
-               [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
-           cameras.end()
-        );
-     }
+     //   auto cameras = station->cameras;
+     //   cameras.erase(
+     //      std::remove_if(cameras.begin(), cameras.end(),
+     //          [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
+     //      cameras.end()
+     //   );
+     //}
 
      vectorErase(mCameraPrototypes, cameraPrototype);
 
@@ -707,7 +707,7 @@ void FixtureScene::dumpInfo(ostream &out, bool brief)
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 #endif
-    out << "name: " << nameId << "\trelPath: " << relativeImageDataPath << "\thasTargetCoordSystem: " << (bool)(coordinateSystemState == CoordinateSystemState::final) << endl;
+    out << "name: " << nameId << "\trelPath: " << relativeImageDataPath << "\tcoordSysState: " << (int)coordinateSystemState << endl;
 
     out << "Camera Prototypes: " << mCameraPrototypes.size() << endl;
     if (!brief)
