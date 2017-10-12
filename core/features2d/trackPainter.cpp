@@ -155,7 +155,7 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
                 continue;
 
             BufferFactory::getInstance()->saveRGB24Bitmap(dst, ss.str());
-            std::cout << "Written tracks image to " << outputName << std::endl;
+            std::cout << "Written tracks image to " << ss.str() << std::endl;
         }
     }
 }
