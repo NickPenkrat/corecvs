@@ -117,7 +117,7 @@ BufferType *loadBuffer(string name, vector<BufferLoader<BufferType> *> &loaders)
 }
 
 template<typename BufferType>
-bool saveBuffer(BufferType *buffer, string name, string preferedProvider, vector<BufferSaver<BufferType> *> &savers)
+bool saveBuffer(BufferType &buffer, const std::string &name, const std::string &preferedProvider, vector<BufferSaver<BufferType> *> &savers)
 {
     SYNC_PRINT(("BufferFactory::save(%s, preffered:%s)\n", name.c_str(), preferedProvider.c_str()));
 
@@ -137,7 +137,7 @@ bool saveBuffer(BufferType *buffer, string name, string preferedProvider, vector
     }
 
     if (saver) {
-        return saver->save(*buffer, name);
+        return saver->save(buffer, name);
     }
     return false;
 }
@@ -152,7 +152,7 @@ G12Buffer *BufferFactory::loadG16Bitmap(string name)
     return loadBuffer(name, mLoadersG16);
 }
 
-bool BufferFactory::saveRGB24Bitmap(RGB24Buffer *buffer, std::string name, std::string saverHint)
+bool BufferFactory::saveRGB24Bitmap(RGB24Buffer &buffer, const std::string &name, const std::string &saverHint)
 {
     return saveBuffer(buffer, name, saverHint, mSaversRGB24);
 }

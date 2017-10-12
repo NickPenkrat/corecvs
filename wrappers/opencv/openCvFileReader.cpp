@@ -123,7 +123,7 @@ RuntimeTypeBuffer *OpenCVRuntimeTypeBufferLoader::load(std::string name)
 bool OpenCVRGB24Saver::acceptsFile(string name)
 {
     std::vector<std::string> extList  = extentions();
-    for (auto ext : extList)
+    for (auto &ext : extList)
     {
         if (HelperUtils::endsWith(name, ext))
         {
