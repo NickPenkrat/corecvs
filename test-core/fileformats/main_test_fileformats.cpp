@@ -9,9 +9,11 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+
 #include "gtest/gtest.h"
 
-#include <global.h>
+#include "global.h"
+
 #include "rawLoader.h"
 #include "g12Buffer.h"
 #include "bmpLoader.h"

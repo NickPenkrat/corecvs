@@ -6,7 +6,6 @@
  * \date Jun 22, 2010
  * \author alexander
  */
-
 #ifndef QUATERNION_H_
 #define QUATERNION_H_
 
@@ -207,14 +206,14 @@ public:
         t() = cosa2;
     }
 
-
     /**
      * This function is a reworked function form somewhere in Internet. License is unclear
      * This also takes square roots which is very funny :-D and very corecvs-ish (i.e. dumb
      * 'cause you'll get a squared square root in the denominator)
      * */
     template <class MatrixType>
-    inline MatrixType toMatrixGeneric() const  {
+    inline MatrixType toMatrixGeneric() const
+    {
         typename MatrixType::ElementType wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
         typename MatrixType::ElementType s  = 2.0 / this->operator !();
         x2 = x() * s;
@@ -541,7 +540,6 @@ template<class VisitorType>
 
         out << "Rotation around: " << axis << " angle " << angle << "(" << angle << " deg)" << std::endl;
     }
-
 
 };
 

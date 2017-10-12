@@ -37,8 +37,8 @@ public:
 
     PlaneFrame() {}
 
-    PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2) :
-        p1(p1), e1(e1), e2(e2)
+    PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2)
+        : p1(p1), e1(e1), e2(e2)
     {}
 
     Vector3dd getNormal() const
@@ -106,7 +106,7 @@ public:
         double vol = e1 & p;
 
         /** If volume is zero this means e1,e2 and ray direction is coplanar so no intersection possible */
-        if(vol > -EPSILON && vol < EPSILON)
+        if (vol > -EPSILON && vol < EPSILON)
             return false;
 
         double inv_vol = 1.0 / vol;
@@ -310,7 +310,9 @@ public:
         return std::find(begin(), end(), point) != end();
     }
 
-    /* This function checks if the poligon is inside the buffer. It assumes that the poligon coorinate can be rounded to upper value  */
+    /* This function checks if the polygon is inside the buffer.
+       It assumes that the polygon coordinate can be rounded to upper value
+     */
     bool isInsideBuffer(const Vector2d<int> &bufferSize)
     {
         for (Vector2dd point : *this)
@@ -363,7 +365,7 @@ public:
     }
 
     /**
-     * This thing checks if the point is inside of the convex poligon
+     * Checks if the point is inside of the convex polygon
      *
      * \attention convex only
      **/
@@ -373,9 +375,8 @@ public:
     /**
      *  Winding number is the number of loops polygon makes around the point
      **/
-    int windingNumber( const Vector2dd &point ) const;
+    int windingNumber(const Vector2dd &point) const;
     int  isInside(const Vector2dd &point) const;
-
 
 
     bool isConvex(bool *direction = NULL) const;
@@ -432,20 +433,16 @@ public:
         return Segment2d(getPoint(i), getNextPoint(i));
     }
 
-
-
     /** This method uses the index by module of size() **/
     Vector2dd &getPointM(int idx)
     {
        return operator [](idx % size());
     }
 
-
     Vector2dd getNormal(int i) const
     {
         Vector2dd r1 = getPoint(i);
         Vector2dd r2 = getNextPoint(i);
-
         return (r2 - r1).rightNormal();
     }
 
@@ -470,7 +467,8 @@ public:
     ConvexPolygon toConvexPolygon() const;
 
 
-    Polygon transformed(const Matrix33 &transform) const {
+    Polygon transformed(const Matrix33 &transform) const
+    {
         Polygon toReturn;
         toReturn.reserve(size());
         for (Vector2dd p: *this ) {
@@ -479,7 +477,8 @@ public:
         return toReturn;
     }
 
-    void transform(const Matrix33 &transform) {
+    void transform(const Matrix33 &transform)
+    {
         for (Vector2dd &p: *this ) {
             p = transform * p;
         }
@@ -503,13 +502,14 @@ public:
         return operator [](idx).y();
     }
 
-    Ray2d edgeAsRay(int idx) {
+    Ray2d edgeAsRay(int idx)
+    {
         Vector2dd &start = getPoint(idx);
         Vector2dd &end   = getNextPoint(idx);
         return Ray2d::FromPoints(start, end);
     }
 
-    /* Valid for any type of simple poligon*/
+    /* Valid for any type of simple polygon*/
     double signedArea();
 
     double area() {
@@ -537,7 +537,6 @@ public:
     {
         visitor.visit(frame,   "frame");
         visitor.visit(polygon, "polygon");
-
     }
 };
 
@@ -552,7 +551,7 @@ class RGB24Buffer;
 class PolygonCombiner
 {
 public:
-    Polygon pol[2]; /* We actually don't need to copy poligon, but for sake of simplicity we reverse them to positive orientation*/
+    Polygon pol[2]; /* We actually don't need to copy polygon, but for sake of simplicity we reverse them to positive orientation*/
 
     enum VertexType {
         INSIDE,
@@ -598,14 +597,14 @@ public:
 
     typedef std::vector<VertexData> ContainerType; /* This type should better be list */
 
-    /** These are two lists for each of the poligons including there own and common vertexes **/
+    /** These are two lists for each of the polygons including there own and common vertexes **/
     ContainerType c[2];
 
     /** These structures store the common vertexes **/
     int intersectionNumber;
     std::vector<std::pair<size_t, size_t>> intersections;
 
-    /* Method that initialise internal data structures of the PoligonCombiner*/
+    /* Method that initialise internal data structures of the polygonCombiner*/
     void prepare(void);
 
     /* */
@@ -623,7 +622,9 @@ public:
     Polygon combination() const;
     Polygon difference() const;    /**< Not yet implemented */
 
-    PolygonCombiner(){}
+    PolygonCombiner()
+    {}
+
     PolygonCombiner(Polygon &p1, Polygon &p2)
     {
          pol[0] = p1;
@@ -652,12 +653,8 @@ public:
         {
             out << pair.first << " - " << pair.second << std::endl;
         }
-
-
         return out;
     }
-
-
 };
 
 
@@ -665,13 +662,12 @@ class ConvexHull
 {
 public:
     /**
-     * Most trivial and slow algorighm
+     * Most trivial and slow algorithms
      *
-     * This methods need a lot of additional testing
+     * These methods need a lot of additional testing
      ***/
     static Polygon GiftWrap(const std::vector<Vector2dd> &list);
     static Polygon GrahamScan(std::vector<Vector2dd> points);
-
 
     enum ConvexHullMethod {
         GIFT_WARP,
@@ -680,10 +676,8 @@ public:
     };
 
     static Polygon ConvexHullCompute(std::vector<Vector2dd> points, ConvexHullMethod &method);
-
-
 };
 
 } //namespace corecvs
-#endif /* POLYGONS_H_ */
 
+#endif /* POLYGONS_H_ */

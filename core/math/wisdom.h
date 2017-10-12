@@ -1,5 +1,5 @@
-#ifndef WISDOM
-#define WISDOM
+#ifndef WISDOM_H
+#define WISDOM_H
 
 #include <array>
 #include <iostream>
@@ -272,6 +272,7 @@ private:
         }
         return res;
     }
+
     R singleRun(AcceleratorTypes &a, Implementation &i, int id, T& t, A... aa)
     {
         for (auto& p: registered)
@@ -282,7 +283,9 @@ private:
         CORE_ASSERT_TRUE_S(false);
         return R();
     }
+
     Wisdom() {}
+
     static const int RETRIES = 5;
     std::map<std::tuple<AcceleratorTypes, Implementation>, std::function<R(int,T&,A...)>> registered;
     std::map<typename Characterizator<T>::characteristic_type, std::map<std::tuple<AcceleratorTypes, Implementation, int>, std::vector<double>>> timings;
@@ -291,4 +294,4 @@ private:
 
 }
 
-#endif
+#endif // WISDOM_H
