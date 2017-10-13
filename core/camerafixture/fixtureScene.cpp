@@ -3,6 +3,7 @@
 #include "affine.h"
 #include "utils.h"
 #include "cameraFixture.h"
+#include "log.h"
 
 namespace corecvs {
 
@@ -55,7 +56,7 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkM
     size_t observationNum = point->observations.size();
     if (observationNum < 2)
     {
-        SYNC_PRINT(("FixtureScene::triangulate(): too few observations (%d)\n", (int)observationNum));
+        L_WARNING_P("point <%s> has too few observations (%d)", point->name.c_str(), (int)observationNum);
         return false;
     }
 
@@ -64,10 +65,10 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkM
 
     if (fixtures().size() == 2 && !ok) // case of failed angle check for two cameras
     {
-        SYNC_PRINT(("FixtureScene::triangulate(): WARNING - point has not passed trangulation angle check, but is triangulated anyway\n"));
+        L_WARNING_P("point <%s> has not passed trangulation angle check, but is triangulated anyway", point->name.c_str());
     }
     else if (!ok) {
-        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false\n"));
+        L_WARNING_P("point <%s> MulticameraTriangulator returned false", point->name.c_str());
         return false;
     }
 
