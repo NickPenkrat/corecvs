@@ -72,7 +72,7 @@ public:
     {
         if (!(*stream))
         {
-            L_ERROR_P("Couldn't open for wrtting the file <%s>", filepath.c_str());
+            L_ERROR_P("Couldn't open for writting the file <%s>", filepath.c_str());
             delete_safe(stream);
             isFile = false;
             return;
