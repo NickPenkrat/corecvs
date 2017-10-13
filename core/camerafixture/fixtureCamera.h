@@ -11,8 +11,9 @@
 #include "convexPolyhedron.h"
 #include "pointObservation.h"
 #include "calibrationCamera.h"
+#include "fixtureScenePart.h"
 
-#include "cameraPrototype.h"
+//#include "cameraPrototype.h"  // pls see comment below
 
 namespace corecvs {
 
@@ -25,11 +26,13 @@ class FixtureCamera : public FixtureScenePart, public CameraModel
 {
 public:
     CameraFixture   *cameraFixture = NULL;
+
     /**
      *   We are now in transition. Camera prototype should prevail and the inheritance of CameraModel
-     *   should be removed. So far we have both.
+     *   should be removed. So far, open it when it will be ready.
+     *   Don't forget to open proper code at the FixtureScene::deleteCameraPrototype(CameraPrototype *cameraPrototype).
      **/
-    CameraPrototype *cameraPrototype = NULL;
+    //CameraPrototype *cameraPrototype = NULL;
 
     /* This variable is not controlled and maintained */
     int             sequenceNumber;

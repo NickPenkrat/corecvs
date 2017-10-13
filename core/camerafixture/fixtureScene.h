@@ -8,6 +8,7 @@
 #include "fixtureScenePart.h"
 #include "fixtureCamera.h"
 #include "sceneFeaturePoint.h"
+#include "cameraPrototype.h"
 
 /* In future Scene would like to control memory management for child objects */
 //#define SCENE_OWN_ALLOCATOR_DRAFT
