@@ -25,6 +25,8 @@ public:
     ProjectiveTransform  leftTransform = ProjectiveTransform::Identity();
     ProjectiveTransform rightTransform = ProjectiveTransform::Identity();
 
+    Polygon leftArea;
+    Polygon rightArea;
 };
 
 } // namespace corecvs

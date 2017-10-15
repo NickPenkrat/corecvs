@@ -33,6 +33,13 @@ void Mesh3D::setColor(const RGBColor &color)
     currentColor = color;
 }
 
+
+void Mesh3D::mulTransform(const Affine3DQ &transform)
+{
+    transformStack.push_back(currentTransform);
+    currentTransform = currentTransform * static_cast<Matrix44>(transform);
+}
+
 void Mesh3D::mulTransform(const Matrix33 &transform)
 {
     transformStack.push_back(currentTransform);

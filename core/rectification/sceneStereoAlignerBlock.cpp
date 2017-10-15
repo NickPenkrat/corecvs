@@ -5,6 +5,8 @@
 #include "sceneStereoAlignerBlock.h"
 #include "stereoAligner.h"
 
+#include <abstractPainter.h>
+
 namespace corecvs {
 
 SceneStereoAlignerBlock::SceneStereoAlignerBlock()
@@ -87,6 +89,39 @@ int SceneStereoAlignerBlock::operator ()()
 
     setOutImage1(resImage1);
     setOutImage2(resImage2);
+
+
+    /*Working with areas*/
+    Polygon pin1  = Polygon::FromImageSize(inImage1()->getSize());
+    Polygon pin2  = Polygon::FromImageSize(inImage2()->getSize());
+    pin1.transform( leftTransform);
+    pin2.transform(rightTransform);
+    Polygon pout1 = Polygon::FromImageSize(resImage1->getSize());
+    Polygon pout2 = Polygon::FromImageSize(resImage2->getSize());
+
+    PolygonCombiner c1(pin1, pout1);
+    c1.prepare();
+    pin1 = c1.intersection();
+    PolygonCombiner c2(pin2, pout2);
+    c2.prepare();
+    pin2 = c2.intersection();
+
+    if (pin1.isConvex()) {
+        ConvexPolygon cp = pin1.toConvexPolygon();
+        cp.inset(21);
+        pin1 = Polygon::FromConvexPolygon(cp);
+    }
+    if (pin2.isConvex()) {
+        ConvexPolygon cp = pin2.toConvexPolygon();
+        cp.inset(21);
+        pin2 = Polygon::FromConvexPolygon(cp);
+    }
+
+    leftArea  = pin1;
+    rightArea = pin2;
+
+    //AbstractPainter<RGB24Buffer>(resImage1).drawPolygon(leftArea, RGBColor::Yellow());
+    //AbstractPainter<RGB24Buffer>(resImage2).drawPolygon(rightArea, RGBColor::Yellow());
 
     /*Forming new Fixture*/
     if (mParameters.produceCameras())
