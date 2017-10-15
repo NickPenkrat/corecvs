@@ -11,11 +11,13 @@
 using namespace corecvs;
 
 string  LibpngFileReader::prefix1(".png");
+string  LibpngFileReader::prefix2(".PNG");
 
 
 bool LibpngFileReader::acceptsFile(std::string name)
 {
-    return HelperUtils::endsWith(name, prefix1);
+    return HelperUtils::endsWith(name, prefix1) ||
+           HelperUtils::endsWith(name, prefix2);
 }
 
 RGB24Buffer *LibpngFileReader::load(string name)
@@ -185,3 +187,22 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
         return status;
 }
 
+corecvs::RuntimeTypeBuffer *LibpngRuntimeTypeBufferLoader::load(string name)
+{
+    RGB24Buffer *tmp = LibpngFileReader::load(name);
+    if (tmp == NULL)
+        return NULL;
+
+    RuntimeTypeBuffer *result = new RuntimeTypeBuffer(tmp->h, tmp->w, BufferType::U8);
+    
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < width; ++x) {
+            RGBColor pixel = tmp->element(y, x);
+
+            result->at<uint8_t>(y, x) = pixel.brightness();
+        }
+    }
+    delete tmp;
+
+    return result;
+}

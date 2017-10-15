@@ -18,6 +18,7 @@ class LibpngFileReader : public corecvs::BufferLoader<corecvs::RGB24Buffer>
 {
 public:
     static string prefix1;
+    static string prefix2;
 
     static int registerMyself()
     {
@@ -52,6 +53,25 @@ public:
         return std::vector<std::string>({LibpngFileReader::prefix1});
     }
     virtual ~LibpngFileSaver() {}
+};
+
+class LibpngRuntimeTypeBufferLoader : public corecvs::BufferLoader<corecvs::RuntimeTypeBuffer>
+{
+public:
+    static int registerMyself()
+    {
+        corecvs::BufferFactory::getInstance()->registerLoader(new LibpngRuntimeTypeBufferLoader());
+        return 0;
+    }
+
+    virtual bool acceptsFile(std::string name) override {
+        return LibpngFileReader().acceptsFile(name);
+    }
+    virtual corecvs::RuntimeTypeBuffer *load(std::string name) override;
+    virtual std::string name() override {return "LibPNG_RuntimeLoader";}
+
+    LibpngRuntimeTypeBufferLoader() {}
+    virtual ~LibpngRuntimeTypeBufferLoader() {}
 };
 
 #endif // LIBPNGFILEREADER_H
