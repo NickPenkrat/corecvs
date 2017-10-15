@@ -4,15 +4,6 @@
 
 #include <iostream>
 
-#ifdef __GNUC__
-# include <experimental/filesystem>
-  namespace fs = std::experimental::filesystem;  
-#endif
-#ifdef _MSC_VER
-# include <filesystem>
-  namespace fs = std::tr2::sys;
-#endif
-
 namespace corecvs {
 
 bool FolderScanner::isDir(const string &path)

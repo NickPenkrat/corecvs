@@ -102,26 +102,22 @@ std::string TempFolder::UniqueBuildPath(const std::string &projectEnviromentVari
         return res;
     }
 
+    res = projectPath;
+    if (!STR_HAS_SLASH_AT_END(res)) {
+        res += PATH_SEPARATOR;                  // add slash if need
+    }
+
+    if (!subfolderRelPathJen.empty())
+    {
+        res += HelperUtils::toNativeSlashes(subfolderRelPathJen);
+        if (!STR_HAS_SLASH_AT_END(res)) {
+            res += PATH_SEPARATOR;              // add slash if need
+        }
+    }
+
     if (!envBuildNumber.empty() && !envBuildJob.empty())
     {
-        res = projectPath;
-        if (!STR_HAS_SLASH_AT_END(res)) {
-            res += PATH_SEPARATOR;                  // add slash if need
-        }
-
-        if (!subfolderRelPathJen.empty())
-        {
-            res += HelperUtils::toNativeSlashes(subfolderRelPathJen);
-            if (!STR_HAS_SLASH_AT_END(res)) {
-                res += PATH_SEPARATOR;              // add slash if need
-            }
-        }
-
         res += envBuildJob + "_" + envBuildNumber;
-    }
-    else
-    {
-        res = LocalTempPath(projectEnviromentVariable);
     }
 
     return res;

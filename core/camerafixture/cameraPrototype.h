@@ -4,7 +4,6 @@
 #include "fixtureScenePart.h"
 #include "calibrationCamera.h"
 
-
 namespace corecvs {
 
 class FixtureScene;
@@ -43,11 +42,9 @@ public:
     /** This is an experimental block of functions  it may change. Please use with caution **/
 
     /** WHY SO SLOW? **/
-    bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projetionPtr = NULL);
-
+    //bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projetionPtr = NULL);
 };
 
 }  // namespace corecvs
-
 
 #endif // CAMERA_PROTOTYPE_H

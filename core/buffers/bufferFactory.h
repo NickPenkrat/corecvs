@@ -85,8 +85,26 @@ public:
 
     /** Main function to save a 32-bits buffer to the file with the given path name
      */
-    virtual bool saveRGB24Bitmap(RGB24Buffer* buffer, string name, string saverHint = "");
+    virtual bool saveRGB24Bitmap(RGB24Buffer& buffer, const string &name, const string &saverHint = "");
 
+
+    /** Two useful methods to read/save a 32-bits buffer from/to the file with the given path name
+    */
+    RGB24Buffer readRgb(const string &name)
+    {
+        RGB24Buffer img, *buf = loadRGB24Bitmap(name);  //TODO: load to the ready buffer should be implemented!
+        if (buf)
+        {
+            img = *buf;
+            delete buf;
+        }
+        return img;
+    }
+
+    bool saveRGB24Bitmap(RGB24Buffer* buffer, const string &name)
+    {
+        return saveRGB24Bitmap(*buffer, name);
+    }
 
     /**
      **/

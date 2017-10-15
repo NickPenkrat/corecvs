@@ -36,21 +36,21 @@ public:
 class BufferReaderProvider
 {
 public:
-    static corecvs::RuntimeTypeBuffer read(const std::string &s);
-    static corecvs::RGB24Buffer readRgb(const std::string &s);
-    static void write(const corecvs::RuntimeTypeBuffer &buffer, const std::string &s);
+    static corecvs::RuntimeTypeBuffer read   (const std::string &s);
+    static corecvs::RGB24Buffer       readRgb(const std::string &s);
+
+    static void write   (const corecvs::RuntimeTypeBuffer &buffer, const std::string &s);
     static void writeRgb(const corecvs::RGB24Buffer &buffer, const std::string &s);
 
 	void add(BufferReaderProviderImpl *provider);
 	BufferReader* getBufferReader(const std::string &filename);
 	static BufferReaderProvider& getInstance();
 	~BufferReaderProvider();
+
 private:
 	BufferReaderProvider();
 	BufferReaderProvider(const BufferReaderProvider&);
-	BufferReaderProvider& operator=(const BufferReaderProvider&);
 	std::vector<BufferReaderProviderImpl*> providers;
 };
 
-
-#endif
+#endif // BUFFERREADERPROVIDER_H

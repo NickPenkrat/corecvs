@@ -2,7 +2,7 @@
 
 #include <random>
 
-#include "bufferReaderProvider.h"
+#include "bufferFactory.h"
 #include "abstractPainter.h"
 
 using namespace cvs;
@@ -50,30 +50,29 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
         {
             auto& p = images[i];
             auto name = p;
-			std::stringstream ss;
 			auto filedir = dir == "" ? getFiledir(name) : dir;
 			auto outputName = removeExtension(getFilename(name)) + "_" + suffix + ".jpg";
-			ss << filedir << outputName;
 
-            auto nameNew = ss.str();
-            corecvs::RGB24Buffer src = BufferReaderProvider::readRgb(name);
-
-            if (src.data == NULL)
-            {
+            corecvs::RGB24Buffer src;
+            try {
+                src = BufferFactory::getInstance()->readRgb(name);
+            }
+            catch (...) {
                 std::cout << "ParallelTrackPainter:: invalid image " << name << std::endl;
                 continue;
             }
 
             AbstractPainter<RGB24Buffer> painter(&src);
-            for (auto& tf: scene)
+            for (auto& tf : scene)
             {
                 RGBColor color = colorizer[tf];
                 //painter.drawFormat(obs.second.observation[0] + 5, obs.second.observation[1], color, 1, tf->name.c_str());
                 painter.drawCircle((*tf)[0], 3, color);
             }
 
-            BufferReaderProvider::writeRgb(src, nameNew);
-			std::cout << "Writing tracks image into " << outputName << std::endl;
+            auto nameNew = filedir + outputName;
+            BufferFactory::getInstance()->saveRGB24Bitmap(src, nameNew);
+            std::cout << "Written tracks image to " << nameNew << std::endl;
         }
     }
     else
@@ -96,17 +95,22 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
 			auto outputName = removeExtension(getFilename(imgA)) + " " + removeExtension(getFilename(imgB)) + " " + suffix + ".jpg";
 			ss << filedir << outputName;
 
-            auto srcA = BufferReaderProvider::readRgb(imgA),
-                 srcB = BufferReaderProvider::readRgb(imgB);
-
-            if (srcA.data == NULL) {
-                std::cout << "ParallelTrackPainter:: invalid imageA " << imgA << std::endl;
+            corecvs::RGB24Buffer srcA, srcB;
+            try {
+                srcA = BufferFactory::getInstance()->readRgb(imgA);
+            }
+            catch (...) {
+                std::cout << "ParallelTrackPainter:: invalid image " << imgA << std::endl;
                 continue;
             }
-            if (srcB.data == NULL) {
-                std::cout << "ParallelTrackPainter:: invalid imageB " << imgB << std::endl;
+            try {
+                srcB = BufferFactory::getInstance()->readRgb(imgB);
+            }
+            catch (...) {
+                std::cout << "ParallelTrackPainter:: invalid image " << imgB << std::endl;
                 continue;
             }
+            CORE_ASSERT_TRUE_S(srcA.data && srcB.data);
 
             int newW = std::max(srcA.w, srcB.w);
             int newH = srcA.h + srcB.h;
@@ -120,7 +124,6 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             // dst.fillWith(src, 0, 0);
             // dst.fillWith(src, offH, 0);
 
-
             for (int y = 0; y < srcA.h; ++y)
                 for (int x = 0; x < srcA.w; ++x)
                     dst.element(y, x) = srcA.element(y, x);
@@ -128,17 +131,14 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
                 for (int x = 0; x < srcB.w; ++x)
                     dst.element(y + offH, x) = srcB.element(y, x);
 
-
-
             bool painted = false;
-            for (auto& tf: scene)
+            for (auto& tf : scene)
             {
                 auto obsA = (*tf)[0],
                      obsB = (*tf)[1];
 
-				auto a = !obsA;
-				auto b = !obsB;
-
+                auto a = !obsA;
+                auto b = !obsB;
                 if (!a || !b)
                     continue;
 
@@ -154,13 +154,14 @@ void ParallelTrackPainter::operator() (const corecvs::BlockedRange<int> &r) cons
             if (!painted)
                 continue;
 
-            BufferReaderProvider::writeRgb(dst, ss.str());
-            std::cout << "Written to \"" << outputName << '\"' << std::endl;
+            BufferFactory::getInstance()->saveRGB24Bitmap(dst, ss.str());
+            std::cout << "Written tracks image to " << ss.str() << std::endl;
         }
     }
 }
 
-void TrackPainter::paintTracksOnImages(bool pairs, std::string suffix, std::string outDir) {
+void TrackPainter::paintTracksOnImages(bool pairs, std::string suffix, std::string outDir)
+{
     std::mt19937 rng;
     std::uniform_real_distribution<double> runif(0, 360.0);
     std::unordered_map<Match, RGBColor> colorizer;

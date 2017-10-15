@@ -8,6 +8,7 @@
 #include "fixtureScenePart.h"
 #include "fixtureCamera.h"
 #include "sceneFeaturePoint.h"
+#include "cameraPrototype.h"
 
 /* In future Scene would like to control memory management for child objects */
 //#define SCENE_OWN_ALLOCATOR_DRAFT
@@ -145,7 +146,15 @@ public:
 
     std::string                   nameId;
 
-    bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
+    Matrix44                      localToWorld = Matrix44::Identity(); ///< symilarity transform
+
+    enum CoordinateSystemState
+    {
+        initial = 0,                ///< initial state and "localToWorld" matrix is invalid
+        final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
+        convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
+    };
+    CoordinateSystemState         coordinateSystemState = CoordinateSystemState::initial;  
 
     StatusTracker *               processState = nullptr;        ///< it's owned on the external side
 
@@ -389,8 +398,20 @@ public:
                 bool loadPrototypes = true,
                 bool loadGeometry = true)
     {
-        visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
-        visitor.visit(hasTargetCoordSystem, false           , "hasTargetCoordSystem");
+        visitor.visit(relativeImageDataPath, std::string(""),                "relativeImageDataPath");
+        visitor.visit(coordinateSystemState, CoordinateSystemState::initial, "coordinateSystemState");
+        visitor.visit(localToWorld, Matrix44::Identity(),                    "localToWorld");
+
+        if (visitor.isLoader())
+        {
+            bool hasTargetCoordSystem = false;
+            visitor.visit(hasTargetCoordSystem, false, "hasTargetCoordSystem"); // for compatibility with old scenes
+            if (hasTargetCoordSystem)
+            {
+                coordinateSystemState = CoordinateSystemState::final;
+                localToWorld = Matrix44::Identity();
+            }
+        }
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
