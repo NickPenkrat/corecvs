@@ -463,6 +463,7 @@ public:
     static Polygon FromConvexPolygon(const ConvexPolygon& polygon);
     static Polygon FromHalfplanes   (const std::vector<Line2d> &halfplanes);
 
+    static Polygon FromImageSize    (const Vector2d<int> &size);
 
     ConvexPolygon toConvexPolygon() const;
 

@@ -212,6 +212,16 @@ Polygon Polygon::FromHalfplanes(const std::vector<Line2d> &halfplanes)
     return Polygon::FromConvexPolygon(polygon);
 }
 
+Polygon Polygon::FromImageSize(const Vector2d<int> &size)
+{
+    Polygon toReturn;
+    toReturn.push_back(Vector2dd(       0,        0));
+    toReturn.push_back(Vector2dd(size.x(),        0));
+    toReturn.push_back(Vector2dd(size.x(), size.y()));
+    toReturn.push_back(Vector2dd(       0, size.y()));
+    return toReturn;
+}
+
 ConvexPolygon Polygon::toConvexPolygon() const
 {
     ConvexPolygon result;

@@ -52,6 +52,14 @@ public:
         return out;
     }
 
+    void inset(double dist)
+    {
+        for (HalfspaceType &type: faces )
+        {
+            type.last() -= dist * type.normal().l2Metric();
+        }
+    }
+
 };
 
 
@@ -69,8 +77,7 @@ public:
 
 class ConvexPolygon : public ConvexPolyhedronGeneric< Line2d, Vector2dd>
 {
-public:
-
+public:   
 };
 
 

@@ -153,6 +153,7 @@ public:
      */
     friend inline GenericQuaternion hamilton1(const GenericQuaternion &Q1, const GenericQuaternion &Q2)
     {
+
         ElementType tt = (Q1.z() + Q1.x()) * (Q2.x() + Q2.y());
         ElementType yy = (Q1.t() - Q1.y()) * (Q2.t() + Q2.z());
         ElementType zz = (Q1.t() + Q1.y()) * (Q2.t() - Q2.z());
@@ -546,5 +547,5 @@ typedef GenericQuaternion<double> Quaternion;
 
 
 } //namespace corecvs
-
 #endif /* QUATERNION_H_ */
+

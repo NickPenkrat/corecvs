@@ -623,10 +623,16 @@ public:
         return Vector2dd(element[0], element[1]);
     }
 
-    double last(void) const
+    double &last(void)
     {
         return element[2];
     }
+
+    const double &last(void) const
+    {
+        return element[2];
+    }
+
 
     /**
      *   Normalizes the normal vector without changing the line itself

@@ -547,6 +547,47 @@ TEST(Rectification, testRectifiedModel)
 
 }
 
+
+TEST(Rectification, testEssentialDecompositionToRotations)
+{
+    EssentialDecomposition D;
+    D.direction = Vector3dd(10,3,4);
+    D.rotation  = Matrix33::Identity();
+            //Quaternion::RotationX(degToRad(10)).toMatrix();
+
+            /*(Quaternion::RotationZ(degToRad(5)) ^ Quaternion::RotationY(degToRad(15)) ^ Quaternion::RotationX(degToRad(10))).toMatrix()*/;
+
+    Quaternion q1;
+    Quaternion q2;
+
+    D.toTwoRotations(q1,q2);
+    cout << q1 << endl;
+    cout << q2 << endl;
+
+    Mesh3D debug;
+    debug.switchColor();
+
+    debug.addOrts(1.0, true);
+    debug.mulTransform(D.toSecondCameraAffine());
+    debug.addOrts(1.0, true);
+    debug.popTransform();
+
+
+    debug.mulTransform(Affine3DQ(q1));
+    debug.addOrts(1.0);
+    debug.popTransform();
+
+    debug.mulTransform(Affine3DQ::Shift( Vector3dd::OrtX() * D.direction.l2Metric() ));
+    debug.mulTransform(Affine3DQ(q2));
+    debug.addOrts(1.0);
+    debug.popTransform();
+    debug.popTransform();
+
+
+
+    debug.dumpPLY("decomposeR.ply");
+}
+
 #endif
 
 //int main (int /*argC*/, char ** /*argV*/)

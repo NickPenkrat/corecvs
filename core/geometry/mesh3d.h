@@ -67,6 +67,9 @@ public:
 
     vector<Matrix44> transformStack;
 
+    /* All subsecquent draws would be as if origin is moved be affine transform */
+    void mulTransform(const Affine3DQ &transform);
+
     void mulTransform(const Matrix33 &transform);
     void mulTransform(const Matrix44 &transform);
     void popTransform();
