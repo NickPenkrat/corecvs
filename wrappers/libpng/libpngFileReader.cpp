@@ -1,12 +1,10 @@
 #include "libpngFileReader.h"
+#include "utils.h"
 
 #include <string>
 #include <cstdio>
 #include <cstdlib>
 #include <png.h>
-
-
-#include "utils.h"
 
 using namespace corecvs;
 
@@ -14,7 +12,7 @@ string  LibpngFileReader::prefix1(".png");
 string  LibpngFileReader::prefix2(".PNG");
 
 
-bool LibpngFileReader::acceptsFile(std::string name)
+bool LibpngFileReader::acceptsFile(string name)
 {
     return HelperUtils::endsWith(name, prefix1) ||
            HelperUtils::endsWith(name, prefix2);
@@ -189,7 +187,7 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
 
 corecvs::RuntimeTypeBuffer *LibpngRuntimeTypeBufferLoader::load(string name)
 {
-    RGB24Buffer *tmp = LibpngFileReader::load(name);
+    RGB24Buffer *tmp = LibpngFileReader().load(name);
     if (tmp == NULL)
         return NULL;
 
