@@ -551,11 +551,11 @@ TEST(Rectification, testRectifiedModel)
 TEST(Rectification, testEssentialDecompositionToRotations)
 {
     EssentialDecomposition D;
-    D.direction = Vector3dd(10,3,4);
-    D.rotation  = Matrix33::Identity();
+    D.direction = Vector3dd(5,0,0);
+    D.rotation  =
+            // Matrix33::Identity();
             //Quaternion::RotationX(degToRad(10)).toMatrix();
-
-            /*(Quaternion::RotationZ(degToRad(5)) ^ Quaternion::RotationY(degToRad(15)) ^ Quaternion::RotationX(degToRad(10))).toMatrix()*/;
+             (Quaternion::RotationZ(degToRad(25)) ^ Quaternion::RotationY(degToRad(35)) ^ Quaternion::RotationX(degToRad(40))).toMatrix();
 
     Quaternion q1;
     Quaternion q2;
@@ -585,7 +585,45 @@ TEST(Rectification, testEssentialDecompositionToRotations)
 
 
 
+    /* Some Checks */
+    Vector3dd A1x = Vector3dd::OrtX();
+    Vector3dd A1y = Vector3dd::OrtY();
+    Vector3dd A1z = Vector3dd::OrtZ();
+
+    Vector3dd A2x = D.rotation * Vector3dd::OrtX() + D.direction;
+    Vector3dd A2y = D.rotation * Vector3dd::OrtY() + D.direction;
+    Vector3dd A2z = D.rotation * Vector3dd::OrtZ() + D.direction;
+
+    Vector3dd B1x = q1 * Vector3dd::OrtX();
+    Vector3dd B1y = q1 * Vector3dd::OrtY();
+    Vector3dd B1z = q1 * Vector3dd::OrtZ();
+
+    Vector3dd B2x = q2 * Vector3dd::OrtX() + Vector3dd::OrtX() * D.direction.l2Metric();
+    Vector3dd B2y = q2 * Vector3dd::OrtY() + Vector3dd::OrtX() * D.direction.l2Metric();
+    Vector3dd B2z = q2 * Vector3dd::OrtZ() + Vector3dd::OrtX() * D.direction.l2Metric();
+
+    cout << "Debug" << debug.vertexes.size() << endl;
+
+    debug.addIcoSphere(A1x, 3.5, 2); debug.addIcoSphere(A1y, 3.5, 2); debug.addIcoSphere(A1z, 3.5, 2);
+    debug.addIcoSphere(A2x, 3.5, 2); debug.addIcoSphere(A2y, 3.5, 2); debug.addIcoSphere(A2z, 3.5, 2);
+
+    debug.addIcoSphere(B1x, 3.5, 2); debug.addIcoSphere(B1y, 3.5, 2); debug.addIcoSphere(B1z, 3.5, 2);
+    debug.addIcoSphere(B2x, 3.5, 2); debug.addIcoSphere(B2y, 3.5, 2); debug.addIcoSphere(B2z, 3.5, 2);
+
+    cout << "Debug" << debug.vertexes.size() << endl;
+
+    cout << (A1x-A2x) << " " << !(A1x-A2x) << " vs " <<  (B1x-B2x) << " " << !(B1x-B2x) << endl;
+    cout << (A1y-A2y) << " " << !(A1y-A2y) << " vs " <<  (B1y-B2y) << " " << !(B1y-B2y) << endl;
+    cout << (A1z-A2z) << " " << !(A1z-A2z) << " vs " <<  (B1z-B2z) << " " << !(B1z-B2z) << endl;
+
     debug.dumpPLY("decomposeR.ply");
+
+    CORE_ASSERT_DOUBLE_EQUAL_E(!(A1x-A2x),!(B1x-B2x), 1e-7, "This is not a shift X");
+    CORE_ASSERT_DOUBLE_EQUAL_E(!(A1y-A2y),!(B1y-B2y), 1e-7, "This is not a shift Y");
+    CORE_ASSERT_DOUBLE_EQUAL_E(!(A1z-A2z),!(B1z-B2z), 1e-7, "This is not a shift Z");
+
+
+
 }
 
 #endif
