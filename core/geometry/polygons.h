@@ -605,6 +605,9 @@ public:
     int intersectionNumber;
     std::vector<std::pair<size_t, size_t>> intersections;
 
+    /* */
+    bool trace = false;
+
     /* Method that initialise internal data structures of the polygonCombiner*/
     void prepare(void);
 

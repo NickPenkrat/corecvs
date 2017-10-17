@@ -154,6 +154,17 @@ public:
         final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
         convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
     };
+    static inline const char *getSystemName(const CoordinateSystemState &value)
+    {
+        switch (value)
+        {
+         case initial     : return "initial";     break ;
+         case final       : return "final";       break ;
+         case convertable : return "convertable"; break ;
+         default : return "Not in range"; break ;
+        }
+        return "Not in range";
+    }
     CoordinateSystemState         coordinateSystemState = CoordinateSystemState::initial;  
 
     StatusTracker *               processState = nullptr;        ///< it's owned on the external side
