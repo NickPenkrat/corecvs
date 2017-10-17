@@ -224,7 +224,7 @@ template<class VisitorType>
 
         Matrix33 rotator = Matrix33::FromColumns(oX, oY, oZ);
         q1 =  Quaternion::FromMatrix(rotator).conjugated();
-        q2 =  Quaternion::FromMatrix(rotation) ^ q1;
+        q2 =  q1 ^ Quaternion::FromMatrix(rotation);
     }
 
     Affine3DQ toSecondCameraAffine(double scale = 1.0)

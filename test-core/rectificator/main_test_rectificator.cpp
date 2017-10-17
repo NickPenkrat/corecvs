@@ -604,11 +604,15 @@ TEST(Rectification, testEssentialDecompositionToRotations)
 
     cout << "Debug" << debug.vertexes.size() << endl;
 
-    debug.addIcoSphere(A1x, 3.5, 2); debug.addIcoSphere(A1y, 3.5, 2); debug.addIcoSphere(A1z, 3.5, 2);
-    debug.addIcoSphere(A2x, 3.5, 2); debug.addIcoSphere(A2y, 3.5, 2); debug.addIcoSphere(A2z, 3.5, 2);
+    double r = 0.05;
 
-    debug.addIcoSphere(B1x, 3.5, 2); debug.addIcoSphere(B1y, 3.5, 2); debug.addIcoSphere(B1z, 3.5, 2);
-    debug.addIcoSphere(B2x, 3.5, 2); debug.addIcoSphere(B2y, 3.5, 2); debug.addIcoSphere(B2z, 3.5, 2);
+    debug.setColor(RGBColor::Red());
+    debug.addIcoSphere(A1x, r); debug.addIcoSphere(A1y, r); debug.addIcoSphere(A1z, r);
+    debug.addIcoSphere(A2x, r); debug.addIcoSphere(A2y, r); debug.addIcoSphere(A2z, r);
+
+    debug.setColor(RGBColor::Green());
+    debug.addIcoSphere(B1x, r); debug.addIcoSphere(B1y, r); debug.addIcoSphere(B1z, r);
+    debug.addIcoSphere(B2x, r); debug.addIcoSphere(B2y, r); debug.addIcoSphere(B2z, r);
 
     cout << "Debug" << debug.vertexes.size() << endl;
 
