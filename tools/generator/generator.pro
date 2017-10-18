@@ -27,7 +27,9 @@ INCLUDEPATH += \
 SOURCES += $$COREDIR/utils/util.c
 SOURCES += $$COREDIR/utils/utils.cpp
 
-LIBS += -lstdc++fs
+!win32  {
+    LIBS += -lstdc++fs
+}
 
 
 # ACTUAL GENERATOR

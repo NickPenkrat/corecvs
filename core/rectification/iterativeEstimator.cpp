@@ -12,6 +12,23 @@
 #include "iterativeEstimator.h"
 namespace corecvs {
 
+vector<Correspondence *>  sieveCorrespondanceList(const vector<Correspondence *> &workingSamples, size_t maximum)
+{
+    vector<Correspondence *> passedSamples;
+    std::mt19937  rng(100);
+    passedSamples = workingSamples;
+
+    if (maximum < passedSamples.size())
+    {
+        for(size_t j = 0; j < maximum; j++ )
+        {
+            std::uniform_int_distribution<int> rint(j, workingSamples.size() - 1);
+            std::swap(passedSamples[j], passedSamples[rint(rng)]);
+        }
+        passedSamples.resize(maximum);
+    }
+    return passedSamples;
+}
 
 
 vector<Correspondence *>  filterCorrespondanceList(const vector<Correspondence *> &workingSamples, const EssentialMatrix &model, double sigma, int iteration)
@@ -20,6 +37,10 @@ vector<Correspondence *>  filterCorrespondanceList(const vector<Correspondence *
     int rejected = 0;
 
     vector<Correspondence *> passedSamples;
+
+    // We don't expect to shrink vector to much. Time however is valuable
+    passedSamples.reserve(workingSamples.size());
+
     for (unsigned i = 0; i < workingSamples.size(); i++)
     {
         // SYNC_PRINT(("Cost at sample %d (%d)\n", i, workingSamples.size()));
@@ -69,6 +90,9 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
     int iteration;
     vector<Correspondence *> workingSamples = samples;
 
+    if (params.limitSamples() > 0) {
+        workingSamples = sieveCorrespondanceList(workingSamples, params.limitSamples());
+    }
 
     EssentialEstimator::CostFunction7to1 initialCost(&samples);
 

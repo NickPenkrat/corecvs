@@ -13,6 +13,7 @@
 #include "jsonGetter.h"
 #include "abstractPainter.h"
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "lmDistortionSolver.h"
 #include "displacementBuffer.h"
 

@@ -4,15 +4,6 @@
 
 #include <iostream>
 
-#ifdef __GNUC__
-# include <experimental/filesystem>
-  namespace fs = std::experimental::filesystem;  
-#endif
-#ifdef _MSC_VER
-# include <filesystem>
-  namespace fs = std::tr2::sys;
-#endif
-
 namespace corecvs {
 
 bool FolderScanner::isDir(const string &path)
@@ -158,7 +149,8 @@ void FolderScanner::emptyDir(const string &path)
 #ifdef WIN32
     std::system(("rd /s /q " + path).c_str());
 #else
-    std::system(("rm -rf " + path).c_str());
+    int result = std::system(("rm -rf " + path).c_str());
+    CORE_UNUSED(result);
 #endif
     L_INFO_P("The <%s> folder is deleted.", path.c_str());
 }

@@ -126,6 +126,7 @@ public:
             return;
         }
 
+        printf( "Addr: %p\n", rawObject );
         printf( "% 4d |", reflection->objectSize);
 
         for (int i = 0; i < reflection->objectSize; i++)

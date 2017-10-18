@@ -6,6 +6,9 @@ FixtureGlobalParametersWidget::FixtureGlobalParametersWidget(QWidget *parent) :
     ui(new Ui::FixtureGlobalParametersWidget)
 {
     ui->setupUi(this);
+    ui->worldToCameraWidget->setPresentationStyle(true);
+    ui->worldToCameraWidget->setEnabled(false);
+
     QObject::connect(ui->relativePathEdit           , SIGNAL(textChanged(QString)), this, SIGNAL(paramsChanged()));
     QObject::connect(ui->hasFinalCoordintesCheckBox , SIGNAL(toggled(bool))       , this, SIGNAL(paramsChanged()));
 
@@ -15,13 +18,24 @@ FixtureGlobalParametersWidget::FixtureGlobalParametersWidget(QWidget *parent) :
 
 FixtureGlobalParametersWidget::~FixtureGlobalParametersWidget()
 {
-    delete ui;
+    delete_safe(ui);
 }
 
 void FixtureGlobalParametersWidget::setData(const FixtureScene *scene)
 {
+    SYNC_PRINT(("FixtureGlobalParametersWidget::setData(): called\n"));
+
     ui->relativePathEdit->setText(QString::fromStdString(scene->getImageSearchPath()));
-    ui->hasFinalCoordintesCheckBox->setEnabled(scene->hasTargetCoordSystem);
+    ui->hasFinalCoordintesCheckBox->setEnabled(scene->coordinateSystemState == FixtureScene::CoordinateSystemState::final);
+    ui->worldToCameraWidget->setParameters(scene->worldFrameToCameraFrame);
+
+    cout << "WorldToCameraFrame:" << scene->worldFrameToCameraFrame.rotor << endl;
+    cout << "WorldToCameraFrame:" << scene->worldFrameToCameraFrame.rotor.toMatrix() << endl;
+
+    WorldLocationAngles wl = WorldLocationAngles::FromQuaternion(scene->worldFrameToCameraFrame.rotor);
+    cout << "WorldToCameraFrame:" << wl << endl;
+    cout << "WorldToCameraFrame:" << wl.toQuaternion() << endl;
+
 }
 
 void FixtureGlobalParametersWidget::changePath()

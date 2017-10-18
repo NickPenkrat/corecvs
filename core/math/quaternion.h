@@ -6,7 +6,6 @@
  * \date Jun 22, 2010
  * \author alexander
  */
-
 #ifndef QUATERNION_H_
 #define QUATERNION_H_
 
@@ -207,14 +206,14 @@ public:
         t() = cosa2;
     }
 
-
     /**
      * This function is a reworked function form somewhere in Internet. License is unclear
      * This also takes square roots which is very funny :-D and very corecvs-ish (i.e. dumb
      * 'cause you'll get a squared square root in the denominator)
      * */
     template <class MatrixType>
-    inline MatrixType toMatrixGeneric() const  {
+    inline MatrixType toMatrixGeneric() const
+    {
         typename MatrixType::ElementType wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
         typename MatrixType::ElementType s  = 2.0 / this->operator !();
         x2 = x() * s;
@@ -225,13 +224,17 @@ public:
         wx = t() * x2;   wy = t() * y2;   wz = t() * z2;
 
         MatrixType toReturn = MatrixType::createMatrix(3, 3);
-
+#if _MSC_VER    // msvc2015 issued an internal error otherwise... :(
+        toReturn.atm(0, 0) = 1.0 - (yy + zz);   toReturn.atm(0, 1) =        xy - wz;    toReturn.atm(0, 2) =        xz + wy;
+        toReturn.atm(1, 0) =        xy + wz;    toReturn.atm(1, 1) = 1.0 - (xx + zz);   toReturn.atm(1, 2) =        yz - wx;
+        toReturn.atm(2, 0) =        xz - wy;    toReturn.atm(2, 1) =        yz + wx;    toReturn.atm(2, 2) = 1.0 - (xx + yy);
+#else
         toReturn.fillWithArgs(
-        1.0 - (yy + zz),     xy - wz     ,     xz + wy,
-             xy + wz   , 1.0 - (xx + zz) ,     yz - wx,
-             xz - wy   ,     yz + wx     ,  1.0 - (xx + yy)
+            1.0 - (yy + zz),        xy - wz ,        xz + wy,
+                   xy + wz , 1.0 - (xx + zz),        yz - wx,
+                   xz - wy ,        yz + wx , 1.0 - (xx + yy)
         );
-
+#endif
         return toReturn;
     }
 
@@ -537,7 +540,6 @@ template<class VisitorType>
 
         out << "Rotation around: " << axis << " angle " << angle << "(" << angle << " deg)" << std::endl;
     }
-
 
 };
 

@@ -236,8 +236,18 @@ public:
             return;
         stats->setValue(str, value);
     }
-};
 
+
+    friend ostream & operator <<(ostream &out, const Statistics &stats)
+    {
+        for(auto &stat : stats.mValues)
+        {
+            out << stat.first << " -> " << stat.second.value << "\n";
+        }
+        return out;
+    }
+
+};
 
 class BaseTimeStatisticsCollector
 {
@@ -276,6 +286,10 @@ public:
     vector<OrderFilter *> mOrderFilters;
 
     BaseTimeStatisticsCollector() {}
+    BaseTimeStatisticsCollector(const Statistics &stats)
+    {
+        addStatistics(stats);
+    }
 
     virtual void reset()
     {
@@ -416,7 +430,7 @@ template <class StreamType>
         {
             if (stat.type == SingleStat::TIME)
             {
-                printf("%-*s : %7" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
+                printf("%-*s : %8" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
                     length,
                     name.c_str(),
                     stat.mean(),
@@ -425,7 +439,7 @@ template <class StreamType>
                 return;
             }
 
-            printf("%-*s : %7" PRIu64 "\n",
+            printf("%-*s : %8" PRIu64 "\n",
                 length,
                 name.c_str(),
                 stat.mean());

@@ -92,7 +92,7 @@ bool Polygon::isConvex(bool *direction) const
     int idx2 = getNextIndex(idx1);
     const Vector2dd *nnext = NULL;
 
-    cout << "We have taken as first ones" << *curr << " " << *next << endl;
+    //cout << "We have taken as first ones: " << *curr << " " << *next << endl;
 
     while (idx2 != idx1)
     {
@@ -210,6 +210,16 @@ Polygon Polygon::FromHalfplanes(const std::vector<Line2d> &halfplanes)
     ConvexPolygon polygon;
     polygon.faces = halfplanes;
     return Polygon::FromConvexPolygon(polygon);
+}
+
+Polygon Polygon::FromImageSize(const Vector2d<int> &size)
+{
+    Polygon toReturn;
+    toReturn.push_back(Vector2dd(       0,        0));
+    toReturn.push_back(Vector2dd(size.x(),        0));
+    toReturn.push_back(Vector2dd(size.x(), size.y()));
+    toReturn.push_back(Vector2dd(       0, size.y()));
+    return toReturn;
 }
 
 ConvexPolygon Polygon::toConvexPolygon() const

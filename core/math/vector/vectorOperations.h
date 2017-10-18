@@ -48,6 +48,7 @@ using std::numeric_limits;
 using std::istream;
 using std::ostream;
 using std::cout;
+using std::sqrt;
 
 namespace corecvs {
 

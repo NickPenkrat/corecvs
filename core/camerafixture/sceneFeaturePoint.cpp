@@ -1,5 +1,6 @@
 #include "sceneFeaturePoint.h"
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "multicameraTriangulator.h"
 #include "propertyListVisitor.h"
 
@@ -138,15 +139,15 @@ bool SceneFeaturePoint::checkTriangulationAngle(const corecvs::Vector3dd& pointP
     if (use__)
     {
         for (auto& obs0 : observations__)
-            cameras.push_back( obs0.first.v->getWorldLocation().shift );
+            cameras.push_back(obs0.first.v->getWorldLocation().shift);
     }
     else
     {
         for (auto& obs0 : observations)
-            cameras.push_back( obs0.first->getWorldLocation().shift );
+            cameras.push_back(obs0.first->getWorldLocation().shift);
     }
 
-    return SceneFeaturePoint::checkTriangulationAngle( pointPosition, cameras, thresholdCos);
+    return SceneFeaturePoint::checkTriangulationAngle(pointPosition, cameras, thresholdCos);
 }
 
 Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, bool* succeeded, bool trace, bool checkMinimalAngle, double thresholdCos)
@@ -244,6 +245,9 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, boo
 
     if (succeeded != nullptr)
         *succeeded = ok;
+
+    //if (ok && ownerScene && ownerScene->coordinateSystemState == FixtureScene::CoordinateSystemState::convertable)
+     //   res = ownerScene->localToWorld * res;
 
     return res;
 }

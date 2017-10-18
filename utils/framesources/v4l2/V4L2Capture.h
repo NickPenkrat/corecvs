@@ -47,11 +47,11 @@ public:
     virtual CapErrorCode initCapture() override;
     virtual CapErrorCode startCapture() override;
 
-    virtual CapErrorCode getCaptureName(QString &value) override;
+    virtual CapErrorCode getCaptureName(std::string &value) override;
     virtual CapErrorCode getFormats(int *num, CameraFormat *& formats) override;
 
-    virtual QString      getInterfaceName() override;
-    virtual CapErrorCode getDeviceName(int num, QString &name) override;
+    virtual std::string  getInterfaceName() override;
+    virtual CapErrorCode getDeviceName(int num, std::string &name) override;
 
     virtual std::string  getDeviceSerial(int num = LEFT_FRAME) override;
 

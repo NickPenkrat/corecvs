@@ -185,29 +185,63 @@ TEST(CalibrationStructsTest, testIntrinsicsStructisVisible)
 
 TEST(CalibrationStructsTest, testStructConversion)
 {
-    CameraLocationAngles angles = CameraLocationAngles::FromAngles(45, 10, 2);
-    Quaternion q  = Quaternion::FromMatrix(angles.toMatrix());
-    Quaternion q1 = angles.toQuaternion();
+    vector<EulerAngles> input;
+    input.push_back({45.0, 10.0, 2.0});
+    input.push_back({   0,   90,   0});
 
+    for (size_t testId = 0; testId < input.size(); testId++)
+    {
+        cout << "Test :" << testId << endl;
 
+        {
+            EulerAngles &test = input[testId];
+            CameraLocationAngles angles = CameraLocationAngles::FromAnglesDeg(test.alpha, test.beta, test.gamma);
+            Quaternion q  = Quaternion::FromMatrix(angles.toMatrix());
+            Quaternion q1 = angles.toQuaternion();
 
-    CameraLocationAngles anglesR = CameraLocationAngles::FromQuaternion(q);
-    Quaternion qR = Quaternion::FromMatrix(anglesR.toMatrix());
+            CameraLocationAngles anglesR = CameraLocationAngles::FromQuaternion(q);
+            Quaternion qR = Quaternion::FromMatrix(anglesR.toMatrix());
 
-    cout << "Original:" << std::endl;
-    cout << angles << std::endl;
-    cout << "Quaternion form1:" << std::endl;
-    q.printAxisAndAngle();
+            cout << "Original:" << std::endl;
+            cout << angles << std::endl;
+            cout << "Quaternion form1:" << std::endl;
+            q.printAxisAndAngle();
 
-    cout << "Quaternion form2:" << std::endl;
-    q1.printAxisAndAngle();
-    cout << "Restored:" << std::endl;
-    cout << anglesR << std::endl;
-    qR.printAxisAndAngle();
+            cout << "Quaternion form2:" << std::endl;
+            q1.printAxisAndAngle();
+            cout << "Restored:" << std::endl;
+            cout << anglesR << std::endl;
+            qR.printAxisAndAngle();
 
-    ASSERT_TRUE(q.notTooFar(q1, 1e-6));
-    ASSERT_TRUE(q.notTooFar(qR, 1e-6));
+            CORE_ASSERT_TRUE_P(q.notTooFar(q1, 1e-6), ("Test failed %" PRISIZE_T " \n", testId));
+            CORE_ASSERT_TRUE_P(q.notTooFar(qR, 1e-6), ("Test failed %" PRISIZE_T " \n", testId));
+        }
+    }
 }
+
+#if 0
+TEST(CalibrationStructsTest, testStructConversionWorld)
+{
+    Matrix33   m = Matrix33( 0, -1,  0,
+                             0,  0, -1,
+                             1,  0,  0
+                   );
+    Quaternion q = Quaternion::FromMatrix(m);
+    Affine3DQ  a = Affine3DQ(q);
+
+
+    cout << "Matrix: "     << m << endl;
+    cout << "Quaternion: " << q << endl;
+    cout << "Affine3DQ: "  << a << endl;
+
+    WorldLocationAngles wl = WorldLocationAngles::FromQuaternion(q);
+    cout << "WorldLocationAngles: \n" << wl << endl;
+
+    CameraLocationAngles cl = CameraLocationAngles::FromQuaternion(q);
+    cout << "CameraLocationAngles: \n" << wl << endl;
+
+}
+#endif
 
 
 TEST(CalibrationStructsTest, testFrustrumMatrix)

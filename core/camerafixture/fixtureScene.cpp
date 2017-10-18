@@ -1,13 +1,9 @@
-#include <algorithm>
-#include <bufferFactory.h>
-
+#include "fixtureScene.h"
+#include "bufferFactory.h"
 #include "affine.h"
 #include "utils.h"
-
-#include "multicameraTriangulator.h"
 #include "cameraFixture.h"
-#include "fixtureScene.h"
-#include "statusTracker.h"
+#include "log.h"
 
 namespace corecvs {
 
@@ -60,14 +56,19 @@ bool FixtureScene::triangulate(SceneFeaturePoint *point, bool trace, bool checkM
     size_t observationNum = point->observations.size();
     if (observationNum < 2)
     {
-        SYNC_PRINT(("FixtureScene::triangulate(): too few observations (%d)", (int)observationNum));
+        L_WARNING_P("point <%s> has too few observations (%d)", point->name.c_str(), (int)observationNum);
         return false;
     }
 
     bool ok = true;
     Vector3dd point3d = point->triangulate(false, nullptr, &ok, trace, checkMinimalAngle);
-    if (!ok) {
-        SYNC_PRINT(("FixtureScene::triangulate(): MulticameraTriangulator returned false"));
+
+    if (fixtures().size() == 2 && !ok) // case of failed angle check for two cameras
+    {
+        L_WARNING_P("point <%s> has not passed trangulation angle check, but is triangulated anyway", point->name.c_str());
+    }
+    else if (!ok) {
+        L_WARNING_P("point <%s> MulticameraTriangulator returned false", point->name.c_str());
         return false;
     }
 
@@ -196,25 +197,25 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
 
 void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraPrototype)
 {
-     mOrphanCameras.erase(
-        std::remove_if(mOrphanCameras.begin(), mOrphanCameras.end(),
-            [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
-        mOrphanCameras.end()
-     );
+     //mOrphanCameras.erase(
+     //   std::remove_if(mOrphanCameras.begin(), mOrphanCameras.end(),
+     //       [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
+     //   mOrphanCameras.end()
+     //);
 
-     for (size_t i = 0; i < mFixtures.size(); i++)
-     {
-        CameraFixture *station = mFixtures[i];
-        if (station == NULL)
-            continue;
+     //for (size_t i = 0; i < mFixtures.size(); i++)
+     //{
+     //   CameraFixture *station = mFixtures[i];
+     //   if (station == NULL)
+     //       continue;
 
-        auto cameras = station->cameras;
-        cameras.erase(
-           std::remove_if(cameras.begin(), cameras.end(),
-               [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
-           cameras.end()
-        );
-     }
+     //   auto cameras = station->cameras;
+     //   cameras.erase(
+     //      std::remove_if(cameras.begin(), cameras.end(),
+     //          [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
+     //      cameras.end()
+     //   );
+     //}
 
      vectorErase(mCameraPrototypes, cameraPrototype);
 
@@ -260,8 +261,11 @@ void FixtureScene::deleteFeaturePoint(SceneFeaturePoint *point)
         FixtureSceneGeometry *geometry = mGeomtery[i];
         vectorErase(geometry->relatedPoints, point);
     }
-
-    vectorErase(mSceneFeaturePoints, point);
+    if (mSceneFeaturePoints.back() == point) {
+        mSceneFeaturePoints.pop_back();
+    } else {
+        vectorErase(mSceneFeaturePoints, point);
+    }
     delete_safe(point);
 
 }
@@ -287,6 +291,8 @@ void FixtureScene::clear()
 {
     SYNC_PRINT(("FixtureScene::clear(): called\n"));
 
+    PreciseTimer dest = PreciseTimer::currentTime();
+
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
 
     /** Just purge all heap **/
@@ -302,6 +308,14 @@ void FixtureScene::clear()
     mSceneFeaturePoints.clear();
     mGeomtery.clear();
 #else
+    
+    while (!mGeomtery.empty()) {
+        deleteSceneGeometry(mGeomtery.back());
+    }
+
+    while (!mImages.empty()) {
+        deleteImage(mImages.back());
+    }
 
     while (!mFixtures.empty())
     {
@@ -319,16 +333,9 @@ void FixtureScene::clear()
     while (!mSceneFeaturePoints.empty()) {
         deleteFeaturePoint(mSceneFeaturePoints.back());
     }
-
-    while (!mGeomtery.empty()) {
-        deleteSceneGeometry(mGeomtery.back());
-    }
-
-    while (!mImages.empty()) {
-        deleteImage(mImages.back());
-    }
 #endif
 
+    SYNC_PRINT(("FixtureScene::clear(): destruction took %2.2lf ms\n", dest.usecsToNow() / 1000.0));
 }
 
 void FixtureScene::deleteFixturePair(CameraFixture *fixture, FixtureCamera *camera)
@@ -411,9 +418,7 @@ bool FixtureScene::checkIntegrity()
                 }
             }
 #endif
-
         }
-
     }
 
     for (size_t i = 0; i < mSceneFeaturePoints.size(); i++)
@@ -641,7 +646,6 @@ void FixtureScene::merge(FixtureScene *other)
             newPoint->observations.insert(std::pair<FixtureCamera *, SceneObservation>(thisCam, newObserv));
         }
     }
-
 }
 
 
@@ -704,7 +708,7 @@ void FixtureScene::dumpInfo(ostream &out, bool brief)
 #ifdef SCENE_OWN_ALLOCATOR_DRAFT
     out << "Owned objects: " <<  mOwnedObjects.size() << endl;
 #endif
-    out << "name: " << nameId << "\trelPath: " << relativeImageDataPath << "\thasTargetCoordSystem: " << hasTargetCoordSystem << endl;
+    out << "name: " << nameId << "\trelPath: " << relativeImageDataPath << "\tcoordSysState: " << (int)coordinateSystemState << endl;
 
     out << "Camera Prototypes: " << mCameraPrototypes.size() << endl;
     if (!brief)
@@ -970,7 +974,6 @@ void corecvs::FixtureScene::transform(const corecvs::Affine3DQ &transformation, 
         for (FixtureCamera *fc : cf->cameras)
         {
             fc->extrinsics.transform(Affine3DQ::Identity(), scale);
-
         }
     }
 
@@ -1033,6 +1036,16 @@ RGB24Buffer *ImageRelatedData::getRGB24BufferPtr()
 {
     RGB24Buffer* toReturn = BufferFactory::getInstance()->loadRGB24Bitmap(mImagePath);
     return toReturn;
+}
+
+RGB24Buffer *ImageRelatedData::getUndistRGB24BufferPtr()
+{
+    DisplacementBuffer transform = camera->transform(DistortionApplicationParameters());
+    corecvs::RGB24Buffer* buffer = getImage()->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(
+                &transform,
+                camera->intrinsics.size.y(),
+                camera->intrinsics.size.x());
+    return buffer;
 }
 
 std::shared_ptr<RGB24Buffer> ImageRelatedData::getImage(bool detach, bool forceReload)

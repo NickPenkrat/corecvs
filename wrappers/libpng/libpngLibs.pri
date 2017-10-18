@@ -1,4 +1,6 @@
 with_libpng {
+    !build_pass:message(Including libpng lib to link list)
+
     LIBPNG_PATH = $$(LIBPNG_PATH)
     win32 {
         !isEmpty(LIBPNG_PATH) {
@@ -8,7 +10,7 @@ with_libpng {
         }
     } else {
         isEmpty(LIBPNG_PATH) {
-            !build_pass:message(Compiling with system Libpng)
+            !build_pass:message(Linking with system Libpng)
             exists(/usr/include/libpng/png.h) {
                 LIBS += -lpng
                 DEFINES += WITH_LIBPNG
@@ -17,7 +19,7 @@ with_libpng {
             }
 
         } else {
-            !build_pass:message(Compiling with libPng from $$LIBPNG_PATH)
+            !build_pass:message(Linking with libPng from $$LIBPNG_PATH)
             DEPENDPATH  += $$LIBPNG_PATH/include
             INCLUDEPATH += $$LIBPNG_PATH/include
             LIBS        += -L$$LIBPNG_PATH/lib/

@@ -7,6 +7,7 @@
 #include <random>
 
 #include "fixtureScene.h"
+#include "cameraFixture.h"
 #include "calibrationDrawHelpers.h"
 #include "mesh3d.h"
 
@@ -401,8 +402,8 @@ int main (void)
 
         SYNC_PRINT(("Running GCC compiler...\n"));
         PreciseTimer timer = PreciseTimer::currentTime();
-        system("gcc -march=native -shared -fPIC jit.cpp -o jit.so");
-        printf("GCC elapsed %.2lf ms\n", timer.usecsToNow() / 1000.0);
+        int result = system("gcc -march=native -shared -fPIC jit.cpp -o jit.so");
+        printf("GCC (%d) elapsed %.2lf ms\n", result, timer.usecsToNow() / 1000.0);
 
 
         /* Loading DLL*/

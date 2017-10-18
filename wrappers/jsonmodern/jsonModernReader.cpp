@@ -12,6 +12,12 @@ using namespace corecvs;
     }                        \
 
 
+JSONModernReader::JSONModernReader(std::istream &is)
+{
+    is >> mDocument;
+    mNodePath.push_back(&mDocument);
+}
+
 void JSONModernReader::init(const char *fileName)
 {
     mFileName = fileName;

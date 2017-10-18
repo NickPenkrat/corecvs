@@ -18,5 +18,4 @@ ConvexPolyhedron::ConvexPolyhedron(const AxisAlignedBox3d &box)
 
 }
 
-
 } // namespace corecvs

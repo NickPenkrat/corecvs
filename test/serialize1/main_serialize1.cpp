@@ -1,21 +1,21 @@
 #include <stdio.h>
+#include <vector>
+
+#include <QtXml/QDomDocument>
+
 #ifndef WIN32
 #include <unistd.h>
 #endif
-#include <QtXml/QDomDocument>
-#include <vector>
-
 #include "abstractPainter.h"
 #include "bmpLoader.h"
-
 #include "fixtureScene.h"
-
+#include "cameraFixture.h"
 #include "vector3d.h"
 #include "xmlSetter.h"
 #include "xmlGetter.h"
-
-#include "jsonGetter.h"   // it depends on Qt!
+#include "jsonPrinter.h"
 #include "jsonSetter.h"
+#include "jsonGetter.h"
 #ifdef WITH_RAPIDJSON
     #include "rapidJSONReader.h"
 #endif
@@ -480,8 +480,44 @@ void testJSONModernScene()
 }
 
 
-#endif
+void testJSONPrinterArrays()
+{
+    std::vector<std::vector<RgbColorParameters>> rgbArray;
+    std::vector<std::vector<RgbColorParameters>> rgbArray1;
 
+    for (int i = 0; i < 3; i++) {
+        rgbArray.push_back(std::vector<RgbColorParameters>());
+    }
+    rgbArray[0].push_back(RGBColor::Amber().toRGBParameters());
+    rgbArray[0].push_back(RGBColor::Indigo().toRGBParameters());
+    rgbArray[1].push_back(RGBColor::Yellow().toRGBParameters());
+    rgbArray[2].push_back(RGBColor::Black().toRGBParameters());
+    rgbArray[2].push_back(RGBColor::Blue().toRGBParameters());
+
+    std::ostringstream os;
+    {
+        JSONPrinter printer(&os);
+        printer.visit(rgbArray, "test");
+    }
+    std::cout << os.str() << endl;
+
+    std::istringstream is(os.str());
+    {
+        JSONModernReader reader(is);
+        reader.visit(rgbArray1, "test");
+    }
+
+    cout << rgbArray1.size();
+    std::ostringstream os1;
+    {
+        JSONPrinter printer(&os1);
+        printer.visit(rgbArray1, "test");
+    }
+    std::cout << os1.str() << endl;
+
+
+}
+#endif
 
 int main (int /*argc*/, char ** /*argv*/)
 {
@@ -504,6 +540,8 @@ int main (int /*argc*/, char ** /*argv*/)
 #endif
 
 #ifdef WITH_JSONMODERN
+     testJSONPrinterArrays();
+     return 0;
      testJSONModernScene();
 
 

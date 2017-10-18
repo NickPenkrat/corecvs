@@ -495,7 +495,7 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureProper
     return ImageCaptureInterface::SUCCESS;
 }
 
-ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureName(QString &value)
+ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureName(std::string &value)
 {
     if (!isCorrectDeviceHandle(0))
         return ImageCaptureInterface::FAILURE;
@@ -529,12 +529,12 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getFormats(int *
     return ImageCaptureInterface::SUCCESS;
 }
 
-QString DirectShowCaptureInterface::getInterfaceName()
+std::string DirectShowCaptureInterface::getInterfaceName()
 {
-    return QString("dshow:") + mDevname.c_str();
+    return std::string("dshow:") + mDevname;
 }
 
-DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceName(int num, QString &name)
+DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceName(int num, string &name)
 {
     if (num < 0 || num >= 2)
     {
@@ -553,11 +553,11 @@ DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceNa
     }
     if (num == 0)
     {
-        name = deviceStringPattern.cap(Device1Group);
+        name = deviceStringPattern.cap(Device1Group).toStdString();
     }
     else
     {
-        name = deviceStringPattern.cap(Device2Group);
+        name = deviceStringPattern.cap(Device2Group).toStdString();
     }
     return ImageCaptureInterface::SUCCESS;
 }

@@ -41,14 +41,23 @@ public:
 
 
     /**
-     * This function creates a matrix with all zero elements
+     * This function creates a matrix with all zero or uninitailized elements
      *
+     * \attention
+     *          Generally using this method could create undefined behavior.
+     *          Use it only when you would immediatly fill whole matrix with elements.
+     *          Otherwise, please explicitly state that some elements are uninitialzed.
      * \param h
      *         The height of the matrix
      * \param w
      *         The width of the matrix
+     * \param fillWithZero
+     *         if true matrix would be filled with zero
+     *
      */
-    Matrix(int32_t h, int32_t w) : MatrixBase (h, w) {}
+
+    Matrix(int32_t h, int32_t w, bool fillWithZero = true) : MatrixBase (h, w, fillWithZero) {}
+
 
     Matrix(const Matrix &that) : MatrixBase (that) {}
     explicit Matrix(const Matrix *that) : MatrixBase (that) {}
@@ -100,8 +109,6 @@ public:
      *
      **/
     Matrix(int32_t h, int32_t w, double value);
-
-    Matrix(int32_t h, int32_t w, bool shouldInit) : MatrixBase(h, w, shouldInit) {}
 
     explicit Matrix(const Matrix33 &in);
     explicit Matrix(const Matrix44 &in);

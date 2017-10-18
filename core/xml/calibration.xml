@@ -32,6 +32,7 @@
     <field type="bool"      name="largePoints"   defaultValue="false" />
 
     <field type="bool"      name="drawFixtureCams"   defaultValue="true" />
+    <field type="bool"      name="solidCameras"      defaultValue="false" />
     <field type="bool"      name="drawObservations"  defaultValue="false" />
     <field type="bool"      name="drawTrueLines"     defaultValue="false" />
 

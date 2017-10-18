@@ -67,6 +67,40 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
      //   cout << v1 << " " << v2 << endl;
     }
 
+    if (solidCameras())
+    {
+        Vector3dd faces[] =
+        {
+            topLeft , topRight   , bottomLeft,
+            topRight, bottomRight, bottomLeft,
+
+            center  , topLeft    , bottomLeft,
+            center  , bottomLeft , bottomRight,
+            center  , bottomRight, topRight,
+            center  , topRight   , topLeft
+        };
+
+        const int facenumber = CORE_COUNT_OF(faces) / 3;
+
+        for (int i = 0; i < facenumber; ++i)
+        {
+            if (i == 0) {
+                mesh.setColor(RGBColor::Khaki());
+            } else {
+                mesh.setColor(RGBColor::Yellow());
+
+            }
+
+            Vector3dd v1 = cam.extrinsics.camToWorld(invK * faces[i * 3    ]);
+            Vector3dd v2 = cam.extrinsics.camToWorld(invK * faces[i * 3 + 1]);
+            Vector3dd v3 = cam.extrinsics.camToWorld(invK * faces[i * 3 + 2]);
+
+            mesh.addTriangle(v1, v2, v3);
+         //   cout << v1 << " " << v2 << endl;
+        }
+    }
+
+
     if (printNames())
     {
         AbstractPainter<Mesh3D> p(&mesh);
