@@ -146,26 +146,7 @@ public:
 
     std::string                   nameId;
 
-    Matrix44                      localToWorld = Matrix44::Identity(); ///< symilarity transform
-
-    enum CoordinateSystemState
-    {
-        initial = 0,                ///< initial state and "localToWorld" matrix is invalid
-        final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
-        convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
-    };
-    static inline const char *getSystemName(const CoordinateSystemState &value)
-    {
-        switch (value)
-        {
-         case initial     : return "initial";     break ;
-         case final       : return "final";       break ;
-         case convertable : return "convertable"; break ;
-         default : return "Not in range"; break ;
-        }
-        return "Not in range";
-    }
-    CoordinateSystemState         coordinateSystemState = CoordinateSystemState::initial;  
+    bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
 
     StatusTracker *               processState = nullptr;        ///< it's owned on the external side
 
@@ -409,20 +390,8 @@ public:
                 bool loadPrototypes = true,
                 bool loadGeometry = true)
     {
-        visitor.visit(relativeImageDataPath, std::string(""),                "relativeImageDataPath");
-        visitor.visit(coordinateSystemState, CoordinateSystemState::initial, "coordinateSystemState");
-        visitor.visit(localToWorld, Matrix44::Identity(),                    "localToWorld");
-
-        if (visitor.isLoader())
-        {
-            bool hasTargetCoordSystem = false;
-            visitor.visit(hasTargetCoordSystem, false, "hasTargetCoordSystem"); // for compatibility with old scenes
-            if (hasTargetCoordSystem)
-            {
-                coordinateSystemState = CoordinateSystemState::final;
-                localToWorld = Matrix44::Identity();
-            }
-        }
+        visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
+        visitor.visit(hasTargetCoordSystem, false           , "hasTargetCoordSystem");
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
