@@ -52,6 +52,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
 
     /* Now lets work with UI a bit */
     mUi.setupUi(this);
+    setWindowIcon(QIcon(":/new/our/our/3D.png"));
 
     qDebug("Creating CloudViewDialog (%s) for working with OpenGL(%d.%d)",
             windowTitle().toLatin1().constData(),
@@ -236,37 +237,37 @@ void CloudViewDialog::setCollapseTree(bool collapse)
 
 void CloudViewDialog::downRotate()
 {
-    mCamera *= Matrix33::RotationX(-ROTATE_STEP);
+    mCamera *= Matrix33::RotationX(mIsLeft ? -ROTATE_STEP : ROTATE_STEP);
     mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::upRotate()
 {
-    mCamera *= Matrix33::RotationX( ROTATE_STEP);
+    mCamera *= Matrix33::RotationX(mIsLeft ? ROTATE_STEP : -ROTATE_STEP);
     mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::leftRotate()
 {
-    mCamera *= Matrix33::RotationY( ROTATE_STEP);
+    mCamera *= Matrix33::RotationY(!mIsLeft ? ROTATE_STEP : -ROTATE_STEP);
     mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::rightRotate()
 {
-    mCamera *= Matrix33::RotationY(-ROTATE_STEP);
+    mCamera *= Matrix33::RotationY(!mIsLeft ? -ROTATE_STEP : ROTATE_STEP);
     mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::clockRotate()
 {
-    mCamera = Matrix33::RotationZ( ROTATE_STEP) * mCamera;
+    mCamera = Matrix33::RotationZ(mIsLeft ? ROTATE_STEP : -ROTATE_STEP) * mCamera;
     mUi.widget->scheduleUpdate();
 }
 
 void CloudViewDialog::anticlockRotate()
 {
-    mCamera = Matrix33::RotationZ(-ROTATE_STEP) * mCamera;
+    mCamera = Matrix33::RotationZ(mIsLeft ? -ROTATE_STEP : ROTATE_STEP) * mCamera;
     mUi.widget->scheduleUpdate();
 }
 
@@ -385,6 +386,8 @@ void CloudViewDialog::resetCamera()
 
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
+
+    mIsLeft =  isLeft((CameraType)mUi.cameraTypeBox->currentIndex());
 
     switch (mUi.cameraTypeBox->currentIndex())
     {
@@ -576,8 +579,8 @@ void CloudViewDialog::childMoveEvent(QMouseEvent *event)
         double ys = (event->y() - mTrack.y()) / 500.0;
 
 
-        mCamera = Matrix33::RotationY( xs) * mCamera;
-        mCamera = Matrix33::RotationX(-ys) * mCamera;
+        mCamera = Matrix33::RotationY(mIsLeft ?   xs : -xs ) * mCamera;
+        mCamera = Matrix33::RotationX(mIsLeft ?  -ys :  ys ) * mCamera;
 #if 0
         switch (mUi.cameraTypeBox->currentIndex())
         {
@@ -606,10 +609,13 @@ void CloudViewDialog::childMoveEvent(QMouseEvent *event)
 
         switch (mUi.cameraTypeBox->currentIndex())
         {
+            case ORTHO_TOP_LEFT:
+            case ORTHO_LEFT_LEFT:
+            case ORTHO_FRONT_LEFT:
+               shift.x() = -shift.x();
             case ORTHO_TOP:
             case ORTHO_LEFT:
-            case ORTHO_FRONT:
-               shift.x() = -shift.x();
+            case ORTHO_FRONT:              
                shift *= (1.0 / mCameraZoom);
                break;
             default:

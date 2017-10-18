@@ -88,9 +88,9 @@ public:
     void addAOB(const AxisAlignedBoxParameters &box , bool addFaces = true);
     void addAOB(const AxisAlignedBox3d &box         , bool addFaces = true);
 
-    int addPoint(Vector3dd point);
+    int addPoint(const Vector3dd &point);
 
-    void addLine(Vector3dd point1, Vector3dd point2);
+    void addLine(const Vector3dd &point1, const Vector3dd &point2);
     void addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3);
     void addTriangle(const Triangle3dd &triangle);
     void addFlatPolygon(const FlatPolygon &polygon);
