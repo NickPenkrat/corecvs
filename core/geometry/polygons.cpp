@@ -511,7 +511,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
 {
     Polygon result;
 
-    if (trace) SYNC_PRINT(("PolygonCombiner::followContour(%d, %s)\n", startIntersection, inner ? "inner" : "outer"));
+    SYNC_PRINT(("PolygonCombiner::followContour(%d, %s)\n", startIntersection, inner ? "inner" : "outer"));
 
     VertexType flagToFollow = inner ?  INSIDE : OUTSIDE;
     VertexType flagToAvoid  = inner ? OUTSIDE : INSIDE ;
@@ -522,7 +522,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
     size_t currentId = fst.first;
     size_t currentChain = 0;
 
-    if (trace) SYNC_PRINT(("Exit condition A%d or B%d\n", (int)fst.first, (int)fst.second));
+    SYNC_PRINT(("Exit condition A%d or B%d\n", (int)fst.first, (int)fst.second));
 
     int limit = 0;
     while (limit ++ < 30 /*true*/) {
@@ -532,10 +532,10 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
         }
 
         result.push_back(v.pos);
-        if (trace) SYNC_PRINT(("Adding vertex c: %c%" PRISIZE_T " point: %" PRISIZE_T " (%lf %lf)\n", currentChain == 0 ? 'A' : 'B', currentId,
+        printf("Adding vertex c: %c%" PRISIZE_T " point: %" PRISIZE_T " (%lf %lf)\n", currentChain == 0 ? 'A' : 'B', currentId,
                v.orgId,
                c[currentChain][v.orgId].pos.x(),
-               c[currentChain][v.orgId].pos.y()));
+               c[currentChain][v.orgId].pos.y());
 
         if (v.flag == flagToFollow)
         {
@@ -563,7 +563,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
             candidates[0] = {&c[currentChain][nextCurrent], currentChain, nextCurrent};
             candidates[1] = {&c[otherChain  ][nextOther  ], otherChain  , nextOther  };
 
-            if (trace) SYNC_PRINT(("Branching (%c%" PRISIZE_T ") (%c%" PRISIZE_T ")\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther));
+            printf("Branching (%c%" PRISIZE_T ") (%c%" PRISIZE_T ")\n", currentChain == 0 ? 'A' : 'B' , nextCurrent , otherChain == 0 ? 'A' : 'B', nextOther);
 
             /*if ( ( inner && (candidate1.flag != OUTSIDE)) ||
                  (!inner && (candidate1.flag == OUTSIDE)))*/
@@ -574,7 +574,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
             {
                 if (candidates[cand].node->flag == flagToFollow)
                 {
-                    if (trace) cout << "Choosing:" << cand << " because flag" << endl;
+                    cout << "Choosing:" << cand << " because flag" << endl;
                     currentChain = candidates[cand].chain;
                     currentId    = candidates[cand].pos  ;
                     break;
@@ -585,7 +585,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
                 /* Always change the chain if both ends are common */
                 if (candidates[0].node->flag == COMMON && candidates[1].node->flag == COMMON)
                 {
-                    if (trace) cout << "Choosing:" << cand << " because chain change" << endl;
+                    cout << "Choosing:" << cand << " because chain change" << endl;
                     currentChain = candidates[1].chain;
                     currentId    = candidates[1].pos  ;
                     cand = 0;
@@ -597,7 +597,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
                 {
                     if (candidates[cand].node->flag != flagToAvoid)
                     {
-                        if (trace) cout << "Choosing:" << cand << " because avoid" << endl;
+                        cout << "Choosing:" << cand << " because avoid" << endl;
                         currentChain = candidates[cand].chain;
                         currentId    = candidates[cand].pos  ;
                         break;
@@ -615,7 +615,7 @@ Polygon PolygonCombiner::followContour(int startIntersection, bool inner, vector
         VertexData v1 = c[currentChain][currentId];
         if (v1.flag == COMMON)
         {
-            if (trace) SYNC_PRINT(("Checking for exit on (%c%" PRISIZE_T ")\n", currentChain == 0 ? 'A' : 'B' , currentId));
+            printf("Checking for exit on (%c%" PRISIZE_T ")\n", currentChain == 0 ? 'A' : 'B' , currentId);
 
             if ((currentChain == 0) && (currentId == fst.first))
                 break;

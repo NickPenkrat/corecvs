@@ -146,7 +146,19 @@ public:
 
     std::string                   nameId;
 
+<<<<<<< HEAD
     bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
+=======
+    Matrix44                      localToWorld = Matrix44::Identity(); ///< symilarity transform
+
+    enum CoordinateSystemState
+    {
+        initial = 0,                ///< initial state and "localToWorld" matrix is invalid
+        final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
+        convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
+    };
+    CoordinateSystemState         coordinateSystemState = CoordinateSystemState::initial;  
+>>>>>>> parent of 04cad09... More fixes
 
     StatusTracker *               processState = nullptr;        ///< it's owned on the external side
 
