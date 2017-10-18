@@ -26,8 +26,8 @@ void FixtureGlobalParametersWidget::setData(const FixtureScene *scene)
     SYNC_PRINT(("FixtureGlobalParametersWidget::setData(): called\n"));
 
     ui->relativePathEdit->setText(QString::fromStdString(scene->getImageSearchPath()));
-    //ui->hasFinalCoordintesCheckBox->setEnabled(scene->coordinateSystemState == FixtureScene::CoordinateSystemState::final);
-    //ui->worldToCameraWidget->setParameters(scene->worldFrameToCameraFrame);
+    ui->hasFinalCoordintesCheckBox->setEnabled(scene->coordinateSystemState == FixtureScene::CoordinateSystemState::final);
+    ui->worldToCameraWidget->setParameters(scene->worldFrameToCameraFrame);
 
     cout << "WorldToCameraFrame:" << scene->worldFrameToCameraFrame.rotor << endl;
     cout << "WorldToCameraFrame:" << scene->worldFrameToCameraFrame.rotor.toMatrix() << endl;

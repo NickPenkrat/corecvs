@@ -146,9 +146,6 @@ public:
 
     std::string                   nameId;
 
-<<<<<<< HEAD
-    bool                          hasTargetCoordSystem = false;  ///< true if scene doesn't require coordinate system transformation
-=======
     Matrix44                      localToWorld = Matrix44::Identity(); ///< symilarity transform
 
     enum CoordinateSystemState
@@ -157,8 +154,18 @@ public:
         final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
         convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
     };
+    static inline const char *getSystemName(const CoordinateSystemState &value)
+    {
+        switch (value)
+        {
+         case initial     : return "initial";     break ;
+         case final       : return "final";       break ;
+         case convertable : return "convertable"; break ;
+         default : return "Not in range"; break ;
+        }
+        return "Not in range";
+    }
     CoordinateSystemState         coordinateSystemState = CoordinateSystemState::initial;  
->>>>>>> parent of 04cad09... More fixes
 
     StatusTracker *               processState = nullptr;        ///< it's owned on the external side
 
@@ -402,8 +409,20 @@ public:
                 bool loadPrototypes = true,
                 bool loadGeometry = true)
     {
-        visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
-        visitor.visit(hasTargetCoordSystem, false           , "hasTargetCoordSystem");
+        visitor.visit(relativeImageDataPath, std::string(""),                "relativeImageDataPath");
+        visitor.visit(coordinateSystemState, CoordinateSystemState::initial, "coordinateSystemState");
+        visitor.visit(localToWorld, Matrix44::Identity(),                    "localToWorld");
+
+        if (visitor.isLoader())
+        {
+            bool hasTargetCoordSystem = false;
+            visitor.visit(hasTargetCoordSystem, false, "hasTargetCoordSystem"); // for compatibility with old scenes
+            if (hasTargetCoordSystem)
+            {
+                coordinateSystemState = CoordinateSystemState::final;
+                localToWorld = Matrix44::Identity();
+            }
+        }
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
