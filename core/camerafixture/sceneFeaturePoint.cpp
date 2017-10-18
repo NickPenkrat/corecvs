@@ -246,6 +246,9 @@ Vector3dd SceneFeaturePoint::triangulate(bool use__, std::vector<int> *mask, boo
     if (succeeded != nullptr)
         *succeeded = ok;
 
+    //if (ok && ownerScene && ownerScene->coordinateSystemState == FixtureScene::CoordinateSystemState::convertable)
+     //   res = ownerScene->localToWorld * res;
+
     return res;
 }
 

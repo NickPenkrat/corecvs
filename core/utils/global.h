@@ -393,26 +393,25 @@ inline void * __CRTDECL operator new(size_t _Size) {
 //}
 #endif
 
-/** Function for safe deleting objects and arrays */
-#include <stdlib.h>
-
+/** Invite support of the file system */
 
 #ifdef __GNUC__
-#if __cplusplus >= 201703L
-#include <filesystem>
-namespace fs = std::filesystem;
+# if __cplusplus >= 201703L
+#  include <filesystem>
+   namespace fs = std::filesystem;
+# else
+#  include <experimental/filesystem>
+   namespace fs = std::experimental::filesystem;
+# endif
 #else
-#include <experimental/filesystem>
-namespace fs = std::experimental::filesystem;
-#endif
-#else
-#ifdef _MSC_VER
-# include <filesystem>
-namespace fs = std::tr2::sys;
+# ifdef _MSC_VER
+#  include <filesystem>
+   namespace fs = std::tr2::sys;
+# endif
 #endif
 
-#endif
-
+/** Function for safe deleting objects and arrays */
+#include <stdlib.h>
 
 template<typename Type>
 inline void delete_safe (Type * &ptr)
