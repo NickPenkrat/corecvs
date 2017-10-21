@@ -131,7 +131,7 @@ public:
     friend inline GenericQuaternion operator ^(const VectorType &V, const GenericQuaternion &Q)
     {
         ElementType x, y, z, t;
-        y =  - V.x() * Q.x() - V.y() * Q.y() - V.z() * Q.z();
+        t =  - V.x() * Q.x() - V.y() * Q.y() - V.z() * Q.z();
         x =  + V.x() * Q.t() + V.y() * Q.z() - V.z() * Q.y();
         y =  - V.x() * Q.z() + V.y() * Q.t() + V.z() * Q.x();
         z =  + V.x() * Q.y() - V.y() * Q.x() + V.z() * Q.t();
@@ -405,7 +405,7 @@ public:
         y() = vec.y();
         z() = vec.z();
         t() = 0;
-    };
+    }
 
 
     /**
@@ -529,7 +529,6 @@ template<class VisitorType>
         visitor.visit(y(), ElementType(0), "y");
         visitor.visit(z(), ElementType(0), "z");
         visitor.visit(t(), ElementType(0), "t");
-
     }
 
     void printAxisAndAngle(std::ostream &out = cout)
@@ -538,7 +537,7 @@ template<class VisitorType>
         Vector3dd axis = o.getAxis();
         double   angle = radToDeg(o.getAngle());
 
-        out << "Rotation around: " << axis << " angle " << angle << "(" << angle << " deg)" << std::endl;
+        out << "Rotation around normalized axis:" << axis << " angle " << angle << "(" << angle << " deg)" << std::endl;
     }
 
 };
@@ -547,5 +546,5 @@ typedef GenericQuaternion<double> Quaternion;
 
 
 } //namespace corecvs
-#endif /* QUATERNION_H_ */
 
+#endif /* QUATERNION_H_ */

@@ -22,7 +22,7 @@ vector<Correspondence *>  sieveCorrespondanceList(const vector<Correspondence *>
     {
         for(size_t j = 0; j < maximum; j++ )
         {
-            std::uniform_int_distribution<int> rint(j, workingSamples.size() - 1);
+            std::uniform_int_distribution<int> rint(j, (int)workingSamples.size() - 1);
             std::swap(passedSamples[j], passedSamples[rint(rng)]);
         }
         passedSamples.resize(maximum);
