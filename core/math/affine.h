@@ -5,9 +5,9 @@
  * \date Apr 24, 2011
  * \author alexander
  */
-
 #ifndef AFFINE_H_
 #define AFFINE_H_
+
 #include "vector3d.h"
 #include "quaternion.h"
 #include "matrix33.h"
@@ -15,7 +15,6 @@
 #include "line.h"
 
 namespace corecvs {
-
 
 /**
  *  \brief Template class that holds the affine transformation of the space in form of rotational/scale/shear part
@@ -32,20 +31,15 @@ public:
     LinearType rotor;
     Vector3dd  shift;
 
-    explicit Affine3D(
-            LinearType _rotor = LinearType::Identity(),
-            Vector3dd  _shift = Vector3dd::Zero()
-           ) :
-        rotor(_rotor),
-        shift(_shift)
-    {
-    }
+    explicit Affine3D(LinearType _rotor = LinearType::Identity(), Vector3dd _shift = Vector3dd::Zero())
+        : rotor(_rotor)
+        , shift(_shift)
+    {}
 
-    explicit Affine3D(Vector3dd  _shift) :
-        rotor(LinearType::Identity()),
-        shift(_shift)
-    {
-    }
+    explicit Affine3D(Vector3dd _shift)
+        : rotor(LinearType::Identity())
+        , shift(_shift)
+    {}
 
     static LinearType superpose(const LinearType &l1, const LinearType &l2);
 
@@ -130,9 +124,8 @@ public:
     }
 
     /* Pretty print */
-    void prettyPrint (ostream &out = cout) const;
-    void prettyPrint1(ostream &out = cout) const;
-
+    //void prettyPrint (ostream &out = cout) const;
+      void prettyPrint1(ostream &out = cout) const;
 };
 
 /**
@@ -195,20 +188,15 @@ public:
     LinearType rotor;
     Vector2dd  shift;
 
-    explicit Affine2D(
-            LinearType _rotor = LinearType::Identity(),
-            Vector2dd  _shift = Vector2dd::Zero()
-           ) :
-        rotor(_rotor),
-        shift(_shift)
-    {
-    }
+    explicit Affine2D(LinearType _rotor = LinearType::Identity(), Vector2dd _shift = Vector2dd::Zero())
+        : rotor(_rotor)
+        , shift(_shift)
+    {}
 
-    explicit Affine2D(Vector2dd  _shift) :
-        rotor(LinearType::Identity()),
-        shift(_shift)
-    {
-    }
+    explicit Affine2D(Vector2dd _shift)
+        : rotor(LinearType::Identity())
+        , shift(_shift)
+    {}
 
     static LinearType superpose(const LinearType &l1, const LinearType &l2);
 
@@ -233,7 +221,7 @@ public:
         return (*this) * x;
     }
 
-    inline Vector2dd applyInv(const Vector2dd &x) const;
+    //inline Vector2dd applyInv(const Vector2dd &x) const;
 
     /**
      *
@@ -271,9 +259,9 @@ public:
         return Affine2D(LinearType::Identity(), Vector3dd(x, y, z));
     }
 
-    Affine2D inverted() const;
+    //Affine2D inverted() const;
 
-    explicit operator corecvs::Matrix33() const;
+    //explicit operator corecvs::Matrix33() const;
 
     template<class VisitorType>
     void accept(VisitorType &visitor)
@@ -283,16 +271,13 @@ public:
     }
 
     /* Pretty print */
-    void prettyPrint (ostream &out = cout) const;
-    void prettyPrint1(ostream &out = cout) const;
-
+    //void prettyPrint (ostream &out = cout) const;
+    //void prettyPrint1(ostream &out = cout) const;
 };
 
-typedef Affine2D<Matrix22>   Affine2DM;
-
-
+typedef Affine2D<Matrix22>  Affine2DM;
 
 
 } // namespace corecvs
-#endif /* AFFINE_H_ */
 
+#endif /* AFFINE_H_ */
