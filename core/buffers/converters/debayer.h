@@ -72,7 +72,7 @@ private:
     uint8_t     mBayerPos   = 0;
     uint16_t*   mCurve      = nullptr;
     uint16_t    mMaximum    = 0;
-    bool        mScale      = false;
+    bool        mScale      = true;
 
     G12Buffer*  mBayer;
     MetaData *  mMetadata;
