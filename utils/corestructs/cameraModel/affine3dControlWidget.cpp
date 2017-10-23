@@ -104,9 +104,11 @@ void Affine3dControlWidget::setParametersVirtual(void *input)
 void Affine3dControlWidget::copyText()
 {
     SYNC_PRINT(("Affine3dControlWidget::copyText()\n"));
-//    Affine3DQ params;
-//    getParameters(params);
+    Affine3DQ params;
+    getParameters(params);
+
     QClipboard *clipboard = QApplication::clipboard();
+
     QString result = QString(
         "X = %1\n"
         "Y = %2\n"
@@ -114,13 +116,29 @@ void Affine3dControlWidget::copyText()
         "alpha = %4 °\n"
         "beta  = %5 °\n"
         "gamma = %6 °\n"
+        "Movement:\n"
+        "Q(t,x,y,z) = {\"t\":%7,\"x\":%8,\"y\":%9, \"z\":%10}\n"
+        "World transform:\n"
+        "Q(t,x,y,z) = {\"t\":%11,\"x\":%12,\"y\":%13, \"z\":%14}\n"
+
     ).arg(ui->spinBoxX->value()).arg(ui->spinBoxY->value()).arg(ui->spinBoxZ->value())
-     .arg(radToDeg(ui->widgetYaw->value()))
+     .arg(radToDeg(ui->widgetYaw  ->value()))
      .arg(radToDeg(ui->widgetPitch->value()))
-     .arg(radToDeg(ui->widgetRoll->value()));
+     .arg(radToDeg(ui->widgetRoll ->value()))
+
+     .arg(params.rotor.t())
+     .arg(params.rotor.x())
+     .arg(params.rotor.y())
+     .arg(params.rotor.z())
+
+     .arg(params.rotor.conjugated().t())
+     .arg(params.rotor.conjugated().x())
+     .arg(params.rotor.conjugated().y())
+     .arg(params.rotor.conjugated().z());
+
 
     clipboard->setText(result);
-    qDebug() << result;
+    SYNC_PRINT(("Affine3dControlWidget::copyText():%s\n", result.toLatin1().constData()));
 
 }
 
