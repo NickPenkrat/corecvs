@@ -40,10 +40,10 @@ public:
     ///
     /// \brief returns path to the project's working folder for the current build
     ///
-    /// \param projectEnviromentVariable         - a unique project env var, i.e. "PROJECT_DIR"
+    /// \param projectEnviromentVariable         - a unique project env var, i.e. "PROJECT_DIR". It must not be empty!
     /// \param subfolderRelPathJen               - a subfolder relative path for Jenkins case, which will be added to get the full path to the unique build folder
     ///
-    /// \note  the returned path looks like: "<projectDir>/data/test_results/master_linux_555" under Jenkins, otherwise: "/tmp/<projectName>"
+    /// \note  the returned path looks like: "<projectDir>/data/test_results/master_linux_555" under Jenkins, otherwise: "<projectDir>/data/test_results"
     ///
     static std::string UniqueBuildPath(const std::string &projectEnviromentVariable, const std::string &subfolderRelPathJen = "data/test_results");
 

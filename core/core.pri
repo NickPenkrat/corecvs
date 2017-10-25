@@ -39,6 +39,7 @@ CORE_SUBMODULES =       \
     features2d          \
     patterndetection    \
     cameracalibration   \
+    device \
     graphs              \
     polynomial          \
     camerafixture       \
