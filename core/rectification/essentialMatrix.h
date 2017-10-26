@@ -204,6 +204,34 @@ template<class VisitorType>
         return result;
     }
 
+
+    /**
+     *  This method returns the rotation of the camera in the reference frame in which the baseline is OX.
+     *  Result is obviously not unique and looses precision if one camera is behind.
+     *
+     *  \param q1  first  rotation
+     *  \param q2  second rotation
+     *
+     **/
+    void toTwoRotations(Quaternion &q1, Quaternion &q2)
+    {
+        Vector3dd oX = direction.normalised();
+        Vector3dd dir1 = Vector3dd::OrtZ();
+        Vector3dd dir2 = rotation * Vector3dd::OrtZ();
+        Vector3dd oZ = (dir1 + dir2).normalised(); /* Drama would happen sometimes. So far oZ and oX are not orthogonal */
+        Vector3dd oY = (  oZ ^   oX).normalised(); /* More drama possible here     */
+        oZ = (oX ^ oY).normalised();
+
+        Matrix33 rotator = Matrix33::FromColumns(oX, oY, oZ);
+        q1 =  Quaternion::FromMatrix(rotator).conjugated();
+        q2 =  q1 ^ Quaternion::FromMatrix(rotation);
+    }
+
+    Affine3DQ toSecondCameraAffine(double scale = 1.0)
+    {
+        return Affine3DQ(Quaternion::FromMatrix(rotation), direction * scale);
+    }
+
 };
 
 /**

@@ -114,11 +114,7 @@ template<class VisitorType>
         return out;
     }
 
-    void print()
-    {
-        std::cout << *this;
-    }
-
+    void print(ostream &out = std::cout);
     /**
      * This is an exact syntactic comparison
      * Even if the action is acting the same way this would only return true if data structures are per-field equal

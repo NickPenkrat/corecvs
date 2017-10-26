@@ -154,7 +154,7 @@ inline Affine3D<Matrix33> Affine3D<Matrix33>::inverted() const
 }
 
 template <>
-corecvs::Affine3D<Matrix33>::operator corecvs::Matrix44() const;
+corecvs::Affine3D<Matrix33>  ::operator corecvs::Matrix44() const;
 template <>
 corecvs::Affine3D<Quaternion>::operator corecvs::Matrix44() const;
 

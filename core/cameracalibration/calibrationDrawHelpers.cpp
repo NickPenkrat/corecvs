@@ -67,6 +67,8 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
      //   cout << v1 << " " << v2 << endl;
     }
 
+    RGBColor color = mesh.currentColor;
+
     if (solidCameras())
     {
         Vector3dd faces[] =
@@ -85,7 +87,7 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
         for (int i = 0; i < facenumber; ++i)
         {
             if (i == 0) {
-                mesh.setColor(RGBColor::Khaki());
+                mesh.setColor(color);
             } else {
                 mesh.setColor(RGBColor::Yellow());
 
@@ -109,6 +111,8 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
         p.drawFormatVector(0.0, 0.0, 0, scale / 50.0, "Cam: %s", cam.nameId.c_str());
         mesh.popTransform();
     }
+
+    mesh.setColor(color);
 
     //Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
 

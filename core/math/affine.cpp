@@ -25,12 +25,12 @@ void Affine3DQ::prettyPrint1(std::ostream &out)  const
 template <>
 corecvs::Affine3D<Matrix33>::operator corecvs::Matrix44() const
 {
-    return corecvs::Matrix44::Shift(shift[0], shift[1], shift[2]) * corecvs::Matrix44(rotor);
+    return corecvs::Matrix44::Shift(shift) * corecvs::Matrix44(rotor);
 }
 template <>
 corecvs::Affine3D<Quaternion>::operator corecvs::Matrix44() const
 {
-    return corecvs::Matrix44::Shift(shift[0], shift[1], shift[2]) * corecvs::Matrix44(rotor.toMatrix());
+    return corecvs::Matrix44::Shift(shift) * corecvs::Matrix44(rotor.toMatrix());
 }
 
 

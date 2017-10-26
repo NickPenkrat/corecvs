@@ -188,6 +188,15 @@ public:
         return false;
     }
 
+    bool isLeft(CameraType type)
+    {
+        if (type == ORTHO_TOP_LEFT || type == ORTHO_LEFT_LEFT || type == ORTHO_FRONT_LEFT )
+        {
+            return true;
+        }
+        return false;
+    }
+
 
     const QOpenGLContext *getAreaContext();
 
@@ -202,6 +211,7 @@ private:
 
 protected:
   //vector<TreeSceneController*> mControllers;
+    bool                        mIsLeft = false;
     int                         mIsTracking;
     QPoint                      mTrack;
     TreeSceneModel              mTreeModel;

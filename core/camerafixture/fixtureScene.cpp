@@ -246,6 +246,10 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
     }
     else
     {
+        for (FixtureCamera *cam : fixture->cameras)
+        {
+            cam->cameraFixture = NULL;
+        }
         mOrphanCameras.insert(mOrphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
     }
 

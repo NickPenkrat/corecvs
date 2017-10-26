@@ -18,15 +18,21 @@ vector<Correspondence *>  sieveCorrespondanceList(const vector<Correspondence *>
     std::mt19937  rng(100);
     passedSamples = workingSamples;
 
+    unsigned hash = 0;
+
     if (maximum < passedSamples.size())
     {
         for(size_t j = 0; j < maximum; j++ )
         {
-            std::uniform_int_distribution<int> rint(j, workingSamples.size() - 1);
-            std::swap(passedSamples[j], passedSamples[rint(rng)]);
+            std::uniform_int_distribution<unsigned> rint(j, workingSamples.size() - 1);
+            unsigned newPos = rint(rng);
+            hash |= newPos;
+            std::swap(passedSamples[j], passedSamples[newPos]);
         }
         passedSamples.resize(maximum);
     }
+    /* Check that implementation is platform independant*/
+    SYNC_PRINT(("sieveCorrespondanceList(): RNDHASH:%d\n", hash));
     return passedSamples;
 }
 

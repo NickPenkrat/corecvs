@@ -463,6 +463,7 @@ public:
     static Polygon FromConvexPolygon(const ConvexPolygon& polygon);
     static Polygon FromHalfplanes   (const std::vector<Line2d> &halfplanes);
 
+    static Polygon FromImageSize    (const Vector2d<int> &size);
 
     ConvexPolygon toConvexPolygon() const;
 
@@ -603,6 +604,9 @@ public:
     /** These structures store the common vertexes **/
     int intersectionNumber;
     std::vector<std::pair<size_t, size_t>> intersections;
+
+    /* */
+    bool trace = false;
 
     /* Method that initialise internal data structures of the polygonCombiner*/
     void prepare(void);

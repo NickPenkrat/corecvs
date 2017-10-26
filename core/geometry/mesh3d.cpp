@@ -33,6 +33,13 @@ void Mesh3D::setColor(const RGBColor &color)
     currentColor = color;
 }
 
+
+void Mesh3D::mulTransform(const Affine3DQ &transform)
+{
+    transformStack.push_back(currentTransform);
+    currentTransform = currentTransform * static_cast<Matrix44>(transform);
+}
+
 void Mesh3D::mulTransform(const Matrix33 &transform)
 {
     transformStack.push_back(currentTransform);
@@ -180,13 +187,13 @@ void Mesh3D::addAOB(const AxisAlignedBox3d &box, bool addFaces)
     addAOB(box.low(), box.high(), addFaces);
 }
 
-int Mesh3D::addPoint(Vector3dd point)
+int Mesh3D::addPoint(const Vector3dd &point)
 {
     addVertex(point);
     return (int)vertexes.size() - 1;
 }
 
-void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
+void Mesh3D::addLine(const Vector3dd &point1, const Vector3dd &point2)
 {
     int vectorIndex = (int)vertexes.size();
     Vector2d32 startId(vectorIndex, vectorIndex);
