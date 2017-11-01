@@ -207,24 +207,26 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
 
     EssentialMatrix model;
 
-#if 0
+    double thresholdScaler = camera1->intrinsics.fx();
+    RansacParameters scaledParams = params;
+    scaledParams.setInlierThreshold(scaledParams.inlierThreshold() / thresholdScaler);
+
+
+#if 1
     Ransac<Correspondence, Model5Point>  ransac(5, params);
+    ransac.rng.seed(1337);
     ransac.trace = trace;
     ransac.data = &dataPtr;
     Model5Point result = ransac.getModelRansacMultimodel();    
     model = result.model;
-#endif
-    double thresholdScaler = camera1->intrinsics.fx();
-
-    RansacParameters scaledParams = params;
-    scaledParams.setInlierThreshold(scaledParams.inlierThreshold() / thresholdScaler);
-
+#else
     Ransac<Correspondence, Model8Point>  ransac(8, scaledParams);
+    ransac.rng.seed(1337);
     ransac.trace = trace;
     ransac.data = &dataPtr;
     Model8Point result = ransac.getModelRansac();
-
     model = result.model;
+#endif
 
     cout << "Model as a result" << model << endl;
 

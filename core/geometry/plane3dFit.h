@@ -38,6 +38,12 @@ public:
             plane.normalise();
         }
 
+
+        double getCost(const Vector3dd &data)
+        {
+            return plane.distanceTo(data);
+        }
+
         bool fits(const Vector3dd &data, double fitTreshold)
         {
             return (plane.distanceTo(data) < fitTreshold);
