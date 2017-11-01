@@ -65,7 +65,7 @@ int IterativeEstimateParameters::staticInit()
           "Iterations Number",
           "Iterations Number",
           true,
-         1,
+         0,
          9999999
         );
     fields().push_back(field1);

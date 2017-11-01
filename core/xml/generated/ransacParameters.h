@@ -40,6 +40,7 @@ class RansacParameters : public corecvs::BaseReflection<RansacParameters>
 public:
     enum FieldId {
         ITERATIONS_NUMBER_ID,
+        USE_MEDIAN_ID,
         INLIERS_PERCENT_ID,
         INLIER_THRESHOLD_ID,
         RANSAC_PARAMETERS_FIELD_ID_NUM
@@ -52,6 +53,12 @@ public:
      * Iterations Number 
      */
     int mIterationsNumber;
+
+    /** 
+     * \brief Use Median 
+     * Use Median 
+     */
+    bool mUseMedian;
 
     /** 
      * \brief Inliers Percent 
@@ -80,6 +87,11 @@ public:
         return mIterationsNumber;
     }
 
+    bool useMedian() const
+    {
+        return mUseMedian;
+    }
+
     double inliersPercent() const
     {
         return mInliersPercent;
@@ -94,6 +106,11 @@ public:
     void setIterationsNumber(int iterationsNumber)
     {
         mIterationsNumber = iterationsNumber;
+    }
+
+    void setUseMedian(bool useMedian)
+    {
+        mUseMedian = useMedian;
     }
 
     void setInliersPercent(double inliersPercent)
@@ -112,6 +129,7 @@ template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         visitor.visit(mIterationsNumber,          static_cast<const corecvs::IntField *>(fields()[ITERATIONS_NUMBER_ID]));
+        visitor.visit(mUseMedian,                 static_cast<const corecvs::BoolField *>(fields()[USE_MEDIAN_ID]));
         visitor.visit(mInliersPercent,            static_cast<const corecvs::DoubleField *>(fields()[INLIERS_PERCENT_ID]));
         visitor.visit(mInlierThreshold,           static_cast<const corecvs::DoubleField *>(fields()[INLIER_THRESHOLD_ID]));
     }
@@ -124,11 +142,13 @@ template<class VisitorType>
 
     RansacParameters(
           int iterationsNumber
+        , bool useMedian
         , double inliersPercent
         , double inlierThreshold
     )
     {
         mIterationsNumber = iterationsNumber;
+        mUseMedian = useMedian;
         mInliersPercent = inliersPercent;
         mInlierThreshold = inlierThreshold;
     }
