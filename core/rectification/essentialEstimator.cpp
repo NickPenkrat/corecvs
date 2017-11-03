@@ -1134,7 +1134,7 @@ Matrix EssentialEstimator::CostFunction7toNGenerated::getJacobian(const double i
     return result;
 }
 
-Matrix EssentialEstimator::CostFunction7toNGenerated1::getJacobian(const double in[], double delta)
+Matrix EssentialEstimator::CostFunction7toNGenerated1::getJacobian(const double in[], double /*delta*/)
 {
     return derivative2(in, samples);
 }

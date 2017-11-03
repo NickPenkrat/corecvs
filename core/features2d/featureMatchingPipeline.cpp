@@ -1274,7 +1274,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline)
             for (size_t k = 0; k < images[q].keyPoints.keyPoints.size(); ++k)
             {
                 RawMatch& dm = ratioInliers[q][t][k];
-                if (dm.featureT != RawMatch::INVALID_MARKER && dm.featureQ != RawMatch::INVALID_MARKER && ratioInliers[t][q][dm.featureT].featureT != static_cast<int>(k))
+                if (dm.featureT != RawMatch::INVALID_MARKER && dm.featureQ != RawMatch::INVALID_MARKER && ratioInliers[t][q][dm.featureT].featureT != k)
                     dm.featureT = dm.featureQ = RawMatch::INVALID_MARKER;
             }
         }

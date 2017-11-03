@@ -193,8 +193,8 @@ corecvs::RuntimeTypeBuffer *LibpngRuntimeTypeBufferLoader::load(string name)
 
     RuntimeTypeBuffer *result = new RuntimeTypeBuffer(tmp->h, tmp->w, BufferType::U8);
     
-    for (size_t y = 0; y < tmp->h; ++y) {
-        for (size_t x = 0; x < tmp->w; ++x) {
+    for (RGB24Buffer::InternalIndexType y = 0; y < tmp->h; ++y) {
+        for (RGB24Buffer::InternalIndexType x = 0; x < tmp->w; ++x) {
             RGBColor pixel = tmp->element(y, x);
 
             result->at<uint8_t>(y, x) = pixel.brightness();
