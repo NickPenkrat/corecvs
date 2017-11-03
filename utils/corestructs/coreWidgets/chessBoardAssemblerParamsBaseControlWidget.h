@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include "generated/chessBoardAssemblerParamsBase.h"
+#include "core/xml/generated/chessBoardAssemblerParamsBase.h"
 #include "ui_chessBoardAssemblerParamsBaseControlWidget.h"
 #include "parametersControlWidgetBase.h"
 

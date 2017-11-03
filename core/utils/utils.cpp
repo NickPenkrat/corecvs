@@ -18,7 +18,7 @@
 #endif
 #include <sstream>
 
-#include "utils.h"
+#include "core/utils/utils.h"
 namespace corecvs {
 
 namespace HelperUtils {

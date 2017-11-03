@@ -1,7 +1,7 @@
 #include "rotaryTableControlWidget.h"
 #include "rotaryTableMeshModel.h"
 #include "mesh3DScene.h"
-#include "log.h"
+#include "core/utils/log.h"
 #include <QFileDialog>
 
 #include "ui_rotaryTableControlWidget.h"

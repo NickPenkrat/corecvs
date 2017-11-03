@@ -14,14 +14,14 @@
 #include <cmath>
 #include <stdint.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 //#ifdef REFLECTION_IN_CORE
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 //#endif // REFLECTION_IN_CORE
 
-#include "fixedVector.h"
-#include "vector.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/vector/vector.h"
 
 namespace corecvs {
 

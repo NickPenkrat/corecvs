@@ -18,9 +18,9 @@
 #endif
 
 
-#include "vector2d.h"
+#include "core/math/vector/vector2d.h"
 #include "KLTFlow.h"
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 #include "OpenCVTools.h"
 
 using namespace corecvs;

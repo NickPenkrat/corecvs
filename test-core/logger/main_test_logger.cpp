@@ -16,9 +16,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "utils.h"
-#include "log.h"
+#include "core/utils/global.h"
+#include "core/utils/utils.h"
+#include "core/utils/log.h"
 
 using namespace std;
 using namespace corecvs;

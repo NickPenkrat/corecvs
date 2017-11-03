@@ -16,12 +16,12 @@
 
 #include <opencv2/core/core.hpp> // CvSize, IplImage
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "g8Buffer.h"
-#include "vector2d.h"
-#include "g12Buffer.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/g8Buffer.h"
+#include "core/math/vector/vector2d.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 using corecvs::G12Buffer;
 using corecvs::G8Buffer;

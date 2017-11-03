@@ -1,10 +1,9 @@
 #ifndef OPENCVFILTER_H
 #define OPENCVFILTER_H
 
-
-#include "g12Buffer.h"
-#include "generated/openCVFilterParameters.h"
-#include "filterBlock.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/xml/generated/openCVFilterParameters.h"
+#include "core/filters/blocks/filterBlock.h"
 
 class OpenCVFilter: public corecvs::FilterBlock
 {

@@ -13,15 +13,15 @@
 #include "libpngFileReader.h"
 #endif
 
-#include "newStyleBlock.h"
+#include "core/filters/blocks/newStyleBlock.h"
 #include "widgetBlockHarness.h"
 
 #include "qtFileLoader.h"
 #include "reflectionWidget.h"
 
-#include "vector2d.h"
-#include "homographyReconstructor.h"
-#include "sceneStereoAlignerBlock.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/rectification/sceneStereoAlignerBlock.h"
 
 void initLoaders()
 {

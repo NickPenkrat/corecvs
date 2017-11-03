@@ -9,10 +9,10 @@
 #ifndef QUATERNION_H_
 #define QUATERNION_H_
 
-#include "matrix33.h"
-#include "matrix44.h"
-#include "fixedVector.h"
-#include "mathUtils.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/mathUtils.h"
 
 namespace corecvs {
 

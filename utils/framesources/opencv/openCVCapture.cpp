@@ -10,7 +10,7 @@
 
 #include <opencv2/highgui/highgui.hpp> // cvCaptureFromCAM
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "openCVCapture.h"
 #include "openCVHelper.h"

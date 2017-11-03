@@ -9,25 +9,26 @@
  */
 
 #include <iostream>
-#include <propertyList.h>
-#include <propertyListVisitor.h>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "g12Buffer.h"
-#include "ppmLoader.h"
-#include "mathUtils.h"
-#include "vector3d.h"
-#include "matrix44.h"
-#include "vector2d.h"
-#include "cameraParameters.h"
-#include "matrix33.h"
-#include "bufferFactory.h"
-#include "bmpLoader.h"
-#include "mathUtils.h"
-#include "abstractPainter.h"
-#include "mesh3d.h"
-#include "calibrationDrawHelpers.h"
+#include "core/utils/propertyList.h"
+#include "core/utils/visitors/propertyListVisitor.h"
+
+#include "core/utils/global.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/math/mathUtils.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/math/vector/vector2d.h"
+#include "core/cammodel/cameraParameters.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/math/mathUtils.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/geometry/mesh3d.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
 
 using corecvs::G12Buffer;
 using corecvs::PPMLoader;
@@ -178,7 +179,7 @@ TEST(Cameramodel, generateReality)
     delete_safe(input);
 }
 
-#include "calibrationCamera.h"
+#include "core/cameracalibration/calibrationCamera.h"
 
 using corecvs::PinholeCameraIntrinsics;
 

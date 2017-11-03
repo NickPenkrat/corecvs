@@ -9,13 +9,13 @@
  */
 
 #include <vector>
-#include "correspondenceList.h"
-#include "essentialMatrix.h"
-#include "function.h"
-#include "quaternion.h"
+#include "core/rectification/correspondenceList.h"
+#include "core/rectification/essentialMatrix.h"
+#include "core/function/function.h"
+#include "core/math/quaternion.h"
 
-#include "astNode.h"
-#include "matrixOperations.h"
+#include "core/meta/astNode.h"
+#include "core/math/matrix/matrixOperations.h"
 
 namespace corecvs {
 

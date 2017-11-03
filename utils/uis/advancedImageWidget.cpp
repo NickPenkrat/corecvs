@@ -11,12 +11,12 @@
 #include <QMouseEvent>
 #include <QToolTip>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "rgbColor.h"
+#include "core/buffers/rgb24/rgbColor.h"
 #include "advancedImageWidget.h"
 #include "saveFlowSettings.h"
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 #include "qtHelper.h"
 
 AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "featureDetectorProvider.h"
+#include "core/features2d/featureDetectorProvider.h"
 
 namespace cv {
 #ifdef WITH_OPENCV_3x

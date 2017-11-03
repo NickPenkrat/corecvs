@@ -3,9 +3,9 @@
 
 #include <QDialog>
 #include "ui_rectifyParametersControlWidget.h"
-#include "eulerAngles.h"
-#include "vector3d.h"
-#include "mathUtils.h"
+#include "core/math/eulerAngles.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/mathUtils.h"
 #include "rectifyParameters.h"
 #include "parametersControlWidgetBase.h"
 #include "qtHelper.h"

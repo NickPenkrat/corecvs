@@ -3,7 +3,7 @@
 
 #include "openCvDefaultParams.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include <opencv2/features2d/features2d.hpp>    // cv::FeatureDetector
 #include <opencv2/imgproc/imgproc.hpp>			// cv::remap

@@ -2,8 +2,8 @@
 #include <math.h>
 #include <iostream>
 
-#include "kde.h"
-#include "log.h"
+#include "core/math/kde.h"
+#include "core/utils/log.h"
 namespace corecvs {
 
 

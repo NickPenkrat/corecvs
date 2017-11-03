@@ -12,14 +12,14 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vectorOperations.h"
-#include "preciseTimer.h"
-#include "fixedVector.h"
-#include "fixedArray.h"
+#include "core/math/vector/vectorOperations.h"
+#include "core/utils/preciseTimer.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/vector/fixedArray.h"
 
-#include "vector3d.h"
+#include "core/math/vector/vector3d.h"
 
 using namespace corecvs;
 using namespace std;

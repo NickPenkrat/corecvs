@@ -1,7 +1,7 @@
 #ifndef NEWSTYLEBLOCK_H
 #define NEWSTYLEBLOCK_H
 
-#include "adderSubstractorParametersBase.h"
+#include "core/xml/generated/adderSubstractorParametersBase.h"
 
 namespace corecvs {
 

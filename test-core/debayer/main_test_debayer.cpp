@@ -6,12 +6,12 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include <global.h>
-#include "g12Buffer.h"
-#include "bmpLoader.h"
-#include "ppmLoader.h"
-#include "converters/debayer.h"
-#include "converters/errorMetrics.h"
+#include "core/utils/global.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/buffers/converters/debayer.h"
+#include "core/buffers/converters/errorMetrics.h"
 
 using namespace corecvs;
 

@@ -3,14 +3,14 @@
 
 #include <vector>
 
-#include "generated/chessBoardCornerDetectorParamsBase.h"
+#include "core/xml/generated/chessBoardCornerDetectorParamsBase.h"
 
-#include "abstractKernel.h"
-#include "abstractBuffer.h"
-#include "vector2d.h"
-#include "matrix.h"
-#include "reflection.h"
-#include "convolver/convolver.h"    // corecvs::DpImage
+#include "core/buffers/abstractKernel.h"
+#include "core/buffers/abstractBuffer.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix.h"
+#include "core/reflection/reflection.h"
+#include "core/buffers/convolver/convolver.h"    // corecvs::DpImage
 
 namespace corecvs {
     class Statistics;

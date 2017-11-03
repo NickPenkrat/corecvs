@@ -8,11 +8,11 @@
 #include <QPushButton>
 
 #include "pointerFieldWidget.h"
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 #include "reflectionWidget.h"
 #include "vectorWidget.h"
 #include "exponentialSlider.h"
-#include "dynamicObject.h"
+#include "core/reflection/dynamicObject.h"
 
 using namespace corecvs;
 

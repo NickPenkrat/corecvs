@@ -8,8 +8,8 @@
 #include <vector>
 #include <stddef.h>
 
-#include "lensDistortionModelParameters.h"
-#include "polynomialSolver.h"
+#include "core/alignment/lensDistortionModelParameters.h"
+#include "core/polynomial/polynomialSolver.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.

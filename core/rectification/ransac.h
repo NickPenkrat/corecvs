@@ -12,8 +12,8 @@
 #include <vector>
 #include <algorithm>
 
-#include "global.h"
-#include "ransacParameters.h"
+#include "core/utils/global.h"
+#include "core/xml/generated/ransacParameters.h"
 
 namespace corecvs {
 

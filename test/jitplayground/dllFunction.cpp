@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "dllFunction.h"
-#include "tbbWrapper.h"
+#include "core/tbbwrapper/tbbWrapper.h"
 
 using namespace std;
 using namespace corecvs;

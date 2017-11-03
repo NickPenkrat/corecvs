@@ -6,22 +6,22 @@
  * \ingroup autotest  
  */
 
-#include <abstractPainter.h>
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 
-#include "bmpLoader.h"
-#include "chessBoardDetector.h"
-#include "bufferFactory.h"
-#include "patternDetector.h"
-#include "rgb24Buffer.h"
-#include "generated/focusEstimationParameters.h"
-#include "generated/focusEstimationResult.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/patterndetection/chessBoardDetector.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/patterndetection/patternDetector.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/xml/generated/focusEstimationParameters.h"
+#include "core/xml/generated/focusEstimationResult.h"
 
-#include "focusEstimator1.h"
+#include "core/buffers/focusEstimator1.h"
+#include "core/buffers/rgb24/abstractPainter.h"
 
 
 using namespace corecvs;

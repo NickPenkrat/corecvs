@@ -13,7 +13,7 @@
  *    * gettimeofday on linux
  */
 #include <stdint.h>
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 
 namespace corecvs {
 

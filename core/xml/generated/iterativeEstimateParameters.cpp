@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include "iterativeEstimateParameters.h"
+#include "core/xml/generated/iterativeEstimateParameters.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.

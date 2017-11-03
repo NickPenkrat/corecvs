@@ -5,10 +5,10 @@
 #include <map>
 #include <functional>
 
-#include "fixtureScenePart.h"
-#include "fixtureCamera.h"
-#include "sceneFeaturePoint.h"
-#include "cameraPrototype.h"
+#include "core/camerafixture/fixtureScenePart.h"
+#include "core/camerafixture/fixtureCamera.h"
+#include "core/camerafixture/sceneFeaturePoint.h"
+#include "core/camerafixture/cameraPrototype.h"
 
 /* In future Scene would like to control memory management for child objects */
 //#define SCENE_OWN_ALLOCATOR_DRAFT

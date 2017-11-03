@@ -11,17 +11,17 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "preciseTimer.h"
-#include "chessBoardCornerDetector.h"
-#include "fastKernel.h"
-#include "sobel.h"
-#include "vectorTraits.h"
-#include "arithmetic.h"
-#include "copyKernel.h"
+#include "core/utils/preciseTimer.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
+#include "core/buffers/kernels/fastkernel/fastKernel.h"
+#include "core/buffers/kernels/sobel.h"
+#include "core/buffers/kernels/fastkernel/vectorTraits.h"
+#include "core/buffers/kernels/arithmetic.h"
+#include "core/buffers/kernels/copyKernel.h"
 
-#include "convolver/convolver.h"
+#include "core/buffers/convolver/convolver.h"
 
 using corecvs::SobelVerticalKernel;
 using corecvs::ScalarAlgebraDouble;

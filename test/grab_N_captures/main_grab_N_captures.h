@@ -1,4 +1,4 @@
-#include "global.h"
+#include "core/utils/global.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/QObject>
 #include <QSignalMapper>
@@ -6,7 +6,7 @@
 #include "qtFileLoader.h"
 #include "qtHelper.h"
 #include "imageCaptureInterfaceQt.h"
-#include "log.h"
+#include "core/utils/log.h"
 #include "g12Image.h"
 
 

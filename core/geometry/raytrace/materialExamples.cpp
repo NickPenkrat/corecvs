@@ -1,4 +1,4 @@
-#include "materialExamples.h"
+#include "core/geometry/raytrace/materialExamples.h"
 
 MaterialExamples::MaterialExamples()
 {

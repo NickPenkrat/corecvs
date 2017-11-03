@@ -1,7 +1,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
-#include "kde.h"
+#include "core/math/kde.h"
 
 double corecvs::kde::get_min(int x){
     default_bandwidth(x);

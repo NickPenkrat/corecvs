@@ -7,8 +7,8 @@
 #include <memory>
 #include <atomic>
 
-#include "matrix.h"
-#include "vector.h"
+#include "core/math/matrix/matrix.h"
+#include "core/math/vector/vector.h"
 
 #ifdef WITH_MKL
 #include <mkl.h>
@@ -20,7 +20,7 @@
 #include "cuda.h"
 #endif
 
-#include "wisdom.h"
+#include "core/math/wisdom.h"
 
 namespace corecvs
 {

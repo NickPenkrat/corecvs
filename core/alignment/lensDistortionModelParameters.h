@@ -8,13 +8,13 @@
  * \author autoGenerator
  */
 
-#include "lensDistortionModelParametersBase.h"
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
-#include "levenmarq.h"
-#include "matrix22.h"
-//#include "polynomialSolver.h"     // including this dues to a compilation error with msvc2013/2015, see details at the polynomial.h
+#include "core/xml/generated/lensDistortionModelParametersBase.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
+#include "core/math/levenmarq.h"
+#include "core/math/matrix/matrix22.h"
+//#include "core/polynomial/polynomialSolver.h"     // including this dues to a compilation error with msvc2013/2015, see details at the polynomial.h
 
 /*
  *  Embed includes.

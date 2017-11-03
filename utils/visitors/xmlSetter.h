@@ -4,8 +4,8 @@
 #include <QtCore/QtCore>
 #include "QtCore/QString"
 
-#include "basePathVisitor.h"
-#include "reflection.h"
+#include "core/utils/visitors/basePathVisitor.h"
+#include "core/reflection/reflection.h"
 #include "baseXMLVisitor.h"
 
 using corecvs::IntField;

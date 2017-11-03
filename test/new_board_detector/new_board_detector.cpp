@@ -1,4 +1,4 @@
-#include "global.h"
+#include "core/utils/global.h"
 
 #include <vector>
 #include <cassert>
@@ -9,9 +9,9 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-#include "chessBoardDetector.h"
-#include "chessBoardCornerDetector.h"
-#include "chessBoardAssembler.h"
+#include "core/patterndetection/chessBoardDetector.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
+#include "core/patterndetection/chessBoardAssembler.h"
 
 #include "qtFileLoader.h"
 

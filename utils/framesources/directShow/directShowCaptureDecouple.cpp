@@ -2,9 +2,9 @@
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
-#include "global.h"
-#include "mathUtils.h" // roundDivUp
-#include "preciseTimer.h"
+#include "core/utils/global.h"
+#include "core/math/mathUtils.h" // roundDivUp
+#include "core/utils/preciseTimer.h"
 #include "directShowCaptureDecouple.h"
 //#include "mjpegDecoderLazy.h"
 #include "cameraControlParameters.h"

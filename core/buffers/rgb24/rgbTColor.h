@@ -11,11 +11,11 @@
 
 #include <stdint.h>
 
-#include "fixedVector.h"
-#include "vector3d.h"
-#include "mathUtils.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/mathUtils.h"
 
-#include "generated/rgbColorParameters.h"
+#include "core/xml/generated/rgbColorParameters.h"
 
 namespace corecvs {
 

@@ -6,15 +6,15 @@
 
 #include <QtCore/QDebug>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "mathUtils.h"
-#include "meshLoader.h"
+#include "core/math/mathUtils.h"
+#include "core/fileformats/meshLoader.h"
 #include "mesh3DScene.h"
 #include "opengl/openGLTools.h"
 #include "generated/draw3dParameters.h"
 #include "painterHelpers.h"
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 #include "qtHelper.h"
 
 using corecvs::lerp;

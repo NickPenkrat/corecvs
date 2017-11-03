@@ -4,11 +4,11 @@
 
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "vector4d.h"
+#include "core/utils/global.h"
+#include "core/math/vector/vector4d.h"
 
-#include "calibrationCamera.h"
-#include "calibrationLocation.h"
+#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/calibrationLocation.h"
 
 #include <random>
 

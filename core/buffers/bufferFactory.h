@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "g12Buffer.h"
-#include "rgb24Buffer.h"
-#include "bufferLoader.h"
-#include "runtimeTypeBuffer.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bufferLoader.h"
+#include "core/buffers/runtimeTypeBuffer.h"
 
 namespace corecvs {
 

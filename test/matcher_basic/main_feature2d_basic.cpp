@@ -3,9 +3,9 @@
 #include <sstream>
 #include <iomanip>
 
-#include "featureMatchingPipeline.h"
+#include "core/features2d/featureMatchingPipeline.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #ifdef WITH_OPENCV
 #include "openCvFeatureDetectorWrapper.h"

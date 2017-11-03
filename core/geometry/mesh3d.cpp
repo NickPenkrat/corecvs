@@ -5,10 +5,10 @@
  **/
 #include <fstream>
 
-#include "mathUtils.h"      // M_PI
-#include "abstractPainter.h"
-#include "mesh3d.h"
-#include "plyLoader.h"
+#include "core/math/mathUtils.h"      // M_PI
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/geometry/mesh3d.h"
+#include "core/fileformats/plyLoader.h"
 
 namespace corecvs {
 

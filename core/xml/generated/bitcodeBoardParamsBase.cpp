@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include "bitcodeBoardParamsBase.h"
+#include "core/xml/generated/bitcodeBoardParamsBase.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.

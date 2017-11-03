@@ -1,6 +1,6 @@
 #pragma once
 
-#include "descriptorMatcherProvider.h"
+#include "core/features2d/descriptorMatcherProvider.h"
 
 namespace cv {
     class DescriptorMatcher;

@@ -8,16 +8,16 @@
 
 #include <ostream>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "scene3D.h"
 #include "sceneShaded.h"
 #include "cloudViewDialog.h"
-#include "gcodeLoader.h"
+#include "core/fileformats/gcodeLoader.h"
 #include "generated/draw3dParameters.h"
 #include "draw3dParametersControlWidget.h"
 #include "draw3dCameraParametersControlWidget.h"
-#include "generated/drawGCodeParameters.h"
+#include "core/xml/generated/drawGCodeParameters.h"
 
 #include "reflectionWidget.h"
 

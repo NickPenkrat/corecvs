@@ -1,9 +1,9 @@
-#include "rgb24Buffer.h"
-#include "fixtureScene.h"
-#include "cameraFixture.h"
-#include "affine.h"
-#include "sceneStereoAlignerBlock.h"
-#include "stereoAligner.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/math/affine.h"
+#include "core/rectification/sceneStereoAlignerBlock.h"
+#include "core/rectification/stereoAligner.h"
 
 #include <abstractPainter.h>
 

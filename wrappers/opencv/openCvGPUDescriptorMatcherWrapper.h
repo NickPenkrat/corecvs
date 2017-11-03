@@ -1,6 +1,6 @@
 #pragma once
 
-#include "descriptorMatcherProvider.h"
+#include "core/features2d/descriptorMatcherProvider.h"
 
 #ifndef WITH_OPENCV_3x
 

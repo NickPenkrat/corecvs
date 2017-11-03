@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "algoBase.h"
-#include "imageKeyPoints.h"
-#include "featureMatchingPipeline.h"
+#include "core/features2d/algoBase.h"
+#include "core/features2d/imageKeyPoints.h"
+#include "core/features2d/featureMatchingPipeline.h"
 
 
 class DetectAndExtract : public AlgoBase

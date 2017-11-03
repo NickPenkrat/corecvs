@@ -7,8 +7,8 @@
  * \author alexander
  */
 
-#include "flowSimulator.h"
-#include "FCostFunction.h"
+#include "core/automotive/simulation/flowSimulator.h"
+#include "core/automotive/FCostFunction.h"
 namespace corecvs {
 
 FlowSimulator::FlowSimulator()

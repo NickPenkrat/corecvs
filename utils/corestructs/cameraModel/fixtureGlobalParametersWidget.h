@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "fixtureScene.h"
+#include "core/camerafixture/fixtureScene.h"
 
 namespace Ui {
 class FixtureGlobalParametersWidget;

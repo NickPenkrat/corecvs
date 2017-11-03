@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include "drawGCodeParameters.h"
+#include "core/xml/generated/drawGCodeParameters.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.

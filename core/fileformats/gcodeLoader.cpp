@@ -1,5 +1,5 @@
-#include "gcodeLoader.h"
-#include "utils.h"
+#include "core/fileformats/gcodeLoader.h"
+#include "core/utils/utils.h"
 
 #include <sstream>
 #include <cctype>

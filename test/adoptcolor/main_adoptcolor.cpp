@@ -8,9 +8,9 @@
 
 #include "imageCaptureInterface.h"
 //#include "V4L2Capture.h"
-#include "bmpLoader.h"
-#include "ellipticalApproximation.h"
-#include "rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/geometry/ellipticalApproximation.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 #if 0
 void func (void)

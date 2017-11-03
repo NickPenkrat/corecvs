@@ -5,7 +5,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 namespace corecvs {
 

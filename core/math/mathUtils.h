@@ -7,7 +7,7 @@
  * \date Mar 4, 2010
  * \author alexander
  */
-#include "global.h"
+#include "core/utils/global.h"
 
 #ifndef M_PI
 #define _USE_MATH_DEFINES

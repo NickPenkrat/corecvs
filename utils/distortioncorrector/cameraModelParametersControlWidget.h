@@ -3,12 +3,12 @@
 
 #include <QWidget>
 #include "parametersControlWidgetBase.h"
-#include "lensDistortionModelParameters.h"
+#include "core/alignment/lensDistortionModelParameters.h"
 
-#include "calibrationCamera.h"
+#include "core/cameracalibration/calibrationCamera.h"
 
-#include "quaternion.h"
-#include "vector3d.h"
+#include "core/math/quaternion.h"
+#include "core/math/vector/vector3d.h"
 
 namespace Ui {
 class CameraModelParametersControlWidget;

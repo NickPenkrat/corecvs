@@ -17,10 +17,10 @@
 #include <QFileInfo>
 #include <QDir>
 
-#include "vector2d.h"
-#include "vector3d.h"
-#include "rectangle.h"
-#include "matrix33.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
+#include "core/geometry/rectangle.h"
+#include "core/math/matrix/matrix33.h"
 
 #include "parametersControlWidgetBase.h"
 

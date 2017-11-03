@@ -1,5 +1,5 @@
 #include "gCodeScene.h"
-#include "gcodeLoader.h"
+#include "core/fileformats/gcodeLoader.h"
 
 
 GCodeScene::GCodeScene() :

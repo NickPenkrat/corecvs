@@ -1,8 +1,8 @@
 #ifndef CONIC_H
 #define CONIC_H
 
-#include "line.h"
-#include "lineSpan.h"
+#include "core/geometry/line.h"
+#include "core/buffers/rgb24/lineSpan.h"
 
 namespace corecvs {
 

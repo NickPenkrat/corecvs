@@ -4,11 +4,11 @@
 #include <memory>
 #include <vector>
 
-#include "vector2d.h"
-#include "circlePatternGenerator.h"
-#include "selectableGeometryFeatures.h"
-#include "typesafeBitmaskEnums.h"
-#include "convolver/convolver.h"    // corecvs::DpImage
+#include "core/math/vector/vector2d.h"
+#include "core/patterndetection/circlePatternGenerator.h"
+#include "core/alignment/selectableGeometryFeatures.h"
+#include "core/utils/typesafeBitmaskEnums.h"
+#include "core/buffers/convolver/convolver.h"    // corecvs::DpImage
 
 
 using std::vector;

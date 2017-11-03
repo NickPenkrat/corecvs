@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "faceDetect.h"
 #include "OpenCVTools.h"

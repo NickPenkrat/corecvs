@@ -8,9 +8,9 @@
 #include <ostream>
 #include <QtCore/QString>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "matrix44.h"
+#include "core/math/matrix/matrix44.h"
 #include "generated/draw3dParameters.h"
 #include "parametersControlWidgetBase.h"
 

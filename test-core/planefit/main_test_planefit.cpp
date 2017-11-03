@@ -12,9 +12,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "plane3dFit.h"
-#include "polygons.h"
+#include "core/utils/global.h"
+#include "core/geometry/plane3dFit.h"
+#include "core/geometry/polygons.h"
 
 using namespace std;
 using namespace corecvs;

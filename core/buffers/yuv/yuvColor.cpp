@@ -1,4 +1,4 @@
-#include "yuvColor.h"
+#include "core/buffers/yuv/yuvColor.h"
 
 namespace corecvs {
 

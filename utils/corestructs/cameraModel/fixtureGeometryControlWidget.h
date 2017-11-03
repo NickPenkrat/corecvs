@@ -3,8 +3,8 @@
 
 #include <QWidget>
 
-#include "sceneFeaturePoint.h"
-#include "fixtureScenePart.h"
+#include "core/camerafixture/sceneFeaturePoint.h"
+#include "core/camerafixture/fixtureScenePart.h"
 #include "parametersControlWidgetBase.h"
 
 #include "graphPlotDialog.h"

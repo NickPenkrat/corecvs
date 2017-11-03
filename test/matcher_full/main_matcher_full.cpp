@@ -4,8 +4,8 @@
 #include <fstream>
 #include <sstream>
 
-#include "global.h"
-#include "featureMatchingPipeline.h"
+#include "core/utils/global.h"
+#include "core/features2d/featureMatchingPipeline.h"
 
 #ifdef WITH_OPENCV
 #include "openCvFeatureDetectorWrapper.h"

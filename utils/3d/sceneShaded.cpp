@@ -8,7 +8,7 @@
 #include <qopengl.h>
 #include "sceneShaded.h"
 #include "cloudViewDialog.h"
-#include "bmpLoader.h"
+#include "core/fileformats/bmpLoader.h"
 
 QString textGlError(GLenum err)
 {

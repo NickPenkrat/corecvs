@@ -11,12 +11,12 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "g12Buffer.h"
-#include "histogram.h"
-#include "bmpLoader.h"
-#include "bufferFactory.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/histogram/histogram.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/bufferFactory.h"
 
 using namespace corecvs;
 

@@ -1,4 +1,4 @@
-#include "sdfRenderable.h"
+#include "core/geometry/raytrace/sdfRenderable.h"
 
 SDFRenderable::SDFRenderable()
 {

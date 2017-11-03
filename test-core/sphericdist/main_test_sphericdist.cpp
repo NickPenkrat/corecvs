@@ -11,11 +11,11 @@
 #include <stdio.h>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "g12Buffer.h"
-#include "bmpLoader.h"
-#include "bufferFactory.h"
-#include "sphericalCorrectionLUT.h"
+#include "core/utils/global.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/cammodel/sphericalCorrectionLUT.h"
 
 
 using namespace corecvs;

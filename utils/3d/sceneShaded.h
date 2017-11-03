@@ -6,7 +6,7 @@
 
 #include "draw3dCameraParametersControlWidget.h"
 #include "scene3D.h"
-#include "mesh3DDecorated.h"
+#include "core/geometry/mesh3DDecorated.h"
 #include "shadedSceneControlWidget.h"
 
 class QOpenGLShaderProgram;

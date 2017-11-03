@@ -13,7 +13,7 @@
 */
 #include <QtCore/QSettings>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "frames.h"
 

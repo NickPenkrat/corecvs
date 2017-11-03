@@ -11,15 +11,15 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
-#include "conic.h"
-#include "rgb24Buffer.h"
-#include "bmpLoader.h"
-#include "abstractPainter.h"
+#include "core/math/vector/vector2d.h"
+#include "core/geometry/conic.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/rgb24/abstractPainter.h"
 
-#include "mesh3d.h"
+#include "core/geometry/mesh3d.h"
 
 using namespace corecvs;
 

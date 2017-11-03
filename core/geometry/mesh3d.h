@@ -6,17 +6,17 @@
  * \date Dec 13, 2012
  **/
 
-#include "generated/axisAlignedBoxParameters.h"
-#include "vector3d.h"
-#include "matrix33.h"
-#include "matrix44.h"
-#include "cameraParameters.h"
-#include "axisAlignedBox.h"
-#include "rgbColor.h"
-#include "ellipticalApproximation.h"
-#include "polygons.h"
+#include "core/xml/generated/axisAlignedBoxParameters.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/cammodel/cameraParameters.h"
+#include "core/geometry/axisAlignedBox.h"
+#include "core/buffers/rgb24/rgbColor.h"
+#include "core/geometry/ellipticalApproximation.h"
+#include "core/geometry/polygons.h"
 
-#include "conic.h"
+#include "core/geometry/conic.h"
 
 namespace corecvs
 {

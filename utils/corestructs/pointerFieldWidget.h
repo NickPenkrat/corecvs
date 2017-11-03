@@ -1,7 +1,7 @@
 #ifndef POINTERFIELDWIDGET_H
 #define POINTERFIELDWIDGET_H
 
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 #include <QWidget>
 #include "advancedImageWidget.h"
 #include "cameraModelParametersControlWidget.h"

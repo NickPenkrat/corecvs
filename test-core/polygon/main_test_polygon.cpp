@@ -12,17 +12,17 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "polygons.h"
-#include "global.h"
-#include "mathUtils.h"
-#include "rgb24Buffer.h"
-#include "bmpLoader.h"
-#include "abstractPainter.h"
+#include "core/geometry/polygons.h"
+#include "core/utils/global.h"
+#include "core/math/mathUtils.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/rgb24/abstractPainter.h"
 
-#include "calibrationCamera.h"
-#include "raytraceRenderer.h"
-#include "raytraceObjects.h"
-#include "calibrationDrawHelpers.h"
+#include "core/cameracalibration/calibrationCamera.h"
+#include "core/geometry/raytrace/raytraceRenderer.h"
+#include "core/geometry/raytrace/raytraceObjects.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
 
 
 using namespace std;

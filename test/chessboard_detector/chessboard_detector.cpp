@@ -1,7 +1,7 @@
-#include "chessBoardDetector.h"
-#include "chessBoardCornerDetector.h"
-#include "chessBoardAssembler.h"
-#include "focusEstimator1.h"
+#include "core/patterndetection/chessBoardDetector.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
+#include "core/patterndetection/chessBoardAssembler.h"
+#include "core/buffers/focusEstimator1.h"
 
 #include <vector>
 #include <cassert>
@@ -9,7 +9,7 @@
 #include <fstream>
 #include <memory>
 
-#include "commandLineSetter.h"
+#include "core/reflection/commandLineSetter.h"
 
 /*#include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>

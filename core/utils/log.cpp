@@ -7,11 +7,11 @@
 # include <sys/syscall.h>
 #endif
 
-#include "log.h"
-#include "commandLineSetter.h"
-#include "tbbWrapper.h"
-#include "tempFolder.h"
-#include "utils.h"
+#include "core/utils/log.h"
+#include "core/reflection/commandLineSetter.h"
+#include "core/tbbwrapper/tbbWrapper.h"
+#include "core/filesystem/tempFolder.h"
+#include "core/utils/utils.h"
 
 const char *Log::level_names[] =
 {

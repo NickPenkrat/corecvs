@@ -1,4 +1,4 @@
-#include "dynamicObject.h"
+#include "core/reflection/dynamicObject.h"
 
 namespace corecvs {
 

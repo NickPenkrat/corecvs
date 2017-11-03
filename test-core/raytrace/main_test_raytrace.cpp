@@ -10,22 +10,22 @@
 
 #include <fstream>
 #include <iostream>
-#include "objLoader.h"
-#include "bufferFactory.h"
+#include "core/fileformats/objLoader.h"
+#include "core/buffers/bufferFactory.h"
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "raytrace/raytraceRenderer.h"
-#include "raytrace/raytraceObjects.h"
-#include "raytrace/sdfRenderable.h"
-#include "raytrace/materialExamples.h"
+#include "core/geometry/raytrace/raytraceRenderer.h"
+#include "core/geometry/raytrace/raytraceObjects.h"
+#include "core/geometry/raytrace/sdfRenderable.h"
+#include "core/geometry/raytrace/materialExamples.h"
 
-#include "bmpLoader.h"
-#include "meshLoader.h"
-#include "preciseTimer.h"
-#include "perlinNoise.h"
-#include "log.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/fileformats/meshLoader.h"
+#include "core/utils/preciseTimer.h"
+#include "core/geometry/raytrace/perlinNoise.h"
+#include "core/utils/log.h"
 
 using namespace std;
 using namespace corecvs;

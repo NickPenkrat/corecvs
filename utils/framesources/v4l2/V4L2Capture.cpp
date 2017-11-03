@@ -22,11 +22,11 @@
 #include <QtCore/QString>
 #include <QtCore/QtCore>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "V4L2Capture.h"
 #include "mjpegDecoder.h"
-#include "preciseTimer.h"
+#include "core/utils/preciseTimer.h"
 #include "mjpegDecoderLazy.h"
 
 

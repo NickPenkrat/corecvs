@@ -1,9 +1,9 @@
-#include "fixtureScene.h"
-#include "bufferFactory.h"
-#include "affine.h"
-#include "utils.h"
-#include "cameraFixture.h"
-#include "log.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/math/affine.h"
+#include "core/utils/utils.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/utils/log.h"
 
 namespace corecvs {
 

@@ -15,17 +15,17 @@
 #include <chrono>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "mathUtils.h"
-#include "matrix33.h"
-#include "matrix.h"
-#include "sparseMatrix.h"
-#include "preciseTimer.h"
-#include "function.h"
-#include "minresQLP.h"
-#include "pcg.h"
-#include "em.h"
+#include "core/math/mathUtils.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/matrix/matrix.h"
+#include "core/math/sparseMatrix.h"
+#include "core/utils/preciseTimer.h"
+#include "core/function/function.h"
+#include "core/iterative/minresQLP.h"
+#include "core/iterative/pcg.h"
+#include "core/math/em.h"
 
 using namespace corecvs;
 

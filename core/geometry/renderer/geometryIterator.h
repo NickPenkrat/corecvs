@@ -1,10 +1,10 @@
 #ifndef GEOMETRY_ITERATOR_H
 #define GEOMETRY_ITERATOR_H
 
-#include "mathUtils.h"
-#include "matrix44.h"
-#include "polygons.h"
-#include "lineSpan.h"
+#include "core/math/mathUtils.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/geometry/polygons.h"
+#include "core/buffers/rgb24/lineSpan.h"
 
 namespace corecvs {
 

@@ -21,6 +21,7 @@ MOC_DIR  = $$OBJECTS_DIR
 COREDIR=../../core
 
 INCLUDEPATH += \
+    $$COREDIR/.. \
     $$COREDIR/reflection \
     $$COREDIR/utils   \
 

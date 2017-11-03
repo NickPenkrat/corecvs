@@ -1,8 +1,8 @@
-#include "bitcodeBoardDetector.h"
-#include "homographyReconstructor.h"
-#include "simpleRenderer.h"
-#include "polygonPointIterator.h"
-#include "ellipticalApproximation.h"
+#include "core/patterndetection/bitcodeBoardDetector.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/geometry/renderer/simpleRenderer.h"
+#include "core/geometry/polygonPointIterator.h"
+#include "core/geometry/ellipticalApproximation.h"
 
 namespace corecvs {
 

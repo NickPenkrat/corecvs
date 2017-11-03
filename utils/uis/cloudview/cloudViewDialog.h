@@ -6,13 +6,13 @@
 #include <QFileDialog>
 #include <QImage>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "ui_cloudViewDialog.h"
-#include "g12Buffer.h"
-#include "bufferFactory.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/bufferFactory.h"
 #include "viAreaWidget.h"
-#include "triangulator.h"
+#include "core/rectification/triangulator.h"
 #include "transform3DSelector.h"
 #include "3d/scene3D.h"
 #include "3d/draw3dParametersControlWidget.h"
@@ -20,10 +20,10 @@
 #include "frames.h"
 #include "coordinateFrame.h"
 #include "treeSceneController.h"
-#include "calibrationCamera.h"
+#include "core/cameracalibration/calibrationCamera.h"
 
 #include "textLabelWidget.h"
-#include "calculationStats.h"
+#include "core/stats/calculationStats.h"
 
 
 using namespace corecvs;

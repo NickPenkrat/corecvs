@@ -1,5 +1,5 @@
 #include "libpngFileReader.h"
-#include "utils.h"
+#include "core/utils/utils.h"
 
 #include <string>
 #include <cstdio>

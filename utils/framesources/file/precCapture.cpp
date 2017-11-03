@@ -12,10 +12,10 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QtCore>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "precCapture.h"
-#include "bufferFactory.h"
+#include "core/buffers/bufferFactory.h"
 
 /** Capture interface with precise simulation from the value "fps" view point
  */

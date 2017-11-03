@@ -2,8 +2,8 @@
 #define LOCKABLEOBJECT_H
 
 #include <QMutex>
-#include "reflection.h"
-#include "dynamicObject.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/dynamicObject.h"
 
 class LockableObject : public corecvs::DynamicObjectWrapper
 {

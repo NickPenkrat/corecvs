@@ -1,9 +1,9 @@
-#include "rgb24Buffer.h"
-#include "raytraceRenderer.h"
-#include "raytraceObjects.h"
-#include "raytrace/materialExamples.h"
-#include "bmpLoader.h"
-#include "preciseTimer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/geometry/raytrace/raytraceRenderer.h"
+#include "core/geometry/raytrace/raytraceObjects.h"
+#include "core/geometry/raytrace/materialExamples.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/utils/preciseTimer.h"
 
 
 void raytrace_scene1( void )

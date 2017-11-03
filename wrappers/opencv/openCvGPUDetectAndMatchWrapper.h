@@ -3,7 +3,7 @@
 
 #ifdef WITH_OPENCV
 
-#include "detectExtractAndMatchProvider.h"
+#include "core/features2d/detectExtractAndMatchProvider.h"
 
 namespace cv {
 	namespace gpu {

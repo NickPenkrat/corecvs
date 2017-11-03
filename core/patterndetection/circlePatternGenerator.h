@@ -6,10 +6,10 @@
 #include <algorithm>
 #include <unordered_map>
 
-#include "abstractBuffer.h"
-#include "vector2d.h"
-#include "matrix33.h"
-#include "convolver/convolver.h"    // corecvs::DpImage
+#include "core/buffers/abstractBuffer.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/buffers/convolver/convolver.h"    // corecvs::DpImage
 
 #ifdef WITH_TBB
 #include <tbb/reader_writer_lock.h>

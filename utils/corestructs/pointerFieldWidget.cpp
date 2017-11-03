@@ -2,11 +2,11 @@
 #include "ui_pointerFieldWidget.h"
 
 #include "g12Image.h"
-#include "rgb24Buffer.h"
-#include "fixtureCamera.h"
-#include "cameraFixture.h"
-#include "bufferFactory.h"
-#include "fixtureScene.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/camerafixture/fixtureCamera.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/camerafixture/fixtureScene.h"
 
 #ifdef WITH_JSONMODERN
 #   include "jsonModernReader.h"

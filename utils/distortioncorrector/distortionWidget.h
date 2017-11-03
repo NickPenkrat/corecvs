@@ -2,11 +2,11 @@
 
 #include <QWidget>
 
-#include "rgb24Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 #include "distortionParameters.h"
-#include "vector3d.h"
-#include "displacementBuffer.h"
-#include "segmentator.h"
+#include "core/math/vector/vector3d.h"
+#include "core/buffers/displacementBuffer.h"
+#include "core/segmentation/segmentator.h"
 #include "observationListModel.h"
 
 namespace Ui {

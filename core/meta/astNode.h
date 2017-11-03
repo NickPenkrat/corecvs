@@ -7,7 +7,7 @@
  *
  * \ingroup cppcorefiles
  */
-#include "global.h"
+#include "core/utils/global.h"
 
 #include <memory>
 #include <vector>

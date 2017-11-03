@@ -1,7 +1,7 @@
 #include <iostream>
-#include "bufferFactory.h"
-#include "bmpLoader.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 #ifdef WITH_LIBJPEG
 #include "libjpegFileReader.h"

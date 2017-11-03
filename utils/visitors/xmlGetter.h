@@ -2,7 +2,7 @@
 
 #include <QtCore/QString>
 #include <QtXml/QDomElement>
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 using corecvs::IntField;
 using corecvs::DoubleField;
@@ -14,7 +14,7 @@ using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
 
-#include "basePathVisitor.h"
+#include "core/utils/visitors/basePathVisitor.h"
 #include "baseXMLVisitor.h"
 
 using namespace corecvs;

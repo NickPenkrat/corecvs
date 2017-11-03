@@ -1,4 +1,4 @@
-#include "mesh3DDecorated.h"
+#include "core/geometry/mesh3DDecorated.h"
 
 
 namespace corecvs

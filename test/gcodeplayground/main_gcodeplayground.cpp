@@ -1,6 +1,6 @@
 #include <fstream>
 
-#include "gcodeLoader.h"
+#include "core/fileformats/gcodeLoader.h"
 
 using namespace std;
 using namespace corecvs;

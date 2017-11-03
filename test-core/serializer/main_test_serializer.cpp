@@ -10,18 +10,18 @@
 
 #include <unordered_map>
 #include <iostream>
-#include <checkerboardDetectionParameters.h>
-#include <jsonPrinter.h>
+#include "core/xml/generated/checkerboardDetectionParameters.h"
+#include "core/reflection/jsonPrinter.h"
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector3d.h"
-#include "propertyList.h"
-#include "propertyListVisitor.h"
-#include "triangulator.h"
-#include "printerVisitor.h"
-#include "dynamicObject.h"
+#include "core/math/vector/vector3d.h"
+#include "core/utils/propertyList.h"
+#include "core/utils/visitors/propertyListVisitor.h"
+#include "core/rectification/triangulator.h"
+#include "core/reflection/printerVisitor.h"
+#include "core/reflection/dynamicObject.h"
 
 
 using namespace corecvs;

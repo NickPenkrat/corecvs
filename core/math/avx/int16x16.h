@@ -12,9 +12,9 @@
 #include <immintrin.h>
 #include <stdint.h>
 
-#include "avxInteger.h"
-#include "global.h"
-#include "fixedVector.h"
+#include "core/math/avx/avxInteger.h"
+#include "core/utils/global.h"
+#include "core/math/vector/fixedVector.h"
 
 namespace corecvs {
 

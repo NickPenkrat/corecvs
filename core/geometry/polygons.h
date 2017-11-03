@@ -15,12 +15,12 @@
 #include <algorithm>
 #include <ostream>
 
-#include "vector3d.h"
-#include "generated/axisAlignedBoxParameters.h"
-#include "line.h"
-#include "affine.h"
-#include "rectangle.h"
-#include "convexPolyhedron.h"
+#include "core/math/vector/vector3d.h"
+#include "core/xml/generated/axisAlignedBoxParameters.h"
+#include "core/geometry/line.h"
+#include "core/math/affine.h"
+#include "core/geometry/rectangle.h"
+#include "core/geometry/convexPolyhedron.h"
 
 namespace corecvs {
 

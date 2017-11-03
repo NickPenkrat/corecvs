@@ -3,8 +3,8 @@
 
 #include <QAbstractItemModel>
 
-#include "selectableGeometryFeatures.h"
-#include "fixtureScene.h"
+#include "core/alignment/selectableGeometryFeatures.h"
+#include "core/camerafixture/fixtureScene.h"
 
 using corecvs::Vector2dd;
 using corecvs::Vector3dd;

@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include "stereoAlignParameters.h"
+#include "core/xml/generated/stereoAlignParameters.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.

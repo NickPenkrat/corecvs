@@ -1,10 +1,10 @@
-#include "calibrationCamera.h"
+#include "core/cameracalibration/calibrationCamera.h"
 
 #include <array>
 
-#include "abstractPainter.h"
-#include "rgb24Buffer.h"
-#include "bmpLoader.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
 
 namespace corecvs {
 

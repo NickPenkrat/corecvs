@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "detectAndExtractProvider.h"
+#include "core/features2d/detectAndExtractProvider.h"
 
 struct DetectorHolder;
 

@@ -1,7 +1,7 @@
-#include "chessBoardDetector.h"
-#include "abstractPainter.h"
-#include "homographyReconstructor.h"
-#include "calculationStats.h"
+#include "core/patterndetection/chessBoardDetector.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/stats/calculationStats.h"
 
 #include <ostream>
 

@@ -8,8 +8,8 @@
  */
 #include <string>
 
-#include "utils.h"
-#include "rawLoader.h"
+#include "core/utils/utils.h"
+#include "core/fileformats/rawLoader.h"
 
 namespace corecvs {
 

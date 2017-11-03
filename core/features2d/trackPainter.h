@@ -6,7 +6,7 @@
 #include <atomic>
 #include <functional>
 
-#include "sceneFeaturePoint.h"
+#include "core/camerafixture/sceneFeaturePoint.h"
 
 namespace cvs {
 

@@ -10,17 +10,17 @@
 #include <iostream>
 #include <vector>
 
-#include "generated/homographyAlgorithm.h"
-#include "generated/homorgaphyReconstructorBlockBase.h"
-#include "vector2d.h"
-#include "matrix33.h"
-#include "polygons.h"
-#include "correspondenceList.h"
-#include "matrix.h"
-#include "function.h"
-#include "line.h"
-#include "matrixOperations.h"
-#include "newStyleBlock.h"
+#include "core/xml/generated/homographyAlgorithm.h"
+#include "core/xml/generated/homorgaphyReconstructorBlockBase.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/geometry/polygons.h"
+#include "core/rectification/correspondenceList.h"
+#include "core/math/matrix/matrix.h"
+#include "core/function/function.h"
+#include "core/geometry/line.h"
+#include "core/math/matrix/matrixOperations.h"
+#include "core/filters/blocks/newStyleBlock.h"
 
 namespace corecvs {
 

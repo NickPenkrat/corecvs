@@ -1,7 +1,7 @@
 #include "openCvGPUDetectAndMatchWrapper.h"
 #include "openCvKeyPointsWrapper.h"
-#include "bufferReaderProvider.h"
-#include "featureMatchingPipeline.h"
+#include "core/features2d/bufferReaderProvider.h"
+#include "core/features2d/featureMatchingPipeline.h"
 #include "openCvDefaultParams.h"
 
 #ifdef WITH_OPENCV_GPU

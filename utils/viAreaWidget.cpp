@@ -3,7 +3,7 @@
 #include <QPaintEvent>
 
 #include "viAreaWidget.h"
-#include "global.h"
+#include "core/utils/global.h"
 
 ViAreaWidget::ViAreaWidget(QWidget *parent, bool forwardEvents)
     : QWidget(parent),

@@ -1,9 +1,9 @@
 #ifndef AXIS_ALIGNED_BOX_H
 #define AXIS_ALIGNED_BOX_H
 
-#include "vector3d.h"
-#include "line.h"
-#include "axisAlignedBoxParameters.h"
+#include "core/math/vector/vector3d.h"
+#include "core/geometry/line.h"
+#include "core/xml/generated/axisAlignedBoxParameters.h"
 
 /**
  * \file mesh3d.h

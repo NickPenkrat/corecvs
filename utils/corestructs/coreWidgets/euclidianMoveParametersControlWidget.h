@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include "generated/euclidianMoveParameters.h"
+#include "core/xml/generated/euclidianMoveParameters.h"
 #include "ui_euclidianMoveParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"
 

@@ -1,8 +1,8 @@
-#include "sceneFeaturePoint.h"
-#include "fixtureScene.h"
-#include "cameraFixture.h"
-#include "multicameraTriangulator.h"
-#include "propertyListVisitor.h"
+#include "core/camerafixture/sceneFeaturePoint.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/rectification/multicameraTriangulator.h"
+#include "core/utils/visitors/propertyListVisitor.h"
 
 
 #ifdef WITH_BOOST

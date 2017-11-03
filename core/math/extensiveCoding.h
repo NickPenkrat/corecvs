@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 namespace corecvs {
 

@@ -17,20 +17,20 @@
 
 #include "qtFileLoader.h"
 #include "reflectionWidget.h"
-#include "axisAlignedBoxParameters.h"
-#include "chessBoardAssemblerParamsBase.h"
-#include "checkerboardDetectionParameters.h"
-#include "chessBoardCornerDetectorParamsBase.h"
-#include "sceneStereoAlignerBlockBase.h"
+#include "core/xml/generated/axisAlignedBoxParameters.h"
+#include "core/xml/generated/chessBoardAssemblerParamsBase.h"
+#include "core/xml/generated/checkerboardDetectionParameters.h"
+#include "core/xml/generated/chessBoardCornerDetectorParamsBase.h"
+#include "core/xml/generated/sceneStereoAlignerBlockBase.h"
 
 //#include "iterativeReconstructionNonlinearOptimizationParamsWrapper.h"
 
-#include "vector2d.h"
+#include "core/math/vector/vector2d.h"
 #include "changeReceiver.h"
 #include "testNativeWidget.h"
 
-#include "homographyReconstructor.h"
-#include "sceneStereoAlignerBlock.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/rectification/sceneStereoAlignerBlock.h"
 
 int main(int argc, char **argv)
 {    

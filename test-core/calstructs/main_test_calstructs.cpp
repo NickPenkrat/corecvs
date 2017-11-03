@@ -11,11 +11,11 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "mesh3d.h"
-#include "fixtureScene.h"
-#include "calibrationDrawHelpers.h"
+#include "core/geometry/mesh3d.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
 
 using namespace corecvs;
 

@@ -1,7 +1,7 @@
 #include <QtGlobal>
 
 #include "openCVFilter.h"
-#include "g12Buffer.h"
+#include "core/buffers/g12Buffer.h"
 
 #ifdef WITH_OPENCV
 # include "opencv2/imgproc/imgproc.hpp"

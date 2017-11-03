@@ -17,10 +17,10 @@
 #include <string>
 #include <memory>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-//#include "vector3d.h"
-//#include "vector2d.h"
+//#include "core/math/vector/vector3d.h"
+//#include "core/math/vector/vector2d.h"
 
 #undef min
 #undef max

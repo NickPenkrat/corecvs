@@ -1,18 +1,18 @@
 #ifndef CHESSBOARDASSEMBLER_H
 #define CHESSBOARDASSEMBLER_H
 
-#include "chessBoardCornerDetector.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
 
 #include <vector>
 
-#include "tbbWrapper.h"
+#include "core/tbbwrapper/tbbWrapper.h"
 #ifdef WITH_TBB
 #include <tbb/mutex.h>
 #endif
 
-#include "generated/chessBoardAssemblerParamsBase.h"
-#include "convolver/convolver.h"    // corecvs::DpImage
-#include "kdtree.h"
+#include "core/xml/generated/chessBoardAssemblerParamsBase.h"
+#include "core/buffers/convolver/convolver.h"    // corecvs::DpImage
+#include "core/geometry/kdtree.h"
 
 using corecvs::DpImage;
 using corecvs::Vector2dd;

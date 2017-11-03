@@ -6,14 +6,14 @@
  * \date Mar 1, 2010
  * \author alexander
  */
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "rectangle.h"
-#include "rgb24Buffer.h"
-#include "hardcodeFont.h"
-#include "readers.h"
-#include "fixedVector.h"
-#include "bresenhamRasteriser.h"
+#include "core/geometry/rectangle.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/rgb24/hardcodeFont.h"
+#include "core/buffers/kernels/fastkernel/readers.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/buffers/rgb24/bresenhamRasteriser.h"
 
 #undef rad2     // it's defined at some Windows headers
 

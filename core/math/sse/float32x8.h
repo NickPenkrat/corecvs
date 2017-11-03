@@ -9,8 +9,8 @@
  * \author: alexander
  */
 
-#include "global.h"
-#include "int32x8.h"
+#include "core/utils/global.h"
+#include "core/math/avx/int32x8.h"
 
 namespace corecvs {
 

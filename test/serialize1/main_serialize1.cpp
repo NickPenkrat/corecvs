@@ -6,14 +6,14 @@
 #ifndef WIN32
 #include <unistd.h>
 #endif
-#include "abstractPainter.h"
-#include "bmpLoader.h"
-#include "fixtureScene.h"
-#include "cameraFixture.h"
-#include "vector3d.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/math/vector/vector3d.h"
 #include "xmlSetter.h"
 #include "xmlGetter.h"
-#include "jsonPrinter.h"
+#include "core/reflection/jsonPrinter.h"
 #include "jsonSetter.h"
 #include "jsonGetter.h"
 #ifdef WITH_RAPIDJSON

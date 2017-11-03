@@ -1,12 +1,12 @@
-#include "chessBoardCornerDetector.h"
-#include "nonMaximalSuperssor.h"
-#include "mathUtils.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
+#include "core/buffers/nonMaximalSuperssor.h"
+#include "core/math/mathUtils.h"
 #include "convolver/convolver.h"
-#include "vectorTraits.h"
-#include "fastKernel.h"
-#include "arithmetic.h"
-#include "matrix22.h"
-#include "calculationStats.h"
+#include "core/buffers/kernels/fastkernel/vectorTraits.h"
+#include "core/buffers/kernels/fastkernel/fastKernel.h"
+#include "core/buffers/kernels/arithmetic.h"
+#include "core/math/matrix/matrix22.h"
+#include "core/stats/calculationStats.h"
 
 #include <cmath>
 #include <algorithm>

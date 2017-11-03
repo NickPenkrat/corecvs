@@ -1,5 +1,5 @@
 #include "viGLAreaWidget.h"
-#include "g12Buffer.h"
+#include "core/buffers/g12Buffer.h"
 
 ViGLAreaWidget::ViGLAreaWidget(QWidget *parent) :
     QOpenGLWidget(parent),

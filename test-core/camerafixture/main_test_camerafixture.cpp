@@ -11,11 +11,11 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "fixtureScene.h"
-#include "cameraFixture.h"
-#include "printerVisitor.h"
-#include "jsonPrinter.h"
+#include "core/utils/global.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/reflection/printerVisitor.h"
+#include "core/reflection/jsonPrinter.h"
 
 using namespace corecvs;
 

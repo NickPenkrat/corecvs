@@ -4,10 +4,10 @@
 
 #include <fstream>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "graphPlotDialog.h"
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 
 
 using namespace corecvs;

@@ -6,11 +6,11 @@
 #include "cloudViewDialog.h"
 #include "opengl/openGLTools.h"
 #include "3d/mesh3DScene.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 #include "qSettingsSetter.h"
 
-#include "meshLoader.h"
-#include "objLoader.h"
+#include "core/fileformats/meshLoader.h"
+#include "core/fileformats/objLoader.h"
 
 
 #include "sceneShaded.h"

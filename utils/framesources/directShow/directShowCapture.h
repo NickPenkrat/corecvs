@@ -16,7 +16,7 @@
 
 #include "directShow.h"
 #include "imageCaptureInterface.h"
-#include "preciseTimer.h"
+#include "core/utils/preciseTimer.h"
 #include "../../frames.h"
 
 #include "cameraControlParameters.h"

@@ -1,7 +1,7 @@
 #include "rotationPlanGenerator.h"
 #include "ui_rotationPlanGenerator.h"
-#include "mathUtils.h"
-#include "log.h"
+#include "core/math/mathUtils.h"
+#include "core/utils/log.h"
 
 using namespace corecvs;
 

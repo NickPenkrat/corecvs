@@ -9,11 +9,11 @@
 
 #ifndef WITH_OPENCV_3x
 
-#include "g12Buffer.h"
-#include "rgb24Buffer.h"
-#include "flowBuffer.h"
-#include "vector2d.h"
-#include "correspondenceList.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/flow/flowBuffer.h"
+#include "core/math/vector/vector2d.h"
+#include "core/rectification/correspondenceList.h"
 #include "OpenCVTools.h"
 
 #include <opencv2/core/core.hpp>

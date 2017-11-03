@@ -2,7 +2,7 @@
 
 #ifdef WITH_OPENCV
 
-#include "detectAndExtractProvider.h"
+#include "core/features2d/detectAndExtractProvider.h"
 
 namespace cv {
 	namespace gpu {

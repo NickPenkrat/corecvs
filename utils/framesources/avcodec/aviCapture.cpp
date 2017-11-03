@@ -4,7 +4,7 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QString>
 
-#include "preciseTimer.h"
+#include "core/utils/preciseTimer.h"
 
 #include "aviCapture.h"
 

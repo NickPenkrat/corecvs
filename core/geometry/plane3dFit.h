@@ -2,9 +2,9 @@
 #define PLANE3DFIT_H
 
 #include <vector>
-#include "vector3d.h"
-#include "line.h"
-#include "ellipticalApproximation.h"
+#include "core/math/vector/vector3d.h"
+#include "core/geometry/line.h"
+#include "core/geometry/ellipticalApproximation.h"
 
 namespace corecvs {
 

@@ -13,12 +13,12 @@
 
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "rgb24Buffer.h"
-#include "matrix.h"
+#include "core/utils/global.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/math/matrix/matrix.h"
 
-#include "bmpLoader.h"
-#include "cholesky.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/kalman/cholesky.h"
 
 using namespace corecvs;
 

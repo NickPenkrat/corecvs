@@ -8,10 +8,10 @@
 #include <QColorDialog>
 #include <QPainter>
 
-#include "generated/rgbColorParameters.h"
+#include "core/xml/generated/rgbColorParameters.h"
 #include "ui_rgbColorParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"
-#include "rgbColor.h"
+#include "core/buffers/rgb24/rgbColor.h"
 
 
 namespace Ui {

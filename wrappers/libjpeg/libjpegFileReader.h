@@ -1,8 +1,8 @@
 #ifndef LIBJPEGFILEREADER_H
 #define LIBJPEGFILEREADER_H
 
-#include "rgb24Buffer.h"
-#include "bufferFactory.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/bufferFactory.h"
 
 
 class LibjpegFileReader : public corecvs::BufferLoader<corecvs::RGB24Buffer>

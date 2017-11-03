@@ -8,10 +8,10 @@
  */
 #include <math.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
-#include "matrix.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix.h"
 
 namespace corecvs {
 
