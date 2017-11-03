@@ -125,6 +125,8 @@ public:
 
     FixtureScene();
 
+    FixtureScene(const FixtureScene &other) = delete;
+
     /**
      * This field encodes the "silent transform that happens when natural world corrdinate system changes to
      * image related. This covers but is not restritced to the transition between:

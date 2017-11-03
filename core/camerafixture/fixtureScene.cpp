@@ -167,6 +167,7 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
         CameraFixture *station = mFixtures[i];
         if (station == NULL)
             continue;
+        //SYNC_PRINT(("Detaching camera <%s> from station <%s>\n", camera->nameId.c_str(), station->name.c_str()));
         vectorErase(station->cameras, camera);
     }
 
@@ -755,8 +756,8 @@ void FixtureScene::setFixtureCount(size_t count)
     while (mFixtures.size() > count)
     {
         CameraFixture *fixture = mFixtures.back();
-        mFixtures.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
         deleteCameraFixture(fixture);
+        // mFixtures.pop_back(); /* delete camera fixture will generally do it, but only in owner scene.*/
     }
 
     while (mFixtures.size() < count) {

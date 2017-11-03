@@ -14,6 +14,7 @@ ViAreaWidget::ViAreaWidget(QWidget *parent, bool forwardEvents)
 
 void ViAreaWidget::paintEvent(QPaintEvent *event)
 {
+//    SYNC_PRINT(("ViAreaWidget::paintEvent():called\n"));
     if (!mForwardEvents) return;
     emit askParentRepaint(event, this);
 }

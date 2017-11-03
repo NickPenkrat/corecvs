@@ -175,6 +175,7 @@ void SceneShaded::setParameters(void *params)
             fShader = fragmentShaderSource1;
         }
 
+        SYNC_PRINT(("SceneShaded::setParameters(): Creating %d program\n", target));
         mProgram[target] = new QOpenGLShaderProgram();
         mProgram[target]->addShaderFromSourceCode(QOpenGLShader::Vertex,   vShader);
         mProgram[target]->addShaderFromSourceCode(QOpenGLShader::Fragment, fShader);

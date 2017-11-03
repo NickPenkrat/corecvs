@@ -75,8 +75,16 @@ CORE_INCLUDEPATH += \
     $$COREDIR/tinyxml \
     $$COREDIR/../wrappers/cblasLapack \		# some of core's math algorithms use it
 
+!equals(SUPPRESSINCLUDES, "true") {
+    INCLUDEPATH += $$CORE_INCLUDEPATH
+} else {
+    CORE_INCLUDEPATH_SUPP=$$COREDIR/..
+    INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP
 
-INCLUDEPATH += $$CORE_INCLUDEPATH
+    message(Per-Folder includes are supperssed. Only including $$CORE_INCLUDEPATH_SUPP)
+}
+
+
 DEPENDPATH  += $$CORE_INCLUDEPATH
 
 exists($$COREDIR/../../../config.pri) {

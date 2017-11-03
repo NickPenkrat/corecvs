@@ -26,7 +26,7 @@ vector<Correspondence *>  sieveCorrespondanceList(const vector<Correspondence *>
         {
             std::uniform_int_distribution<unsigned> rint(j, workingSamples.size() - 1);
             unsigned newPos = rint(rng);
-            hash |= newPos;
+            hash = hash ^ newPos;
             std::swap(passedSamples[j], passedSamples[newPos]);
         }
         passedSamples.resize(maximum);

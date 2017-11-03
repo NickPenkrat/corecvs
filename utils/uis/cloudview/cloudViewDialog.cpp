@@ -711,9 +711,10 @@ void CloudViewDialog::keyReleaseEvent ( QKeyEvent * /*event*/ )
 
 void CloudViewDialog::initializeGLSlot()
 {
+    //QGLWidget::initializeGL();
     mUi.widget->makeCurrent();
 
-    qDebug() << "GL Init called" << endl;
+    qDebug() << "CloudViewDialog::initializeGLSlot(): called" << endl;
     resetCameraPos();
 
   //  QOpenGLFunctions *f = mUi.widget->functions()

@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "global.h"
+#include "core/utils/global.h"
 #include "linuxMemoryUsageCalculator.h"
 
 void LinuxMemoryUsageCalculator::getMemoryUsageImpl()

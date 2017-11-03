@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include <bufferFactory.h>
 #include "pointListEditImageWidget.h"
 
 #include "imageViewMainWindow.h"
@@ -17,11 +18,13 @@ ImageViewMainWindow::ImageViewMainWindow(QWidget *parent) :
     ui(new Ui::ImageViewMainWindow)
 {
     ui->setupUi(this);
+#if 0
     delete(ui->widget);
     PointListEditImageWidgetUnited *pointList = new PointListEditImageWidgetUnited(this);
     pointList->setRightDrag(true);
     ui->widget = pointList;
     ui->mainLayout->addWidget(ui->widget, 0, 0, 3, 1);
+#endif
 
     BitSelectorParameters defaultSelector;
     defaultSelector.setShift(-2);
@@ -100,17 +103,21 @@ void ImageViewMainWindow::paramsChanged()
             result->element(i,j) = colorOut;
         }
     }
+    // SYNC_PRINT(("Updating widget with [%d x %d]\n", result->w, result->h));
     ui->widget->setImage(QSharedPointer<QImage>(new RGB24Image(result)));
+    ui->widget->update();
     delete_safe(result);
 }
 
 void ImageViewMainWindow::loadImageAction()
 {
+    BufferFactory::getInstance()->printCaps();
+
     QString name = QFileDialog::getOpenFileName(
                 this,
                 "Choose filename with Bayer or demosaic image",
                 ".",
-                "Images (*.pgm *.ppm)"
+                "PPM Images (*.pgm *.ppm);;Generic Images (*.png *.jpg *.bmp)"
             );
     if (name.isEmpty())
         return;
@@ -122,22 +129,50 @@ void ImageViewMainWindow::loadImage(QString name)
 {
     delete_safe(bayer);
     ui->widget->setInfoString("Loading...");
+    int shift = 0;
     if (name.endsWith(".ppm"))
     {
+        SYNC_PRINT(("Loading PPM <%s>\n", name.toLatin1().constData()));
         RGB48Buffer* result = PPMLoader().rgb48BufferCreateFromPPM(name.toStdString(), &meta);
         setImage(result);
+        shift = 8 - meta["bits"][0];                // left shift:  8 => 0,  10 => -2,  12 => -4
+
     }
-    else
+    else if (name.endsWith(".raw"))
     {
+        SYNC_PRINT(("Loading RAW <%s>\n", name.toLatin1().constData()));
         bayer = PPMLoader().g12BufferCreateFromPGM(name.toStdString(), &meta);
         if (bayer == NULL) {
             qDebug("Can't open Bayer file: %s", name.toLatin1().constData());
         }
         debayer();
-    }
-    ui->widget->setInfoString("---");
+        shift = 8 - meta["bits"][0];                // left shift:  8 => 0,  10 => -2,  12 => -4
+    } else {
+        SYNC_PRINT(("Loading Generic <%s>\n", name.toLatin1().constData()));
+        RGB24Buffer *input = BufferFactory::getInstance()->loadRGB24Bitmap(name.toStdString());
+        if (input == NULL)
+        {
+            qDebug() << "Unable to load" << name;
+            return;
+        }
 
-    int shift = 8 - meta["bits"][0];                // left shift:  8 => 0,  10 => -2,  12 => -4
+        SYNC_PRINT(("Loaded size %d x %d\n", input->w, input->h ));
+        RGB48Buffer *image = new RGB48Buffer(input->getSize());
+
+        for (int i = 0; i < image->h; i ++)
+        {
+            for (int j = 0; j < image->w; j ++)
+            {
+                RGBColor   c = input->element(i,j);
+                RGBColor48 c48(c.r() << 8, c.g() << 8, c.b() << 8);
+                image->element(i,j) = c48;
+            }
+        }
+        setImage(image);
+    }
+
+
+    ui->widget->setInfoString("---");
 
     BitSelectorParameters bitSelector;
     ui->bitSelector->getParameters(bitSelector);
