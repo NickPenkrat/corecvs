@@ -814,6 +814,16 @@ template<class VisitorType>
         }
     }
 
+    bool hasNans()
+    {
+        for (int i = 0; i < _size() ; i++)
+        {
+            if (std::isnan(_at(i)))
+                return true;
+        }
+        return false;
+    }
+
 };
 
 } //namespace corecvs

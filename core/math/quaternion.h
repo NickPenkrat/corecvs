@@ -454,6 +454,11 @@ public:
         return RotationIdentity();
     }
 
+    static GenericQuaternion NaN()
+    {
+        double notANumber = std::numeric_limits<double>::quiet_NaN();
+        return GenericQuaternion(notANumber, notANumber, notANumber, notANumber);
+    }
 
     static GenericQuaternion FromMatrix(const Matrix33 &R)
     {

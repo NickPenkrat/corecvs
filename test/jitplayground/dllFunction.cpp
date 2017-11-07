@@ -62,7 +62,7 @@ DllFunction::DllFunction(const std::string &dllName) :
     outputs = outputF();
 }
 
-corecvs::SparseMatrix DllFunction::getNativeJacobian(const double *in, double delta)
+corecvs::SparseMatrix DllFunction::getNativeJacobian(const double *in, double /*delta*/)
 {
     vector<SparseEntry> scratch;
     scratch.resize(nonTrivial);

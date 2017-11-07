@@ -472,6 +472,22 @@ public:
     {
         visitor.visit(position,    Vector3dd(0.0, 0.0, -1.0), "position");
         visitor.visit(orientation, Quaternion::Identity()   , "orientation");
+
+        if (visitor.isLoader())
+        {
+            Quaternion rotation = Quaternion::NaN();
+            visitor.visit(rotation, Quaternion::NaN(), "rotation");
+            if (!rotation.hasNans()) {
+                orientation = rotation.conjugated();
+            }
+        } else {
+            Quaternion rotation = orientation.conjugated();
+            visitor.visit(rotation, Quaternion::Identity(), "rotation");
+            std::string comment("rotation - is Camera to World and has priority over orientation");
+            visitor.visit(comment, std::string()  , "comment");
+        }
+
+
     }
 
     /* Pretty print */

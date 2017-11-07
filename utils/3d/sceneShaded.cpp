@@ -148,6 +148,13 @@ void SceneShaded::setParameters(void *params)
 {
     SYNC_PRINT(("SceneShaded::setParameters()\n"));
     mParameters = *static_cast<ShadedSceneControlParameters *>(params);
+    mParamsApplied = false;
+}
+
+void SceneShaded::applyParameters()
+{
+    if (mParamsApplied)
+        return;
 
     ShaderPreset *sources[ShaderTarget::LAST] = {
         &mParameters.face,
@@ -199,7 +206,7 @@ void SceneShaded::setParameters(void *params)
         mBumpSampler    = mProgram[target]->uniformLocation("bumpSampler");
 
     }
-
+    mParamsApplied = true;
 }
 
 
@@ -241,6 +248,7 @@ void SceneShaded::prepareMesh(CloudViewDialog * /*dialog*/)
 void SceneShaded::drawMyself(CloudViewDialog * /*dialog*/)
 {
     initializeOpenGLFunctions();
+    applyParameters();
 /*    if (mProgram[] == NULL)
     {
         qDebug("SceneShaded::drawMyself(): mProgram is NULL");

@@ -89,6 +89,19 @@ public:
 };
 
 
+class Plane3DGeodesicScene : public Scene3D {
+    GLuint mPlaneListId;
+
+public:
+    Plane3DGeodesicScene() :
+        mPlaneListId(0)
+    {}
+
+    virtual void prepareMesh(CloudViewDialog *dialog);
+    virtual void drawMyself(CloudViewDialog *dialog);
+};
+
+
 class CameraScene : public Mesh3DScene {
 
 public:
