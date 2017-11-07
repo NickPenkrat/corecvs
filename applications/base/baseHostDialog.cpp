@@ -18,14 +18,14 @@
 #include <QAction>
 #include <QMessageBox>
 
-#include "log.h"
+#include "core/utils/log.h"
 
 #include "baseHostDialog.h"
 
 #include "g12Image.h"
 #include "graphPlotDialog.h"
 #include "textLabelWidget.h"
-#include "propertyListVisitor.h"
+#include "core/utils/visitors/propertyListVisitor.h"
 #include "foldableWidget.h"
 #include "parametersMapper/parametersMapperBase.h"
 

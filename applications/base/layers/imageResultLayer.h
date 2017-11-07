@@ -8,7 +8,7 @@
 #include <QPainter>
 #include <QDebug>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "resultImage.h"
 #include "outputStyle.h"

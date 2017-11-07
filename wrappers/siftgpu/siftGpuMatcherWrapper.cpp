@@ -1,4 +1,4 @@
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "siftGpuMatcherWrapper.h"
 

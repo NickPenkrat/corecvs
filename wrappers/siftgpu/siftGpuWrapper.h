@@ -1,12 +1,12 @@
 #ifndef SIFTGPUWRAPPER_H
 #define SIFTGPUWRAPPER_H
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "runtimeTypeBuffer.h"
-#include "imageKeyPoints.h"
-#include "descriptorExtractorProvider.h"
-#include "featureDetectorProvider.h"
+#include "core/buffers/runtimeTypeBuffer.h"
+#include "core/features2d/imageKeyPoints.h"
+#include "core/features2d/descriptorExtractorProvider.h"
+#include "core/features2d/featureDetectorProvider.h"
 
 #include "SiftGPU/src/SiftGPU/SiftGPU.h"
 

@@ -22,9 +22,9 @@
 
 #include "ui_hostDialogStub.h"
 
-#include "global.h"
-#include "matrix33.h"
-#include "propertyList.h"
+#include "core/utils/global.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/utils/propertyList.h"
 
 #include "aboutDialog.h"
 
@@ -38,7 +38,7 @@
 #include "pointsRectificationWidget.h"
 #include "distortioncorrector/distortionWidget.h"
 #include "cameraCalculatorWidget.h"
-#include "distortionCorrectTransform.h"
+#include "core/alignment/distortionCorrectTransform.h"
 
 #include "generatedParameters/baseParameters.h"
 #include "camerasConfigParameters.h"

@@ -1,7 +1,7 @@
 #ifndef SIFTGPUMATCHERWRAPPER_H
 #define SIFTGPUMATCHERWRAPPER_H
 
-#include "descriptorMatcherProvider.h"
+#include "core/features2d/descriptorMatcherProvider.h"
 
 #include "SiftGPU/src/SiftGPU/SiftGPU.h"
 
