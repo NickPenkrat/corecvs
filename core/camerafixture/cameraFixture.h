@@ -12,7 +12,7 @@
 #include "typesafeBitmaskEnums.h"
 #include "calibrationLocation.h"  // LocationData
 #include "fixtureCamera.h"
-//#include "fixtureScene.h"
+#include "fixtureScenePart.h"
 
 namespace corecvs {
 
@@ -67,12 +67,14 @@ public:
     }
 
 	void transformLocation(const Matrix44& coordinatesTransform);
-	Affine3DQ getTransformedLocation(const Matrix44& coordinatesTransform) const;
+	       Affine3DQ getTransformedLocation(const Matrix44& coordinatesTransform) const;
+    static Affine3DQ getTransformedLocation(const Matrix44& coordinatesTransform, const Affine3DQ &location);
 
     FixtureCamera getWorldCamera(FixtureCamera *camPtr) const
     {
         FixtureCamera toReturn = *camPtr;
         toReturn.extrinsics.transform(location);
+        toReturn.cameraFixture = nullptr;           // as we've detached camera from the fixture for proper working camera.getWorldLocation()
         return toReturn;
     }
 

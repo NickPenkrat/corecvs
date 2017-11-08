@@ -249,4 +249,5 @@ public:
 
 
 } //namespace corecvs
+
 #endif // SIMILARITYRECONSTRUCTOR_H

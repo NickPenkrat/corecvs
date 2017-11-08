@@ -22,7 +22,7 @@ void CameraFixture::setCameraCount(size_t count)
 
     while (cameras.size() < count)
     {
-        FixtureCamera *model  = ownerScene->createCamera();
+        FixtureCamera *model = ownerScene->createCamera();
         ownerScene->addCameraToFixture(model, this);
     }
 }
@@ -33,6 +33,11 @@ void CameraFixture::transformLocation(const Matrix44& coordinatesTransform)
 }
 
 Affine3DQ CameraFixture::getTransformedLocation(const Matrix44& coordinatesTransform) const
+{
+    return getTransformedLocation(coordinatesTransform, location);
+}
+
+Affine3DQ CameraFixture::getTransformedLocation(const Matrix44& coordinatesTransform, const Affine3DQ &location)
 {
 	static const Vector3dd x0 = { 1, 0, 0 };
 	static const Vector3dd y0 = { 0, 1, 0 };
