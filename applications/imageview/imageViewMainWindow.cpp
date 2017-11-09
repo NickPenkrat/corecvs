@@ -1,15 +1,15 @@
 #include <QFileDialog>
-#include <bufferFactory.h>
+#include "core/buffers/bufferFactory.h"
 #include "pointListEditImageWidget.h"
 
 #include "imageViewMainWindow.h"
 #include "ui_imageViewMainWindow.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 #include "g12Image.h"
 
 #include "g12Image.h"
-#include "ppmLoader.h"
-#include "converters/debayer.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/buffers/converters/debayer.h"
 
 ImageViewMainWindow::ImageViewMainWindow(QWidget *parent) :
     QWidget(parent),

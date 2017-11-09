@@ -464,6 +464,30 @@ public:
         return sqrt(radius);
     }
 
+    double getRadiusForDim(size_t dim) const
+    {
+        if (isEmpty()) {
+            return 0.0;
+        }
+        ElementType mean = getMean();
+        double radius = mInfMatrix->a(dim,dim) / mCount - (mean.at(dim) * mean.at(dim));;
+        return sqrt(radius);
+    }
+
+    ElementType getRadiusPerDim() const {
+        if (isEmpty()) {
+            return ElementType(0.0);
+        }
+
+        ElementType result;
+        ElementType mean = getMean();
+        for (int i = 0; i < getDimention(); i++)
+        {
+            result[i] = sqrt(mInfMatrix->a(i,i) / mCount - (mean.at(i) * mean.at(i)));
+        }
+        return result;
+    }
+
     double getRadiusAround0() const
     {
         if (isEmpty()) {

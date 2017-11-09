@@ -78,6 +78,10 @@ struct PinholeCameraIntrinsics : public CameraProjection
     {
         return p.normalised() ^ reverse(pp).normalised();
     }
+
+    /**
+     * \depricated Violates degToRad Policy.
+     **/
     double angleError(const Vector3dd &p, const Vector2dd &pp)
     {
         return radToDeg(reverse(pp).normalised().angleTo(p.normalised()));
