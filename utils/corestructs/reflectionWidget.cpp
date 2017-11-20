@@ -317,7 +317,7 @@ bool ReflectionWidget::getParameters(void *param) const
     {
         int fieldId = positionToField[i];
         const BaseField *field = reflection->fields[fieldId];
-        // qDebug() << "Processing field:" <<  field->getSimpleName() << " type " << field->type;
+        qDebug() << "Processing field:" <<  field->getSimpleName() << " type " << field->type;
 
         switch (field->type) {
             case BaseField::TYPE_INT:
@@ -348,7 +348,13 @@ bool ReflectionWidget::getParameters(void *param) const
                 //*obj.getField<std::string>(fieldId) = textBox->toPlainText().toStdString();
 
                  QLineEdit *textBox = static_cast<QLineEdit *>(positionToWidget[i]);
-                *obj.getField<std::string>(fieldId) = textBox->text().toStdString();
+                 std::string *targetStr = obj.getField<std::string>(fieldId);
+                 std::string value = textBox->text().toStdString();
+                 cout << "Obj address:" << obj.rawObject << std::endl;
+                 cout << "Target address:" << targetStr << std::endl;
+                 cout << "Old target value:" << (*targetStr) << std::endl;
+                 cout << "ReflectionWidget::getParameters(): We have parameter <" << value << ">" << std::endl;
+                *targetStr = value;
                 break;
             }
             case BaseField::TYPE_WSTRING:
@@ -358,7 +364,7 @@ bool ReflectionWidget::getParameters(void *param) const
                 // *obj.getField<std::wstring>(fieldId) = textBox->toPlainText().toStdWString();
 
                 QLineEdit *textBox = static_cast<QLineEdit *>(positionToWidget[i]);
-                *obj.getField<std::string>(fieldId) = textBox->text().toStdString();
+                *obj.getField<std::wstring>(fieldId) = textBox->text().toStdWString();
 
                 break;
             }
@@ -397,7 +403,9 @@ bool ReflectionWidget::getParameters(void *param) const
                 ReflectionWidget *refWidget = static_cast<ReflectionWidget *>(positionToWidget[i]);
 
                 if (refWidget != NULL) {
-                    refWidget->getParameters(obj.getField<void *>(fieldId));
+                    void *targetObj = obj.getField<void *>(fieldId);
+                    cout << "In composite field:" << targetObj << std::endl;
+                    refWidget->getParameters(targetObj);
                 } else {
                     qDebug() << "There is no widget for" << cField->getSimpleName();
                 }

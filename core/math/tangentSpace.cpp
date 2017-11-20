@@ -17,8 +17,6 @@ Matrix33 corecvs::TangentSpaceSO3::expM()
         return  Matrix33::Identity() +
                 (sin(t) / t) * w +
                 (1 -  cos(t)) / (t * t) * w * w;
-
-
     }
 
     return Matrix33::Identity();

@@ -3,6 +3,7 @@
 
 #include "core/reflection/reflection.h"
 #include <QWidget>
+#include "cloudViewDialog.h"
 #include "advancedImageWidget.h"
 #include "cameraModelParametersControlWidget.h"
 
@@ -26,9 +27,11 @@ public:
     void  setValue(void *value);
     void *getValue();
 
-    /* Temporary */
+    /* Temporary. This should be made pluggable ASAP  */
     AdvancedImageWidget                *image         = NULL;
     CameraModelParametersControlWidget *cameraControl = NULL;
+    CloudViewDialog                    *cloud         = NULL;
+
 
 public slots:
     /* This should be done pluggable and a wrapper style around core structures */
@@ -44,6 +47,9 @@ public slots:
 
     void showFixtureCamera();
     void saveFixtureCamera();
+
+    void showMesh3d();
+    void saveMesh3d();
 
 
 private:

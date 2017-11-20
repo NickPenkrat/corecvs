@@ -24,6 +24,7 @@
 #include <QPushButton>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <sceneShaded.h>
 
 using namespace corecvs;
 using namespace std;
@@ -76,7 +77,13 @@ PointerFieldWidget::PointerFieldWidget(const corecvs::PointerField *field, QWidg
 
     }
 
+    if (std::string(fieldReflection->targetClass) == "corecvs::Mesh3D" )
+    {
+        //connect(ui->loadPushButton, SIGNAL(released()), this, SLOT(loadRGB24Buffer()));
+        connect(ui->showPushButton, SIGNAL(released()), this, SLOT(showMesh3d()));
+        connect(ui->savePushButton, SIGNAL(released()), this, SLOT(saveMesh3d()));
 
+    }
 
 }
 
@@ -214,3 +221,26 @@ void PointerFieldWidget::showFixtureCamera()
 
 void PointerFieldWidget::saveFixtureCamera()
 {}
+
+void PointerFieldWidget::showMesh3d()
+{
+    SYNC_PRINT(("PointerFieldWidget::showMesh3d():called"));
+    if (std::string(fieldReflection->targetClass) != "corecvs::Mesh3D" || rawPointer == NULL )
+        return;
+    if (cloud == NULL)
+        cloud = new CloudViewDialog;
+
+    corecvs::Mesh3D *mesh = static_cast<corecvs::Mesh3D *>(rawPointer);
+    SceneShaded *scene = new SceneShaded;
+    corecvs::Mesh3DDecorated *targetMesh = new corecvs::Mesh3DDecorated;
+    targetMesh->add(*mesh, true);
+    scene->mMesh = targetMesh;
+    cloud->setNewScenePointer(QSharedPointer<Scene3D>(scene));
+    cloud->show();
+    cloud->raise();
+}
+
+void PointerFieldWidget::saveMesh3d()
+{
+    SYNC_PRINT(("PointerFieldWidget::saveMesh3d()\n"));
+}
