@@ -33,7 +33,6 @@ public:
     Matrix33   expM();
     Quaternion exp();
 
-
     TangentSpaceSO3();
 };
 

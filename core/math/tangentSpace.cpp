@@ -3,10 +3,7 @@
 namespace corecvs {
 
 TangentSpaceSO3::TangentSpaceSO3()
-{
-
-}
-
+{}
 
 Matrix33 corecvs::TangentSpaceSO3::expM()
 {
@@ -24,7 +21,9 @@ Matrix33 corecvs::TangentSpaceSO3::expM()
 
 Quaternion TangentSpaceSO3::exp()
 {
+    std::cout << "TangentSpaceSO3::exp() not implemented!" << std::endl;
 
+    return Quaternion();
 }
 
 } // namespace corecvs
