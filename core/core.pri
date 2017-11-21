@@ -77,11 +77,14 @@ CORE_INCLUDEPATH += \
 
 CORE_INCLUDEPATH_SUPP=$$COREDIR/..
 
+with_suppressincs {
+    SUPPRESSINCLUDES=true
+}
 !equals(SUPPRESSINCLUDES, "true") {
     INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP $$CORE_INCLUDEPATH
 } else {
     INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP
-    message(Per-Folder includes are supperssed. Only including $$CORE_INCLUDEPATH_SUPP)
+    message(Per-Folder includes are suppressed. Only including $$CORE_INCLUDEPATH_SUPP)
 }
 
 
