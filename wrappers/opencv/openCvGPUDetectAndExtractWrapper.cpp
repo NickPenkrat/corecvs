@@ -1,8 +1,8 @@
 #include "openCvGPUDetectAndExtractWrapper.h"
 #include "openCvKeyPointsWrapper.h"
-#include "global.h"
-#include "bufferReaderProvider.h"
-#include "featureMatchingPipeline.h"
+#include "core/utils/global.h"
+#include "core/features2d/bufferReaderProvider.h"
+#include "core/features2d/featureMatchingPipeline.h"
 #include "openCvDefaultParams.h"
 
 #ifdef WITH_OPENCV_GPU

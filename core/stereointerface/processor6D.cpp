@@ -1,4 +1,4 @@
-#include "processor6D.h"
+#include "core/stereointerface/processor6D.h"
 
 
 /** -- **/

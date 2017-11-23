@@ -40,9 +40,9 @@
 #include <stdio.h>
 #include <cmath>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 using std::numeric_limits;
 using std::istream;
@@ -812,6 +812,16 @@ template<class VisitorType>
             const ReflectionType fieldDescriptor(i, defaultValue, name);
             visitor.visit(_at(i), &fieldDescriptor);
         }
+    }
+
+    bool hasNans()
+    {
+        for (int i = 0; i < _size() ; i++)
+        {
+            if (std::isnan(_at(i)))
+                return true;
+        }
+        return false;
     }
 
 };

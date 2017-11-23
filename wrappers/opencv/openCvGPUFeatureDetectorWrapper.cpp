@@ -3,7 +3,7 @@
 
 #include "openCvDefaultParams.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 static bool deviceFound = false;
 static bool cudaDevice = false;

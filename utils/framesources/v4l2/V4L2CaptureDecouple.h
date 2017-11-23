@@ -11,9 +11,9 @@
 #include <QtCore/QMutex>
 #include <string>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "preciseTimer.h"
+#include "core/utils/preciseTimer.h"
 #include "imageCaptureInterface.h"
 #include "cameraControlParameters.h"
 #include "decoupleYUYV.h"

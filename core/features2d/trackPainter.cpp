@@ -1,9 +1,9 @@
-#include "trackPainter.h"
+#include "core/features2d/trackPainter.h"
 
 #include <random>
 
-#include "bufferFactory.h"
-#include "abstractPainter.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/buffers/rgb24/abstractPainter.h"
 
 using namespace cvs;
 

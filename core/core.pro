@@ -57,6 +57,7 @@ OTHER_FILES +=              \
 
 
 OTHER_FILES +=            \
+    ../tools/generator/helper-regen.sh \
     ../tools/generator/regen-core.sh \
     ../tools/generator/h_stub.sh \
     ../cvs-mainpage.h

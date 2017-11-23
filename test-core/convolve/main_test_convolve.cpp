@@ -10,17 +10,17 @@
 #include <stdio.h>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector3d.h"
-//#include "vector2d.h"
+#include "core/math/vector/vector3d.h"
+//#include "core/math/vector/vector2d.h"
 
-#include "g12Buffer.h"
+#include "core/buffers/g12Buffer.h"
 
-#include "gaussian.h"
-#include "mipmapPyramid.h"
-#include "kltGenerator.h"
-#include "bufferFactory.h"
+#include "core/buffers/kernels/gaussian.h"
+#include "core/buffers/mipmapPyramid.h"
+#include "core/kltflow/kltGenerator.h"
+#include "core/buffers/bufferFactory.h"
 
 using namespace corecvs;
 

@@ -1,9 +1,9 @@
 #include <sstream>
 #include <regex>
 
-#include "objLoader.h"
-#include "utils.h"
-#include "bufferFactory.h"
+#include "core/fileformats/objLoader.h"
+#include "core/utils/utils.h"
+#include "core/buffers/bufferFactory.h"
 
 using namespace std;
 

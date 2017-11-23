@@ -6,11 +6,11 @@
 #include "cloudViewDialog.h"
 #include "opengl/openGLTools.h"
 #include "3d/mesh3DScene.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 #include "qSettingsSetter.h"
 
-#include "meshLoader.h"
-#include "objLoader.h"
+#include "core/fileformats/meshLoader.h"
+#include "core/fileformats/objLoader.h"
 
 
 #include "sceneShaded.h"
@@ -111,8 +111,9 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     connect(mUi.loadMeshPushButton, SIGNAL(released()), this, SLOT(loadMesh()));
     connect(mUi.addFramePushButton, SIGNAL(released()), this, SLOT(addCoordinateFrame()));
 
-    addSubObject("grid"  , QSharedPointer<Scene3D>(new Grid3DScene()), false);
-    addSubObject("plane" , QSharedPointer<Scene3D>(new Plane3DScene()), false);
+    addSubObject("grid"     , QSharedPointer<Scene3D>(new Grid3DScene()), false);
+    addSubObject("plane"    , QSharedPointer<Scene3D>(new Plane3DScene()), false);
+    addSubObject("geodesic" , QSharedPointer<Scene3D>(new Plane3DGeodesicScene()), false);
 
 #if 0
     {
@@ -711,9 +712,10 @@ void CloudViewDialog::keyReleaseEvent ( QKeyEvent * /*event*/ )
 
 void CloudViewDialog::initializeGLSlot()
 {
+    //QGLWidget::initializeGL();
     mUi.widget->makeCurrent();
 
-    qDebug() << "GL Init called" << endl;
+    qDebug() << "CloudViewDialog::initializeGLSlot(): called" << endl;
     resetCameraPos();
 
   //  QOpenGLFunctions *f = mUi.widget->functions()

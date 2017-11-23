@@ -1,6 +1,6 @@
 #include "openCvCheckerboardDetector.h"
-#include "selectableGeometryFeatures.h"  // ObservationList
-#include "checkerboardDetectionParameters.h"
+#include "core/alignment/selectableGeometryFeatures.h"  // ObservationList
+#include "core/xml/generated/checkerboardDetectionParameters.h"
 
 /// OpenCV wrapper
 #include "OpenCVTools.h"

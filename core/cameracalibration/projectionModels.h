@@ -1,8 +1,8 @@
 #ifndef PROJECTIONMODELS_H
 #define PROJECTIONMODELS_H
 
-#include "vector2d.h"
-#include "vector3d.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
 
 
 namespace corecvs {

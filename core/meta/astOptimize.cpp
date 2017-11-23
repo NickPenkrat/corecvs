@@ -1,4 +1,4 @@
-#include "astOptimize.h"
+#include "core/meta/astOptimize.h"
 
 AstOptimize::AstOptimize()
 {

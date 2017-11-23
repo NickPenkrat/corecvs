@@ -9,8 +9,8 @@
 #include <sstream>
 #include <fstream>
 
-#include "kde.h"
-#include "vector2d.h"
+#include "core/math/kde.h"
+#include "core/math/vector/vector2d.h"
 
 std::vector<corecvs::Vector2dd> testData{
     {2397.5, 2287.11},

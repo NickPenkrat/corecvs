@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "calibrationLocation.h"
+#include "core/cameracalibration/calibrationLocation.h"
 #include "parametersControlWidgetBase.h"
 
 namespace Ui {

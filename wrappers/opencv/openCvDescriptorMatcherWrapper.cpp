@@ -1,7 +1,7 @@
 #include "openCvDescriptorMatcherWrapper.h"
 #include "openCvKeyPointsWrapper.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include <opencv2/features2d/features2d.hpp>    // cv::DescriptorMatcher
 

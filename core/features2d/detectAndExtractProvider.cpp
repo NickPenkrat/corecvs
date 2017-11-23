@@ -1,5 +1,5 @@
-#include "detectAndExtractProvider.h"
-#include "global.h"
+#include "core/features2d/detectAndExtractProvider.h"
+#include "core/utils/global.h"
 
 DetectAndExtract* DetectAndExtractProvider::getDetector( const DetectorType &detectorType, const DescriptorType &descriptorType, const std::string &params )
 {

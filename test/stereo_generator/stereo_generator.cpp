@@ -11,11 +11,11 @@
 #include "qtFileLoader.h"
 #include "jsonSetter.h"
 #include "jsonGetter.h"
-#include "abstractPainter.h"
-#include "fixtureScene.h"
-#include "cameraFixture.h"
-#include "lmDistortionSolver.h"
-#include "displacementBuffer.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/alignment/lmDistortionSolver.h"
+#include "core/buffers/displacementBuffer.h"
 
 #ifdef WITH_TBB
 #include <tbb/tbb.h>

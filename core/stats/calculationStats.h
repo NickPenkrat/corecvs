@@ -15,11 +15,11 @@
 #include <string>
 #include <deque>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "fixedVector.h"
-#include "preciseTimer.h"
-#include "mathUtils.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/utils/preciseTimer.h"
+#include "core/math/mathUtils.h"
 
 namespace corecvs {
 

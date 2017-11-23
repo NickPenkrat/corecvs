@@ -7,7 +7,7 @@
  * \author sergeyfed
  */
 
-#include "vector2d.h"
+#include "core/math/vector/vector2d.h"
 
 namespace corecvs {
 

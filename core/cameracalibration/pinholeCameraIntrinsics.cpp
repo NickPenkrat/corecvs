@@ -1,4 +1,4 @@
-#include "pinholeCameraIntrinsics.h"
+#include "core/cameracalibration/pinholeCameraIntrinsics.h"
 
 using namespace std;
 

@@ -10,14 +10,14 @@
  */
 
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "dynamicObject.h"
+#include "core/reflection/dynamicObject.h"
 
-#include "g12Buffer.h"
-#include "flowBuffer.h"
-#include "sixDBuffer.h"
-#include "calculationStats.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/flow/flowBuffer.h"
+#include "core/buffers/flow/sixDBuffer.h"
+#include "core/stats/calculationStats.h"
 
 using namespace corecvs;
 

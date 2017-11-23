@@ -24,15 +24,15 @@
 #include <functional>
 #include <type_traits>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
+#include "core/math/vector/vector2d.h"
 #include "memory/memoryBlock.h"
 #include "memory/alignedMemoryBlock.h"
-#include "tbbWrapper.h"                 // BlockedRange
-#include "mathUtils.h"                  // randRanged
+#include "core/tbbwrapper/tbbWrapper.h"                 // BlockedRange
+#include "core/math/mathUtils.h"                  // randRanged
 
-#include "abstractBufferParams.h"
+#include "core/buffers/abstractBufferParams.h"
 
 namespace corecvs {
 

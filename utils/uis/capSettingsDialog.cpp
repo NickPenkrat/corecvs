@@ -2,7 +2,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QDebug>
 
-#include "global.h"
+#include "core/utils/global.h"
 #include "capSettingsDialog.h"
 
 #include "parameterSelector.h"

@@ -8,8 +8,8 @@
 #include <iostream>
 
 #include "cr2reader.h"
-#include "ppmLoader.h"
-#include "commandLineSetter.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/reflection/commandLineSetter.h"
 
 using std::cout;
 using std::endl;

@@ -15,16 +15,16 @@
 #include <QString>
 
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "baseCalculationThread.h"
 #include "imageCaptureInterface.h"
-#include "ppmLoader.h"
-#include "preciseTimer.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/utils/preciseTimer.h"
 #include "generatedParameters/merger.h"
-#include "calculationStats.h"
+#include "core/stats/calculationStats.h"
 
-#include "mesh3DDecorated.h"
+#include "core/geometry/mesh3DDecorated.h"
 typedef RGB24Buffer * PtrRGB24Buffer;
 class MergerOutputData : public BaseOutputData
 {

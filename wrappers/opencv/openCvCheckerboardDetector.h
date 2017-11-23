@@ -1,11 +1,11 @@
 #pragma once
 
-#include "vector2d.h"
-#include "vector3d.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
 
-#include "patternDetector.h"
-#include "boardAligner.h"
-#include "checkerboardDetectionParameters.h"
+#include "core/patterndetection/patternDetector.h"
+#include "core/patterndetection/boardAligner.h"
+#include "core/xml/generated/checkerboardDetectionParameters.h"
 
 #include <opencv2/core/core.hpp>        // Point2f
 

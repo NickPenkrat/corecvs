@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include "ransacParameters.h"
+#include "core/xml/generated/ransacParameters.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.
@@ -56,7 +56,19 @@ int RansacParameters::staticInit()
         );
     fields().push_back(field0);
     /*  */ 
-    DoubleField* field1 = new DoubleField
+    BoolField* field1 = new BoolField
+        (
+          RansacParameters::USE_MEDIAN_ID,
+          offsetof(RansacParameters, mUseMedian),
+          false,
+          "Use Median",
+          "Use Median",
+          "Use Median"
+        );
+    field1->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field1);
+    /*  */ 
+    DoubleField* field2 = new DoubleField
         (
           RansacParameters::INLIERS_PERCENT_ID,
           offsetof(RansacParameters, mInliersPercent),
@@ -68,12 +80,12 @@ int RansacParameters::staticInit()
          0,
          146
         );
-    field1->widgetHint=BaseField::SPIN_BOX;
-    field1->suffixHint="%";
-    field1->precision=2;
-    fields().push_back(field1);
+    field2->widgetHint=BaseField::SPIN_BOX;
+    field2->suffixHint="%";
+    field2->precision=2;
+    fields().push_back(field2);
     /*  */ 
-    DoubleField* field2 = new DoubleField
+    DoubleField* field3 = new DoubleField
         (
           RansacParameters::INLIER_THRESHOLD_ID,
           offsetof(RansacParameters, mInlierThreshold),
@@ -85,9 +97,9 @@ int RansacParameters::staticInit()
          -999999,
          999999
         );
-    field2->widgetHint=BaseField::SPIN_BOX;
-    field2->precision=5;
-    fields().push_back(field2);
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->precision=5;
+    fields().push_back(field3);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Ransac Parameters")]= &reflection;

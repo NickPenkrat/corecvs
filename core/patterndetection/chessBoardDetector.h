@@ -3,13 +3,13 @@
 
 #include <memory>
 
-#include "patternDetector.h"
-#include "checkerboardDetectionParameters.h"
-#include "chessBoardCornerDetector.h"
-#include "chessBoardAssembler.h"
-#include "typesafeBitmaskEnums.h"
-#include "circlePatternGenerator.h"
-#include "boardAligner.h"
+#include "core/patterndetection/patternDetector.h"
+#include "core/xml/generated/checkerboardDetectionParameters.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
+#include "core/patterndetection/chessBoardAssembler.h"
+#include "core/utils/typesafeBitmaskEnums.h"
+#include "core/patterndetection/circlePatternGenerator.h"
+#include "core/patterndetection/boardAligner.h"
 
 namespace corecvs {
 

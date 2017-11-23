@@ -3,10 +3,10 @@
 
 #include <QWidget>
 
-#include "newStyleBlock.h"
-#include "reflection.h"
+#include "core/filters/blocks/newStyleBlock.h"
+#include "core/reflection/reflection.h"
 #include "reflectionWidget.h"
-#include "dynamicObject.h"
+#include "core/reflection/dynamicObject.h"
 
 class WidgetBlockHarness : public QWidget
 {

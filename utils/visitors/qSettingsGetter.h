@@ -1,8 +1,8 @@
 #pragma once
 #include <QSettings>
 #include <sstream>
-#include "basePathVisitor.h"
-#include "reflection.h"
+#include "core/utils/visitors/basePathVisitor.h"
+#include "core/reflection/reflection.h"
 
 using corecvs::IntField;
 using corecvs::DoubleField;

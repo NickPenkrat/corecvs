@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rgb24Buffer.h"
-#include "displacementBuffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/displacementBuffer.h"
 
 #ifdef WITH_OPENCV
 #include "opencv2/core/core.hpp"

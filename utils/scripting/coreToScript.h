@@ -1,10 +1,10 @@
 #ifndef CORETOSCRIPT_H
 #define CORETOSCRIPT_H
 
-#include "reflection.h"
-#include "dynamicObject.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/dynamicObject.h"
 
-#include "axisAlignedBoxParameters.h"
+#include "core/xml/generated/axisAlignedBoxParameters.h"
 
 #include <QMetaType>
 #include <QScriptValue>

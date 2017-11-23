@@ -1,4 +1,4 @@
-#include "projectionModels.h"
+#include "core/cameracalibration/projectionModels.h"
 
 
 namespace corecvs {

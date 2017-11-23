@@ -1,4 +1,4 @@
-#include "global.h"
+#include "core/utils/global.h"
 
 #include <vector>
 #include <cassert>
@@ -16,21 +16,21 @@
 /// OpenCV wrapper
 #include "OpenCVTools.h"
 
-#include "commandLineSetter.h"
-#include "bmpLoader.h"
+#include "core/reflection/commandLineSetter.h"
+#include "core/fileformats/bmpLoader.h"
 #include "qtFileLoader.h"
 #include "jsonGetter.h"
 #include "jsonSetter.h"
-#include "displacementBuffer.h"
-#include "lmDistortionSolver.h"
-#include "printerVisitor.h"
+#include "core/buffers/displacementBuffer.h"
+#include "core/alignment/lmDistortionSolver.h"
+#include "core/reflection/printerVisitor.h"
 #include "openCvCheckerboardDetector.h"
-#include "checkerboardDetectionParameters.h"
-#include "selectableGeometryFeatures.h"
+#include "core/xml/generated/checkerboardDetectionParameters.h"
+#include "core/alignment/selectableGeometryFeatures.h"
 
-#include "chessBoardDetector.h"
-#include "chessBoardCornerDetector.h"
-#include "chessBoardAssembler.h"
+#include "core/patterndetection/chessBoardDetector.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
+#include "core/patterndetection/chessBoardAssembler.h"
 
 using namespace cv;
 using namespace corecvs;

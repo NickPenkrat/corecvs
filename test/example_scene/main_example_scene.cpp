@@ -6,20 +6,20 @@
 #include <vector>
 #include <fstream>
 
-#include "abstractPainter.h"
-#include "bmpLoader.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/fileformats/bmpLoader.h"
 
-#include "fixtureScene.h"
-#include "cameraFixture.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
 
-#include "vector3d.h"
+#include "core/math/vector/vector3d.h"
 #include "xmlSetter.h"
 #include "xmlGetter.h"
 
 #include "jsonGetter.h"
 #include "jsonSetter.h"
 
-#include "jsonPrinter.h"
+#include "core/reflection/jsonPrinter.h"
 
 using namespace std;
 

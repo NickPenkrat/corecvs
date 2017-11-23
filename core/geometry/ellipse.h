@@ -1,11 +1,11 @@
 #ifndef ELLIPSE_H
 #define ELLIPSE_H
 
-#include "vector2d.h"
-#include "polynomial.h"
-#include "affine.h"
-#include "line.h"
-#include "conic.h"
+#include "core/math/vector/vector2d.h"
+#include "core/polynomial/polynomial.h"
+#include "core/math/affine.h"
+#include "core/geometry/line.h"
+#include "core/geometry/conic.h"
 
 namespace corecvs {
 

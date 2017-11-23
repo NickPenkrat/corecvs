@@ -20,10 +20,10 @@
 #include <QtCore/QString>
 #include <QtCore/QtCore>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "uEyeCapture.h"
-#include "preciseTimer.h"
+#include "core/utils/preciseTimer.h"
 
 
 #ifdef PROFILE_DEQUEUE

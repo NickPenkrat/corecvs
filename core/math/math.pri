@@ -61,7 +61,8 @@ HEADERS += \
     math/sse/doublexT4.h \
     math/extensiveCoding.h \
     math/wisdom.h \
-    math/em.h
+    math/em.h \
+    $$PWD/tangentSpace.h
 
 SOURCES += \
     math/matrix/matrix.cpp \
@@ -84,7 +85,8 @@ SOURCES += \
     math/extensiveCoding.cpp \
     math/kde.cpp \
     math/wisdom.cpp \
-    math/em.cpp
+    math/em.cpp \
+    $$PWD/tangentSpace.cpp
 
 
 

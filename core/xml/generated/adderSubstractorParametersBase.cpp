@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include "adderSubstractorParametersBase.h"
+#include "core/xml/generated/adderSubstractorParametersBase.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.

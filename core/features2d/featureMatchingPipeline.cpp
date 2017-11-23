@@ -1,13 +1,13 @@
-#include "featureMatchingPipeline.h"
-#include "featureDetectorProvider.h"
-#include "descriptorExtractorProvider.h"
-#include "descriptorMatcherProvider.h"
-#include "detectExtractAndMatchProvider.h"
-#include "detectAndExtractProvider.h"
-#include "bufferReaderProvider.h"
-#include "vsfmIo.h"
-#include "bufferFactory.h"
-#include "utils.h"
+#include "core/features2d/featureMatchingPipeline.h"
+#include "core/features2d/featureDetectorProvider.h"
+#include "core/features2d/descriptorExtractorProvider.h"
+#include "core/features2d/descriptorMatcherProvider.h"
+#include "core/features2d/detectExtractAndMatchProvider.h"
+#include "core/features2d/detectAndExtractProvider.h"
+#include "core/features2d/bufferReaderProvider.h"
+#include "core/features2d/vsfmIo.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/utils/utils.h"
 
 #include <fstream>
 #include <iomanip>
@@ -1274,7 +1274,7 @@ void RefineMatchesStage::run(FeatureMatchingPipeline *pipeline)
             for (size_t k = 0; k < images[q].keyPoints.keyPoints.size(); ++k)
             {
                 RawMatch& dm = ratioInliers[q][t][k];
-                if (dm.featureT != RawMatch::INVALID_MARKER && dm.featureQ != RawMatch::INVALID_MARKER && ratioInliers[t][q][dm.featureT].featureT != static_cast<int>(k))
+                if (dm.featureT != RawMatch::INVALID_MARKER && dm.featureQ != RawMatch::INVALID_MARKER && ratioInliers[t][q][dm.featureT].featureT != k)
                     dm.featureT = dm.featureQ = RawMatch::INVALID_MARKER;
             }
         }

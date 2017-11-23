@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include "iterativeEstimateParameters.h"
+#include "core/xml/generated/iterativeEstimateParameters.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.
@@ -65,7 +65,7 @@ int IterativeEstimateParameters::staticInit()
           "Iterations Number",
           "Iterations Number",
           true,
-         1,
+         0,
          9999999
         );
     fields().push_back(field1);

@@ -1,7 +1,7 @@
 #ifndef ELLIPSEFIT_H
 #define ELLIPSEFIT_H
 
-#include "ellipse.h"
+#include "core/geometry/ellipse.h"
 
 
 namespace corecvs {

@@ -3,15 +3,15 @@
 
 #include <vector>
 #include <iostream>
-#include "drawGCodeParameters.h"
+#include "core/xml/generated/drawGCodeParameters.h"
 
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "mesh3d.h"
-#include "polygons.h"
+#include "core/geometry/mesh3d.h"
+#include "core/geometry/polygons.h"
 
-#include "gCodeColoringSheme.h"
+#include "core/xml/generated/gCodeColoringSheme.h"
 
 namespace corecvs {
 

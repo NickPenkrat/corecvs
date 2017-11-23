@@ -7,7 +7,7 @@
 #endif
 #include <iostream>
 
-#include "runtimeTypeBuffer.h"
+#include "core/buffers/runtimeTypeBuffer.h"
 
 #include <GL/glew.h>        // GL_LUMINANCE, ...
 

@@ -8,10 +8,10 @@
  */
 #include <math.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
-#include "matrix.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix.h"
 
 namespace corecvs {
 
@@ -383,6 +383,8 @@ public:
             }
         }
 
+        /* Using SVD here is kind of stupid. We already have covariance matrix */
+#ifdef SVD_ATTEMPT
         Matrix W(1, mInfMatrix->w);
         Matrix V(mInfMatrix->h, mInfMatrix->w);
 
@@ -401,7 +403,25 @@ public:
             mAxes.push_back(forPush);
             mValues.push_back(W.a(0,i));
         }
+#else
+        DiagonalMatrix D(A.h);
+        Matrix V(A.h, A.w);
+        Matrix::jacobi(&A, &D, &V, NULL);
 
+        mAxes.clear();
+        mValues.clear();
+
+        for (int i = 0; i < mInfMatrix->w; i++)
+        {
+            ElementType forPush;
+            for (int k = 0; k < mInfMatrix->h; k ++) {
+                forPush.element[k] = V.a(k,i);
+            }
+
+            mAxes.push_back(forPush);
+            mValues.push_back(D.a(i));
+        }
+#endif
         for (unsigned i = 0; i < mValues.size(); i++)
         {
             int maxid = i;
@@ -462,6 +482,30 @@ public:
             radius += mInfMatrix->a(i,i) / mCount - (mean.at(i) * mean.at(i));
         }
         return sqrt(radius);
+    }
+
+    double getRadiusForDim(size_t dim) const
+    {
+        if (isEmpty()) {
+            return 0.0;
+        }
+        ElementType mean = getMean();
+        double radius = mInfMatrix->a(dim,dim) / mCount - (mean.at(dim) * mean.at(dim));;
+        return sqrt(radius);
+    }
+
+    ElementType getRadiusPerDim() const {
+        if (isEmpty()) {
+            return ElementType(0.0);
+        }
+
+        ElementType result;
+        ElementType mean = getMean();
+        for (int i = 0; i < getDimention(); i++)
+        {
+            result[i] = sqrt(mInfMatrix->a(i,i) / mCount - (mean.at(i) * mean.at(i)));
+        }
+        return result;
     }
 
     double getRadiusAround0() const

@@ -12,9 +12,9 @@
 #include <QtGui/QtGui>
 #include <QApplication>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "utils.h"
+#include "core/utils/utils.h"
 #include "advancedImageWidget.h"
 #include "qtFileLoader.h"
 #include "imageViewMainWindow.h"

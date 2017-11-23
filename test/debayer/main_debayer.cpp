@@ -4,11 +4,11 @@
 #include <iostream>
 #include <time.h>
 
-#include "ppmLoader.h"
+#include "core/fileformats/ppmLoader.h"
 #include "converters/debayer.h"
 #include "converters/errorMetrics.h"
-#include "commandLineSetter.h"
-#include "utils.h"
+#include "core/reflection/commandLineSetter.h"
+#include "core/utils/utils.h"
 //#include "qtFileLoader.h"
 
 using namespace std;

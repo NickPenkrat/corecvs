@@ -12,8 +12,8 @@
 #include <QWidget>
 #include <QtGui>
 
-#include "vector2d.h"
-#include "matrix33.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix33.h"
 #include "viAreaWidget.h"
 #include "saveFlowSettings.h"
 #include "parametersControlWidgetBase.h"

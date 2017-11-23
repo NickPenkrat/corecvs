@@ -18,7 +18,7 @@
 #include <vector>
 #include <unordered_map>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 
 namespace corecvs {
@@ -113,7 +113,7 @@ namespace HelperUtils
     string concatPath  (const string &path1, const string &path2);
     bool isAbsolutePath(const string &path);
     bool pathExists    (const string &path);
-
+    bool pathRemove    (const string &path);
 
     /* Qt rewritten to std */
     string addFileExtIfNotExist(const string& fileName, const string& ext);

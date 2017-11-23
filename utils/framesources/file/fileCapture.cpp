@@ -12,10 +12,10 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QtCore>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "fileCapture.h"
-#include "bufferFactory.h"
+#include "core/buffers/bufferFactory.h"
 
 /* File capture interface */
 FileCaptureInterface::FileCaptureInterface(string pathFmt, bool isVerbose)

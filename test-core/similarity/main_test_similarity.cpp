@@ -13,13 +13,13 @@
 #include <vector>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector3d.h"
-#include "similarityReconstructor.h"
-#include "mesh3d.h"
-#include "propertyList.h"
-#include "propertyListVisitor.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/matrix/similarityReconstructor.h"
+#include "core/geometry/mesh3d.h"
+#include "core/utils/propertyList.h"
+#include "core/utils/visitors/propertyListVisitor.h"
 
 using namespace corecvs;
 

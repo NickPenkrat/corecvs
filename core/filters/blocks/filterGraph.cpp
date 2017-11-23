@@ -1,5 +1,5 @@
-#include "filterGraph.h"
-#include "compoundFilter.h"
+#include "core/filters/blocks/filterGraph.h"
+#include "core/filters/blocks/compoundFilter.h"
 
 namespace corecvs
 {

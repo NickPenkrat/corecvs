@@ -6,7 +6,7 @@
 
 #include "draw3dCameraParametersControlWidget.h"
 #include "scene3D.h"
-#include "mesh3DDecorated.h"
+#include "core/geometry/mesh3DDecorated.h"
 #include "shadedSceneControlWidget.h"
 
 class QOpenGLShaderProgram;
@@ -17,6 +17,13 @@ class SceneShaded : public Scene3D, public QOpenGLFunctions
 {
 public:
     ShadedSceneControlParameters mParameters;
+
+    /**
+     * We can recive new paramaters earlier then OpenGL context is created.
+     * For example - if widget is created, but not shown - there is yet no context.
+     * So we should remember that we have got some parameters to apply, shaders to compile etc...
+     **/
+    bool mParamsApplied = false;
 
 
     QString pointShaderCache;
@@ -76,6 +83,7 @@ public:
 
     virtual ~SceneShaded();
     void addTexture(GLuint texId, RGB24Buffer *input);
+    void applyParameters();
 };
 
 

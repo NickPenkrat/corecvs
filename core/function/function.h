@@ -12,13 +12,13 @@
 #include <vector>
 #include <chrono>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "cblasLapackeWrapper.h"
+#include "wrappers/cblasLapack/cblasLapackeWrapper.h"
 
-#include "matrix.h"
-#include "sparseMatrix.h"
-#include "vector.h"
+#include "core/math/matrix/matrix.h"
+#include "core/math/sparseMatrix.h"
+#include "core/math/vector/vector.h"
 
 namespace corecvs {
 

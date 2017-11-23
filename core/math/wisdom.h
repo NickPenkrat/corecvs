@@ -13,8 +13,8 @@
 #include <iomanip>
 #include <functional>
 
-#include "global.h"
-#include "tbbWrapper.h"
+#include "core/utils/global.h"
+#include "core/tbbwrapper/tbbWrapper.h"
 
 namespace corecvs
 {

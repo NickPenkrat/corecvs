@@ -1,4 +1,4 @@
-#include "convexPolyhedron.h"
+#include "core/geometry/convexPolyhedron.h"
 
 namespace corecvs {
 

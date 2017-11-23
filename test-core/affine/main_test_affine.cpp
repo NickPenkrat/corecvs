@@ -16,12 +16,12 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector3d.h"
-#include "affine.h"
-#include "mathUtils.h"
-#include "eulerAngles.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/affine.h"
+#include "core/math/mathUtils.h"
+#include "core/math/eulerAngles.h"
 
 using namespace corecvs;
 

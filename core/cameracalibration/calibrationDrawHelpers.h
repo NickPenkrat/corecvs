@@ -1,7 +1,7 @@
 #pragma once
 
-#include "rgbColor.h"
-#include "calibrationDrawHelpersParameters.h"
+#include "core/buffers/rgb24/rgbColor.h"
+#include "core/xml/generated/calibrationDrawHelpersParameters.h"
 
 namespace corecvs {
 

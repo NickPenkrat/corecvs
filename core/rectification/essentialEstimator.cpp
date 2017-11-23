@@ -7,15 +7,15 @@
  */
 
 
-#include "essentialEstimator.h"
-#include "quaternion.h"
-#include "levenmarq.h"
-#include "gradientDescent.h"
-#include "classicKalman.h"
-#include "polynomialSolver.h"
-#include "matrixOperations.h"
-#include "packedDerivative.h"
-#include "astNode.h"
+#include "core/rectification/essentialEstimator.h"
+#include "core/math/quaternion.h"
+#include "core/math/levenmarq.h"
+#include "core/math/gradientDescent.h"
+#include "core/kalman/classicKalman.h"
+#include "core/polynomial/polynomialSolver.h"
+#include "core/math/matrix/matrixOperations.h"
+#include "core/meta/packedDerivative.h"
+#include "core/meta/astNode.h"
 
 //#include "kalman.h"
 
@@ -378,10 +378,10 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
     const double w12 = w1 * w1, w22 = w2 * w2, w32 = w3 * w3, w42 = w4 * w4, w52 = w5 * w5, w62 = w6 * w6, w72 = w7 * w7, w82 = w8 * w8, w92 = w9 * w9;
 
     corecvs::Matrix A(10, 10);
-#include "p5pNumericPart.h"
+#include "core/rectification/p5pNumericPart.h"
 // Now we fill polynomial part of matrix
     corecvs::PolynomialMatrix B(10, 3);
-#include "p5pPolynomialPart.h"
+#include "core/rectification/p5pPolynomialPart.h"
 
     A = A.inv();
 
@@ -1134,7 +1134,7 @@ Matrix EssentialEstimator::CostFunction7toNGenerated::getJacobian(const double i
     return result;
 }
 
-Matrix EssentialEstimator::CostFunction7toNGenerated1::getJacobian(const double in[], double delta)
+Matrix EssentialEstimator::CostFunction7toNGenerated1::getJacobian(const double in[], double /*delta*/)
 {
     return derivative2(in, samples);
 }

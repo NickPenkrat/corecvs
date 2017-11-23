@@ -1,6 +1,6 @@
-#include "simpleRenderer.h"
-#include "mesh3d.h"
-#include "rgb24Buffer.h"
+#include "core/geometry/renderer/simpleRenderer.h"
+#include "core/geometry/mesh3d.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 namespace corecvs {
 

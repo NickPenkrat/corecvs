@@ -1,8 +1,8 @@
-#include "sceneFeaturePoint.h"
-#include "fixtureScene.h"
-#include "cameraFixture.h"
-#include "multicameraTriangulator.h"
-#include "propertyListVisitor.h"
+#include "core/camerafixture/sceneFeaturePoint.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/rectification/multicameraTriangulator.h"
+#include "core/utils/visitors/propertyListVisitor.h"
 
 
 #ifdef WITH_BOOST
@@ -421,12 +421,14 @@ void SceneFeaturePoint::projectForward(FixtureCamera *camera, CameraFixture *fix
     SceneObservation observation(camera, this, projection, fixture);
     observation.setUndist(projection);
 
+#if 0 // DEPRICATED
     if (!round) {
         observation.setObserveDir(worldCam.dirToPoint(position).normalised());  // direct
     }
     else {
         observation.setObserveDir(worldCam.intrinsics.reverse(projection).normalised());  // indirect
     }
+#endif
     /*if (direct.notTooFar(indirect, 1e-7))
     {
         SYNC_PRINT(("Ok\n"));

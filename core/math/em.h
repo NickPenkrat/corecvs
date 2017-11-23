@@ -4,7 +4,7 @@
 #include <vector>
 #include <ostream>
 
-#include "matrix.h"
+#include "core/math/matrix/matrix.h"
 
 namespace corecvs
 {

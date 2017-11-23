@@ -5,9 +5,9 @@
  * \date Apr 24, 2011
  * \author alexander
  */
-#include "affine.h"
-#include "mathUtils.h"
-#include "matrix44.h"
+#include "core/math/affine.h"
+#include "core/math/mathUtils.h"
+#include "core/math/matrix/matrix44.h"
 
 namespace corecvs {
 

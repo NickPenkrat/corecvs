@@ -8,9 +8,9 @@
  * \author autoGenerator
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -18,7 +18,7 @@
 /*
  *  Additional includes for Composite Types.
  */
-#include "rgbColorParameters.h"
+#include "core/xml/generated/rgbColorParameters.h"
 
 // using namespace corecvs;
 

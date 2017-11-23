@@ -15,17 +15,17 @@
 #include <chrono>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "polygons.h"
-#include "vector2d.h"
+#include "core/utils/global.h"
+#include "core/geometry/polygons.h"
+#include "core/math/vector/vector2d.h"
 
-#include "rgb24Buffer.h"
-#include "abstractPainter.h"
-#include "bmpLoader.h"
-#include "convexPolyhedron.h"
-#include "mesh3d.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/geometry/convexPolyhedron.h"
+#include "core/geometry/mesh3d.h"
 
-#include "kdtree.h"
+#include "core/geometry/kdtree.h"
 
 using namespace corecvs;
 

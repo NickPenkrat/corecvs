@@ -1,4 +1,4 @@
-#include "conic.h"
+#include "core/geometry/conic.h"
 
 namespace corecvs {
 

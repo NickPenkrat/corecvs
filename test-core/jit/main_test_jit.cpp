@@ -11,15 +11,15 @@
 #include <fstream>
 #include <iostream>
 #include "gtest/gtest.h"
-#include "homographyReconstructor.h"
-#include "astNode.h"
-#include "packedDerivative.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/meta/astNode.h"
+#include "core/meta/packedDerivative.h"
 
 #if defined (__GNUC__)
 #include <dlfcn.h>
 #endif
 
-#include "global.h"
+#include "core/utils/global.h"
 
 using namespace corecvs;
 using namespace std;

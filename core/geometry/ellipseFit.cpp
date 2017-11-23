@@ -1,5 +1,5 @@
-#include "ellipseFit.h"
-#include "cholesky.h"
+#include "core/geometry/ellipseFit.h"
+#include "core/kalman/cholesky.h"
 #include "cblasLapackeWrapper.h"
 
 namespace corecvs {

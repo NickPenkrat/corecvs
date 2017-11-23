@@ -9,15 +9,15 @@
 #include <vector>
 #include <chrono>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
-#include "matrix.h"
-#include "function.h"
-#include "sparseMatrix.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix.h"
+#include "core/function/function.h"
+#include "core/math/sparseMatrix.h"
 
-#include "vector.h"
-#include "sparseMatrix.h"
+#include "core/math/vector/vector.h"
+#include "core/math/sparseMatrix.h"
 
 
 namespace corecvs {

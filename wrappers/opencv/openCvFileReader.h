@@ -1,9 +1,9 @@
 #ifndef OPENCVFILEREADER_H
 #define OPENCVFILEREADER_H
 
-#include "bufferLoader.h"
-#include "bufferFactory.h"
-#include "bufferReaderProvider.h"
+#include "core/fileformats/bufferLoader.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/features2d/bufferReaderProvider.h"
 
 class OpenCvBufferReader : public BufferReader
 {

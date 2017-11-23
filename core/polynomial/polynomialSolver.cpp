@@ -1,6 +1,6 @@
-#include "polynomialSolver.h"
-#include "matrix.h"
-#include "vector.h"
+#include "core/polynomial/polynomialSolver.h"
+#include "core/math/matrix/matrix.h"
+#include "core/math/vector/vector.h"
 
 #include "cblasLapackeWrapper.h"
 

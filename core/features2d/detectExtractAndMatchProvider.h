@@ -1,8 +1,8 @@
 #ifndef DETECTEXTRACTANDMATCHPROVIDER_H
 #define DETECTEXTRACTANDMATCHPROVIDER_H
 
-#include "imageKeyPoints.h"
-#include "featureMatchingPipeline.h"
+#include "core/features2d/imageKeyPoints.h"
+#include "core/features2d/featureMatchingPipeline.h"
 
 class DetectExtractAndMatch
 {

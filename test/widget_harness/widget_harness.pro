@@ -49,8 +49,8 @@ with_libpng {
     }
 }
 
-DESTDIR  = $$ROOT_DIR/bin
 
+DESTDIR  = $$ROOT_DIR/bin
 
 SOURCES += \
     main_widget_harness.cpp

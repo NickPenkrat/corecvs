@@ -12,15 +12,15 @@
 
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "rawLoader.h"
-#include "g12Buffer.h"
-#include "bmpLoader.h"
-#include "ppmLoader.h"
-#include "plyLoader.h"
-#include "objLoader.h"
-#include "gcodeLoader.h"
+#include "core/fileformats/rawLoader.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/fileformats/plyLoader.h"
+#include "core/fileformats/objLoader.h"
+#include "core/fileformats/gcodeLoader.h"
 
 using namespace corecvs;
 

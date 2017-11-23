@@ -1,5 +1,7 @@
-#include "similarityReconstructor.h"
-#include "levenmarq.h"
+#include "core/math/matrix/similarityReconstructor.h"
+#include "core/math/levenmarq.h"
+
+#include <calibrationLocation.h>
 
 namespace corecvs {
 
@@ -327,22 +329,32 @@ void SimilarityReconstructor::reportInputQuality()
     }
 }
 
-
-ostream &operator << (ostream &out, const Similarity &reconstructor)
+void Similarity::print(ostream &out)
 {
-    out << "Shift Left  by: "  << reconstructor.shiftL << endl;
-    out << "Scale Left  by: "  << reconstructor.scaleL << " (" << (1 / reconstructor.scaleL) << ")"<< endl;
+    out << "Shift Left  by: "  << shiftL << endl;
+    out << "Scale Left  by: "  << scaleL << " (" << (1 / scaleL) << ")"<< endl;
 
-    out << "Shift Right by: "  << reconstructor.shiftR << endl;
-    out << "Scale Right by: "  << reconstructor.scaleR << " (" << (1 / reconstructor.scaleR) << ")" << endl;
+    out << "Shift Right by: "  << shiftR << endl;
+    out << "Scale Right by: "  << scaleR << " (" << (1 / scaleR) << ")" << endl;
 
-    out << "Quaternion:" << reconstructor.rotation << endl;
-    double angle = reconstructor.rotation.normalised().getAngle();
-    out << "Rotate by: " << angle << " (" << radToDeg(angle) << "deg) around " << reconstructor.rotation.getAxis() << endl;
-    Quaternion rot = reconstructor.rotation;
+    out << "Scale coef: " << (getScale() * 100.0) << "%" << endl;
+
+    out << "Quaternion:" << rotation << endl;
+    double angle = rotation.normalised().getAngle();
+    out << "Rotate by: " <<  angle << "rad (" << radToDeg(angle) << "deg) around " << rotation.getAxis() << endl;
+    Quaternion rot = rotation;
     rot = -rot;
-    out << "Rotate by: " << rot.normalised().getAngle() << " around " << rot.getAxis() << endl;
-    return  out;
+    double angle1 = rot.normalised().getAngle();
+    out << "       Or: " << angle1 << "rad (" << radToDeg(angle1) << "deg) around " << rot.getAxis() << endl;
+
+    out << "In Euler Angels (cam)" << endl;
+    CameraLocationAngles a0 = CameraLocationAngles::FromQuaternion(rotation);
+    out << "Yaw   (around vertical cam axis (Up)   ): " << a0.yaw()   << " rad   " << radToDeg(a0.yaw())   << " deg" << endl;
+    out << "Pitch (around side cam axis     (Right)): " << a0.pitch() << " rad   " << radToDeg(a0.pitch()) << " deg" << endl;
+    out << "Roll  (around cam front Axis    (Front)): " << a0.roll()  << " rad   " << radToDeg(a0.roll())  << " deg" << endl;
+
+
+
 }
 
 void SimilarityReconstructor::CostFunction::operator()(const double in[], double out[])

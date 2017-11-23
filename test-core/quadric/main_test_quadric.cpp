@@ -12,11 +12,11 @@
 #include <random>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "rgb24Buffer.h"
-#include "bmpLoader.h"
-#include "ellipse.h"
-#include "ellipseFit.h"
+#include "core/utils/global.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/geometry/ellipse.h"
+#include "core/geometry/ellipseFit.h"
 
 using namespace std;
 /* Ok. In your portable code you should respect Microsoft craze, just because they say it's a dominant platform. */

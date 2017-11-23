@@ -11,12 +11,12 @@
 #include <QMouseEvent>
 #include <QToolTip>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "rgbColor.h"
+#include "core/buffers/rgb24/rgbColor.h"
 #include "advancedImageWidget.h"
 #include "saveFlowSettings.h"
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 #include "qtHelper.h"
 
 AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader)
@@ -321,6 +321,7 @@ Vector2dd AdvancedImageWidget::getVisibleImageCenter()
 
 void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWidget)
 {
+    // SYNC_PRINT(("AdvancedImageWidget::childRepaint():called\n"));
     if (mImage == NULL)
         return;
 
@@ -837,7 +838,9 @@ void AdvancedImageWidget::setCompactStyle(bool flag)
 void AdvancedImageWidget::forceUpdate()
 {
     emit preUpdate();
-    mUi->widget->update();
+
+    mUi->widget->show();
+    emit mUi->widget->update();
 }
 
 void AdvancedImageWidget::childResized (QResizeEvent * /*event*/)

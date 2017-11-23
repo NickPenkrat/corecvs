@@ -7,24 +7,25 @@
  *
  * \ingroup autotest
  */
-#include <essentialEstimator.h>
 #include <iostream>
 #include <fstream>
-#include <calculationStats.h>
+
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "fixedVector.h"
-#include "matrix33.h"
-#include "quaternion.h"
-#include "abstractBuffer.h"
-#include "matrixOperations.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/quaternion.h"
+#include "core/buffers/abstractBuffer.h"
+#include "core/math/matrix/matrixOperations.h"
 
-#include "packedDerivative.h"
+#include "core/meta/packedDerivative.h"
+#include "core/rectification/essentialEstimator.h"
+#include "core/stats/calculationStats.h"
 
-#include "astNode.h"
-#include "function.h"
+#include "core/meta/astNode.h"
+#include "core/function/function.h"
 
 using namespace std;
 using namespace corecvs;

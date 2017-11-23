@@ -1,5 +1,5 @@
 #include "directShow.h"
-#include "log.h"
+#include "core/utils/log.h"
 
 cchar* DirectShowCameraDescriptor::codec_names[] = {
     "yuyv",  "rgb", "bayer8", "uyvy",  "mjpeg",   "fjpeg"

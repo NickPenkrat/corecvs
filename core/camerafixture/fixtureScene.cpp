@@ -1,9 +1,9 @@
-#include "fixtureScene.h"
-#include "bufferFactory.h"
-#include "affine.h"
-#include "utils.h"
-#include "cameraFixture.h"
-#include "log.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/math/affine.h"
+#include "core/utils/utils.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/utils/log.h"
 
 namespace corecvs {
 
@@ -167,6 +167,7 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
         CameraFixture *station = mFixtures[i];
         if (station == NULL)
             continue;
+        //SYNC_PRINT(("Detaching camera <%s> from station <%s>\n", camera->nameId.c_str(), station->name.c_str()));
         vectorErase(station->cameras, camera);
     }
 
@@ -246,6 +247,10 @@ void FixtureScene::deleteCameraFixture(CameraFixture *fixture, bool recursive)
     }
     else
     {
+        for (FixtureCamera *cam : fixture->cameras)
+        {
+            cam->cameraFixture = NULL;
+        }
         mOrphanCameras.insert(mOrphanCameras.end(), fixture->cameras.begin(), fixture->cameras.end());
     }
 
@@ -751,8 +756,8 @@ void FixtureScene::setFixtureCount(size_t count)
     while (mFixtures.size() > count)
     {
         CameraFixture *fixture = mFixtures.back();
-        mFixtures.pop_back(); /* delete camera will generally do it, but only in owner scene.*/
         deleteCameraFixture(fixture);
+        // mFixtures.pop_back(); /* delete camera fixture will generally do it, but only in owner scene.*/
     }
 
     while (mFixtures.size() < count) {

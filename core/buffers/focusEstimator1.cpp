@@ -1,8 +1,8 @@
-#include "focusEstimator1.h"
-#include "focusEstimator.h"
-#include "ellipticalApproximation.h"
-#include "abstractPainter.h"
-#include "polygonPointIterator.h"
+#include "core/buffers/focusEstimator1.h"
+#include "core/buffers/focusEstimator.h"
+#include "core/geometry/ellipticalApproximation.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/geometry/polygonPointIterator.h"
 
 namespace corecvs {
 

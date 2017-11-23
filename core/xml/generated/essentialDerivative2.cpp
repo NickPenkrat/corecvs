@@ -1,6 +1,6 @@
 #include <vector>
-#include "correspondenceList.h"
-#include "essentialEstimator.h"
+#include "core/rectification/correspondenceList.h"
+#include "core/rectification/essentialEstimator.h"
 
 using namespace std;
 namespace corecvs {

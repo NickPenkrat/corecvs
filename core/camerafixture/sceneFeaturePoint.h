@@ -4,12 +4,12 @@
 #include <string>
 #include <unordered_map>
 
-#include "fixtureCamera.h"
-#include "imageKeyPoints.h"
-#include "wildcardablePointerPair.h"
+#include "core/camerafixture/fixtureCamera.h"
+#include "core/features2d/imageKeyPoints.h"
+#include "core/camerafixture/wildcardablePointerPair.h"
 
 /* Presentation related */
-#include "rgbColor.h"
+#include "core/buffers/rgb24/rgbColor.h"
 
 namespace corecvs
 {

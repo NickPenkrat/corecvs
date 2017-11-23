@@ -12,12 +12,12 @@
 #include <QImage>
 
 #include "rectifyParameters.h"
-#include "matrix33.h"
+#include "core/math/matrix/matrix33.h"
 #include "rectifyParameters.h"
-#include "correspondenceList.h"
-#include "cameraParameters.h"
-#include "essentialMatrix.h"
-#include "triangulator.h"
+#include "core/rectification/correspondenceList.h"
+#include "core/cammodel/cameraParameters.h"
+#include "core/rectification/essentialMatrix.h"
+#include "core/rectification/triangulator.h"
 
 
 using namespace corecvs;

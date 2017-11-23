@@ -5,7 +5,7 @@
 #include <QtCore/QString>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 using corecvs::IntField;
 using corecvs::UInt64Field;

@@ -15,10 +15,10 @@
 #include <stdint.h>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "integralBuffer.h"
-#include "bufferFactory.h"
+#include "core/buffers/integralBuffer.h"
+#include "core/buffers/bufferFactory.h"
 
 using namespace corecvs;
 

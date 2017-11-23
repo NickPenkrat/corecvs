@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "rgb24Buffer.h"
-#include "chessBoardDetector.h"
-#include "generated/focusEstimationParameters.h"
-#include "generated/focusEstimationResult.h"
-#include "calculationStats.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/patterndetection/chessBoardDetector.h"
+#include "core/xml/generated/focusEstimationParameters.h"
+#include "core/xml/generated/focusEstimationResult.h"
+#include "core/stats/calculationStats.h"
 
 namespace corecvs {
 

@@ -1,7 +1,7 @@
 #include "openCvGPUDescriptorMatcherWrapper.h"
 #include "openCvKeyPointsWrapper.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #ifndef WITH_OPENCV_3x
 

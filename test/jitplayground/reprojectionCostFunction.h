@@ -1,9 +1,9 @@
 #ifndef REPROJECTIONCOSTFUNCTION_H
 #define REPROJECTIONCOSTFUNCTION_H
 
-#include "function.h"
-#include "fixtureScene.h"
-#include "cameraFixture.h"
+#include "core/function/function.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
 
 class ReprojectionCostFunction : public FunctionArgs
 {

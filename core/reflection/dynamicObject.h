@@ -1,7 +1,7 @@
 #ifndef DYNAMICOBJECT_H
 #define DYNAMICOBJECT_H
 
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 namespace corecvs {
 

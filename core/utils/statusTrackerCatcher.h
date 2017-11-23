@@ -4,9 +4,9 @@
 #include <string>
 #include <ostream>
 
-#include "tbbWrapper.h"
+#include "core/tbbwrapper/tbbWrapper.h"
 #include <functional>
-#include "global.h"
+#include "core/utils/global.h"
 
 namespace {
 

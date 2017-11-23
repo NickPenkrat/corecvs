@@ -1,6 +1,6 @@
-#include "folderScanner.h"
-#include "log.h"
-#include "utils.h"
+#include "core/filesystem/folderScanner.h"
+#include "core/utils/log.h"
+#include "core/utils/utils.h"
 
 #include <iostream>
 

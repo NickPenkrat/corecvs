@@ -1,5 +1,5 @@
-#include "curvatureFunc.h"
-#include "radialFunc.h"
+#include "core/alignment/curvatureFunc.h"
+#include "core/alignment/radialFunc.h"
 
 namespace corecvs
 {

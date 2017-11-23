@@ -1,9 +1,9 @@
 #ifndef PINHOLECAMERAINTRINSICS_H
 #define PINHOLECAMERAINTRINSICS_H
 
-#include "matrix44.h"
-#include "projectionModels.h"
-#include "mathUtils.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/cameracalibration/projectionModels.h"
+#include "core/math/mathUtils.h"
 
 namespace corecvs {
 
@@ -78,6 +78,10 @@ struct PinholeCameraIntrinsics : public CameraProjection
     {
         return p.normalised() ^ reverse(pp).normalised();
     }
+
+    /**
+     * \depricated Violates degToRad Policy.
+     **/
     double angleError(const Vector3dd &p, const Vector2dd &pp)
     {
         return radToDeg(reverse(pp).normalised().angleTo(p.normalised()));

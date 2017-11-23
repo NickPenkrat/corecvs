@@ -29,6 +29,7 @@ QT      -= opengl
 
 DESTDIR = $$ROOT_DIR/bin
 
+SUPPRESSINCLUDES=true
 include(../core/core.pri)
 include(../wrappers/gtest/gtest.pri)
 

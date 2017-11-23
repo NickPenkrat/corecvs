@@ -12,13 +12,13 @@
 #include <errno.h>
 #include <linux/videodev2.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "V4L2.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 #include "cameraControlParameters.h"
 #include "imageCaptureInterface.h"
-#include "preciseTimer.h"
+#include "core/utils/preciseTimer.h"
 #include "../../frames.h"
 
 using namespace std;

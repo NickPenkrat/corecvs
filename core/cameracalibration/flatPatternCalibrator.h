@@ -3,13 +3,13 @@
 
 #include <vector>
 
-#include "cameraConstraints.h"
-#include "homographyReconstructor.h"
-#include "levenmarq.h"
-#include "lineDistortionEstimatorParameters.h"
-#include "calibrationCamera.h"
+#include "core/cameracalibration/cameraConstraints.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/math/levenmarq.h"
+#include "core/xml/generated/lineDistortionEstimatorParameters.h"
+#include "core/cameracalibration/calibrationCamera.h"
 
-#include "selectableGeometryFeatures.h"
+#include "core/alignment/selectableGeometryFeatures.h"
 
 // In order to get 3-dof rotation, we should penalize for quaternion norm
 // The unclear part is it's weight

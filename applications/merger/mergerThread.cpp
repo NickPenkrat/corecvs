@@ -17,13 +17,13 @@
 #include "g12Image.h"
 #include "imageResultLayer.h"
 
-#include "bufferFactory.h"
-#include "fixtureScene.h"
-#include "cameraFixture.h"
-#include "calibrationDrawHelpers.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
 
 #include "legacy/spherical_lut.h"
-#include "sphericalCorrectionLUT.h"
+#include "core/cammodel/sphericalCorrectionLUT.h"
 
 // TEST
 // #include "viFlowStatisticsDescriptor.h"

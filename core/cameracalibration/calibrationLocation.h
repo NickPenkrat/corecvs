@@ -1,16 +1,16 @@
 #ifndef CALIBRATION_LOCATION_H
 #define CALIBRATION_LOCATION_H
 
-#include "vector2d.h"
-#include "vector3d.h"
-#include "quaternion.h"
-#include "matrix44.h"
-#include "line.h"
-#include "eulerAngles.h"
-#include "affine.h"
-#include "printerVisitor.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/quaternion.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/geometry/line.h"
+#include "core/math/eulerAngles.h"
+#include "core/math/affine.h"
+#include "core/reflection/printerVisitor.h"
 
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 
 namespace corecvs {
 
@@ -472,6 +472,22 @@ public:
     {
         visitor.visit(position,    Vector3dd(0.0, 0.0, -1.0), "position");
         visitor.visit(orientation, Quaternion::Identity()   , "orientation");
+
+        if (visitor.isLoader())
+        {
+            Quaternion rotation = Quaternion::NaN();
+            visitor.visit(rotation, Quaternion::NaN(), "rotation");
+            if (!rotation.hasNans()) {
+                orientation = rotation.conjugated();
+            }
+        } else {
+            Quaternion rotation = orientation.conjugated();
+            visitor.visit(rotation, Quaternion::Identity(), "rotation");
+            std::string comment("rotation - is Camera to World and has priority over orientation");
+            visitor.visit(comment, std::string()  , "comment");
+        }
+
+
     }
 
     /* Pretty print */

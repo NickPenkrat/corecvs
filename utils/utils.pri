@@ -11,6 +11,7 @@
 !contains(CORECVS_INCLUDED, "utils.pri") {
 CORECVS_INCLUDED +=  utils.pri
 
+SUPPRESSINCLUDES=true
 include(../core/core.pri)                         # it uses TARGET and detects COREBINDIR!
 
 UTILSDIR=$$PWD

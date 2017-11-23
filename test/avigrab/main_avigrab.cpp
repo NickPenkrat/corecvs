@@ -5,9 +5,9 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-#include "global.h"
-#include "rgb24Buffer.h"
-#include "bmpLoader.h"
+#include "core/utils/global.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
 
 G12Buffer *oldFrame = NULL;
 

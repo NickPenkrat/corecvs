@@ -11,10 +11,10 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "matrix.h"
-#include "cholesky.h"
-#include "diagonalMatrix.h"
+#include "core/utils/global.h"
+#include "core/math/matrix/matrix.h"
+#include "core/kalman/cholesky.h"
+#include "core/math/matrix/diagonalMatrix.h"
 
 using namespace corecvs;
 

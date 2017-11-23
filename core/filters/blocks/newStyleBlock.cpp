@@ -1,4 +1,4 @@
-#include "newStyleBlock.h"
+#include "core/filters/blocks/newStyleBlock.h"
 
 namespace corecvs {
 

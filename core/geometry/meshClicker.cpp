@@ -1,4 +1,4 @@
-#include "meshClicker.h"
+#include "core/geometry/meshClicker.h"
 
 namespace corecvs {
 

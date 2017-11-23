@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include "generated/checkerboardDetectionParameters.h"
+#include "core/xml/generated/checkerboardDetectionParameters.h"
 #include "ui_checkerboardDetectionParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"
 

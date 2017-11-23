@@ -12,20 +12,20 @@
 #include <fstream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "mathUtils.h"
-#include "correspondenceList.h"
-#include "matrix.h"
-#include "essentialMatrix.h"
-#include "ransacEstimator.h"
-#include "essentialEstimator.h"
-#include "calibrationCamera.h"
-#include "polygons.h"
-#include "mesh3d.h"
-#include "calibrationDrawHelpers.h"
+#include "core/math/mathUtils.h"
+#include "core/rectification/correspondenceList.h"
+#include "core/math/matrix/matrix.h"
+#include "core/rectification/essentialMatrix.h"
+#include "core/rectification/ransacEstimator.h"
+#include "core/rectification/essentialEstimator.h"
+#include "core/cameracalibration/calibrationCamera.h"
+#include "core/geometry/polygons.h"
+#include "core/geometry/mesh3d.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
 
-#include "iterativeEstimator.h"
+#include "core/rectification/iterativeEstimator.h"
 
 using namespace corecvs;
 

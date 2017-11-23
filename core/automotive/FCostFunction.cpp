@@ -217,10 +217,10 @@
  **/
 
 
-#include "calibrationCamera.h"
-#include "FCostFunction.h"
-#include "matrix44.h"
-#include "eulerAngles.h"
+#include "core/cameracalibration/calibrationCamera.h"
+#include "core/automotive/FCostFunction.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/math/eulerAngles.h"
 
 namespace corecvs {
 

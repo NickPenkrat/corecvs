@@ -1,8 +1,8 @@
 #ifndef POLYGONPOINTITERATOR_H
 #define POLYGONPOINTITERATOR_H
 
-#include "polygons.h"
-#include "simpleRenderer.h"
+#include "core/geometry/polygons.h"
+#include "core/geometry/renderer/simpleRenderer.h"
 
 namespace corecvs {
 

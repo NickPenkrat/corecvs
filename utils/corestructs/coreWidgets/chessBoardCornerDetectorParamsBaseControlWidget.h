@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include "generated/chessBoardCornerDetectorParamsBase.h"
+#include "core/xml/generated/chessBoardCornerDetectorParamsBase.h"
 #include "ui_chessBoardCornerDetectorParamsBaseControlWidget.h"
 #include "parametersControlWidgetBase.h"
 

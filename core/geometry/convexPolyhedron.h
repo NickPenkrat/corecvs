@@ -2,8 +2,8 @@
 #define CONVEXPOLYHEDRON_H
 
 #include <vector>
-#include "line.h"
-#include "axisAlignedBox.h"
+#include "core/geometry/line.h"
+#include "core/geometry/axisAlignedBox.h"
 
 namespace corecvs {
 

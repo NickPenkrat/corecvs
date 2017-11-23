@@ -12,11 +12,11 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "multicameraTriangulator.h"
-#include "propertyListVisitor.h"
+#include "core/utils/global.h"
+#include "core/rectification/multicameraTriangulator.h"
+#include "core/utils/visitors/propertyListVisitor.h"
 
-#include "mesh3d.h"
+#include "core/geometry/mesh3d.h"
 
 using namespace std;
 using namespace corecvs;

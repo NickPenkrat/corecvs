@@ -1,5 +1,5 @@
-#include "detectExtractAndMatchProvider.h"
-#include "global.h"
+#include "core/features2d/detectExtractAndMatchProvider.h"
+#include "core/utils/global.h"
 
 DetectExtractAndMatch* DetectExtractAndMatchProvider::getDetector(const DetectorType &detectorType, const DescriptorType &descriptorType, const MatcherType &matcherType, const std::string &params)
 {

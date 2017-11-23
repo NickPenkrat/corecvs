@@ -9,10 +9,10 @@
 #ifndef QUATERNION_H_
 #define QUATERNION_H_
 
-#include "matrix33.h"
-#include "matrix44.h"
-#include "fixedVector.h"
-#include "mathUtils.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/mathUtils.h"
 
 namespace corecvs {
 
@@ -454,6 +454,11 @@ public:
         return RotationIdentity();
     }
 
+    static GenericQuaternion NaN()
+    {
+        double notANumber = std::numeric_limits<double>::quiet_NaN();
+        return GenericQuaternion(notANumber, notANumber, notANumber, notANumber);
+    }
 
     static GenericQuaternion FromMatrix(const Matrix33 &R)
     {
@@ -535,9 +540,9 @@ template<class VisitorType>
     {
         GenericQuaternion o = this->normalised().positivised();
         Vector3dd axis = o.getAxis();
-        double   angle = radToDeg(o.getAngle());
+        double   angle = o.getAngle();
 
-        out << "Rotation around normalized axis:" << axis << " angle " << angle << "(" << angle << " deg)" << std::endl;
+        out << "Rotation around normalized axis:" << axis << " angle " << angle << "(" << radToDeg(angle) << " deg)" << std::endl;
     }
 
 };

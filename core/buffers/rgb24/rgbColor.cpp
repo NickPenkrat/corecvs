@@ -5,8 +5,8 @@
  * \date Dec 4, 2011
  * \author alexander
  */
-#include "global.h"
-#include "rgbColor.h"
+#include "core/utils/global.h"
+#include "core/buffers/rgb24/rgbColor.h"
 
 namespace corecvs {
 

@@ -14,13 +14,13 @@
 #include "qtFileLoader.h"
 
 
-#include "calibrationCamera.h"
-#include "renderer/simpleRenderer.h"
-#include "mesh3d.h"
-#include "meshLoader.h"
-#include "objLoader.h"
-#include "rgb24Buffer.h"
-#include "bmpLoader.h"
+#include "core/cameracalibration/calibrationCamera.h"
+#include "core/geometry/renderer/simpleRenderer.h"
+#include "core/geometry/mesh3d.h"
+#include "core/fileformats/meshLoader.h"
+#include "core/fileformats/objLoader.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
 
 extern void raytrace_scene1( void );
 extern void raytrace_scale( void );

@@ -75,8 +75,16 @@ CORE_INCLUDEPATH += \
     $$COREDIR/tinyxml \
     $$COREDIR/../wrappers/cblasLapack \		# some of core's math algorithms use it
 
+CORE_INCLUDEPATH_SUPP=$$COREDIR/..
 
-INCLUDEPATH += $$CORE_INCLUDEPATH
+!equals(SUPPRESSINCLUDES, "true") {
+    INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP $$CORE_INCLUDEPATH
+} else {
+    INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP
+    message(Per-Folder includes are supperssed. Only including $$CORE_INCLUDEPATH_SUPP)
+}
+
+
 DEPENDPATH  += $$CORE_INCLUDEPATH
 
 exists($$COREDIR/../../../config.pri) {
@@ -116,11 +124,14 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
 
 # The filesystem module needs this
 with_unorthodox {
-    !win32  {
-        LIBS += -lstdc++fs
-    }
     DEFINES += CORE_UNSAFE_DEPS
 }
+
+
+!win32  {
+    LIBS += -lstdc++fs
+}
+
 
 } # !contains(CORECVS_INCLUDED, "core.pri")
 

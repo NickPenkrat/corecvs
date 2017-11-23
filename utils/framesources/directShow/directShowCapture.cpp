@@ -10,10 +10,10 @@
 
 #include <sstream>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "log.h"
-#include "preciseTimer.h"
+#include "core/utils/log.h"
+#include "core/utils/preciseTimer.h"
 #include "directShowCapture.h"
 #include "mjpegDecoderLazy.h"
 #include "cameraControlParameters.h"

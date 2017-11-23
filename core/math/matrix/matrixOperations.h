@@ -39,7 +39,7 @@
  * \date Aug 28, 2015
  **/
 
-#include "global.h"
+#include "core/utils/global.h"
 namespace corecvs {
 
 template<typename RealType, typename ElementType, typename ReturnType = RealType>
@@ -296,7 +296,7 @@ public:
 /**
  * A matrix over abstract buffer having a static size
  **/
-#include "abstractBuffer.h"
+#include "core/buffers/abstractBuffer.h"
 
 template<class Element, int H = 3, int W = 3>
 class AbsMatrixFixed : public AbstractBuffer<Element, int>, public MatrixOperationsBase<AbsMatrixFixed<Element>, Element>
@@ -331,7 +331,7 @@ public:
  *  A matrix over fixed vector having a static size
  **/
 
-#include "fixedVector.h"
+#include "core/math/vector/fixedVector.h"
 
 template<class Element, int H = 3, int W = 3>
 class FixMatrixFixed : public FixedVector<Element, H * W>, public MatrixOperationsBase<FixMatrixFixed<Element>, Element>

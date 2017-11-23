@@ -1,4 +1,4 @@
-#include "runtimeTypeBuffer.h"
+#include "core/buffers/runtimeTypeBuffer.h"
 
 #include <iomanip>
 
@@ -211,9 +211,9 @@ std::ostream& operator<<(std::ostream &os, const corecvs::RuntimeTypeBuffer &b)
     return os;
 }
 
-#include "g12Buffer.h"
-#include "g8Buffer.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/g8Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 namespace corecvs {
 

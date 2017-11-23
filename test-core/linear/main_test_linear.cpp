@@ -11,9 +11,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "line.h"
+#include "core/geometry/line.h"
 
 using namespace corecvs;
 

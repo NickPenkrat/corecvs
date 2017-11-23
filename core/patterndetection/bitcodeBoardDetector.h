@@ -1,12 +1,12 @@
 #ifndef BITCODE_BOARD_DETECTOR_H
 #define BITCODE_BOARD_DETECTOR_H
 
-#include "rgb24Buffer.h"
-#include "calculationStats.h"
-#include "selectableGeometryFeatures.h"
-#include "checkerboardDetectionParameters.h"
-#include "generated/bitcodeBoardParamsBase.h"
-#include "homographyReconstructor.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/stats/calculationStats.h"
+#include "core/alignment/selectableGeometryFeatures.h"
+#include "core/xml/generated/checkerboardDetectionParameters.h"
+#include "core/xml/generated/bitcodeBoardParamsBase.h"
+#include "core/math/matrix/homographyReconstructor.h"
 
 namespace corecvs {
 

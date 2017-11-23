@@ -5,10 +5,10 @@
 */
 #include <string>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "g12Buffer.h"
-#include "metamap.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/fileformats/metamap.h"
 
 using std::string;
 

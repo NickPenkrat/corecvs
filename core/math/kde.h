@@ -10,7 +10,7 @@
 #include <vector>
 #include <map>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 namespace corecvs {
 

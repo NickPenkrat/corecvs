@@ -1,10 +1,10 @@
 #ifndef SCENE_STEREO_ALIGNER_BLOCK_H
 #define SCENE_STEREO_ALIGNER_BLOCK_H
 
-#include "newStyleBlock.h"
-#include "sceneStereoAlignerBlockBase.h"
+#include "core/filters/blocks/newStyleBlock.h"
+#include "core/xml/generated/sceneStereoAlignerBlockBase.h"
 
-#include <fixtureCamera.h>
+#include "core/camerafixture/fixtureCamera.h"
 
 namespace corecvs {
 

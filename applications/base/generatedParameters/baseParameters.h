@@ -8,9 +8,9 @@
  * \author autoGenerator
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -31,7 +31,7 @@
  *  Additional includes for enum section.
  */
 #include "rotationPresets.h"
-#include "interpolationType.h"
+#include "core/xml/generated/interpolationType.h"
 
 /**
  * \brief Base parameters 

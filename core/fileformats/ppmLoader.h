@@ -13,13 +13,13 @@
 #include <string>
 #include <memory>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "bufferLoader.h"
-#include "g12Buffer.h"
-#include "rgbTBuffer.h"
-#include "rgb24Buffer.h"
-#include "metamap.h"
+#include "core/fileformats/bufferLoader.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/rgb24/rgbTBuffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/metamap.h"
 
 namespace corecvs {
 

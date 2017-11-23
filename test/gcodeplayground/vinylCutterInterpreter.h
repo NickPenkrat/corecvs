@@ -1,7 +1,7 @@
 #ifndef VINYLCUTTERINTERPRETER_H
 #define VINYLCUTTERINTERPRETER_H
 
-#include "gcodeLoader.h"
+#include "core/fileformats/gcodeLoader.h"
 
 
 class VinylCutterInterpreter : public GCodeInterpreter {

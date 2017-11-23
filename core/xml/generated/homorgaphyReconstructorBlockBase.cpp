@@ -8,7 +8,7 @@
 
 #include <vector>
 #include <stddef.h>
-#include "homorgaphyReconstructorBlockBase.h"
+#include "core/xml/generated/homorgaphyReconstructorBlockBase.h"
 
 /**
  *  Looks extremely unsafe because it depends on the order of static initialization.

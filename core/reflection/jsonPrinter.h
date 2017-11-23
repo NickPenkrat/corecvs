@@ -7,8 +7,8 @@
 #include <sstream>
 #include <fstream>
 
-#include "reflection.h"
-#include "log.h"
+#include "core/reflection/reflection.h"
+#include "core/utils/log.h"
 
 namespace corecvs {
 

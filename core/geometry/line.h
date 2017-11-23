@@ -3,9 +3,9 @@
 
 #include <cmath>
 
-#include "vector2d.h"
-#include "vector3d.h"
-#include "matrix44.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/matrix/matrix44.h"
 
 
 namespace corecvs {

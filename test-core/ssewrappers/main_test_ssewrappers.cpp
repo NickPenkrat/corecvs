@@ -9,14 +9,14 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "sse_trace.h"
-#include "sseWrapper.h"
-#include "preciseTimer.h"
-#include "readers.h"
-#include "genericMath.h"
-#include "int32x8.h"
+#include "core/utils/sse_trace.h"
+#include "core/math/sse/sseWrapper.h"
+#include "core/utils/preciseTimer.h"
+#include "core/buffers/kernels/fastkernel/readers.h"
+#include "core/math/generic/genericMath.h"
+#include "core/math/avx/int32x8.h"
 
 using namespace corecvs;
 

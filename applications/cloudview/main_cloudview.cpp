@@ -13,11 +13,11 @@
 #include <QApplication>
 
 
-#include "global.h"
-#include "utils.h"
+#include "core/utils/global.h"
+#include "core/utils/utils.h"
 #include "cloudViewDialog.h"
 #include "mesh3DScene.h"
-#include "meshLoader.h"
+#include "core/fileformats/meshLoader.h"
 #include "qtFileLoader.h"
 
 

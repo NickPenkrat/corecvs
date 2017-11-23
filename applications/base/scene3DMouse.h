@@ -9,7 +9,7 @@
 #ifndef SCENE3D_H_
 #define SCENE3D_H_
 
-#include "triangulator.h"
+#include "core/rectification/triangulator.h"
 #include "cloudViewDialog.h"
 #include "../utils/3d/draw3dViMouseParametersControlWidget.h"
 

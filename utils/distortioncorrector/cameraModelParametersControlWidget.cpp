@@ -3,7 +3,7 @@
 #include "cameraModelParametersControlWidget.h"
 #include "ui_cameraModelParametersControlWidget.h"
 
-#include "fixtureScene.h"
+#include "core/camerafixture/fixtureScene.h"
 
 CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *parent) :
     ParametersControlWidgetBase(parent),

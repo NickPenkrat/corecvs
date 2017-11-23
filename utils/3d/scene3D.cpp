@@ -9,7 +9,7 @@
 #include "opengl/openGLTools.h"
 #include "scene3D.h"
 #include "cloudViewDialog.h"
-#include "matrix44.h"
+#include "core/math/matrix/matrix44.h"
 
 
 Scene3D::~Scene3D()

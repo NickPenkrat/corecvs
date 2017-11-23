@@ -1,7 +1,7 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "../utils/framesources/decoders/aLowCodec.h"       // TODO: move it into future test-utils project!
 

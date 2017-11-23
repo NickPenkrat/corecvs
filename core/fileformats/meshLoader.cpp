@@ -1,12 +1,12 @@
 #include <fstream>
 
-#include "utils.h"
+#include "core/utils/utils.h"
 
-#include "meshLoader.h"
-#include "plyLoader.h"
-#include "stlLoader.h"
-#include "objLoader.h"
-#include "gcodeLoader.h"
+#include "core/fileformats/meshLoader.h"
+#include "core/fileformats/plyLoader.h"
+#include "core/fileformats/stlLoader.h"
+#include "core/fileformats/objLoader.h"
+#include "core/fileformats/gcodeLoader.h"
 
 namespace corecvs {
 using namespace std;

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <jpeglib.h>
 
-#include "utils.h"
+#include "core/utils/utils.h"
 
 using namespace corecvs;
 

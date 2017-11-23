@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-#include "vector3d.h"
+#include "core/math/vector/vector3d.h"
 
 #include "scene3D.h"
 #include "cloudViewDialog.h"

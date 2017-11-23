@@ -10,10 +10,10 @@
  */
 #include <string>
 
-#include "global.h"
-#include "utils.h"
+#include "core/utils/global.h"
+#include "core/utils/utils.h"
 
-#include "ppmLoader.h"
+#include "core/fileformats/ppmLoader.h"
 
 namespace corecvs {
 

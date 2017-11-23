@@ -9,9 +9,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "folderScanner.h"
+#include "core/filesystem/folderScanner.h"
 
 using namespace corecvs;
 

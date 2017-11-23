@@ -9,7 +9,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 using corecvs::IntField;
 using corecvs::Int64Field;

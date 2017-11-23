@@ -10,14 +10,14 @@
 #include <QtCore/QDebug>
 #include <QtGui/QImage>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "g12Image.h"
 #include "rotationPresets.h"
 #include "baseCalculationThread.h"
 #include "layers/imageResultLayer.h"
-#include "inputFilter.h"
-#include "outputFilter.h"
+#include "core/filters/inputFilter.h"
+#include "core/filters/outputFilter.h"
 
 #ifdef WITH_HARDWARE
 #include "../../hardware/platform/xparameters.h"
