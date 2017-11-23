@@ -8,6 +8,7 @@
 
 class ReflectionWidget : public ParametersControlWidgetBase
 {
+     Q_OBJECT
 protected:
     const corecvs::Reflection *reflection;
 
@@ -33,7 +34,8 @@ public:
     QGridLayout *gridLayout = NULL;
 
 public:
-    ReflectionWidget(const Reflection *reflection, FieldsType type = TYPE_ALL, QWidget *parent = NULL);
+    ReflectionWidget(const Reflection *reflection, FieldsType type = TYPE_ALL, bool addButtons = false, QWidget *parent = NULL);
+    virtual ~ReflectionWidget(){}
 
 
     // ParametersControlWidgetBase interface
@@ -46,10 +48,14 @@ public:
 
 public slots:
 //    void executeTriggered();
-    void inputTriggered(int inId);
-    void outputTriggered(int outId);
+    //void inputTriggered(int inId);
+    //void outputTriggered(int outId);
 
     /* Block related. Most probably should be brought to ancestor */
+    void loadCalled();
+    void saveCalled();
+    void resetCalled();
+
 signals:
     void outerFilterRequest(int filter);
 //    void executeCalled();

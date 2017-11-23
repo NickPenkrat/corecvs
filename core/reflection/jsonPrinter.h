@@ -283,9 +283,6 @@ template <>
 void JSONPrinter::visit<bool,   BoolField>(bool &field, const BoolField *fieldDescriptor);
 
 template <>
-void JSONPrinter::visit<string, StringField>(string &field, const StringField *fieldDescriptor);
-
-template <>
 void JSONPrinter::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor);
 
 template <>
@@ -293,6 +290,10 @@ void JSONPrinter::visit<int,    EnumField>(int &field, const EnumField *fieldDes
 
 template <>
 void JSONPrinter::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
+
+template <>
+void JSONPrinter::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
+
 
 /* Arrays */
 
@@ -312,6 +313,9 @@ void JSONPrinter::visit<bool>(bool &boolField, bool defaultValue, const char *fi
 
 template <>
 void JSONPrinter::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName);
+
+template <>
+void JSONPrinter::visit<std::wstring>(std::wstring &stringField, std::wstring defaultValue, const char *fieldName);
 
 
 } //namespace corecvs
