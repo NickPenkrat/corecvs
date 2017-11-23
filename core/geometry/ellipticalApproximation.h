@@ -383,6 +383,8 @@ public:
             }
         }
 
+        /* Using SVD here is kind of stupid. We already have covariance matrix */
+#ifdef SVD_ATTEMPT
         Matrix W(1, mInfMatrix->w);
         Matrix V(mInfMatrix->h, mInfMatrix->w);
 
@@ -401,7 +403,25 @@ public:
             mAxes.push_back(forPush);
             mValues.push_back(W.a(0,i));
         }
+#else
+        DiagonalMatrix D(A.h);
+        Matrix V(A.h, A.w);
+        Matrix::jacobi(&A, &D, &V, NULL);
 
+        mAxes.clear();
+        mValues.clear();
+
+        for (int i = 0; i < mInfMatrix->w; i++)
+        {
+            ElementType forPush;
+            for (int k = 0; k < mInfMatrix->h; k ++) {
+                forPush.element[k] = V.a(k,i);
+            }
+
+            mAxes.push_back(forPush);
+            mValues.push_back(D.a(i));
+        }
+#endif
         for (unsigned i = 0; i < mValues.size(); i++)
         {
             int maxid = i;
