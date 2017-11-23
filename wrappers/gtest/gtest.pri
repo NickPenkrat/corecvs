@@ -5,19 +5,26 @@ exists(../../../../config.pri) {
     include($$ROOT_DIR/config.pri)
 } else {
     message(Using local config)
-    ROOT_DIR=..
+    ROOT_DIR=../..
     include($$ROOT_DIR/cvs-config.pri)
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
-exists($$ROOT_DIR/siblings/gtest) {
-    !build_pass: message(Using local gtest from siblings/gtest)
+!build_pass: message(Including gtest)
+GTEST_SRC_PATH = "$$(GTEST_SRC_PATH)"
 
-    INCLUDEPATH += $$ROOT_DIR/siblings/gtest/
-    INCLUDEPATH += $$ROOT_DIR/siblings/gtest/include
+isEmpty(GTEST_SRC_PATH) {
+    GTEST_SRC_PATH="$$ROOT_DIR/siblings/gtest"
+}
 
-    SOURCES += $$ROOT_DIR/siblings/gtest/src/gtest-all.cc
-    HEADERS += $$ROOT_DIR/siblings/gtest/include/gtest/*.h
+exists($$GTEST_SRC_PATH) {
+    !build_pass: message(Using local gtest source from $$GTEST_SRC_PATH)
+
+    INCLUDEPATH += $$GTEST_SRC_PATH
+    INCLUDEPATH += $$GTEST_SRC_PATH/include
+
+    SOURCES += $$GTEST_SRC_PATH/src/gtest-all.cc
+    HEADERS += $$GTEST_SRC_PATH/include/gtest/*.h
 
 } else {
 
@@ -29,21 +36,26 @@ exists($$ROOT_DIR/siblings/gtest) {
             LIBS += -lgtest
         }
     } else {
+        !build_pass: message(Using gtest from $$GTEST_PATH)
         INCLUDEPATH += "$$GTEST_PATH"/include
 
-        equals(QMAKE_TARGET.arch, "x86") {
-            GTEST_PATH_BUILD = "$$GTEST_PATH"/build_x86
+        win32 {
+            equals(QMAKE_TARGET.arch, "x86") {
+                GTEST_PATH_BUILD = "$$GTEST_PATH"/build_x86
+            } else {
+                GTEST_PATH_BUILD = "$$GTEST_PATH"/build
+            }
+
+            CONFIG(debug, debug|release) {
+                LIBS += -L"$$GTEST_PATH_BUILD/Debug"   -lgtest
+            }
+            CONFIG(release, debug|release) {
+                LIBS += -L"$$GTEST_PATH_BUILD/Release" -lgtest
+            }
+
+            !build_pass: message(Using gtest from <$$GTEST_PATH/build/Release|Debug>)
         } else {
-            GTEST_PATH_BUILD = "$$GTEST_PATH"/build
+            LIBS += -L"$$GTEST_PATH_BUILD/lib" -lgtest
         }
-
-        CONFIG(debug, debug|release) {
-            LIBS += -L"$$GTEST_PATH_BUILD/Debug"   -lgtest
-        }
-        CONFIG(release, debug|release) {
-            LIBS += -L"$$GTEST_PATH_BUILD/Release" -lgtest
-        }
-
-        !build_pass: message(Using gtest from <$$GTEST_PATH/build/Release|Debug>)
     }
 }
