@@ -105,3 +105,4 @@ SOURCES += \
     utils/main_test_utils.cpp \
     quadric/main_test_quadric.cpp \
     planefit/main_test_planefit.cpp \
+    noise/main_test_noise.cpp \
