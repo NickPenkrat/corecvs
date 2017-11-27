@@ -23,95 +23,53 @@ using std::cout;
 class BinaryVisitor
 {
 public:
-    bool isSaver () { return false;}
+    bool isSaver () { return true;}
     bool isLoader() { return false;}
 
 
 public:
-    std::ostream *stream = nullptr;
-    int indentation = 0;
-    int dIndent = 1;
-    bool isFirst = true;
-    bool isFile = false;
-
-    // new style
-    bool isNewArray = false;
-
-    static const std::string LF;
-
-    static const std::string PROLOGUE;
-    static const std::string EPILOGUE;
-
-    static const std::string OBJECT_OPEN;
-    static const std::string OBJECT_CLOSE;
-
-    static const std::string ARRAY_OPEN;
-    static const std::string ARRAY_CLOSE;
-
-    static const std::string FIELD_SEPARATOR;
-    static const std::string FIELD_VALUE_SEPARATOR;
-    static const std::string NAME_DECORATOR;
+    FILE *out = NULL;
+    bool fileOwned = false;
 
 
-    explicit  BinaryVisitor(ostream *_stream) : stream(_stream)
+    explicit  BinaryVisitor(FILE *file)
     {
+        out = file;
         prologue();
     }
 
-    explicit  BinaryVisitor(ostream &_stream = cout) : stream(&_stream)
+    explicit  BinaryVisitor(const string &filepath) :
+        fileOwned(true)
     {
-        prologue();
-    }
-
-    explicit  BinaryVisitor(int indent, int dindent, ostream &_stream = cout)
-        : stream(&_stream), indentation(indent), dIndent(dindent)
-    {
-        prologue();
-    }
-
-    explicit  BinaryVisitor(const string &filepath)
-        : stream(new std::ofstream(filepath.c_str(), std::ofstream::out))
-        , isFile(true)
-    {
-        if (!(*stream))
-        {
-            L_ERROR_P("Couldn't open for writting the file <%s>", filepath.c_str());
-            delete_safe(stream);
-            isFile = false;
-            return;
-        }
-        L_INFO_P("saving to <%s>", filepath.c_str());
+        out = fopen(filepath.c_str(), "wb");
         prologue();
     }
 
     ~BinaryVisitor()
     {
-        epilogue();
-        if (isFile && stream)
-            delete stream;
+       if (fileOwned) {
+           epilogue();
+           fclose(out);
+           out = NULL;
+       }
     }
 
     std::string indent() {
         return std::string(indentation, ' ');
     }
 
-    /*json prologue*/
+    /*file prologue*/
     void prologue() {
-        if (stream == NULL) return;
-        (*stream) << PROLOGUE;
+        const char *greeting="MJKPACK";
+        if (out == NULL) return;
+        fwrite(out, sizeof(char), strlen(greeting), greeting);
     }
 
     void epilogue() {
-        if (stream == NULL) return;
+        if (out == NULL) return;
         (*stream) << LF << EPILOGUE << std::flush;
     }
 
-    std::string separate()
-    {
-        std::string result = (!isFirst && (stream != NULL)) ? ",\n" : "\n";
-        isFirst = false;
-        return result;
-    }
 
     /* */
     template <typename innerType>

@@ -3,26 +3,6 @@
 
 namespace corecvs {
 
-using std::string;
-using std::endl;
-
-const std::string BinaryVisitor::LF = "\n";
-
-const std::string BinaryVisitor::PROLOGUE = "{";
-const std::string BinaryVisitor::EPILOGUE = "}";
-
-const std::string BinaryVisitor::OBJECT_OPEN  = "{";
-const std::string BinaryVisitor::OBJECT_CLOSE = "}";
-
-const std::string BinaryVisitor::ARRAY_OPEN  = "[";
-const std::string BinaryVisitor::ARRAY_CLOSE = "]";
-
-const std::string BinaryVisitor::FIELD_SEPARATOR = ",";
-const std::string BinaryVisitor::FIELD_VALUE_SEPARATOR = ":";
-
-const std::string BinaryVisitor::NAME_DECORATOR = "\"";
-
-
 std::string BinaryVisitor::decorateName(const BaseField *field)
 {
     return BinaryVisitor::NAME_DECORATOR + field->getSimpleName() + BinaryVisitor::NAME_DECORATOR;
