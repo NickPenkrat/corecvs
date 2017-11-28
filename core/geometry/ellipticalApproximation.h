@@ -430,7 +430,7 @@ public:
             {
                 if (fabs(mValues[j]) > max) {
                     max = fabs(mValues[j]);
-                    maxid = 0;
+                    maxid = j;
                 }
             }
 

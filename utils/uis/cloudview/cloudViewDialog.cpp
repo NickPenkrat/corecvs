@@ -129,7 +129,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     }
 #endif
 
-#if 0
+#if 1
     {
         SceneShaded *shaded = new SceneShaded();
         Mesh3DDecorated *mesh = new Mesh3DDecorated;

@@ -22,6 +22,7 @@
 #include "core/rectification/triangulator.h"
 #include "core/reflection/printerVisitor.h"
 #include "core/reflection/dynamicObject.h"
+#include "core/reflection/binaryVisitor.h"
 
 
 using namespace corecvs;
@@ -184,3 +185,14 @@ TEST(Serializer, jsonDoubleArray)
     }
     std::cout << os.str() << endl;
 }
+
+
+TEST(Serializer, binarySerializer)
+{
+    Vector3dd test = Vector3dd(1.0, 2.0, 3.0);
+    BinaryVisitor visitor("out.txt");
+    visitor.visit(test, "out");
+
+
+}
+
