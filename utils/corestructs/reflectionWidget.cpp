@@ -36,7 +36,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
     for (int i = 0; i < (int)reflection->fields.size(); i++)
     {
         const BaseField *field = reflection->fields[i];
-        // qDebug() << "Processing field:" <<  field->getSimpleName();
+        if (trace) qDebug() << "Processing field:" <<  field->getSimpleName();
 
         if (type == TYPE_INPUT_PINS && !field->isInputPin())
             continue;
@@ -344,7 +344,7 @@ bool ReflectionWidget::getParameters(void *param) const
     {
         int fieldId = positionToField[i];
         const BaseField *field = reflection->fields[fieldId];
-        qDebug() << "Processing field:" <<  field->getSimpleName() << " type " << field->type;
+        if (trace) qDebug() << "Processing field:" <<  field->getSimpleName() << " type " << field->type;
 
         switch (field->type) {
             case BaseField::TYPE_INT:
@@ -467,7 +467,7 @@ bool ReflectionWidget::setParameters(void *param) const
         int fieldId = positionToField[i];
 
         const BaseField *field = reflection->fields[fieldId];
-        // qDebug() << "Processing field:" <<  field->getSimpleName();
+        if (trace) qDebug() << "Processing field:" <<  field->getSimpleName();
 
         switch (field->type) {
             case BaseField::TYPE_INT:

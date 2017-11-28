@@ -18,7 +18,12 @@ using std::cout;
 
 
 /**
-   Please note, json is finallised on destruction of the object.
+   \attention NB Please note!!
+
+   This visitor is not stroing data in "key->value" form.
+   It only stores values, so it assumes fields would be requested in the same order they have been writen
+
+   There would be no checks or warnings so far. You would just experience fast yet painful death
 **/
 class BinaryVisitor
 {
@@ -28,20 +33,28 @@ public:
 
 
 public:
-    FILE *out = NULL;
+    std::ostream *stream  = NULL;
     bool fileOwned = false;
 
 
-    explicit  BinaryVisitor(FILE *file)
+    explicit  BinaryVisitor(std::ostream *ostream):
+        stream(ostream)
     {
-        out = file;
         prologue();
     }
 
-    explicit  BinaryVisitor(const string &filepath) :
-        fileOwned(true)
+    explicit  BinaryVisitor(const string &filepath)
+        : stream(new std::ofstream(filepath.c_str(), std::ofstream::out)),
+          fileOwned(true)
     {
-        out = fopen(filepath.c_str(), "wb");
+        if (!(*stream))
+        {
+            L_ERROR_P("Couldn't open for writting the file <%s>", filepath.c_str());
+            delete_safe(stream);
+            fileOwned = false;
+            return;
+        }
+        L_INFO_P("saving to <%s>", filepath.c_str());
         prologue();
     }
 
@@ -49,25 +62,21 @@ public:
     {
        if (fileOwned) {
            epilogue();
-           fclose(out);
-           out = NULL;
+           delete_safe(stream);
+           fileOwned = false;
        }
     }
-
-    std::string indent() {
-        return std::string(indentation, ' ');
-    }
-
     /*file prologue*/
     void prologue() {
         const char *greeting="MJKPACK";
-        if (out == NULL) return;
-        fwrite(out, sizeof(char), strlen(greeting), greeting);
+        if (stream == NULL) return;
+        stream->write(greeting, strlen(greeting));
     }
 
     void epilogue() {
-        if (out == NULL) return;
-        (*stream) << LF << EPILOGUE << std::flush;
+        const char *bye="EOF";
+        if (stream == NULL) return;
+        stream->write(bye, strlen(bye));
     }
 
 
@@ -75,26 +84,7 @@ public:
     template <typename innerType>
     void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
     {
-        *stream << separate() << indent() << decorateName(arrayName) << FIELD_VALUE_SEPARATOR << ARRAY_OPEN;
-        indentation += dIndent;
-        isFirst = true;
-        for (size_t i = 0; i < fields.size(); i++)
-        {
-            *stream << separate() << indent() << ARRAY_OPEN;
-            indentation += dIndent;
-            isFirst = true;
-            for (size_t j = 0; j < fields[i].size(); j++)
-            {
-                *stream << separate() << indent() << OBJECT_OPEN;            isFirst = true;
-                isFirst = true;
-                fields[i][j].accept(*this);
-                *stream << LF << indent() << OBJECT_CLOSE;
-            }
-            indentation -= dIndent;
-            *stream << LF << indent() << ARRAY_CLOSE;
-        }
-        indentation -= dIndent;
-        *stream << LF << indent() << ARRAY_CLOSE;
+
     }
 
     /**
@@ -103,12 +93,10 @@ public:
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
-        indentation += dIndent;
         for (int i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
-        }
-        indentation -= dIndent;
+        }        
     }
 
     /**
@@ -117,27 +105,7 @@ public:
     template <typename innerType>
     void visit(std::vector<innerType> &field, const char* arrayName)
     {
-        if (isNewArray) {
-            *stream << NAME_DECORATOR << arrayName << NAME_DECORATOR << ":[";
-            for (size_t i = 0; i < field.size(); i++)
-            {
-                visit<innerType>(field[i], "");
-                if (i != (field.size() - 1)) {
-                    *stream << ",";
-                }
-            }
-            *stream << "]";
-        }
-        else {
-            indentation += dIndent;
-            for (size_t i = 0; i < field.size(); i++)
-            {
-                std::ostringstream ss;
-                ss << NAME_DECORATOR << arrayName << NAME_DECORATOR << "[" << i << "]";
-                visit<innerType>(field[i], innerType(), ss.str().c_str());
-            }
-            indentation -= dIndent;
-        }
+
     }
 
     /**
@@ -145,18 +113,8 @@ public:
      **/
 template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
-    {
-        if (stream != NULL) {
-            *stream << separate() << indent() << decorateName(fieldDescriptor) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
-        }
-        indentation += dIndent;
-        isFirst = true;
-        field.accept(*this);
-        indentation -= dIndent;
-
-        if (stream != NULL) {
-            *stream << LF << indent() << OBJECT_CLOSE;
-        }
+    {       
+        field.accept(*this);       
     }
 
 
@@ -166,62 +124,15 @@ template <typename inputType, typename reflectionType>
 template <class Type>
     void visit(Type &field, const char * fieldName)
     {
-        if (isNewArray) {
-            if (stream != NULL) {
-                *stream << OBJECT_OPEN;
-            }
-            indentation += dIndent;
-            isFirst = true;
-            field.accept(*this);
-            indentation -= dIndent;
-
-            if (stream != NULL) {
-                *stream << LF << indent() << OBJECT_CLOSE;
-            }
-        }
-        else {
-            if (stream != NULL) {
-                *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
-            }
-            indentation += dIndent;
-            isFirst = true;
-            field.accept(*this);
-            indentation -= dIndent;
-
-            if (stream != NULL) {
-                *stream << LF << indent() << OBJECT_CLOSE;
-            }
-        }
+        field.accept(*this);
     }
 
-    template <typename Type,
-              typename std::enable_if<!(std::is_enum<Type>::value || (std::is_arithmetic<Type>::value && !std::is_same<bool, Type>::value)), int>::type foo = 0>
+template <typename Type>
     void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
     {
         visit<Type>(field, fieldName);
     }
 
-    template <typename type, typename std::enable_if<std::is_arithmetic<type>::value && !std::is_same<bool, type>::value, int>::type foo = 0>
-    void visit(type &field, type, const char *fieldName)
-    {
-        if (stream == NULL) return;
-        *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << field;
-    }
-
-    template <typename type, typename std::enable_if<std::is_enum<type>::value, int>::type foo = 0>
-    void visit(type &field, type defaultValue, const char *fieldName)
-    {
-        using U = typename std::underlying_type<type>::type;
-        U u = static_cast<U>(field);
-        visit(u, static_cast<U>(defaultValue), fieldName);
-        field = static_cast<type>(u);
-    }
-
-private:
-
-    static std::string escapeString(const std::string &str);
-    static std::string decorateName(const BaseField *field);
-    static std::string decorateName(const char *field);
 };
 
 

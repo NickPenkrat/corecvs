@@ -33,6 +33,8 @@ public:
 
     QGridLayout *gridLayout = NULL;
 
+    bool trace = false;
+
 public:
     ReflectionWidget(const Reflection *reflection, FieldsType type = TYPE_ALL, bool addButtons = false, QWidget *parent = NULL);
     virtual ~ReflectionWidget(){}

@@ -23,7 +23,7 @@ using std::cout;
 class JSONPrinter
 {
 public:
-    bool isSaver () { return false;}
+    bool isSaver () { return true;}
     bool isLoader() { return false;}
 
 
@@ -34,7 +34,7 @@ public:
     bool isFirst = true;
     bool isFile = false;
 
-    // new style
+    /** This flag allows to format vectors as JSON arrays **/
     bool isNewArray = false;
 
     static const std::string LF;
@@ -236,6 +236,11 @@ template <class Type>
         }
     }
 
+    /**
+     *  Arithmetic types such as double, int, etc
+     *  Except for enums and boolean
+     *
+     **/
     template <typename Type,
               typename std::enable_if<!(std::is_enum<Type>::value || (std::is_arithmetic<Type>::value && !std::is_same<bool, Type>::value)), int>::type foo = 0>
     void visit(Type &field, Type /*defaultValue*/, const char * fieldName)
@@ -250,6 +255,9 @@ template <class Type>
         *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << field;
     }
 
+    /**
+     * Enums
+     **/
     template <typename type, typename std::enable_if<std::is_enum<type>::value, int>::type foo = 0>
     void visit(type &field, type defaultValue, const char *fieldName)
     {
