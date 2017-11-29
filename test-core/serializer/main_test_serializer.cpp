@@ -189,28 +189,45 @@ TEST(Serializer, jsonDoubleArray)
 
 
 
-TEST(Serializer, DISABLED_binarySerializer)
+TEST(Serializer, binarySerializer)
 {
+
     Vector3dd   test  = Vector3dd(1.0, 2.0, 3.0);
     RGBColor    testc = RGBColor::Indigo();
     std::string teststr   = "Example";
-    BinaryWriter writer("out.txt");
-    writer.visit(test ,   "out");
-    writer.visit(testc,   "out1");
-    writer.visit(teststr, teststr, "out2");
+
+    CheckerboardDetectionParameters testcb;
+
+    {
+        BinaryWriter writer("out.txt");
+        writer.visit(test ,   "out");
+        writer.visit(testc,   "out1");
+        writer.visit(teststr, teststr, "out2");
+        writer.visit(testcb,  testcb, "out3");
+
+    }
 
     Vector3dd   result;
     RGBColor    resultc;
     std::string resultstr   = "Example";
-    BinaryReader reader("out.txt");
-    reader.visit(result   , "out");
-    reader.visit(resultc  , "out1");
-    reader.visit(resultstr, resultstr, "out2");
+    CheckerboardDetectionParameters resultcb;
+
+    {
+        BinaryReader reader("out.txt");
+        reader.visit(result   , "out");
+        reader.visit(resultc  , "out1");
+        reader.visit(resultstr, resultstr, "out2");
+        reader.visit(resultcb,  "out3");
+    }
 
     cout << "Loaded result : " << result << std::endl;
     cout << "Loaded result : " << resultc << std::endl;
     cout << "Loaded result : " << resultstr << std::endl;
+    cout << "Loaded result : " << resultcb << std::endl;
 
+    CORE_ASSERT_TRUE(result.notTooFar(test)  , "Double vector not loaded");
+    CORE_ASSERT_TRUE(resultc.notTooFar(testc), "Int vector not loaded");
+    CORE_ASSERT_TRUE(resultstr == teststr    , "String not loaded");
 
 }
 
