@@ -1,5 +1,5 @@
-#ifndef BINARY_VISITOR_H
-#define BINARY_VISITOR_H
+#ifndef BINARY_WRITER_H
+#define BINARY_WRITER_H
 
 
 #include <stdint.h>
@@ -16,16 +16,22 @@ using std::string;
 using std::ostream;
 using std::cout;
 
+class BinaryVisitorBase {
+public:
+    static const char* MAGIC_STRING1;
+    static const char* MAGIC_STRING2;
+
+};
 
 /**
    \attention NB Please note!!
 
-   This visitor is not stroing data in "key->value" form.
+   This visitor is not storing data in "key->value" form.
    It only stores values, so it assumes fields would be requested in the same order they have been writen
 
    There would be no checks or warnings so far. You would just experience fast yet painful death
 **/
-class BinaryVisitor
+class BinaryWriter : BinaryVisitorBase
 {
 public:
     bool isSaver () { return true;}
@@ -37,14 +43,14 @@ public:
     bool fileOwned = false;
 
 
-    explicit  BinaryVisitor(std::ostream *ostream):
+    explicit  BinaryWriter(std::ostream *ostream):
         stream(ostream)
     {
         prologue();
     }
 
-    explicit  BinaryVisitor(const string &filepath)
-        : stream(new std::ofstream(filepath.c_str(), std::ofstream::out)),
+    explicit  BinaryWriter(const string &filepath)
+        : stream(new std::ofstream(filepath.c_str(), std::ofstream::out | std::ios::binary)),
           fileOwned(true)
     {
         if (!(*stream))
@@ -58,7 +64,7 @@ public:
         prologue();
     }
 
-    ~BinaryVisitor()
+    ~BinaryWriter()
     {
        if (fileOwned) {
            epilogue();
@@ -68,13 +74,13 @@ public:
     }
     /*file prologue*/
     void prologue() {
-        const char *greeting="MJKPACK";
+        const char *greeting=MAGIC_STRING1;
         if (stream == NULL) return;
         stream->write(greeting, strlen(greeting));
     }
 
     void epilogue() {
-        const char *bye="EOF";
+        const char *bye=MAGIC_STRING2;
         if (stream == NULL) return;
         stream->write(bye, strlen(bye));
     }
@@ -137,37 +143,37 @@ template <typename Type>
 
 
 template <>
-void BinaryVisitor::visit<int,    IntField>(int &field, const IntField *fieldDescriptor);
+void BinaryWriter::visit<int,    IntField>(int &field, const IntField *fieldDescriptor);
 
 template <>
-void BinaryVisitor::visit<uint64_t, UInt64Field>(uint64_t &field, const UInt64Field *fieldDescriptor);
+void BinaryWriter::visit<uint64_t, UInt64Field>(uint64_t &field, const UInt64Field *fieldDescriptor);
 
 template <>
-void BinaryVisitor::visit<double, DoubleField>(double &field, const DoubleField *fieldDescriptor);
+void BinaryWriter::visit<double, DoubleField>(double &field, const DoubleField *fieldDescriptor);
 
 template <>
-void BinaryVisitor::visit<float,  FloatField>(float &field, const FloatField *fieldDescriptor);
+void BinaryWriter::visit<float,  FloatField>(float &field, const FloatField *fieldDescriptor);
 
 template <>
-void BinaryVisitor::visit<bool,   BoolField>(bool &field, const BoolField *fieldDescriptor);
+void BinaryWriter::visit<bool,   BoolField>(bool &field, const BoolField *fieldDescriptor);
 
 template <>
-void BinaryVisitor::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor);
+void BinaryWriter::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor);
 
 template <>
-void BinaryVisitor::visit<int,    EnumField>(int &field, const EnumField *fieldDescriptor);
+void BinaryWriter::visit<int,    EnumField>(int &field, const EnumField *fieldDescriptor);
 
 template <>
-void BinaryVisitor::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
+void BinaryWriter::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
 
 template <>
-void BinaryVisitor::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
+void BinaryWriter::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
 
 
 /* Arrays */
 
 template <>
-void BinaryVisitor::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor);
+void BinaryWriter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor);
 
 /**
  * Old Style
@@ -175,18 +181,25 @@ void BinaryVisitor::visit<double, DoubleVectorField>(std::vector<double> &field,
  * this methods can be made universal, but are separated to make it a bit more controllable
  **/
 template <>
-void BinaryVisitor::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);
+void BinaryWriter::visit<uint64_t>(uint64_t &intField, uint64_t defaultValue, const char *fieldName);
 
 template <>
-void BinaryVisitor::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);
+void BinaryWriter::visit<bool>(bool &boolField, bool defaultValue, const char *fieldName);
 
 template <>
-void BinaryVisitor::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName);
+void BinaryWriter::visit<int>(int &boolField, int defaultValue, const char *fieldName);
 
 template <>
-void BinaryVisitor::visit<std::wstring>(std::wstring &stringField, std::wstring defaultValue, const char *fieldName);
+void BinaryWriter::visit<double>(double &boolField, double defaultValue, const char *fieldName);
+
+
+template <>
+void BinaryWriter::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName);
+
+template <>
+void BinaryWriter::visit<std::wstring>(std::wstring &stringField, std::wstring defaultValue, const char *fieldName);
 
 
 } //namespace corecvs
 
-#endif // BINARY_VISITOR_H
+#endif // BINARY_WRITER_H

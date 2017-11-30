@@ -9,7 +9,8 @@ SOURCES += \
     reflection/extendedVisitor.cpp \
     reflection/commandLineGetter.cpp \
     reflection/jsonPrinter.cpp \
-    reflection/binaryVisitor.cpp \
+    reflection/binaryReader.cpp \
+    reflection/binaryWriter.cpp \
     $$PWD/dynamicObject.cpp
     
     
@@ -24,5 +25,6 @@ HEADERS += \
     reflection/extendedVisitor.h \
     reflection/commandLineGetter.h \
     reflection/jsonPrinter.h \
-    reflection/binaryVisitor.h \
+    reflection/binaryReader.h \
+    reflection/binaryWriter.h \
     $$PWD/dynamicObject.h
