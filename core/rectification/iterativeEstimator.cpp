@@ -162,8 +162,6 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
     vector<Correspondence > data;
 
 
-    /* Be extreamly careful. You can only fill this array when actuall data is finilised */
-    vector<Correspondence *> dataPtr;
 
     //CameraModel cam1world = camera1->getWorldCameraModel();
     //CameraModel cam2world = camera2->getWorldCameraModel();
@@ -187,6 +185,9 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
         }
     }
 
+    /* Be extreamly careful. You can only fill this array when actuall data is finilised */
+    /* This array holds pointers, but target vector could be reallocated on resize       */
+    vector<Correspondence *> dataPtr;
     dataPtr.reserve(data.size());
     for (size_t p = 0; p < data.size(); p++)
     {
