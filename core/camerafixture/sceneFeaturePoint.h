@@ -272,7 +272,7 @@ public:
         visitor.visit(hasKnownPosition           , false             , "hasKnownPosition");
         visitor.visit(reprojectedPosition        , Vector3dd(0.0)    , "reprojectedPosition");
         visitor.visit(hasKnownReprojectedPosition, false             , "hasKnownReprojectedPosition");
-        visitor.visit(type                       , POINT_UNKNOWN     , "type");
+        visitor.visit((int &)type                , (int)POINT_UNKNOWN     , "type");
         visitor.visit(color                      , RGBColor::Black() , "color");
 
         int observeSize = (int)observations.size();

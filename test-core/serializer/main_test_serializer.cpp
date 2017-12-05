@@ -10,6 +10,8 @@
 
 #include <unordered_map>
 #include <iostream>
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
 #include "core/xml/generated/checkerboardDetectionParameters.h"
 #include "core/reflection/jsonPrinter.h"
 #include "gtest/gtest.h"
@@ -231,3 +233,24 @@ TEST(Serializer, binarySerializer)
 
 }
 
+
+TEST(Serializer, binarySerializerScene)
+{
+    FixtureScene scene;
+
+
+
+    {
+        BinaryWriter writer("scene.bin");
+        writer.visit(scene,   "scene");
+
+    }
+
+    {
+        BinaryReader reader("scene.bin");
+        reader.visit(scene, "scene");
+    }
+
+
+
+}
