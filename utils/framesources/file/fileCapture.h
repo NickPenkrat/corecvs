@@ -18,15 +18,16 @@
  * It sends newFrameReady signal immediately. More precise camera simulation
  * is done in FilePreciseCaptureInterface class
  * */
-class FileCaptureInterface : public virtual ImageFileCaptureInterface
+class FileCaptureInterface : public ImageFileCaptureInterface
 {
 public:
-    FileCaptureInterface(string pathFmt, bool isVerbose = true);
+    FileCaptureInterface(string pathFmt, bool isVerbose = true, bool isRGB = false);
 
     virtual FramePair    getFrame();
 
     virtual CapErrorCode initCapture();
     virtual CapErrorCode startCapture();
+    virtual CapErrorCode nextFrame();
 
     virtual ~FileCaptureInterface();
 };
