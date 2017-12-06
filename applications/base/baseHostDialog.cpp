@@ -658,6 +658,8 @@ void BaseHostDialog::camerasParamsChanged()
 {
     qDebug("BaseHostDialog::camerasParamsChanged(): called");
     QSharedPointer<CamerasConfigParameters> parametersShPtr = QSharedPointer<CamerasConfigParameters>(getAdditionalParams());
+    cout << parametersShPtr->rectifierData().F << std::endl;
+
 
     emit camerasParametersChanged(parametersShPtr);
 }
