@@ -13,6 +13,7 @@ void AdvancedBinaryWriter::visit<int,    IntField>(int &field, const IntField *f
     SYNC_PRINT(("AdvancedBinaryWriter::visit<int,IntField>(%d):called\n", field));
     if (stream == NULL) return;
     size_t pos = fieldOpening(fieldDescriptor->name.name);
+    cout << "Writing int to " << stream->tellp() << std::endl;
     stream->write((char *) &field, sizeof(field));
     fieldClosing(pos);
 }

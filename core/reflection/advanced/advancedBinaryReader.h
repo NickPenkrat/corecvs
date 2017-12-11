@@ -146,7 +146,7 @@ public:
                 break;
             }
             if( stream->tellg() >= limit) {
-                cout << "Object end found" << stream->tellg() << " " << limit << std::endl;
+                cout << "Object end found " << stream->tellg() << " " << limit << std::endl;
                 break;
             }
         }
@@ -229,6 +229,8 @@ template <typename Type>
         visit<Type>(field, fieldName);
     }
 
+template <typename Type>
+    void loadField(Type &field, const std::string &name);
 };
 
 
