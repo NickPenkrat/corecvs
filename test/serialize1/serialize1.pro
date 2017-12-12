@@ -15,6 +15,7 @@ TARGET   = test_serialize1
 QT 	+= xml
 
 include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
+include($$ROOT_DIR/src/open/wrappers/gtest/gtest.pri)
 
 SOURCES += main_serialize1.cpp
 HEADERS += main_serialize1.h
