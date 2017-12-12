@@ -28,7 +28,7 @@ public:
         stream->read((char *)&length, sizeof(length));
         char* data = new char[length + 1];
         stream->read((char *)data, length);
-        data[length] = 0;
+        data[length] = 0;                
         return data;
     }
 

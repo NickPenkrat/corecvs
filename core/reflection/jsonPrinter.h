@@ -6,6 +6,8 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <iomanip>
+#include <locale>
 
 #include "core/reflection/reflection.h"
 #include "core/utils/log.h"
@@ -98,6 +100,8 @@ public:
     /*json prologue*/
     void prologue() {
         if (stream == NULL) return;
+        stream->imbue(std::locale("C"));
+        (*stream) << std::setprecision(std::numeric_limits<double>::digits10 + 2);
         (*stream) << PROLOGUE;
     }
 

@@ -142,10 +142,9 @@ template <>
 void AdvancedBinaryWriter::visit<std::string>(std::string &field, std::string /*defaultValue*/, const char *fieldName)
 {
     if (stream == NULL) return;
-    SYNC_PRINT(("AdvancedBinaryWriter::visit<double>(%s):called\n", field.c_str()));
-
-    if (stream == NULL) return;
+    SYNC_PRINT(("AdvancedBinaryWriter::visit<std::string>(%s):called\n", field.c_str()));
     size_t pos = fieldOpening(fieldName);
+    SYNC_PRINT(("AdvancedBinaryWriter::visit<std::string> pos %d\n", stream->tellp()));
     writeString(stream, field);
     fieldClosing(pos);
 

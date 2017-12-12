@@ -229,8 +229,11 @@ template <typename Type>
         visit<Type>(field, fieldName);
     }
 
+    bool repositionToField(const char *name);
+
 template <typename Type>
-    void loadField(Type &field, const std::string &name);
+    bool loadField(Type &field, const std::string &name);
+
 };
 
 

@@ -3,19 +3,26 @@
 
 namespace corecvs {
 
-template<typename Type>
-void  AdvancedBinaryReader::loadField(Type &field, const std::string &name)
+bool AdvancedBinaryReader::repositionToField(const char *name)
 {
-    if (stream == NULL) return;
+    if (stream == NULL) return false;
 
     auto it = dicts.back().find(name);
     if (it == dicts.back().end())
     {
         std::cout << "Name not found:" << name << std::endl;
-        return;
+        return false;
     }
 
     stream->seekg(it->second);
+    return true;
+}
+
+template<typename Type>
+bool  AdvancedBinaryReader::loadField(Type &field, const std::string &name)
+{
+    if (!repositionToField(name.c_str()))
+        return false;
 
     uint32_t size;
     stream->read((char *) &size, sizeof(size));
@@ -25,6 +32,7 @@ void  AdvancedBinaryReader::loadField(Type &field, const std::string &name)
 
     cout << "Reading from" << stream->tellg() << std::endl;
     stream->read((char *) &field, sizeof(field));
+    return true;
 }
 
 
@@ -32,7 +40,9 @@ template <>
 void AdvancedBinaryReader::visit<int,    IntField>(int &field, const IntField *fieldDescriptor)
 {
     if (stream == NULL) return;
-    loadField<int>(field, fieldDescriptor->name.name);
+    if (!loadField<int>(field, fieldDescriptor->name.name))
+        field = fieldDescriptor->defaultValue;
+
     SYNC_PRINT(("AdvancedBinaryReader::visit<int,IntField>(): read %d\n", field));
 }
 
@@ -40,7 +50,10 @@ template <>
 void AdvancedBinaryReader::visit<double, DoubleField>(double &field, const DoubleField *fieldDescriptor)
 {
     if (stream == NULL) return;
-    loadField<double>(field, fieldDescriptor->name.name);
+    if (!loadField<double>(field, fieldDescriptor->name.name))
+    {
+        field = fieldDescriptor->defaultValue;
+    }
     SYNC_PRINT(("AdvancedBinaryReader::visit<double, DoubleField>():read %lf\n", field));
 }
 
@@ -48,7 +61,9 @@ template <>
 void AdvancedBinaryReader::visit<float,  FloatField>(float &field, const FloatField *fieldDescriptor)
 {
     if (stream == NULL) return;
-    loadField<float>(field, fieldDescriptor->name.name);
+    if (!loadField<float>(field, fieldDescriptor->name.name)) {
+        field = fieldDescriptor->defaultValue;
+    }
     SYNC_PRINT(("AdvancedBinaryReader::visit<float, FloatField>():read %f\n", field));
 
 }
@@ -57,7 +72,10 @@ template <>
 void AdvancedBinaryReader::visit<uint64_t, UInt64Field>(uint64_t &field, const UInt64Field *fieldDescriptor)
 {
     if (stream == NULL) return;
-    loadField<uint64_t>(field, fieldDescriptor->name.name);
+    if (!loadField<uint64_t>(field, fieldDescriptor->name.name))
+    {
+        field = fieldDescriptor->defaultValue;
+    }
     stream->read((char *) &field, sizeof(field));
 }
 
@@ -66,15 +84,23 @@ template <>
 void AdvancedBinaryReader::visit<bool,   BoolField>(bool &field, const BoolField *fieldDescriptor)
 {
     if (stream == NULL) return;
+    if (!loadField<bool>(field, fieldDescriptor->name.name))
+        field = fieldDescriptor->defaultValue;
     SYNC_PRINT(("%s : NYI\n", __FUNCTION__));
 }
 
 template <>
 void AdvancedBinaryReader::visit<string, StringField>(std::string &field, const StringField *fieldDescriptor)
 {
-    if (stream == NULL) return;
-    SYNC_PRINT(("%s : NYI\n", __FUNCTION__));
-    //stream->read((char *) &field, sizeof(field));
+    if (!repositionToField(fieldDescriptor->name.name))
+    {
+        field = fieldDescriptor->defaultValue;
+        return;
+    }
+
+    field = readString(stream);
+
+    SYNC_PRINT(("AdvancedBinaryReader::visit<string, StringField> %s\n", field.c_str()));
 }
 
 template <>
@@ -112,16 +138,22 @@ void AdvancedBinaryReader::visit<double, DoubleVectorField>(std::vector<double> 
 /* Old style visitor */
 
 template <>
-void AdvancedBinaryReader::visit<uint64_t>(uint64_t &field, uint64_t /*defaultValue*/, const char *fieldName)
+void AdvancedBinaryReader::visit<uint64_t>(uint64_t &field, uint64_t defaultValue, const char *fieldName)
 {
-    if (stream == NULL) return;
+    if (stream == NULL) {
+        field = defaultValue;
+        return;
+    }
     loadField<uint64_t>(field, fieldName);
 }
 
 template <>
-void AdvancedBinaryReader::visit<bool>(bool &field, bool /*defaultValue*/, const char *fieldName)
+void AdvancedBinaryReader::visit<bool>(bool &field, bool defaultValue, const char *fieldName)
 {
-    if (stream == NULL) return;
+    if (stream == NULL) {
+        field = defaultValue;
+        return;
+    }
     loadField<bool>(field, fieldName);
 }
 
@@ -143,15 +175,18 @@ void AdvancedBinaryReader::visit<double>(double &field, double defaultValue, con
 }
 
 template <>
-void AdvancedBinaryReader::visit<std::string>(std::string &stringField, std::string /*defaultValue*/, const char *fieldName)
+void AdvancedBinaryReader::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName)
 {
-    if (stream == NULL) return;
-    uint32_t length = 0;
-    stream->read((char *)&length, sizeof(length));
-    char* data = new char[length + 1];
-    stream->read((char *)data, length);
-    data[length] = 0;
-    stringField = data;
+    if (!repositionToField(fieldName))
+    {
+        stringField = defaultValue;
+        return;
+    }
+    uint32_t size;
+    stream->read((char *) &size, sizeof(size));
+
+    SYNC_PRINT(("AdvancedBinaryReader::visit<std::string> pos %d\n", stream->tellg()));
+    stringField = readString(stream);
     SYNC_PRINT(("AdvancedBinaryReader::visit<std::string>():read %s\n", stringField.c_str()));
 }
 
