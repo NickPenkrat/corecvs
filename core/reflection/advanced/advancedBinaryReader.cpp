@@ -185,7 +185,7 @@ void AdvancedBinaryReader::visit<std::string>(std::string &stringField, std::str
     uint32_t size;
     stream->read((char *) &size, sizeof(size));
 
-    SYNC_PRINT(("AdvancedBinaryReader::visit<std::string> pos %d\n", stream->tellg()));
+    SYNC_PRINT(("AdvancedBinaryReader::visit<std::string> pos %d\n", (int)stream->tellg()));
     stringField = readString(stream);
     SYNC_PRINT(("AdvancedBinaryReader::visit<std::string>():read %s\n", stringField.c_str()));
 }

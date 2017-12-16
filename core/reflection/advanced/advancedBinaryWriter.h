@@ -34,7 +34,7 @@ public:
 
     void writeString(std::ostream *stream, const std::string &string)
     {
-        uint32_t length = string.length();
+        uint32_t length = (uint32_t)string.length();
         stream->write((char *)&length, sizeof(length));
         stream->write((char *)string.c_str(), length);
     }
@@ -111,7 +111,7 @@ public:
 
         size_t pos2 = stream->tellp();
         stream->seekp(pos1);
-        uint32_t flen = pos2 - pos1 - sizeof(flen);
+        uint32_t flen = (uint32_t)(pos2 - pos1 - sizeof(flen));
         stream->write((char *)&flen, sizeof(flen));
 
         stream->seekp(pos2);
@@ -138,7 +138,7 @@ public:
     void fieldClosing(size_t pos1)
     {
         size_t pos2 = stream->tellp();
-        uint32_t flen = pos2 - pos1 - sizeof(flen);
+        uint32_t flen = (uint32_t)(pos2 - pos1 - sizeof(flen));
         stream->seekp(pos1);
         stream->write((char *)&flen, sizeof(flen));
         stream->seekp(pos2);
