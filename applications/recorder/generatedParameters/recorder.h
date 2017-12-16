@@ -113,6 +113,12 @@ template<class VisitorType>
         mFileTemplate = fileTemplate;
     }
 
+    bool operator ==(const Recorder &other) const 
+    {
+        if ( !(this->mPath == other.mPath)) return false;
+        if ( !(this->mFileTemplate == other.mFileTemplate)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, Recorder &toSave)
     {
         corecvs::PrinterVisitor printer(out);
