@@ -129,7 +129,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     }
 #endif
 
-#if 1
+#if 0
     {
         SceneShaded *shaded = new SceneShaded();
         Mesh3DDecorated *mesh = new Mesh3DDecorated;
@@ -1011,7 +1011,7 @@ void CloudViewDialog::loadMesh()
         QString mtlFile = fileName + ".mtl";
         std::ifstream materialFile;
         materialFile.open(mtlFile.toStdString(), std::ios::in);
-        objLoader.loadMaterial(materialFile, mesh->material, fileInfo.path().toStdString());
+        objLoader.loadMaterials(materialFile, mesh->materials, fileInfo.path().toStdString());
         materialFile.close();
 
 

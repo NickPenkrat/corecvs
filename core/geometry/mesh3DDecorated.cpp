@@ -15,7 +15,7 @@ void Mesh3DDecorated::switchTextures(bool on)
     if (hasTexCoords == on)
         return;
     if (on) {
-        texId.resize(faces.size(), Vector3d32(-1));
+        texId.resize(faces.size(), Vector4d32(-1,-1,-1, 0));
     } else {
         texId.clear();
     }
@@ -100,7 +100,7 @@ void Mesh3DDecorated::fillTestScene()
 
     for (size_t face = 0; face < faces.size(); face++ )
     {
-        texId.push_back(Vector3d32(0, 1, 2));
+        texId.push_back(Vector4d32(0, 1, 2, 0));
     }
     hasTexCoords = true;
 }
@@ -157,6 +157,11 @@ bool Mesh3DDecorated::verify( void )
         for (int j = 0; j < 3; j++) {
             if (texId[i][j] > (int)textureCoords.size() ) {
                 SYNC_PRINT(("Wrong texture index\n"));
+                return false;
+            }
+            if (texId[i][3] < 0 || texId[i][3] >= materials.size())
+            {
+                SYNC_PRINT(("Wrong texture name\n"));
                 return false;
             }
         }

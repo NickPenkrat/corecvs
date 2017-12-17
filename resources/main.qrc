@@ -166,5 +166,7 @@
     <qresource prefix="/new/shaders">
         <file>shaders/_trivial.fsh</file>
         <file>shaders/_trivial.vsh</file>
+        <file>shaders/default_fast.fsh</file>
+        <file>shaders/default_fast.vsh</file>
     </qresource>
 </RCC>

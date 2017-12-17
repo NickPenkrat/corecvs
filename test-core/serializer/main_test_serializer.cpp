@@ -10,6 +10,8 @@
 
 #include <unordered_map>
 #include <iostream>
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
 #include "core/xml/generated/checkerboardDetectionParameters.h"
 #include "core/reflection/jsonPrinter.h"
 #include "gtest/gtest.h"
@@ -25,6 +27,8 @@
 #include "core/reflection/binaryReader.h"
 #include "core/reflection/binaryWriter.h"
 
+#include "core/reflection/advanced/advancedBinaryReader.h"
+#include "core/reflection/advanced/advancedBinaryWriter.h"
 
 using namespace corecvs;
 
@@ -231,3 +235,67 @@ TEST(Serializer, binarySerializer)
 
 }
 
+TEST(Serializer, advancedBinarySerializer)
+{
+    Vector3dd   test  = Vector3dd(1.0, 2.0, 3.0);
+    RGBColor    testc = RGBColor::Indigo();
+    std::string teststr   = "Example";
+
+    CheckerboardDetectionParameters testcb;
+
+    {
+        AdvancedBinaryWriter writer("out.txt");
+        writer.visit(test ,   "out");
+        writer.visit(testc,   "out1");
+        writer.visit(teststr, teststr, "out2");
+        writer.visit(testcb,  testcb, "out3");
+    }
+    {
+        AdvancedBinaryReader reader("out.txt");
+//        reader.readDictionary();
+    }
+
+    Vector3dd   result;
+    RGBColor    resultc;
+    std::string resultstr   = "Example";
+    CheckerboardDetectionParameters resultcb;
+    memset(&resultcb, 0xA5, sizeof(resultcb));
+
+    {
+        AdvancedBinaryReader reader("out.txt");
+        reader.visit(result   , "out");
+        reader.visit(resultc  , "out1");
+        reader.visit(resultstr, resultstr, "out2");
+        reader.visit(resultcb,  "out3");
+    }
+
+    cout << "Loaded result : " << result << std::endl;
+    cout << "Loaded result : " << resultc << std::endl;
+    cout << "Loaded result : " << resultstr << std::endl;
+    cout << "Initial data  : " << testcb << std::endl;
+    cout << "Loaded result : " << resultcb << std::endl;
+
+    CORE_ASSERT_TRUE(result.notTooFar(test)  , "Double vector not loaded");
+    CORE_ASSERT_TRUE(resultc.notTooFar(testc), "Int vector not loaded");
+    CORE_ASSERT_TRUE(resultstr == teststr    , "String not loaded");
+
+    CORE_ASSERT_TRUE(resultcb == testcb    , "Large structure not loaded");
+
+
+}
+
+
+TEST(Serializer, binarySerializerScene)
+{
+    FixtureScene scene;
+
+    {
+        AdvancedBinaryWriter writer("scene.bin");
+        writer.visit(scene,   "scene");
+    }
+
+    {
+        BinaryReader reader("scene.bin");
+        reader.visit(scene, "scene");
+    }
+}
