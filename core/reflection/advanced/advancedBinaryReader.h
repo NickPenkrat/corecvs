@@ -23,7 +23,7 @@ using std::cout;
    \attention NB Please note!!
 
    This visitor is not storing data in "key->value" form.
-   It only stores values, so it assumes fields would be requested in the same order they have been writen
+   It only stores values, so it assumes fields would be requested in the same order they have been written
 
    There would be no checks or warnings so far. You would just experience fast yet painful death
 **/
@@ -57,7 +57,7 @@ public:
         : stream(new std::ifstream(filepath.c_str(), std::ifstream::in | std::ios::binary)),
           fileOwned(true)
     {
-        if (stream == NULL || !stream->good() )
+        if (stream == NULL || !stream->good())
         {
             L_ERROR_P("Couldn't open for reading file <%s>", filepath.c_str());
             delete_safe(stream);
@@ -76,9 +76,11 @@ public:
            fileOwned = false;
        }
     }
+
     /*file prologue*/
-    void prologue() {
-        const char *greeting=MAGIC_STRING1;
+    void prologue()
+    {
+        const char *greeting = MAGIC_STRING1;
         char greeting_read[10];
         if (stream == NULL) return;
 
@@ -88,7 +90,7 @@ public:
         cout << "Read greating:" << greeting_read << std::endl;
         if (strcmp(greeting, greeting_read) != 0)
         {
-            cout << "Failed to recongnise the format <"  <<  greeting << "> <" << greeting_read << ">" << std::endl;
+            cout << "Failed to recognize the format <"  <<  greeting << "> <" << greeting_read << ">" << std::endl;
         }
 
         uint32_t size = 0;
@@ -101,11 +103,11 @@ public:
         {
             cout << "Stream is not good" << std::endl;
         }
-
     }
 
-    void epilogue() {
-        const char *bye=MAGIC_STRING2;
+    void epilogue()
+    {
+        const char *bye = MAGIC_STRING2;
         char bye_read[10];
         if (stream == NULL) return;
         stream->read(bye_read, strlen(bye));
@@ -145,7 +147,7 @@ public:
                 cout << "Unexpected stream crash" << std::endl;
                 break;
             }
-            if( stream->tellg() >= limit) {
+            if ((size_t)stream->tellg() >= limit) {
                 cout << "Object end found " << stream->tellg() << " " << limit << std::endl;
                 break;
             }
@@ -154,7 +156,6 @@ public:
         stream->seekg(pos);
         return result;
     }
-
 
 
     /* */
