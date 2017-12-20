@@ -117,7 +117,7 @@ int OBJLoader::loadOBJ(istream &input, Mesh3DDecorated &mesh)
             {
                 if (mesh.materials[t].name == name)
                 {
-                    texName = t;
+                    texName = (int)t;
                 }
             }
 
