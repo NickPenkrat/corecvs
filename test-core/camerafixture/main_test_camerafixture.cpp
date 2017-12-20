@@ -201,53 +201,47 @@ TEST(Fixture, testMerge)
 
 TEST(Fixture, testAddAndDelete)
 {
-  FixtureScene *scene1 = createTestScene();
+    FixtureScene *scene = new FixtureScene();
 
-  FixtureScene *scene = new FixtureScene();
+    CameraFixture *start = scene->createCameraFixture();
+    start->name = "Start";
+    CameraFixture *fixture2 = scene->createCameraFixture();
+    fixture2->name = "Fixture2";
+    CameraFixture *fixture3 = scene->createCameraFixture();
+    fixture3->name = "Fixture3";
 
-  CameraFixture *start = scene->createCameraFixture();
-  start->name = "Start";
-  CameraFixture *fixture2 = scene->createCameraFixture();
-  fixture2->name = "Fixture2";
-  CameraFixture *fixture3 = scene->createCameraFixture();
-  fixture3->name = "Fixture3";
+    //CameraFixture *output = scene->createCameraFixture();
+    //output ->name = "Output";
 
-  //CameraFixture *output = scene->createCameraFixture();
-  //output ->name = "Output";
-
-  FixtureCamera *lCam = scene->createCamera(); lCam->nameId = "left";
-  scene->addCameraToFixture(lCam, start);
-  FixtureCamera *rCam = scene->createCamera(); rCam->nameId = "right";
-  scene->addCameraToFixture(rCam, start);
+    FixtureCamera *lCam = scene->createCamera(); lCam->nameId = "left";
+    scene->addCameraToFixture(lCam, start);
+    FixtureCamera *rCam = scene->createCamera(); rCam->nameId = "right";
+    scene->addCameraToFixture(rCam, start);
 
 
-  FixtureCamera *cam1 = scene->createCamera(); cam1->nameId = "cam1";
-  scene->addCameraToFixture(cam1, fixture2);
+    FixtureCamera *cam1 = scene->createCamera(); cam1->nameId = "cam1";
+    scene->addCameraToFixture(cam1, fixture2);
 
-  FixtureCamera *cam2 = scene->createCamera(); cam2->nameId = "cam2";
-  scene->addCameraToFixture(cam2, fixture3);
+    FixtureCamera *cam2 = scene->createCamera(); cam2->nameId = "cam2";
+    scene->addCameraToFixture(cam2, fixture3);
 
-  //scene->addCameraToFixture(scene->createCamera(), output);
-  //scene->addCameraToFixture(scene->createCamera(), output);
+    //scene->addCameraToFixture(scene->createCamera(), output);
+    //scene->addCameraToFixture(scene->createCamera(), output);
 
-  scene->dumpInfo();
+    scene->dumpInfo();
 
+    {
+        FixtureScene *mDirectory = scene;
 
-  {
-      FixtureScene *mDirectory = scene;
+        cout << "Directory integrity is" << mDirectory->checkIntegrity() << endl;
+        mDirectory->beforeChange();
+        while (!mDirectory->featurePoints().empty())
+        {
+            mDirectory->deleteFeaturePoint(mDirectory->featurePoints().back());
+        }
 
-      cout << "Directory integrity is" << mDirectory->checkIntegrity() << endl;
-      mDirectory->beforeChange();
-      while (!mDirectory->featurePoints().empty())
-      {
-          mDirectory->deleteFeaturePoint(mDirectory->featurePoints().back());
-      }
-
-      mDirectory->setFixtureCount(2);
-      mDirectory->setOrphanCameraCount(0);
-      mDirectory->afterChange();
-  }
-
-
+        mDirectory->setFixtureCount(2);
+        mDirectory->setOrphanCameraCount(0);
+        mDirectory->afterChange();
+    }
 }
-
