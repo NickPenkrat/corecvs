@@ -302,9 +302,9 @@ SceneFeaturePoint *FixtureSceneGeometry::getPointById(FixtureScenePart::IdType i
     return ownerScene->getPointById(id);
 }
 
-std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL2() const
+std::vector<double> SceneFeaturePoint::estimateReconstructedReprojectionErrorL2() const
 {
-    std::vector< double > out;
+    std::vector<double> out;
     //if (!hasKnownReprojectedPosition)
     //    return out;
 
@@ -315,7 +315,7 @@ std::vector< double > SceneFeaturePoint::estimateReconstructedReprojectionErrorL
             continue;
 
         xy -= obs.second.getUndist();
-        out.push_back( xy.l2Metric() );
+        out.push_back(xy.l2Metric());
     }
         
     return out;
