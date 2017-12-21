@@ -155,14 +155,12 @@ TEST(jit, DISABLED_testjit)
         typedef int  (*TestFunctor)(int);
         typedef void (*FFunctor)(double *, double *);
 
-        char *error = NULL;
-
         handle = dlopen ("jit.so", RTLD_LAZY);
         if (!handle) {
             fprintf (stderr, "%s\n", dlerror());
             exit(1);
         }
-        error = dlerror();    /* Clear any existing error */
+        /*char *error =*/ dlerror();    /* Clear any existing error */
 
         const char *testName = "test";
         void *testF = dlsym(handle, testName);
