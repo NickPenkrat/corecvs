@@ -430,7 +430,7 @@ public:
             {
                 if (fabs(mValues[j]) > max) {
                     max = fabs(mValues[j]);
-                    maxid = 0;
+                    maxid = j;
                 }
             }
 
@@ -490,7 +490,7 @@ public:
             return 0.0;
         }
         ElementType mean = getMean();
-        double radius = mInfMatrix->a(dim,dim) / mCount - (mean.at(dim) * mean.at(dim));;
+        double radius = mInfMatrix->a((int)dim, (int)dim) / mCount - (mean.at(dim) * mean.at(dim));
         return sqrt(radius);
     }
 

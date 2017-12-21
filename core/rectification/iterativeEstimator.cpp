@@ -10,21 +10,22 @@
 #include "core/utils/log.h"
 
 #include "core/rectification/iterativeEstimator.h"
+
 namespace corecvs {
 
-vector<Correspondence *>  sieveCorrespondanceList(const vector<Correspondence *> &workingSamples, size_t maximum)
+vector<Correspondence *> sieveCorrespondanceList(const vector<Correspondence *> &workingSamples, size_t maximum)
 {
     vector<Correspondence *> passedSamples;
-    std::mt19937  rng(100);
+    std::mt19937 rng(100);
     passedSamples = workingSamples;
 
     unsigned hash = 0;
 
     if (maximum < passedSamples.size())
     {
-        for(size_t j = 0; j < maximum; j++ )
+        for (size_t j = 0; j < maximum; j++ )
         {
-            std::uniform_int_distribution<unsigned> rint(j, workingSamples.size() - 1);
+            std::uniform_int_distribution<unsigned> rint((unsigned)j, (unsigned)workingSamples.size() - 1);
             unsigned newPos = rint(rng);
             hash = hash ^ newPos;
             std::swap(passedSamples[j], passedSamples[newPos]);
@@ -36,8 +37,8 @@ vector<Correspondence *>  sieveCorrespondanceList(const vector<Correspondence *>
     return passedSamples;
 }
 
-
-vector<Correspondence *>  filterCorrespondanceList(const vector<Correspondence *> &workingSamples, const EssentialMatrix &model, double sigma, int iteration)
+vector<Correspondence *> filterCorrespondanceList(const vector<Correspondence *> &workingSamples
+    , const EssentialMatrix &model, double sigma, int iteration)
 {
     int passed = 0;
     int rejected = 0;
@@ -83,12 +84,11 @@ vector<Correspondence *>  filterCorrespondanceList(const vector<Correspondence *
     L_INFO_P("  %lf %lf" , errorPerPoint, errorPerPointInit);
 #endif
 
-
     return passedSamples;
 }
 
 
-EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *> &samples)
+EssentialMatrix IterativeEstimator::getEssential(const vector<Correspondence *> &samples)
 {
     SYNC_PRINT(("IterativeEstimator::getEssential(vector<%u>)\n", (unsigned)samples.size()));
 
@@ -126,9 +126,7 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
        // model.prettyPrint();
         EssentialEstimator::CostFunction7to1 cost(&workingSamples);
 
-
         /* Checking current result */
-
         vector<Correspondence *> passedSamples = filterCorrespondanceList(workingSamples, model, sigma, iteration);
         workingSamples = passedSamples;
         sigma *= params.sigmaFactor();
@@ -147,7 +145,6 @@ EssentialMatrix IterativeEstimator::getEssential (const vector<Correspondence *>
     }
 
     L_INFO_P("Iterative rectification finished");
-
     return model;
 }
 
@@ -161,15 +158,10 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
 {
     vector<Correspondence > data;
 
-
-    /* Be extreamly careful. You can only fill this array when actuall data is finilised */
-    vector<Correspondence *> dataPtr;
-
     //CameraModel cam1world = camera1->getWorldCameraModel();
     //CameraModel cam2world = camera2->getWorldCameraModel();
 
-
-    for(SceneFeaturePoint *point: scene->featurePoints())
+    for (SceneFeaturePoint *point: scene->featurePoints())
     {
         SceneObservation *obs1 = point->getObservation(camera1);
         SceneObservation *obs2 = point->getObservation(camera2);
@@ -187,6 +179,9 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
         }
     }
 
+    /* Be extreamly careful. You can only fill this array when actuall data is finilised */
+    /* This array holds pointers, but target vector could be reallocated on resize       */
+    vector<Correspondence *> dataPtr;
     dataPtr.reserve(data.size());
     for (size_t p = 0; p < data.size(); p++)
     {
@@ -208,7 +203,7 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
     EssentialMatrix model = estimator.getEssential(dataPtr);
 
     int count = 0;
-    for(SceneFeaturePoint *point: scene->featurePoints())
+    for (SceneFeaturePoint *point: scene->featurePoints())
     {
         SceneObservation *obs1 = point->getObservation(camera1);
         SceneObservation *obs2 = point->getObservation(camera2);
@@ -226,12 +221,9 @@ EssentialDecomposition IterativeEstimatorScene::getEssentialIterative(FixtureSce
         }
     }
 
-
     EssentialDecomposition variants[4];
     EssentialDecomposition dec = model.decompose(&dataPtr, variants);
     return dec;
 }
 
-
 } //namespace corecvs
-

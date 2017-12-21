@@ -5,8 +5,6 @@
 #include "core/rectification/sceneStereoAlignerBlock.h"
 #include "core/rectification/stereoAligner.h"
 
-#include <abstractPainter.h>
-
 namespace corecvs {
 
 SceneStereoAlignerBlock::SceneStereoAlignerBlock()

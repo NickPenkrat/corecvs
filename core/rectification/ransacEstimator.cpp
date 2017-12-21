@@ -97,6 +97,14 @@ public:
     {
         model.assertRank2();
     }
+
+    static vector<ModelFundamental8Point> getModels(const vector<Correspondence *> &samples)
+    {
+        vector<ModelFundamental8Point> result;
+        result.push_back(ModelFundamental8Point(samples));
+        return result;
+    }
+
 };
 
 class ModelEssential8Point : public Model8Point
@@ -107,6 +115,13 @@ public:
                 Model8Point(samples)
     {
         model.projectToEssential();
+    }
+
+    static vector<ModelEssential8Point> getModels(const vector<Correspondence *> &samples)
+    {
+        vector<ModelEssential8Point> result;
+        result.push_back(ModelEssential8Point(samples));
+        return result;
     }
 };
 
@@ -217,7 +232,7 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
     ransac.rng.seed(1337);
     ransac.trace = trace;
     ransac.data = &dataPtr;
-    Model5Point result = ransac.getModelRansacMultimodel();    
+    Model5Point result = ransac.getModelRansac();
     model = result.model;
 #else
     Ransac<Correspondence, Model8Point>  ransac(8, scaledParams);
