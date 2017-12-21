@@ -20,7 +20,7 @@ DllFunction::DllFunction(const std::string &dllName) :
         fprintf (stderr, "%s\n", dlerror());
         exit(1);
     }
-    char *error = dlerror();    /* Clear any existing error */
+    /*char *error =*/ dlerror();    /* Clear any existing error */
 
     const char *testName = "test";
     void *testF = dlsym(dllHandle, testName);
