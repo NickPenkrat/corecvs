@@ -166,7 +166,7 @@ bool FolderScanner::isAccessible(const string &path)
     if (f.is_open())
     {
         f.close();
-        unlink(p.c_str());
+        HelperUtils::pathRemove(p);
         return true;
     }
     return false;
