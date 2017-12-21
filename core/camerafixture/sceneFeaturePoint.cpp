@@ -321,9 +321,9 @@ std::vector<double> SceneFeaturePoint::estimateReconstructedReprojectionErrorL2(
     return out;
 }
 
-std::vector< double > SceneFeaturePoint::estimateReprojectionErrorL2() const
+std::vector<double> SceneFeaturePoint::estimateReprojectionErrorL2() const
 {
-    std::vector< double > out;
+    std::vector<double> out;
     //if (!hasKnownPosition)
     //    return out;
 
