@@ -15,14 +15,12 @@ DllFunction::DllFunction(const std::string &dllName) :
 {
     SYNC_PRINT(("Loading DLL...\n"));
 
-    char *error = NULL;
-
     dllHandle = dlopen (dllName.c_str(), RTLD_LAZY);
     if (!dllHandle) {
         fprintf (stderr, "%s\n", dlerror());
         exit(1);
     }
-    error = dlerror();    /* Clear any existing error */
+    char *error = dlerror();    /* Clear any existing error */
 
     const char *testName = "test";
     void *testF = dlsym(dllHandle, testName);
