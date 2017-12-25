@@ -7,6 +7,7 @@
 #include "core/buffers/kernels/arithmetic.h"
 #include "core/math/matrix/matrix22.h"
 #include "core/stats/calculationStats.h"
+#include <fstream>
 
 #include <cmath>
 #include <algorithm>
@@ -164,7 +165,7 @@ double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
                 K_sum += 2.0;
             }
 
-            double val =  w.element(vi + i - cy, ui + j - cx);
+            double val =  ((vi + i - cy >= 0 && vi + i - cy < w.h) && (ui+j-cx>=0 && ui+j-cx<w.w)) ? w.element(vi + i - cy, ui + j - cx) : 0.0;
             I_sum += val;
             I_sum_sq += val * val;
         }
@@ -181,7 +182,8 @@ double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
     {
         for (int j = 0; j < kw; ++j)
         {
-            score += (K.element(i, j) - mean_k) / std_k * (w.element(vi + i - cy, ui + j - cx) - mean_w) / std_w;
+            double val =  ((vi + i - cy >= 0 && vi + i - cy < w.h) && (ui+j-cx>=0 && ui+j-cx<w.w)) ? w.element(vi + i - cy, ui + j - cx) : 0.0;
+            score += (K.element(i, j) - mean_k) / std_k * (val - mean_w) / std_w;
         }
     }
     return std::max(score / (kw * kw), 0.0);
