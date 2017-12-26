@@ -74,13 +74,12 @@ public:
         samples.clear();
         for (int i = 0; i < sampleNumber; i++)
         {
-            unsigned index;
             SampleType *element = NULL;
             do {
-                index = uniform(rng);
+                unsigned index = uniform(rng);
                 element = data->at(index);
 
-                if (find(samples.begin(), samples.end(), element) == samples.end())
+                if (!contains(samples, element))
                     break;
             } while (true);
 
