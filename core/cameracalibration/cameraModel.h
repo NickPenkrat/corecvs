@@ -17,7 +17,7 @@ class CameraModel
 {
 public:
     /**/
-    PinholeCameraIntrinsics         intrinsics;
+    PinholeCameraIntrinsics  intrinsics;
     /**/
     LensDistortionModelParameters   distortion;
     /**/
