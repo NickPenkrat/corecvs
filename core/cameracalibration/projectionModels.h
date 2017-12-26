@@ -47,7 +47,7 @@ public:
         Vector2dd shift = p - principal;
         double r = shift.l2Metric();
         shift /= r;
-        double tau = 2 * atan(r / 2 / focal);
+        double tau = 2 * atan2(r / 2, focal);
         return Vector3dd(shift * tau, 1.0).normalised();
     }
 
@@ -85,7 +85,7 @@ public:
         double r = shift.l2Metric();
         shift /= r;
         double tau = r / focal;
-        return Vector3dd(shift * tau, 1.0).normalised();
+        return Vector3dd(shift.normalised() * sin(tau), cos(tau));
     }
 
     /* TODO: Function not actually implemented */

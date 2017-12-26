@@ -1,6 +1,6 @@
 #include "core/geometry/twoViewOptimalTriangulation.h"
 
-#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 #include "core/polynomial/polynomialSolver.h"
 
 namespace corecvs {

@@ -7,7 +7,7 @@
 #include "core/math/matrix/homographyReconstructor.h"
 #include "core/math/levenmarq.h"
 #include "core/xml/generated/lineDistortionEstimatorParameters.h"
-#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 
 #include "core/alignment/selectableGeometryFeatures.h"
 

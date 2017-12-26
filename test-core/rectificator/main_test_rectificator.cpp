@@ -20,7 +20,7 @@
 #include "core/rectification/essentialMatrix.h"
 #include "core/rectification/ransacEstimator.h"
 #include "core/rectification/essentialEstimator.h"
-#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 #include "core/geometry/polygons.h"
 #include "core/geometry/mesh3d.h"
 #include "core/cameracalibration/calibrationDrawHelpers.h"

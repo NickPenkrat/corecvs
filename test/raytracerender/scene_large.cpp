@@ -142,15 +142,20 @@ void raytrace_scene_tree( void )
       SYNC_PRINT(("raytrace_scene_tree( void )\n"));
 
 
-      int h = 1500;
-      int w = 1500;
+      int h = 600;
+      int w = 600;
       RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
       RaytraceRenderer renderer;
       renderer.setProjection(new PinholeCameraIntrinsics(
                   Vector2dd(w, h),
                   degToRad(60.0)));
-      renderer.position = Affine3DQ::Identity();
+
+
+      renderer.setProjection(new StereographicProjection(Vector2dd(w, h) / 2.0, 100.0));
+      renderer.setProjection(new EquidistantProjection  (Vector2dd(w, h) / 2.0, 200.0));
+
+      renderer.position = /*Affine3DQ::Identity()*/ Affine3DQ::Shift(0.0,0.0,100.0);
       renderer.sky = new RaytraceableSky1();
 
       RaytraceablePointLight light1(RGBColor::White() .toDouble(), Vector3dd(  0, -190, 150));
@@ -171,6 +176,14 @@ void raytrace_scene_tree( void )
 
       scene.elements.push_back(&sphere2);
 
+      RaytraceablePlane plane(Plane3d::FromNormalAndPoint(Vector3dd::OrtZ(), Vector3dd(0,0,500)));
+      plane.name = "Plane";
+      plane.color =  RGBColor::Blue().toDouble();
+      plane.material = new RaytraceableChessMaterial(100.0);
+
+
+      scene.elements.push_back(&plane);
+
       scene.optimize();
 
       Mesh3D dump;
@@ -183,7 +196,10 @@ void raytrace_scene_tree( void )
       renderer.lights.push_back(&light1);
       renderer.lights.push_back(&light2);
 
+      renderer.supersample = false;
+      renderer.sampleNum = 4;
       renderer.trace(buffer);
+
 
       BMPLoader().save("trace-tree.bmp", buffer);
 
