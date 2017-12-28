@@ -1,7 +1,7 @@
 #ifndef TABLECONTROLWIDGET_H
 #define TABLECONTROLWIDGET_H
 
-#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 #include "rotationPlanGenerator.h"
 
 #include <QWidget>

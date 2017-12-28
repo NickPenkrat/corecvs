@@ -116,7 +116,7 @@ void RaytraceableSky1::getColor(RayIntersection &ray, RaytraceRenderer &/*render
     if (v <= skyLevel || v >= 1.0)
         ray.ownColor = sky;
     else {
-        ray.ownColor = lerp(low, high, v, skyLevel, 1.0);
+        ray.ownColor = lerp(low, high, v, skyLevel, 3.0);
     }
 
     //ray.ownColor;

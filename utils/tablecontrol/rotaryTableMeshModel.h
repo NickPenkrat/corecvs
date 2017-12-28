@@ -2,7 +2,7 @@
 #define ROTARYTABLEMESHMODEL_H
 
 #include "core/geometry/mesh3d.h"
-#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 
 using corecvs::Mesh3D;
 

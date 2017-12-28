@@ -7,7 +7,7 @@
 #include "core/utils/global.h"
 #include "core/math/vector/vector4d.h"
 
-#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 #include "core/cameracalibration/calibrationLocation.h"
 
 #include <random>

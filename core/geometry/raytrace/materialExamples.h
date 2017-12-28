@@ -36,9 +36,14 @@ public:
     PerlinNoise noise;
     double skyLevel = 0.8;
 
-    TraceColor sky  = RGBColor::Cyan().toDouble();
+   /* TraceColor sky  = RGBColor::Cyan().toDouble();
     TraceColor low  = RGBColor::Cyan().toDouble();
-    TraceColor high = RGBColor::White().toDouble();
+    TraceColor high = RGBColor::White().toDouble(); */
+
+    TraceColor sky  = RGBColor::Cyan().toDouble();
+    TraceColor low  = RGBColor::White().toDouble();
+    TraceColor high = RGBColor::Cyan().toDouble();
+
 
     virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
 
