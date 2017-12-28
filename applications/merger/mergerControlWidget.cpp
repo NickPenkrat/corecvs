@@ -17,6 +17,8 @@
 #include "euclidianMoveParametersControlWidget.h"
 #include "euclidianMoveParametersControlWidget.h"
 
+#include <QFileDialog>
+
 MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QString _rootPath)
     : ParametersControlWidgetBase(parent)
     , mUi(new Ui::MergerControlWidget)
@@ -50,6 +52,7 @@ MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QStrin
     QObject::connect(mUi->fOV4SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->switch4CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->pos4ControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->saveRemapButton, SIGNAL(clicked()), this, SLOT(doSaveRemap()));
 }
 
 MergerControlWidget::~MergerControlWidget()
@@ -151,4 +154,17 @@ void MergerControlWidget::setParametersVirtual(void *input)
     // Modify widget parameters from outside
     Merger *inputCasted = static_cast<Merger *>(input);
     setParameters(*inputCasted);
+}
+
+void MergerControlWidget::doSaveRemap()
+{
+  QString directoryName = QFileDialog::getExistingDirectory(
+    this,
+    "Choose a folder",
+    ".");
+  if (directoryName.isNull() || directoryName.isEmpty())
+  {
+    return;
+  }
+  emit saveRemap(directoryName);
 }

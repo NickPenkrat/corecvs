@@ -39,9 +39,12 @@ public slots:
         // emit paramsChanged();
     }
 
+    void doSaveRemap();
+
 signals:
     void valueChanged();
     void paramsChanged();
+    void saveRemap(QString directory);
 
 private:
     Ui::MergerControlWidget *mUi;

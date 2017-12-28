@@ -13,6 +13,8 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 TEMPLATE = app
 TARGET   = merger
 
+include($$ROOT_DIR/src/open/wrappers/opencv/opencvLibs.pri)
+
 HOSTBASE_DIR=../base
 include ($$HOSTBASE_DIR/baseApplication.pri)            # it uses HOSTBASE_DIR, detects HOSTBASE_BINDIR, OBJECTS_DIR, ...
 

@@ -11,7 +11,7 @@ with_opencv {
                 INCLUDEPATH += $$OPENCV_PATH/include                            # when we made "make install" there in 3.1.x
             }
 
-            #OPENCV_INC_NOTINSTALLED = $$OPENCV_PATH/build/include              # it's strange path, usually empty, but distributive has all includes there?...
+            OPENCV_INC_NOTINSTALLED = $$OPENCV_PATH/build/include              # it's strange path, usually empty, but distributive has all includes there?...
 
             # the following paths are taking includes directly from sources
             #

@@ -25,6 +25,9 @@
 #include "core/stats/calculationStats.h"
 
 #include "core/geometry/mesh3DDecorated.h"
+
+#include <opencv2/core/core.hpp>
+
 typedef RGB24Buffer * PtrRGB24Buffer;
 class MergerOutputData : public BaseOutputData
 {
@@ -94,7 +97,7 @@ public slots:
     void mergerControlParametersChanged(QSharedPointer<Merger> params);
     void baseControlParametersChanged(QSharedPointer<BaseParameters> params);
     void camerasParametersChanged(QSharedPointer<CamerasConfigParameters> parameters);
-
+    void saveRemap(QString directory);
 
 signals:
     void errorMessage(QString string);
@@ -103,6 +106,8 @@ protected:
     virtual AbstractOutputData *processNewData();
 
 private: 
+    vector<cv::Mat> calculateRemap();
+
     PreciseTimer mIdleTimer;
 
     /* Might be misleading, but PPMLoader handles saving as well */

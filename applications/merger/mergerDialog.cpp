@@ -94,6 +94,9 @@ void MergerDialog::createCalculator()
             , static_cast<MergerThread*>(mCalculator)
             , SLOT(presentationControlParametersChanged(QSharedPointer<PresentationParameters>)));
 
+    connect(mMergerControlWidget, SIGNAL(saveRemap(QString)),
+      static_cast<MergerThread*>(mCalculator), SLOT(saveRemap(QString)));
+
     mapper->paramsChanged();
 
     mParamsMapper = mapper;
