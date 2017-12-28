@@ -440,6 +440,13 @@ AbstractOutputData* MergerThread::processNewData()
                     }
 
                 }
+
+                // correction for right camera
+                if (c == 1)
+                {
+                  prj = 2 * center - prj;
+                }
+
                 double weigth_separated_view = 1;
 
                 if (mMergerParameters->mSeparateView)
@@ -779,8 +786,8 @@ vector<cv::Mat> MergerThread::calculateRemap()
   vector<cv::Mat> result;
   for (int c = 0; c < 8; c++)
   {
-    cv::Mat mat = cv::Mat(height, width, CV_32S);
-    mat.setTo(cv::Scalar(-1));
+    cv::Mat mat = cv::Mat(height, width, CV_32FC1);
+    mat.setTo(cv::Scalar(-1.0));
     result.push_back(mat);
   }
 
@@ -862,6 +869,9 @@ vector<cv::Mat> MergerThread::calculateRemap()
             Vector2dd v_out = { (double)j, (double)i };
             if (!isUnderLine(v_out, v1, v1_end) || !isUnderLine(v_out, v3, v3_end))
               weigth_separated_view = 0;
+
+            // correction for right camera
+            prj = 2 * center - prj;
           }
           //rear // swith 3
           else if (c == 2)
@@ -895,9 +905,9 @@ vector<cv::Mat> MergerThread::calculateRemap()
           if (weight > 0)
           {
             // xmap
-            result[c * 2].at<int>(i, j) = prj.x();
+            result[c * 2].at<float>(i, j) = prj.x();
             // ymap
-            result[c * 2 + 1].at<int>(i, j) = prj.y();
+            result[c * 2 + 1].at<float>(i, j) = prj.y();
           }
         }
       }
