@@ -28,7 +28,7 @@ public:
 
     static corecvs::RGB24Buffer *RGB24BufferFromQImage(QImage *image);
     static QImage*               RGB24BufferToQImage(corecvs::RGB24Buffer &buffer);
-    static void                  save(const std::string& name, const corecvs::RGB24Buffer *input, int quality = 95);
+    static void                  save(const std::string& name, const corecvs::RGB24Buffer *input, int quality = 100);
     static QTemporaryFile*       saveTemporary(const QImage& image);
 };
 
