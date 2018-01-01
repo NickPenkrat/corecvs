@@ -27,9 +27,9 @@ public:
     virtual ~QTFileLoader() {}
 
     static corecvs::RGB24Buffer *RGB24BufferFromQImage(QImage *image);
-    static QImage* RGB24BufferToQImage(corecvs::RGB24Buffer &buffer);
-    static void save(const std::string& name, corecvs::RGB24Buffer *input, int quality = 95);
-    static QTemporaryFile* saveTemporary(const QImage& image);
+    static QImage*               RGB24BufferToQImage(corecvs::RGB24Buffer &buffer);
+    static void                  save(const std::string& name, const corecvs::RGB24Buffer *input, int quality = 95);
+    static QTemporaryFile*       saveTemporary(const QImage& image);
 };
 
 class QTG12Loader : public corecvs::BufferLoader<corecvs::G12Buffer>
@@ -91,11 +91,9 @@ public:
     }
 
     virtual bool acceptsFile(std::string name) override;
-    virtual bool save(corecvs::RGB24Buffer &buffer, std::string name);
+    virtual bool save(const corecvs::RGB24Buffer &buffer, const std::string& name, int quality = 100) override;
 
-    virtual std::string              name()        override { return "QTRGB24Saver(multitype)"; }
-    virtual std::vector<std::string> extentions() override {
-        return std::vector<std::string>({"*.jpeg", ".jpg", ".JPG" });
-    }
+    virtual std::string              name()       override { return "QTRGB24Saver(multitype)"; }
+    virtual std::vector<std::string> extentions() override { return {".jpeg", ".jpg" }; }
     virtual ~QTRGB24Saver() {}
 };

@@ -22,11 +22,10 @@ string PPMLoader::prefix2(".ppm");
 
 bool PPMLoader::acceptsFile(string name)
 {
-    if (HelperUtils::endsWith(name, prefix1))
-        return true;
-    if (HelperUtils::endsWith(name, prefix2))
-        return true;
-    return false;
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+    return HelperUtils::endsWith(name, prefix1) ||
+           HelperUtils::endsWith(name, prefix2);
 }
 
 G12Buffer* PPMLoader::loadG12(string name)
