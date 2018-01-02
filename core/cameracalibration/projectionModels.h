@@ -30,7 +30,7 @@ public:
      *  Optional inteface part that automates projection usage as function
      **/
     template<class ElementType>
-    static ElementType rayToAngle(const Vector3d<ElementType> ray[3])
+    static ElementType rayToAngle(const Vector3d<ElementType> &ray)
     {
         return atan2(ray.xy().l2Metric(), ray.z());
     }
@@ -54,7 +54,7 @@ public:
     virtual Vector2dd project(const Vector3dd &p) const override
     {
 
-        double tau = rayToAngle(p);
+        double tau = rayToAngle<double>(p);
         Vector2dd dir = p.xy().normalised();
         return dir * 2 * focal * tan(tau / 2);
     }
@@ -93,51 +93,61 @@ public:
 
     ElementType parameter[PARAMTER_LAST];
 
-    void project(ElementType in[3], ElementType out[2]) const override
+    /** Focal length */
+    ElementType focal() const
     {
-        double tau = rayToAngle(p);
-        Vector2dd dir = p.xy().normalised();
-        return dir * focal * tau;
+        return parameter[FOCAL];
     }
 
-    void reverse(ElementType in[2], ElementType out[3]) const override
+    /** Principal point of optical axis on image plane (in pixel). Usually center of imager */
+
+    Vector2d<ElementType> principal() const
     {
-        Vector2dd shift = p - principal;
-        double r = shift.l2Metric();
+        return Vector2d<ElementType>(parameter[PRINCIPAL_X], parameter[PRINCIPAL_Y]);
+    }
+
+    void project(const Vector3d<ElementType> &in, Vector2d<ElementType> out) const
+    {
+        ElementType tau = rayToAngle(in);
+        Vector2d<ElementType> dir = in.xy().normalised();
+        out = dir * focal() * tau + principal();
+    }
+
+    void reverse(const Vector2d<ElementType> &in, Vector3d<ElementType> out) const
+    {
+        Vector2d<ElementType> shift = in - principal();
+        ElementType r = shift.l2Metric();
         shift /= r;
-        double tau = r / focal;
-        return Vector3dd(shift.normalised() * sin(tau), cos(tau));
+        ElementType tau = r / focal();
+        out = Vector3d<ElementType>(shift.normalised() * sin(tau), cos(tau));
     }
 };
 
 
 
-class GenericEquidistantProjection : public CameraProjection {
+class EquidistantProjection : public GenericEquidistantProjection<double> {
 public:
-    Vector2dd principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
-    double    focal;            /**< Focal length */
-
-    EquidistantProjection(Vector2dd principal, double focal) :
-        principal(principal),
-        focal(focal)
-    {}
+    EquidistantProjection(const Vector2dd &principal, double focal)
+    {
+        parameter[PRINCIPAL_X] = principal.x();
+        parameter[PRINCIPAL_Y] = principal.y();
+        parameter[FOCAL] = focal;
+    }
 
     // CameraProjection interface
 public:
     virtual Vector2dd project(const Vector3dd &p) const override
     {
-        double tau = rayToAngle(p);
-        Vector2dd dir = p.xy().normalised();
-        return dir * focal * tau;
+        Vector2dd res;
+        GenericEquidistantProjection<double>::project(p, res);
+        return res;
     }
 
     virtual Vector3dd reverse(const Vector2dd &p) const override
     {
-        Vector2dd shift = p - principal;
-        double r = shift.l2Metric();
-        shift /= r;
-        double tau = r / focal;
-        return Vector3dd(shift.normalised() * sin(tau), cos(tau));
+        Vector3dd res;
+        GenericEquidistantProjection<double>::reverse(p, res);
+        return res;
     }
 
     /**
@@ -227,6 +237,7 @@ public:
 };
 
 
+#if 0
 class CatadioptricProjection
 {
 public:
@@ -317,6 +328,7 @@ public:
     }
 
 };
+#endif
 
 } // namespace corecvs
 
