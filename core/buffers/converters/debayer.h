@@ -12,23 +12,54 @@
 
 #include "core/utils/global.h"
 
-#include "core/xml/generated/debayerMethod.h"
-
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
 #include "core/buffers/g12Buffer.h"
 #include "core/buffers/rgb24/rgbTBuffer.h"
 #include "core/buffers/rgb24/rgb24Buffer.h"
 #include "core/fileformats/metamap.h"
+#include "core/xml/generated/debayerMethod.h"
 
 namespace corecvs {
 
 class Debayer
 {
 public:
-    enum CompareMethod
+    struct Parameters
     {
-        PSNR = 0,
-        RMSD = 1
+        Parameters(int bayerPos = -1
+            , const corecvs::Vector3dd &gn = { 1.0, 1.0, 1.0 }
+            , const corecvs::Vector2dd &gm = { 1.0, 1.0 }
+            , DebayerMethod::DebayerMethod mtd = DebayerMethod::BILINEAR
+            , int ob = 12
+        )
+            : method(mtd), bpos(bayerPos), numBitsOut(ob), gains(gn), gamma(gm)
+        {}
+
+        DebayerMethod::DebayerMethod method;        // 0 - nearest, 1 - bilinear, 2 - AHD
+        int                          bpos;          // bayerPos autodetect from pgm
+        int                          numBitsOut;    // output gets 12bits also
+        corecvs::Vector3dd           gains;         // gains R,G,B, where G=1.0 always
+        corecvs::Vector2dd           gamma;         // gammas for dark and white areas
+
+        static Parameters GetHpp() {
+            auto ret = Parameters();
+            ret.gains = { 1.3, 1.0, 1.8 };
+            ret.gamma = { 0.4, 2.8 };
+            return ret;
+        }
+        static Parameters GetTpv(int obits = 12) {
+            auto ret = Parameters(1);
+            ret.numBitsOut = obits;
+            return ret;
+        }
     };
+
+    /**
+     * Common useful method to perform demosaic with the given Bayer with given params
+     *
+     */
+    static corecvs::RGB24Buffer *Demosaic(corecvs::G12Buffer* bayer, const Debayer::Parameters &params);
 
     /**
      * Constructor.
@@ -65,6 +96,8 @@ public:
     void        getYChannel(AbstractBuffer<double,int> *output);
 
     uint8_t     colorFromBayerPos(uint i, uint j, bool rggb = true);
+
+    enum CompareMethod { PSNR = 0, RMSD = 1 };
 
 private:
     Vector3dd   mScaleMul   = { 1, 1, 1 };

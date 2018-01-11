@@ -77,8 +77,8 @@ int main(int argc, const char **argv)
     MetaData meta, metaTarget;
     if (compare)
     {
-        RGB48Buffer *inRgb     = PPMLoader().loadRGB(filename, &meta);
-        RGB48Buffer *targetRgb = PPMLoader().loadRGB(target, &metaTarget);
+        RGB48Buffer *inRgb     = PPMLoader().loadRgb48(filename, &meta);
+        RGB48Buffer *targetRgb = PPMLoader().loadRgb48(target, &metaTarget);
 
         if (inRgb == nullptr)
         {
@@ -112,7 +112,7 @@ int main(int argc, const char **argv)
     G12Buffer* bayer = nullptr;
     if (!toBayer)
     {
-        bayer = PPMLoader().loadMeta(filename, &meta);
+        bayer = PPMLoader().loadG12(filename, &meta);
         if (bayer == nullptr)
         {
             std::cout << "Couldn't open file \"" << filename << "\"." << std::endl;
@@ -146,7 +146,7 @@ int main(int argc, const char **argv)
     }
     else
     {
-        RGB48Buffer *inRgb = PPMLoader().loadRGB(filename, &meta);
+        RGB48Buffer *inRgb = PPMLoader().loadRgb48(filename, &meta);
         if (inRgb == nullptr)
         {
             std::cout << "Couldn't open file \"" << filename << "\"." << std::endl;
