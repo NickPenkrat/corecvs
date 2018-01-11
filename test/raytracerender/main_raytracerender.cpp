@@ -14,7 +14,7 @@
 #include "qtFileLoader.h"
 
 
-#include "core/cameracalibration/cameraModel.h"
+#include "core/cameracalibration/calibrationCamera.h"
 #include "core/geometry/renderer/simpleRenderer.h"
 #include "core/geometry/mesh3d.h"
 #include "core/fileformats/meshLoader.h"
@@ -34,6 +34,8 @@ extern void raytrace_scene_pole( void );
 
 extern void raytrace_scene_large( void );
 extern void raytrace_scene_tree(void);
+
+extern void raytrace_scene_union_and_blend(void);
 
 int main(int argc, char **argv)
 {
@@ -68,6 +70,8 @@ int main(int argc, char **argv)
                 raytrace_scene_large(); break;
         case 7:
                 raytrace_scene_tree(); break;
+        case 8:
+                raytrace_scene_union_and_blend(); break;
     }
 
 }

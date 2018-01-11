@@ -6,6 +6,7 @@ HEADERS += \
     geometry/triangulation.h \
     geometry/polygons.h \
     geometry/mesh3d.h \
+    geometry/vptree.h \
     geometry/convexPolyhedron.h \
     geometry/renderer/simpleRenderer.h \
     geometry/renderer/geometryIterator.h \
@@ -23,8 +24,10 @@ HEADERS += \
     geometry/ellipse.h \
     geometry/ellipseFit.h \
     geometry/plane3dFit.h \
-    $$PWD/meshClicker.h
-
+    $$PWD/meshClicker.h \
+    $$PWD/raytrace/sdfRenderableObjects.h \
+    $$PWD/convexHull.h \
+    $$PWD/convexQuickHull.h
 
 
 SOURCES += \ 
@@ -48,5 +51,8 @@ SOURCES += \
     geometry/ellipse.cpp \
     geometry/ellipseFit.cpp \
     geometry/plane3dFit.cpp \
-    $$PWD/meshClicker.cpp
+    $$PWD/meshClicker.cpp \
+    $$PWD/raytrace/sdfRenderableObjects.cpp \
+    $$PWD/convexHull.cpp \
+    $$PWD/convexQuickHull.cpp
 

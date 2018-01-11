@@ -320,8 +320,13 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
         setter.visit(*scene, "scene");
     }
     {
-        JSONPrinter printer("stereo_new.json");
-        printer.visit(*scene, "scene");
+        ofstream file;
+        file.open("stereo_new.json", std::ofstream::out);
+        {
+            JSONPrinter printer(file);
+            printer.visit(*scene, "scene");
+        } // Stream would be finalised on JSONPrinter destructor
+        file.close();
     }
 
     delete_safe(scene);

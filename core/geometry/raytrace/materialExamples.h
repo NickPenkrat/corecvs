@@ -31,19 +31,27 @@ public:
     void getColor(RayIntersection &ray, RaytraceRenderer &renderer);
 };
 
+class RaytraceableSky2 : public RaytraceableMaterial {
+public:
+    PerlinNoise noise;
+    double skyLevel = 0.8;
+
+    TraceColor sky  = RGBColor::Cyan().toDouble();
+    TraceColor low  = RGBColor::Cyan().toDouble();
+    TraceColor high = RGBColor::White().toDouble();
+
+    virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
+
+};
+
 class RaytraceableSky1 : public RaytraceableMaterial {
 public:
     PerlinNoise noise;
     double skyLevel = 0.8;
 
-   /* TraceColor sky  = RGBColor::Cyan().toDouble();
-    TraceColor low  = RGBColor::Cyan().toDouble();
-    TraceColor high = RGBColor::White().toDouble(); */
-
     TraceColor sky  = RGBColor::Cyan().toDouble();
-    TraceColor low  = RGBColor::White().toDouble();
-    TraceColor high = RGBColor::Cyan().toDouble();
-
+    TraceColor low  = RGBColor::Cyan().toDouble();
+    TraceColor high = RGBColor::White().toDouble();
 
     virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
 

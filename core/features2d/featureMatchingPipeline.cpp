@@ -76,7 +76,7 @@ void FeatureMatchingPipeline::add(FeatureMatchingPipelineStage *ps, bool run, bo
 
 void FeatureMatchingPipeline::printCaps()
 {
-    cout << "Current FeatureMatchingPipeline::caps are:" << std::endl;
+    std::cout << "Current FeatureMatchingPipeline::caps are:" << std::endl;
     FeatureDetectorProvider::getInstance().print("FeatureDetectorProvider");
     DescriptorExtractorProvider::getInstance().print("DescriptorExtractorProvider");
     DescriptorMatcherProvider::getInstance().print("DescriptorMatcherProvider");

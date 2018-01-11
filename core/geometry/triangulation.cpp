@@ -12,9 +12,10 @@
 //#include "core/utils/preciseTimer.h"
 
 #include "core/geometry/triangulation.h"
-
 namespace Triangulation
 {
+
+using namespace std;
 
 int orientation (const Point &p0, const Point &p1, const Point &p2)
 {
@@ -674,3 +675,5 @@ std::vector<Edge> vertexHullFromTriangulation(const std::vector<Edge> &edges, co
 }
 
 }
+
+
