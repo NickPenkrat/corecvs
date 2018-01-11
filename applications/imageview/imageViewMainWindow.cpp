@@ -170,16 +170,8 @@ void ImageViewMainWindow::loadImage(QString name)
             return;
         }
         SYNC_PRINT(("Loaded size %d x %d\n", input->w, input->h));
-        RGB48Buffer *image = new RGB48Buffer(input->getSize());
-        for (int i = 0; i < image->h; ++i)
-        {
-            for (int j = 0; j < image->w; ++j)
-            {
-                RGBColor   c = input->element(i, j);
-                RGBColor48 c48(c.r() << 8, c.g() << 8, c.b() << 8);
-                image->element(i, j) = c48;
-            }
-        }
+        RGB48Buffer *image = new RGB48Buffer(input->getSize(), false);
+        Debayer::ConvertRgb24toRgb48(input, image);
         setImage(image);
         delete_safe(input);
     }
@@ -194,15 +186,19 @@ void ImageViewMainWindow::loadImage(QString name)
 
 void ImageViewMainWindow::debayer()
 {
-    if (bayer == NULL) {
+    if (bayer == NULL)
         return;
-    }
 
     DebayerParameters params;
     ui->parameters->getParameters(params);
 
+#if 1
     Debayer d(bayer, meta["bits"][0], &meta, params.bayerPos());
     RGB48Buffer* result = new RGB48Buffer(bayer->h, bayer->w, false);
     d.toRGB48(params.method(), result);
+#else
+    RGB48Buffer* result = Debayer::DemosaicRgb48(bayer, params, meta);
+#endif
+
     setImage(result);
 }

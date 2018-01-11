@@ -56,10 +56,14 @@ public:
     };
 
     /**
-     * Common useful method to perform demosaic with the given Bayer with given params
+     * Common useful method to perform demosaic for the given Bayer with given params
      *
      */
+    static corecvs::RGB48Buffer *DemosaicRgb48(corecvs::G12Buffer* bayer, const Debayer::Parameters &params, MetaData &meta);
     static corecvs::RGB24Buffer *Demosaic(corecvs::G12Buffer* bayer, const Debayer::Parameters &params);
+
+    static void ConvertRgb48toRgb24(const corecvs::RGB48Buffer *in, corecvs::RGB24Buffer *out, int shift = 12 - 8);
+    static void ConvertRgb24toRgb48(const corecvs::RGB24Buffer *in, corecvs::RGB48Buffer *out);
 
     /**
      * Constructor.

@@ -88,6 +88,12 @@ G12Buffer* PPMLoader::loadG12(const string& name, MetaData *meta, bool loadAs16)
         fclose(fp);
         return nullptr;
     }
+    if (type == 6)      // file has 3 channels instead of 1
+    {
+        L_ERROR_P("invalid type (%d) of the PPM file: %s", type, name.c_str());
+        fclose(fp);
+        return nullptr;
+    }
 
     bool calcWhite = false;
     int white = 0;
@@ -376,7 +382,7 @@ bool PPMLoader::readHeader(FILE *fp, unsigned long int *h, unsigned long int *w,
 
     // we assume that no comments exist after the color depth header line to avoid misinterpretation of '#' first data value
 
-    L_INFO_P("Image is P%d PPM [%lu %lu] max=%u", *type, *h, *w, *maxval);
+    L_INFO_P("Image is P%d PPM [%lu %lu] max=%u", *type, *w, *h, *maxval);
     return true;
 }
 
