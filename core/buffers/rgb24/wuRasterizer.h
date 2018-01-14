@@ -7,18 +7,12 @@
 #include <cfloat>
 #include <iostream>
 
+#include "mathUtils.h"
+
 class WuRasterizer {
     // integer part of x
-    static int ipart(float x) {
-        return floor(x);
-    }
-
-    static int round(float x) {
-        return ipart(x + 0.5);
-    }
-
     static float fpart(float x) {
-        return x - floor(x);
+        return x - (int)x;
     }
 
     static float rfpart(float x) {
@@ -34,7 +28,9 @@ class WuRasterizer {
         float yend = y + gradient * (float(xend) - x);
         float xgap = rfpart(x + 0.5);
         int xpxl1 = xend; // this will be used in the main loop
-        int ypxl1 = ipart(yend);
+
+        int ypxl1 = (int)yend;
+
         if (steep) {
             if (xpxl1 >= 0 && xpxl1 < h) {
                 if (ypxl1 >= 0 && ypxl1 < w) {
@@ -123,7 +119,7 @@ public:
         for (int x = xpxl1 + 1; x <= xpxl2 - 1; x++) {
             if (steep) {
                 if (x >= 0 && x < h) {
-                    int y = ipart(intery);
+                    int y = (int)intery;
                     if (y >= 0 && y < w) {
                         buffer.element(y, x) = buffer.element(y, x) * (1. - rfpart(intery));
                         auto color1 = color;
@@ -141,7 +137,7 @@ public:
             }
             else {
                 if (x >= 0 && x < w) {
-                    int y = ipart(intery);
+                    int y = (int)intery;
                     if (y >= 0 && y < h) {
                         buffer.element(x, y) = buffer.element(x, y) * (1. - rfpart(intery));
                         auto color1 = color;
