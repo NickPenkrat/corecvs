@@ -16,7 +16,7 @@
 
 using namespace std;
 
-PDOGenerator::PDOGenerator(const Reflection *_clazz)
+PDOGenerator::PDOGenerator(const ReflectionGen *_clazz)
     : BaseGenerator(_clazz)
 {
 }
@@ -73,7 +73,7 @@ void PDOGenerator::enterFieldContext(int i)
     }
 }
 
-void PDOGenerator::generatePDOEnumSubH(const EnumReflection *eref)
+void PDOGenerator::generatePDOEnumSubH(const EnumReflectionGen *eref)
 {
     QString result;
   //  const EnumReflection *eref = efield->enumReflection;
@@ -100,6 +100,7 @@ void PDOGenerator::generatePDOEnumSubH(const EnumReflection *eref)
     " *\n"
     " * \\date MMM DD, 20YY\n"
     " * \\author autoGenerator\n"
+    " * Generated from "+eref->sourceXml+"\n"
     " */\n"
     "\n"
     "/**\n"
@@ -195,6 +196,7 @@ void PDOGenerator::generatePDOH()
     " *\n"
     " * \\date MMM DD, 20YY\n"
     " * \\author autoGenerator\n"
+    " * Generated from "+clazz->sourceXml+"\n"
     " */\n"
     "\n"
     "#include \"core/reflection/reflection.h\"\n"
@@ -372,14 +374,14 @@ void PDOGenerator::generatePDOH()
 
         if (type == BaseField::TYPE_COMPOSITE)
         {
-            PDOGenerator generator(static_cast<const CompositeField*>(field)->reflection);
+            PDOGenerator generator((const ReflectionGen *)static_cast<const CompositeField*>(field)->reflection);
             generator.generatePDOH();
             generator.generatePDOCpp();
             generator.generateControlWidgetCpp();
         }
         if (type == BaseField::TYPE_COMPOSITE_ARRAY)
         {
-            PDOGenerator generator(static_cast<const CompositeArrayField*>(field)->reflection);
+            PDOGenerator generator((const ReflectionGen *)static_cast<const CompositeArrayField*>(field)->reflection);
             generator.generatePDOH();
             generator.generatePDOCpp();
             generator.generateControlWidgetCpp();

@@ -6,6 +6,7 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from presentation.xml
  */
 
 #include "core/reflection/reflection.h"
@@ -30,9 +31,9 @@
 /*
  *  Additional includes for enum section.
  */
-#include "core/xml/generated/outputStyle.h"
-#include "core/xml/generated/stereoStyle.h"
-#include "core/xml/generated/flowStyle.h"
+#include "outputStyle.h"
+#include "stereoStyle.h"
+#include "flowStyle.h"
 
 /**
  * \brief Presentation parameters 

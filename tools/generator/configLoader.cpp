@@ -78,7 +78,7 @@ ReflectionNaming ConfigLoader::getNamingFromXML(QDomElement const &classElement)
     return ReflectionNaming(toCString(className), toCString(description), toCString(comment));
 }
 
-void ConfigLoader::loadEnums(QDomDocument const &config)
+void ConfigLoader::loadEnums(QDomDocument const &config, QFileInfo const &currentFile)
 {
     Reflection *result = new ReflectionGen();
     result->name = ReflectionNaming("enums", NULL, NULL);
@@ -92,6 +92,8 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
 
         QString includePath = enumElement.attribute("incpath", "core/xml/generated/");
         enumReflection->includePath = toCString(includePath);
+
+        enumReflection->sourceXml = toCString(currentFile.fileName());
 
         qDebug() << "Enum" << enumReflection->name.name << " (" << i << "/" << enums.length() << ")";
 
@@ -117,7 +119,7 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
 
 
 
-void ConfigLoader::loadClasses(QDomDocument const &config)
+void ConfigLoader::loadClasses(QDomDocument const &config, QFileInfo const &currentFile)
 {
     QDomNodeList classes = config.elementsByTagName("class");
     for (int i = 0; i < classes.length(); i++)
@@ -131,6 +133,8 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
 
         QString includePath = classElement.attribute("incpath", "core/xml/generated/");
         result->includePath = toCString(includePath);
+
+        result->sourceXml = toCString(currentFile.fileName());
 
         qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
 
@@ -413,7 +417,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
     }
 }
 
-void ConfigLoader::loadParamsMapper(QDomDocument const &config)
+void ConfigLoader::loadParamsMapper(QDomDocument const &config, const QFileInfo &currentFile)
 {
     QDomNodeList paramsMappers = config.elementsByTagName("parametersMapper");
     for (int i = 0; i < paramsMappers.length(); i++)
@@ -470,9 +474,9 @@ QMap<QString, Reflection *> *ConfigLoader::load(QString const &fileName)
     // TODO: handle includes
 
     loadIncludes(config, info);
-    loadEnums(config);
-    loadClasses(config);
-    loadParamsMapper(config);
+    loadEnums(config, info);
+    loadClasses(config, info);
+    loadParamsMapper(config, info);
 
     return &mReflections;
 

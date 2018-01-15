@@ -6,6 +6,7 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from base.xml
  */
 
 #include "core/reflection/reflection.h"
@@ -30,7 +31,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "core/xml/generated/rotationPresets.h"
+#include "rotationPresets.h"
 #include "core/xml/generated/interpolationType.h"
 
 /**

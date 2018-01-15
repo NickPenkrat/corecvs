@@ -101,7 +101,7 @@ namespace
         "    </item>\n";
 }
 
-WidgetUiGenerator::WidgetUiGenerator(const Reflection *_clazz)
+WidgetUiGenerator::WidgetUiGenerator(const ReflectionGen *_clazz)
     : BaseGenerator(_clazz)
 {
 }
@@ -183,7 +183,7 @@ void WidgetUiGenerator::generateWidgetUi()
         if (type == BaseField::TYPE_COMPOSITE)
         {
             const CompositeField* cField = static_cast<const CompositeField*>(field);
-            WidgetUiGenerator generatorUI(cField->reflection);
+            WidgetUiGenerator generatorUI((const ReflectionGen *)cField->reflection);
             generatorUI.generateWidgetUi();
         }
     }

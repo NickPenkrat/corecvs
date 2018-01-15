@@ -111,10 +111,12 @@ ConvexQuickHull::HullFaces ConvexQuickHull::quickHull(const ConvexQuickHull::ver
         return {};
     }
 
-    HullFaces faces = {{{simplex[0], simplex[1], simplex[2]}},
-                    {{simplex[0], simplex[2], simplex[3]}},
-                    {{simplex[1], simplex[3], simplex[2]}},
-                    {{simplex[0], simplex[3], simplex[1]}}};
+    HullFaces faces = {
+        HullFace(simplex[0], simplex[1], simplex[2]),
+        HullFace(simplex[0], simplex[2], simplex[3]),
+        HullFace(simplex[1], simplex[3], simplex[2]),
+        HullFace(simplex[0], simplex[3], simplex[1])};
+
     addPointsToFaces(faces.data(), faces.size(), listVertices, epsilon);
     for (auto face : faces)
         if (!face.points.empty()) Queue.push(face);
@@ -140,9 +142,13 @@ ConvexQuickHull::HullFaces ConvexQuickHull::quickHull(const ConvexQuickHull::ver
                 if (faceIsVisible(furthest, curFace, epsilon)) {
                     for (auto point : curFace.points)
                         listUnclaimedVertices.push_back(point);
-                    HullFaces tmpFaces = {{{curFace.plane.p3(), furthest, curFace.plane.p2()}},
-                                       {{curFace.plane.p1(), curFace.plane.p2(), furthest}},
-                                       {{curFace.plane.p1(), furthest, curFace.plane.p3()}}};
+                    HullFaces tmpFaces;
+                    tmpFaces.reserve(3);
+                    tmpFaces.emplace_back(curFace.plane.p3(), furthest, curFace.plane.p2());
+                    tmpFaces.emplace_back(curFace.plane.p1(), curFace.plane.p2(), furthest);
+                    tmpFaces.emplace_back(curFace.plane.p1(), furthest, curFace.plane.p3());
+
+
                     for (auto &tmpFace : tmpFaces) {
                         auto alreadyExists = find(newFaces.begin(), newFaces.end(), tmpFace);
                         if (alreadyExists != newFaces.end())

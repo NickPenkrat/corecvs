@@ -17,6 +17,10 @@ public:
     typedef vector<Vector3dd> vertices;
 
     struct HullFace {
+        HullFace(const Vector3dd &p1, const Vector3dd &p2, const Vector3dd &p3) :
+            plane(p1,p2,p3)
+        {}
+
         Triangle3dd plane;
         vertices points;
     };

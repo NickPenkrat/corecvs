@@ -6,6 +6,7 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from draw3d.xml
  */
 
 #include "core/reflection/reflection.h"
@@ -30,8 +31,8 @@
 /*
  *  Additional includes for enum section.
  */
-#include "core/xml/generated/viMouse3dStereoStyle.h"
-#include "core/xml/generated/viMouse3dFlowStyle.h"
+#include "viMouse3dStereoStyle.h"
+#include "viMouse3dFlowStyle.h"
 
 /**
  * \brief draw 3d ViMouse Parameters 

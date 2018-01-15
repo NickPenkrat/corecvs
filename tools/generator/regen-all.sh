@@ -4,6 +4,6 @@
 ./regen-recorder.sh
 ./regen-basestub.sh
 ./regen-utils.sh
-./regem-merger.sh
+./regen-merger.sh
 
 ./regen-documentation.sh

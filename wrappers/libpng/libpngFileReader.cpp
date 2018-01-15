@@ -169,13 +169,12 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
     png_set_rows (png_ptr, info_ptr, row_pointers);
     png_write_png (png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
-    status = 0;
-
     for (y = 0; y < height; y++) {
         png_free (png_ptr, row_pointers[y]);
     }
     png_free (png_ptr, row_pointers);
 
+    status = 0;
     png_failure:
         png_create_info_struct_failed:
         png_destroy_write_struct (&png_ptr, &info_ptr);

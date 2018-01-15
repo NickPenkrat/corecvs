@@ -14,7 +14,7 @@
 
 using std::ios;
 
-DocumentationGenerator::DocumentationGenerator(const Reflection *_clazz)
+DocumentationGenerator::DocumentationGenerator(const ReflectionGen *_clazz)
     : BaseGenerator(_clazz)
 {
 

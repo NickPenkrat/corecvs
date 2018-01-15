@@ -6,6 +6,7 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from merger.xml
  */
 
 #include "core/reflection/reflection.h"
@@ -31,7 +32,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "mergerUndistMethod.h"
+#include "core/xml/generated/mergerUndistMethod.h"
 
 /**
  * \brief Merger parameters 
@@ -575,6 +576,35 @@ template<class VisitorType>
         mPos4 = pos4;
     }
 
+    bool operator ==(const Merger &other) const 
+    {
+        if ( !(this->mUndistMethod == other.mUndistMethod)) return false;
+        if ( !(this->mUndistFocal == other.mUndistFocal)) return false;
+        if ( !(this->mSensorWidth == other.mSensorWidth)) return false;
+        if ( !(this->mDistortionOvershoot == other.mDistortionOvershoot)) return false;
+        if ( !(this->mShowMask == other.mShowMask)) return false;
+        if ( !(this->mBilinear == other.mBilinear)) return false;
+        if ( !(this->mSeparateView == other.mSeparateView)) return false;
+        if ( !(this->mDrawCar == other.mDrawCar)) return false;
+        if ( !(this->mFrameToUndist == other.mFrameToUndist)) return false;
+        if ( !(this->mOutSizeH == other.mOutSizeH)) return false;
+        if ( !(this->mOutPhySizeL == other.mOutPhySizeL)) return false;
+        if ( !(this->mOutPhySizeW == other.mOutPhySizeW)) return false;
+        if ( !(this->mGroundZ == other.mGroundZ)) return false;
+        if ( !(this->mFOV1 == other.mFOV1)) return false;
+        if ( !(this->mSwitch1 == other.mSwitch1)) return false;
+        if ( !(this->mPos1 == other.mPos1)) return false;
+        if ( !(this->mFOV2 == other.mFOV2)) return false;
+        if ( !(this->mSwitch2 == other.mSwitch2)) return false;
+        if ( !(this->mPos2 == other.mPos2)) return false;
+        if ( !(this->mFOV3 == other.mFOV3)) return false;
+        if ( !(this->mSwitch3 == other.mSwitch3)) return false;
+        if ( !(this->mPos3 == other.mPos3)) return false;
+        if ( !(this->mFOV4 == other.mFOV4)) return false;
+        if ( !(this->mSwitch4 == other.mSwitch4)) return false;
+        if ( !(this->mPos4 == other.mPos4)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, Merger &toSave)
     {
         corecvs::PrinterVisitor printer(out);

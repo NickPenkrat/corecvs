@@ -6,6 +6,7 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from draw3d.xml
  */
 
 #include "core/reflection/reflection.h"
@@ -31,8 +32,8 @@
 /*
  *  Additional includes for enum section.
  */
-#include "core/xml/generated/draw3dStyle.h"
-#include "core/xml/generated/draw3dTextureGen.h"
+#include "draw3dStyle.h"
+#include "draw3dTextureGen.h"
 
 /**
  * \brief draw 3d Parameters 

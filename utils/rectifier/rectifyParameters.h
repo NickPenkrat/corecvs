@@ -6,6 +6,7 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from rectify.xml
  */
 
 #include "core/reflection/reflection.h"
@@ -30,9 +31,9 @@
 /*
  *  Additional includes for enum section.
  */
-#include "core/xml/generated/matchingMethodType.h"
-#include "core/xml/generated/estimationMethodType.h"
-#include "core/xml/generated/optimizationMethodType.h"
+#include "rectifier/matchingMethodType.h"
+#include "rectifier/estimationMethodType.h"
+#include "rectifier/optimizationMethodType.h"
 
 /**
  * \brief Rectify Parameters 

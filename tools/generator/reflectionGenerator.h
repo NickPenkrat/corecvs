@@ -38,6 +38,7 @@ class ReflectionGen : public Reflection
 public:
     const char *uiBaseClass = NULL;
     const char *includePath = NULL;
+    const char *sourceXml = "";
 
     ReflectionGen () :
         uiBaseClass(NULL),
@@ -49,6 +50,8 @@ class EnumReflectionGen : public EnumReflection
 {
 public:
    const char *includePath = NULL;
+   const char *sourceXml = "";
+
 };
 
 template<typename Type>
