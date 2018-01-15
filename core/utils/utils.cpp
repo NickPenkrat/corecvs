@@ -237,6 +237,7 @@ bool pathRemove(const std::string &path)
     fs::path p(path);
     if (fs::exists(p))
         return fs::remove(p);
+    return false;
 }
 
 std::string getFileNameIfExist(const std::string &fileName, const std::string &relativePath)

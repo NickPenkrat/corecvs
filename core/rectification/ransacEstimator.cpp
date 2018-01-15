@@ -97,6 +97,14 @@ public:
     {
         model.assertRank2();
     }
+
+    static vector<ModelFundamental8Point> getModels(const vector<Correspondence *> &samples)
+    {
+        vector<ModelFundamental8Point> result;
+        result.push_back(ModelFundamental8Point(samples));
+        return result;
+    }
+
 };
 
 class ModelEssential8Point : public Model8Point
@@ -107,6 +115,13 @@ public:
                 Model8Point(samples)
     {
         model.projectToEssential();
+    }
+
+    static vector<ModelEssential8Point> getModels(const vector<Correspondence *> &samples)
+    {
+        vector<ModelEssential8Point> result;
+        result.push_back(ModelEssential8Point(samples));
+        return result;
     }
 };
 
@@ -182,25 +197,27 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
     vector<Correspondence > data;
     vector<Correspondence *> dataPtr;
 
+    size_t n = scene->featurePoints().size();
+    data.reserve(n);
+    dataPtr.reserve(n);
+
     //CameraModel cam1world = camera1->getWorldCameraModel();
     //CameraModel cam2world = camera2->getWorldCameraModel();
 
-
-    for(SceneFeaturePoint *point: scene->featurePoints())
+    for (SceneFeaturePoint *point : scene->featurePoints())
     {
         SceneObservation *obs1 = point->getObservation(camera1);
         SceneObservation *obs2 = point->getObservation(camera2);
 
         if (obs1 != NULL && obs2 != NULL)
         {
-            Correspondence c;
             Vector2dd startPixel = obs1->getUndist();
             Vector2dd endPixel   = obs2->getUndist();
 
-            c.start = camera1->intrinsics.reverse(startPixel).xy();
-            c.end   = camera2->intrinsics.reverse(endPixel  ).xy();
+            Vector2dd sta = camera1->intrinsics.reverse(startPixel).xy();
+            Vector2dd end = camera2->intrinsics.reverse(endPixel  ).xy();
 
-            data.push_back(c);
+            data.emplace_back(Correspondence(sta, end));
             dataPtr.push_back(&data.back());
         }
     }
@@ -217,7 +234,7 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
     ransac.rng.seed(1337);
     ransac.trace = trace;
     ransac.data = &dataPtr;
-    Model5Point result = ransac.getModelRansacMultimodel();    
+    Model5Point result = ransac.getModelRansac();
     model = result.model;
 #else
     Ransac<Correspondence, Model8Point>  ransac(8, scaledParams);

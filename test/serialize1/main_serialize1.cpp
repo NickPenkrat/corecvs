@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <vector>
 
+#include "gtest/gtest.h"
+
 #include <QtXml/QDomDocument>
 
 #ifndef WIN32
@@ -390,8 +392,7 @@ void testRapidJSON_saveDistortion()
  *    Now with json modern
  ********************************/
 
-
-void testJSONModern1()
+TEST(Serialise, testJSONModern1)
 {
     cout << std::endl;
     cout << "testRapidJSON1()" << std::endl;
@@ -419,6 +420,7 @@ void testJSONModern1()
     cout << "After parsing" << endl;
     cout << result << endl;
 
+    CORE_ASSERT_TRUE(result.notTooFar(Vector3dd(1,2,3)), "Fail to parse trivial data structure");
 }
 
 void testJSONModern_saveDistortion()
@@ -519,6 +521,86 @@ void testJSONPrinterArrays()
 }
 #endif
 
+TEST(Serialise, testCalstructs)
+{
+    const char input[] =
+            "{\n"
+            "  \"extrinsics\": {\n"
+            "      \"orientation\": {\n"
+            "          \"t\": 0.9998452042040369,\n"
+            "          \"x\": 0.00665909472413579,\n"
+            "          \"y\": 0.013121745045589037,\n"
+            "          \"z\": 0.00964592632158969\n"
+            "      },\n"
+            "      \"position\": {\n"
+            "          \"x\": -0.13825168557091438,\n"
+            "          \"y\": 0.003052130148347319,\n"
+            "          \"z\": -0.003139061540835704\n"
+            "      }\n"
+            "  }\n"
+            "}\n";
+
+
+    CameraLocationData result;
+    nlohmann::json document = nlohmann::json::parse(input);
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+    {
+        JSONModernReader getter(document);
+        getter.visit(result, "extrinsics");
+    }
+
+    CORE_ASSERT_TRUE(result.orientation.notTooFar(Quaternion(0.00665909472413579, 0.013121745045589037,  0.00964592632158969, 0.9998452042040369)), "Orientation parse error");
+    CORE_ASSERT_TRUE(result.position   .notTooFar(Vector3dd(-0.13825168557091438, 0.003052130148347319, -0.003139061540835704)), "Vector parse error");
+}
+
+TEST(Serialise, testCalstructs1)
+{
+    const char input[] =
+            "{\n"
+            "  \"extrinsics\": {\n"
+            "      \"orientation\": {\n"
+            "          \"t\": 0.9998452042040369,\n"
+            "          \"x\": 0.00665909472413579,\n"
+            "          \"y\": 0.013121745045589037,\n"
+            "          \"z\": 0.00964592632158969\n"
+            "      },\n"
+            "      \"rotation\": {\n"
+            "          \"t\": 1,\n"
+            "          \"x\": 0.0,\n"
+            "          \"y\": 0.0,\n"
+            "          \"z\": 0.0\n"
+            "      },\n"
+            "      \"position\": {\n"
+            "          \"x\": -0.13825168557091438,\n"
+            "          \"y\": 0.003052130148347319,\n"
+            "          \"z\": -0.003139061540835704\n"
+            "      }\n"
+            "  }\n"
+            "}\n";
+
+
+    CameraLocationData result;
+    nlohmann::json document = nlohmann::json::parse(input);
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+    {
+        JSONModernReader getter(document);
+        getter.visit(result, "extrinsics");
+    }
+
+    CORE_ASSERT_TRUE(result.orientation.notTooFar(Quaternion(0, 0, 0, 1)), "Orientation parse error");
+    CORE_ASSERT_TRUE(result.position   .notTooFar(Vector3dd(-0.13825168557091438, 0.003052130148347319, -0.003139061540835704)), "Vector parse error");
+}
+
+int main(int argc, char **argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
+#if 0
+
 int main (int /*argc*/, char ** /*argv*/)
 {
     printf("Quick test\n");
@@ -552,3 +634,4 @@ int main (int /*argc*/, char ** /*argv*/)
 
 	return 0;
 }
+#endif

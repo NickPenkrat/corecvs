@@ -244,7 +244,7 @@ void PDOGenerator::generatePDOH()
         if (std::find(references.begin(), references.end(), referent) != references.end())
             continue;
     result +=
-    "#include \"" + toCamelCase(referent->name.name) + ".h\"\n";
+    "#include \"core/xml/generated/" + toCamelCase(referent->name.name) + ".h\"\n";
         references.push_back(referent);
     }
 
@@ -494,6 +494,7 @@ void PDOGenerator::generatePDOH()
     "    }\n"
     "\n";
 
+    /** Constructor with fields **/
     result+=
     "    "+className+"(\n";
 
@@ -519,9 +520,25 @@ void PDOGenerator::generatePDOH()
     }
 
     result+=
-//    "        corecvs::DefaultSetter setter;\n"
-//    "        accept(setter);\n"
-    "    }\n\n"
+    "    }\n\n";
+    /** Comparator **/
+    result+=
+    "    bool operator ==(const "+className+" &other) const \n"
+    "    {\n";
+    for (int i = 0; i < fieldNumber; i++ )
+    {
+        enterFieldContext(i);
+        if (type == BaseField::TYPE_POINTER) {
+            continue;
+        }
+    result+=
+    "        if ( !(this->"+cppName+" == other."+cppName+")) return false;\n";
+    }
+    result+=
+    "        return true;\n"
+    "    }\n";
+
+    result+=
     "    friend std::ostream& operator << (std::ostream &out, "+className+" &toSave)\n"
     "    {\n"
     "        corecvs::PrinterVisitor printer(out);\n"
