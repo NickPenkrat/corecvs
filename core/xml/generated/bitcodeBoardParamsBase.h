@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "bitcodeBoardOrientation.h"
+#include "core/xml/generated/bitcodeBoardOrientation.h"
 
 /**
  * \brief Bitcode Board Params Base 

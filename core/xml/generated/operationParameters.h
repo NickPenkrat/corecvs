@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "operation.h"
+#include "core/xml/generated/operation.h"
 
 /**
  * \brief Operation Parameters 

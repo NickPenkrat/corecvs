@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "lineDistortionEstimatorCost.h"
+#include "core/xml/generated/lineDistortionEstimatorCost.h"
 
 /**
  * \brief Line Distortion Estimator Parameters 

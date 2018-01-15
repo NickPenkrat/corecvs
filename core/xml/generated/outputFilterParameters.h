@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "outputType.h"
+#include "core/xml/generated/outputType.h"
 
 /**
  * \brief Output Filter Parameters 

@@ -30,8 +30,8 @@
 /*
  *  Additional includes for enum section.
  */
-#include "checkerboardDetectionAlgorithm.h"
-#include "imageChannel.h"
+#include "core/xml/generated/checkerboardDetectionAlgorithm.h"
+#include "core/xml/generated/imageChannel.h"
 
 /**
  * \brief Checkerboard Detection Parameters 

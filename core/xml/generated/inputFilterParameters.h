@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "inputType.h"
+#include "core/xml/generated/inputType.h"
 
 /**
  * \brief Input Filter Parameters 

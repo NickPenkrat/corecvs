@@ -209,11 +209,17 @@ void PDOGenerator::generatePDOH()
     vector<const Reflection *> references;
     for (int i = 0; i < embeddedNumber; i++ )
     {
-        const Reflection *referent = clazz->embeds.at(i)->subclass;
+        const ReflectionGen *referent = static_cast<const ReflectionGen *>(clazz->embeds.at(i)->subclass);
         if (std::find(references.begin(), references.end(), referent) != references.end())
             continue;
+
+        //QString incPath = "";
+        QString incPath = "core/xml/generated/";
+        if (referent->includePath != NULL)
+            incPath = referent->includePath;
+
     result +=
-    "#include \"" + toCamelCase(referent->name.name) + ".h\"\n";
+    "#include \"" + incPath + toCamelCase(referent->name.name) + ".h\"\n";
         references.push_back(referent);
     }
 
@@ -225,16 +231,16 @@ void PDOGenerator::generatePDOH()
     for (int i = 0; i < fieldNumber; i++ )
     {
         enterFieldContext(i);
-        const Reflection *referent = NULL;
+        const ReflectionGen *referent = NULL;
         if (field->type == BaseField::TYPE_COMPOSITE)
         {
             const CompositeField *cfield = static_cast<const CompositeField *>(field);
-            referent = cfield->reflection;
+            referent = static_cast<const ReflectionGen *>(cfield->reflection);
         }
         if (field->type == BaseField::TYPE_COMPOSITE_ARRAY)
         {
             const CompositeArrayField *cafield = static_cast<const CompositeArrayField *>(field);
-            referent = cafield->reflection;
+            referent = static_cast<const ReflectionGen *>(cafield->reflection);
         }
 
         if (referent == NULL) {
@@ -243,8 +249,13 @@ void PDOGenerator::generatePDOH()
 
         if (std::find(references.begin(), references.end(), referent) != references.end())
             continue;
+
+        QString incPath = "core/xml/generated/";
+        if (referent->includePath != NULL)
+            incPath = referent->includePath;
+
     result +=
-    "#include \"core/xml/generated/" + toCamelCase(referent->name.name) + ".h\"\n";
+    "#include \"" + incPath + toCamelCase(referent->name.name) + ".h\"\n";
         references.push_back(referent);
     }
 
@@ -304,12 +315,18 @@ void PDOGenerator::generatePDOH()
             continue;
 
         const EnumField *efield = static_cast<const EnumField *>(field);
-        const EnumReflection *eref = efield->enumReflection;
+        const EnumReflectionGen *eref = static_cast<const EnumReflectionGen *>(efield->enumReflection);
+
+        QString incPath = "core/xml/generated/";
+        if (eref->includePath != NULL)
+            incPath = eref->includePath;
 
         QString fileName = toCamelCase(eref->name.name) + ".h";
 
+
+
     result+=
-    "#include \"" + fileName + "\"\n";
+    "#include \"" + incPath + fileName + "\"\n";
 
     }
 

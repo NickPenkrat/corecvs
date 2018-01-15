@@ -36,7 +36,7 @@ class Matrix33;
 /*
  *  Additional includes for enum section.
  */
-#include "homographyAlgorithm.h"
+#include "core/xml/generated/homographyAlgorithm.h"
 
 /**
  * \brief HomorgaphyReconstructorBlockBase 

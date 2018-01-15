@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "gCodeColoringSheme.h"
+#include "core/xml/generated/gCodeColoringSheme.h"
 
 /**
  * \brief draw GCode Parameters 

@@ -30,8 +30,8 @@
 /*
  *  Additional includes for enum section.
  */
-#include "viMouse3dStereoStyle.h"
-#include "viMouse3dFlowStyle.h"
+#include "core/xml/generated/viMouse3dStereoStyle.h"
+#include "core/xml/generated/viMouse3dFlowStyle.h"
 
 /**
  * \brief draw 3d ViMouse Parameters 

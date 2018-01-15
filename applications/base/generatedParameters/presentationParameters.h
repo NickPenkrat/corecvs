@@ -30,9 +30,9 @@
 /*
  *  Additional includes for enum section.
  */
-#include "outputStyle.h"
-#include "stereoStyle.h"
-#include "flowStyle.h"
+#include "core/xml/generated/outputStyle.h"
+#include "core/xml/generated/stereoStyle.h"
+#include "core/xml/generated/flowStyle.h"
 
 /**
  * \brief Presentation parameters 

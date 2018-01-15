@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "openCVBinaryFilterType.h"
+#include "core/xml/generated/openCVBinaryFilterType.h"
 
 /**
  * \brief OpenCV Filter Parameters 

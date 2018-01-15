@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "sobelMixingType.h"
+#include "core/xml/generated/sobelMixingType.h"
 
 /**
  * \brief Sobel Parameters 

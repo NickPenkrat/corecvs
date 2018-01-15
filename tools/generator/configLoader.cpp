@@ -87,8 +87,13 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
     for (int i = 0; i < enums.length(); i++)
     {
         QDomElement enumElement = enums.at(i).toElement();
-        EnumReflection *enumReflection = new EnumReflection();
+        EnumReflectionGen *enumReflection = new EnumReflectionGen();
         enumReflection->name = getNamingFromXML(enumElement);
+
+        QString includePath = enumElement.attribute("incpath", "core/xml/generated/");
+        enumReflection->includePath = toCString(includePath);
+
+        qDebug() << "Enum" << enumReflection->name.name << " (" << i << "/" << enums.length() << ")";
 
         QDomNodeList items = enumElement.elementsByTagName("item");
         for (int j = 0; j < items.length(); j++)
@@ -120,8 +125,12 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
         QDomElement classElement = classes.at(i).toElement();
         ReflectionGen *result = new ReflectionGen();
         result->name = getNamingFromXML(classElement);
+
         QString uibase = classElement.attribute("uibase");
         result->uiBaseClass = toCString(uibase);
+
+        QString includePath = classElement.attribute("incpath", "core/xml/generated/");
+        result->includePath = toCString(includePath);
 
         qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
 

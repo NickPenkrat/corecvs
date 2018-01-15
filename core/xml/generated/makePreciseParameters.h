@@ -30,8 +30,8 @@
 /*
  *  Additional includes for enum section.
  */
-#include "makePreciseAlgorithm.h"
-#include "preciseInterpolationType.h"
+#include "core/xml/generated/makePreciseAlgorithm.h"
+#include "core/xml/generated/preciseInterpolationType.h"
 
 /**
  * \brief Make Precise Parameters 

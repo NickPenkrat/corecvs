@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "rotationPresets.h"
+#include "core/xml/generated/rotationPresets.h"
 #include "core/xml/generated/interpolationType.h"
 
 /**

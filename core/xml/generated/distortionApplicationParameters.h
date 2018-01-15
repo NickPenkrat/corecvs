@@ -30,7 +30,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "distortionResizePolicy.h"
+#include "core/xml/generated/distortionResizePolicy.h"
 
 /**
  * \brief Distortion Application Parameters 

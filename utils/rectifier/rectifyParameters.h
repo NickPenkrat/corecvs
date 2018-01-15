@@ -30,9 +30,9 @@
 /*
  *  Additional includes for enum section.
  */
-#include "matchingMethodType.h"
-#include "estimationMethodType.h"
-#include "optimizationMethodType.h"
+#include "core/xml/generated/matchingMethodType.h"
+#include "core/xml/generated/estimationMethodType.h"
+#include "core/xml/generated/optimizationMethodType.h"
 
 /**
  * \brief Rectify Parameters 
