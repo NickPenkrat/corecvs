@@ -240,6 +240,8 @@ classes+=" adderSubstractorParametersBase"
 classes+=" ransacParameters"
 classes+=" iterativeEstimateParameters"
 
+classes+=" projectionBaseParameters"
+
 
 # We will try to use reflectionWidget
 classes+=" calibrationDrawHelpersParameters"

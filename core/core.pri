@@ -52,6 +52,7 @@ for (MODULE, CORE_SUBMODULES) {
 
 # Some modules want to export more then one directory with includes. Add them here
 CORE_INCLUDEPATH += \
+    $$COREDIR/cameracalibration/projection \
     $$COREDIR/buffers/fixeddisp \
     $$COREDIR/buffers/flow \
     $$COREDIR/buffers/histogram \

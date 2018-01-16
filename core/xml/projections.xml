@@ -1,0 +1,9 @@
+<poco version="5.0">
+
+  <class name="Projection Base Parameters" description="">
+    <field type="double"    name="principalX"        defaultValue="240" comment="The center of projection \f$x_c\f$" />
+    <field type="double"    name="principalY"        defaultValue="320" comment="The center of projection \f$y_c\f$"/>
+
+    <field type="double"    name="focal"      defaultValue="820.427" min="0"      max="99999.0" step="1"/>
+  </class>
+</poco>

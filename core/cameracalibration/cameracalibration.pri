@@ -5,7 +5,9 @@ HEADERS += \
         cameracalibration/cameraConstraints.h        \
         cameracalibration/calibrationDrawHelpers.h   \
         cameracalibration/pinholeCameraIntrinsics.h  \
-    $$PWD/cameraModel.h
+        cameracalibration/cameraModel.h \
+        cameracalibration/projection/equidistantProjection.h \
+        cameracalibration/projection/catadioptricProjection.h
 
 
 SOURCES += \
@@ -15,5 +17,7 @@ SOURCES += \
         cameracalibration/cameraConstraints.cpp        \
         cameracalibration/calibrationDrawHelpers.cpp   \
         cameracalibration/pinholeCameraIntrinsics.cpp  \
-    $$PWD/cameraModel.cpp
+        cameracalibration/cameraModel.cpp \
+        cameracalibration/projection/equidistantProjection.cpp \
+        cameracalibration/projection/catadioptricProjection.cpp
 

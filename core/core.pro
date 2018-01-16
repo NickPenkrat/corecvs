@@ -54,7 +54,7 @@ OTHER_FILES +=              \
     xml/reconstruction.xml  \
     xml/calibration.xml     \
     xml/stereoAlign.xml     \
-
+    xml/projections.xml     \
 
 OTHER_FILES +=            \
     ../tools/generator/helper-regen.sh \

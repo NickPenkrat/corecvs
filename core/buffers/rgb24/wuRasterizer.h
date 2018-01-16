@@ -35,14 +35,14 @@ class WuRasterizer {
             if (xpxl1 >= 0 && xpxl1 < h) {
                 if (ypxl1 >= 0 && ypxl1 < w) {
                     float factor = rfpart(yend) * xgap;
-                    buffer.element(ypxl1, xpxl1) = buffer.element(ypxl1, xpxl1) * (1. - factor);
+                    buffer.element(ypxl1, xpxl1) = buffer.element(ypxl1, xpxl1) * (1.0f - factor);
                     auto color1 = color;
                     color1 = color1 * factor;
                     buffer.element(ypxl1, xpxl1) = buffer.element(ypxl1, xpxl1) + color1;
                 }
                 if ((ypxl1 + 1) >= 0 && (ypxl1 + 1) < w) {
                     float factor = fpart(yend) * xgap;
-                    buffer.element(ypxl1 + 1, xpxl1) = buffer.element(ypxl1 + 1, xpxl1) * (1. - factor);
+                    buffer.element(ypxl1 + 1, xpxl1) = buffer.element(ypxl1 + 1, xpxl1) * (1.0f - factor);
                     auto color1 = color;
                     color1 = color1 * factor;
                     buffer.element(ypxl1 + 1, xpxl1) = buffer.element(ypxl1 + 1, xpxl1) + color1;
@@ -53,14 +53,14 @@ class WuRasterizer {
             if (xpxl1 >= 0 && xpxl1 < w) {
                 if (ypxl1 >= 0 && ypxl1 < h) {
                     float factor = rfpart(yend) * xgap;
-                    buffer.element(xpxl1, ypxl1) = buffer.element(xpxl1, ypxl1) * (1. - factor);
+                    buffer.element(xpxl1, ypxl1) = buffer.element(xpxl1, ypxl1) * (1.0f - factor);
                     auto color1 = color;
                     color1 = color1 * factor;
                     buffer.element(xpxl1, ypxl1) = buffer.element(xpxl1, ypxl1) + color1;
                 }
                 if ((ypxl1 + 1) >= 0 && (ypxl1 + 1) < h) {
                     float factor = fpart(yend) * xgap;
-                    buffer.element(xpxl1, ypxl1 + 1) = buffer.element(xpxl1, ypxl1 + 1) * (1. - factor);
+                    buffer.element(xpxl1, ypxl1 + 1) = buffer.element(xpxl1, ypxl1 + 1) * (1.0f - factor);
                     auto color1 = color;
                     color1 = color1 * factor;
                     buffer.element(xpxl1, ypxl1 + 1) = buffer.element(xpxl1, ypxl1 + 1) + color1;
@@ -121,13 +121,13 @@ public:
                 if (x >= 0 && x < h) {
                     int y = (int)intery;
                     if (y >= 0 && y < w) {
-                        buffer.element(y, x) = buffer.element(y, x) * (1. - rfpart(intery));
+                        buffer.element(y, x) = buffer.element(y, x) * (1.0f - rfpart(intery));
                         auto color1 = color;
                         color1 = color1 * rfpart(intery);
                         buffer.element(y, x) = buffer.element(y, x) + color1;
                     }
                     if ((y + 1) >= 0 && (y + 1) < w) {
-                        buffer.element(y + 1, x) = buffer.element(y + 1, x) * (1. - fpart(intery));
+                        buffer.element(y + 1, x) = buffer.element(y + 1, x) * (1.0f - fpart(intery));
                         auto color1 = color;
                         color1 = color1 * fpart(intery);
                         buffer.element(y + 1, x) = buffer.element(y + 1, x) + color1;
@@ -139,13 +139,13 @@ public:
                 if (x >= 0 && x < w) {
                     int y = (int)intery;
                     if (y >= 0 && y < h) {
-                        buffer.element(x, y) = buffer.element(x, y) * (1. - rfpart(intery));
+                        buffer.element(x, y) = buffer.element(x, y) * (1.0f - rfpart(intery));
                         auto color1 = color;
                         color1 = color1 * rfpart(intery);
                         buffer.element(x, y) = buffer.element(x, y) + color1;
                     }
                     if ((y + 1) >= 0 && (y + 1) < h) {
-                        buffer.element(x, y + 1) = buffer.element(x, y + 1) * (1. - fpart(intery));
+                        buffer.element(x, y + 1) = buffer.element(x, y + 1) * (1.0f - fpart(intery));
                         auto color1 = color;
                         color1 = color1 * fpart(intery);
                         buffer.element(x, y + 1) = buffer.element(x, y + 1) + color1;

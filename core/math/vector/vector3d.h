@@ -213,6 +213,13 @@ public:
         return atan2(cross, dot);
     }
 
+    /**
+     *  Optional inteface part that automates projection usage as function
+     **/
+    ElementType angleToZ() const
+    {
+        return atan2(this->xy().l2Metric(), this->z());
+    }
 
     /**
      *  Do the conversion form projective coordinates to the 2D ones

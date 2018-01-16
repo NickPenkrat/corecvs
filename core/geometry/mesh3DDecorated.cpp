@@ -159,7 +159,7 @@ bool Mesh3DDecorated::verify( void )
                 SYNC_PRINT(("Wrong texture index\n"));
                 return false;
             }
-            if (texId[i][3] < 0 || texId[i][3] >= materials.size())
+            if (texId[i][3] < 0 || texId[i][3] >= (int)materials.size())
             {
                 SYNC_PRINT(("Wrong texture name\n"));
                 return false;
@@ -215,7 +215,7 @@ void MeshFilter::removeDuplicatedFaces(Mesh3DDecorated &mesh)
 {
 
     std::vector<SortedFaceData> trianglesSorted;
-        for (int i = 0; i != mesh.faces.size(); ++i)
+        for (size_t i = 0; i != mesh.faces.size(); ++i)
         {
             auto t = mesh.faces[i];
             trianglesSorted.push_back(SortedFaceData(t[0], t[1], t[2], i));
@@ -223,7 +223,7 @@ void MeshFilter::removeDuplicatedFaces(Mesh3DDecorated &mesh)
 
         std::sort(trianglesSorted.begin(), trianglesSorted.end());
         std::vector<Vector3d32> noDuplFaces;
-        for (int i = 0; i < trianglesSorted.size() - 1; ++i)
+        for (size_t i = 0; i < trianglesSorted.size() - 1; ++i)
         {
             if (!(trianglesSorted[i] == trianglesSorted[i + 1]))
             {

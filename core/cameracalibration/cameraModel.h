@@ -19,7 +19,9 @@ class CameraModel
 {
 public:
     /**/
-    PinholeCameraIntrinsics  intrinsics;
+    //PinholeCameraIntrinsics  intrinsics;
+    std::unique_ptr<CameraProjection> intrinsics;
+
     /**/
     LensDistortionModelParameters   distortion;
     /**/
@@ -52,7 +54,7 @@ public:
     template <bool full=false>
     Vector2dd project(const Vector3dd &p) const
     {
-        Vector2dd v = intrinsics.project(extrinsics.project(p));
+        Vector2dd v = intrinsics->project(extrinsics.project(p));
         if (full)
             return distortion.mapForward(v);
         return v;
