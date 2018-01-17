@@ -578,6 +578,13 @@ with_openblas {
                 DEFINES     += WITH_BLAS
                 CONFIG      += with_blas
             }
+            else: exists(/usr/include/x86_64-linux-gnu/cblas.h) {   # some linux with installed blas have it
+                !build_pass: message (Using System specific BLAS)
+                LIBS        += -lopenblas -llapacke
+                DEFINES     += WITH_OPENBLAS
+                DEFINES     += WITH_BLAS
+                CONFIG      += with_blas
+            }
             else {
                 !build_pass: message(requested system BLAS is not found and is deactivated)
             }

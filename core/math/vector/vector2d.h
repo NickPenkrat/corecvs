@@ -58,6 +58,12 @@ public:
         return v;
     }
 
+    Vector2d(const Vector& v)
+    {
+        (*this)[0] = v[0];
+        (*this)[1] = v[1];
+    }
+
     inline ElementType &x()
     {
         return (*this)[0];

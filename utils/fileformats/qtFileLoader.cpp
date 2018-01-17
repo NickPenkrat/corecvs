@@ -88,7 +88,7 @@ QImage* QTFileLoader::RGB24BufferToQImage(RGB24Buffer &buffer)
     return img;
 }
 
-void QTFileLoader::save(const std::string& name, corecvs::RGB24Buffer *input, int quality)
+void QTFileLoader::save(const std::string& name, const corecvs::RGB24Buffer *input, int quality)
 {
     //qDebug() << "Saving to" << name.c_str() << "[" << input->w << "x" << input->h << " st:" << input->stride << " sz:" << input->sizeInBytes() << "] ptr:" << hex << (void *)input->data;
     //{
@@ -213,8 +213,8 @@ bool QTRGB24Saver::acceptsFile(std::string name)
     return true;
 }
 
-bool QTRGB24Saver::save(RGB24Buffer &buffer, std::string name)
+bool QTRGB24Saver::save(const corecvs::RGB24Buffer &buffer, const std::string& name, int quality)
 {
-    QTFileLoader().save(name, &buffer, 100);
+    QTFileLoader().save(name, &buffer, quality);
     return true;
 }

@@ -17,6 +17,8 @@ string RAWLoader::prefix1(".raw");
 
 bool RAWLoader::acceptsFile(string name)
 {
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
     return HelperUtils::endsWith(name, prefix1);
 }
 

@@ -142,7 +142,7 @@ TEST(Debayer, colorTestAHD)
 
 TEST(Debayer, bayerShiftTest) 
 {
-    RGB48Buffer *ppm = PPMLoader().loadRGB("data/testdata/test_ppm.ppm");
+    RGB48Buffer *ppm = PPMLoader().loadRgb48("data/testdata/test_ppm.ppm");
     if (ppm == nullptr) {
         cout << "couldn't open test image" << endl;
         return;

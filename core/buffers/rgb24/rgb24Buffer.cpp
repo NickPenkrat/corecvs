@@ -19,8 +19,7 @@
 
 namespace corecvs {
 
-
-void RGB24Buffer::drawG12Buffer(G12Buffer *src, int32_t y, int32_t x)
+void RGB24Buffer::drawG12Buffer(const G12Buffer *src, int32_t y, int32_t x)
 {
     CORE_ASSERT_TRUE((this->h == src->h && this->w == src->w), "Wrong sizes");
     int i,j;
@@ -34,7 +33,7 @@ void RGB24Buffer::drawG12Buffer(G12Buffer *src, int32_t y, int32_t x)
     }
 }
 
-void RGB24Buffer::drawG8Buffer(G8Buffer *src, int32_t y, int32_t x)
+void RGB24Buffer::drawG8Buffer(const G8Buffer *src, int32_t y, int32_t x)
 {
     CORE_ASSERT_TRUE((this->h == src->h && this->w == src->w), "Wrong sizes");
     int i,j;
@@ -48,9 +47,7 @@ void RGB24Buffer::drawG8Buffer(G8Buffer *src, int32_t y, int32_t x)
     }
 }
 
-
-
-void RGB24Buffer::drawPixel ( int x, int y, RGBColor color)
+void RGB24Buffer::drawPixel(int x, int y, RGBColor color)
 {
     if (this->isValidCoord(y, x))
     {
@@ -58,7 +55,7 @@ void RGB24Buffer::drawPixel ( int x, int y, RGBColor color)
     }
 }
 
-void RGB24Buffer::drawLine(int x1, int y1, int x2, int y2, RGBColor color )
+void RGB24Buffer::drawLine(int x1, int y1, int x2, int y2, RGBColor color)
 {
     Rectangle<int> rect;
     rect.corner = Vector2d<int>(0,0);
@@ -69,18 +66,17 @@ void RGB24Buffer::drawLine(int x1, int y1, int x2, int y2, RGBColor color )
     drawLineSimple(lineStart.x(), lineStart.y(),lineEnd.x(), lineEnd.y(), color);
 }
 
-void RGB24Buffer::drawLine(double x1, double y1, double x2, double y2, RGBColor color )
+void RGB24Buffer::drawLine(double x1, double y1, double x2, double y2, RGBColor color)
 {
     drawLine(fround(x1), fround(y1), fround(x2), fround(y2), color);
 }
 
-void RGB24Buffer::drawLine(const Vector2dd &v1, const Vector2dd &v2, RGBColor color )
+void RGB24Buffer::drawLine(const Vector2dd &v1, const Vector2dd &v2, RGBColor color)
 {
     drawLine(v1.x(), v1.y(), v2.x(), v2.y(), color);
 }
 
-
-void RGB24Buffer::drawHLine(int x1, int y1, int x2, RGBColor color )
+void RGB24Buffer::drawHLine(int x1, int y1, int x2, RGBColor color)
 {
     if (x1 > x2)  {int tmp = x1; x1 = x2; x2 = tmp;}
     if (x1 <  0) x1 = 0;
@@ -95,7 +91,7 @@ void RGB24Buffer::drawHLine(int x1, int y1, int x2, RGBColor color )
     }
 }
 
-void RGB24Buffer::drawVLine(int x1, int y1, int y2, RGBColor color )
+void RGB24Buffer::drawVLine(int x1, int y1, int y2, RGBColor color)
 {
     if (y1 > y2)  {int tmp = y1; y1 = y2; y2 = tmp;}
     if (y1 <  0) y1 = 0;
@@ -109,7 +105,6 @@ void RGB24Buffer::drawVLine(int x1, int y1, int y2, RGBColor color )
         this->element(i, x1) = color;
     }
 }
-
 
 void RGB24Buffer::drawSprite(int x, int y, RGBColor color, int d[][2], int pointNum)
 {
@@ -1062,6 +1057,4 @@ RGB24Buffer *RGB24Buffer::diff(RGB24Buffer *buffer1, RGB24Buffer *buffer2, int *
     return toReturn;
 }
 
-
 } //namespace corecvs
-
