@@ -57,9 +57,10 @@ public:
     int save(const string& name, G12Buffer   *buffer, MetaData* metadata = nullptr, int forceTo8bitsShift = -1);
     int save(const string& name, RGB48Buffer *buffer, MetaData* metadata = nullptr, int forceTo8bitsShift = -1);
 
-private:
+protected:
     static string prefix1, prefix2;
 
+private:
     int  nextLine   (FILE *fp, char *buf, int sz, MetaData *metadata);
     bool readHeader (FILE *fp, unsigned long int *h, unsigned long int *w, uint16_t *maxval, uint8_t *type, MetaData* metadata);
     bool writeHeader(FILE *fp, unsigned long int h, unsigned long int w, uint8_t type, uint16_t maxval, MetaData* metadata);
