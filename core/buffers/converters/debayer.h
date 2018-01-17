@@ -5,10 +5,12 @@
  * \date 21 Oct 2015
  *
  * Declares the Debayer class.
- * \author Pavel.Vasilev
  */
 #ifndef DEBAYER_H
 #define DEBAYER_H
+
+#include <string>
+#include <map>
 
 #include "core/utils/global.h"
 
@@ -18,41 +20,30 @@
 #include "core/buffers/rgb24/rgbTBuffer.h"
 #include "core/buffers/rgb24/rgb24Buffer.h"
 #include "core/fileformats/metamap.h"
-#include "core/xml/generated/debayerMethod.h"
+
+#include "core/xml/generated/debayerParameters.h"
 
 namespace corecvs {
 
 class Debayer
 {
 public:
-    struct Parameters
+    class Parameters : public DebayerParameters
     {
-        Parameters(int bayerPos = -1
-            , const corecvs::Vector3dd &gn = { 1.0, 1.0, 1.0 }
-            , const corecvs::Vector2dd &gm = { 1.0, 1.0 }
-            , DebayerMethod::DebayerMethod mtd = DebayerMethod::BILINEAR
-            , int ob = 12
+    public:
+        Parameters(int bayerPos = -1                            // bayerPos autodetect from pgm
+            , const std::vector<double> &gn = { 1.0, 1.0, 1.0 } // gains R,G,B, where G=1.0 always
+            , const std::vector<double> &gm = { 1.0, 1.0 }      // gammas for dark and white areas
+            , DebayerMethod::DebayerMethod mtd = DebayerMethod::BILINEAR // 0:near, 1:bilinear, 2:AHD
+            , int ob = 12                                       // output gets 12bits also
         )
-            : method(mtd), bpos(bayerPos), numBitsOut(ob), gains(gn), gamma(gm)
-        {}
-
-        DebayerMethod::DebayerMethod method;        // 0 - nearest, 1 - bilinear, 2 - AHD
-        int                          bpos;          // bayerPos autodetect from pgm
-        int                          numBitsOut;    // output gets 12bits also
-        corecvs::Vector3dd           gains;         // gains R,G,B, where G=1.0 always
-        corecvs::Vector2dd           gamma;         // gammas for dark and white areas
-
-        static Parameters GetHpp() {
-            auto ret = Parameters();
-            ret.gains = { 1.3, 1.0, 1.8 };
-            ret.gamma = { 0.4, 2.8 };
-            return ret;
+        {
+            setMethod(mtd), setBayerPos(bayerPos), setNumBitsOut(ob);
+            setGains(gn), setGamma(gm);
         }
-        static Parameters GetTpv(int obits = 12) {
-            auto ret = Parameters(1);
-            ret.numBitsOut = obits;
-            return ret;
-        }
+
+        static Parameters& BestDefaultsByExt(const std::string& ext);
+        static std::map<std::string, Parameters> bestDefsMap;
     };
 
     /**

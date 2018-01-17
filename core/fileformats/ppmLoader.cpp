@@ -605,7 +605,8 @@ RGB24Buffer *PPMLoaderRGB24::load(string name)
     {
         L_INFO_P("name:%s detected Bayer %dx%dx12", name.c_str(), buffer->w, buffer->h);
 
-        auto params = Debayer::Parameters::GetTpv(meta["bits"][0]);
+        auto params = Debayer::Parameters::BestDefaultsByExt(prefix1);
+        params.setNumBitsOut(meta["bits"][0]);
         return Debayer::Demosaic(buffer.get(), params);
     }
 

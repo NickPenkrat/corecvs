@@ -189,10 +189,10 @@ void ImageViewMainWindow::debayer()
     if (bayer == NULL)
         return;
 
-    DebayerParameters params;
+    Debayer::Parameters params;
     ui->parameters->getParameters(params);
 
-#if 1
+#if 0
     Debayer d(bayer, meta["bits"][0], &meta, params.bayerPos());
     RGB48Buffer* result = new RGB48Buffer(bayer->h, bayer->w, false);
     d.toRGB48(params.method(), result);

@@ -10,12 +10,34 @@ using std::max;
 using std::min;
 using std::abs;
 
+std::map<std::string, Debayer::Parameters> Debayer::Parameters::bestDefsMap;
+
+Debayer::Parameters& Debayer::Parameters::BestDefaultsByExt(const string& ext)
+{
+    if (bestDefsMap.size() == 0)
+    {
+        Debayer::Parameters raw;
+        raw.setGains({ 1.3, 1.0, 1.8 });
+        raw.setGamma({ 0.4, 2.8 });
+        bestDefsMap["raw"] = raw;
+
+        Debayer::Parameters pgm(1);
+        bestDefsMap["pgm"] = pgm;
+    }
+
+    if (!bestDefsMap.count(ext))
+    {
+        bestDefsMap[ext] = Debayer::Parameters();
+    }
+    return bestDefsMap[ext];
+}
+
 corecvs::RGB48Buffer *Debayer::DemosaicRgb48(corecvs::G12Buffer* bayer, const Debayer::Parameters &params, MetaData &meta)
 {
     auto toReturn = new RGB48Buffer(bayer->h, bayer->w, false);
 
     cint outBits = 12;
-    cint maxVal = (1 << params.numBitsOut) - 1; // real wished maxVal by given #bits
+    cint maxVal = (1 << params.numBitsOut()) - 1; // real wished maxVal by given #bits
 
     if (meta["bits"].empty())                   // do overwrite possible data from PGM by given params
         meta["bits"].push_back(outBits);
@@ -29,27 +51,27 @@ corecvs::RGB48Buffer *Debayer::DemosaicRgb48(corecvs::G12Buffer* bayer, const De
 
     //while (maxVal >> int(meta["bits"][0])) { meta["bits"][0]++; }
 
-    if (meta["gamm"].empty() && params.gamma != Vector2dd(1, 1))  // don't overwrite data from PGM
+    if (meta["gamm"].empty() && Vector2dd(params.gamma()) != Vector2dd(1, 1))  // don't overwrite data from PGM
     {
         meta["gamm"] = MetaValue(5, 0);
-        meta["gamm"][0] = params.gamma[0];
-        meta["gamm"][1] = params.gamma[1];
+        meta["gamm"][0] = params.gamma()[0];
+        meta["gamm"][1] = params.gamma()[1];
     }
 
-    if (meta["cam_mul"].empty() && params.gains != Vector3dd(1, 1, 1))  // don't overwrite data from PGM
+    if (meta["cam_mul"].empty() && Vector3dd(params.gains()) != Vector3dd(1, 1, 1))  // don't overwrite data from PGM
     {
         meta["cam_mul"] = MetaValue(4, -1.0);
-        meta["cam_mul"][0] = params.gains[0];
-        meta["cam_mul"][1] = params.gains[1];
-        meta["cam_mul"][2] = params.gains[2];
+        meta["cam_mul"][0] = params.gains()[0];
+        meta["cam_mul"][1] = params.gains()[1];
+        meta["cam_mul"][2] = params.gains()[2];
     }
 
     L_DDEBUG_P("bits:%d maxval:%d outBits:%d bpos:%d method:%s gamma:[%.1f,%.1f] gains:[%.1f,%.1f,%.1f]"
         , (int)meta["bits"][0]
         , (int)meta["white"][0]
-        , params.numBitsOut
-        , params.bpos
-        , DebayerMethod::getName(params.method)
+        , params.numBitsOut()
+        , params.bayerPos()
+        , DebayerMethod::getName(params.method())
         , meta["gamm"].empty() ? 1. : meta["gamm"][0]
         , meta["gamm"].empty() ? 1. : meta["gamm"][1]
         , meta["cam_mul"].empty() ? 1. : meta["cam_mul"][0]
@@ -57,9 +79,9 @@ corecvs::RGB48Buffer *Debayer::DemosaicRgb48(corecvs::G12Buffer* bayer, const De
         , meta["cam_mul"].empty() ? 1. : meta["cam_mul"][2]
     );
 
-    Debayer debayer(bayer, outBits, &meta, params.bpos);
+    Debayer debayer(bayer, outBits, &meta, params.bayerPos());
 
-    int code = debayer.toRGB48(params.method, toReturn);
+    int code = debayer.toRGB48(params.method(), toReturn);
     if (code != 0) {
         L_ERROR_P("debayer returned error code: %d", code);
     }
