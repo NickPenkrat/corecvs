@@ -241,6 +241,7 @@ classes+=" ransacParameters"
 classes+=" iterativeEstimateParameters"
 
 classes+=" projectionBaseParameters"
+classes+=" pinholeCameraIntrinsicsBaseParameters"
 
 
 # We will try to use reflectionWidget

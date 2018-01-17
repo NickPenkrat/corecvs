@@ -3,6 +3,7 @@
 
 #include "core/math/matrix/matrix44.h"
 #include "core/cameracalibration/projectionModels.h"
+#include "core/xml/generated/pinholeCameraIntrinsicsBaseParameters.h"
 #include "core/math/mathUtils.h"
 
 namespace corecvs {
@@ -16,23 +17,22 @@ namespace corecvs {
  *  TODO: The idea is that if we merge distorsion calibration WITH extrinsics/intrinsics
  *        calibration, then this method will project point using forward distorsion map
  *
- *  Now  PinholeCameraIntrinsics has vtable because of CameraProjection base class.
- *  Probably this needs to be changed
  *
  **/
 
-struct PinholeCameraIntrinsics : public CameraProjection
+struct PinholeCameraIntrinsics : public CameraProjection, public PinholeCameraIntrinsicsBaseParameters
 {
+
     const static int DEFAULT_SIZE_X = 2592;
     const static int DEFAULT_SIZE_Y = 1944;
 
-
+#if 0
     Vector2dd focal;            /**< Focal length (in px) in two directions */
     Vector2dd principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
     double    skew;             /**< Skew parameter to compensate for optical axis tilt */
     Vector2dd size;             /**< Model image resolution (in pixel) */
     Vector2dd distortedSize;    /**< Source image resolution (FIXME: probably should move it somewhere) */
-
+#endif
 
     PinholeCameraIntrinsics(
             double fx = 1.0,
@@ -42,21 +42,15 @@ struct PinholeCameraIntrinsics : public CameraProjection
             double skew = 0.0,
             Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y),
             Vector2dd distortedSize = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y))
-      : focal         (fx, fy)
-      , principal     (cx, cy)
-      , skew          (skew)
-      , size          (size)
-      , distortedSize (distortedSize)
+      : PinholeCameraIntrinsicsBaseParameters(fx, fy, cx, cy, skew, size.x(), size.y(), distortedSize.x(), distortedSize.y())
     {}
 
     PinholeCameraIntrinsics(Vector2dd resolution, double hfov);
 
     PinholeCameraIntrinsics(Vector2dd resolution, Vector2dd principal, double focal, double skew = 0.0) :
-        focal(focal, focal),
-        principal(principal),
-        skew(skew),
-        size(resolution),
-        distortedSize(resolution)
+        PinholeCameraIntrinsicsBaseParameters(
+            focal, focal, principal.x(), principalY(), skew
+          , resolution.x(), resolution.y(), resolution.x(), resolution.y())
     {
     }
 
@@ -66,38 +60,17 @@ struct PinholeCameraIntrinsics : public CameraProjection
      **/
     virtual Vector2dd project(const Vector3dd &p) const override
     {
-        Vector2dd result = (focal * p.xy() + Vector2dd(skew * p.y(), 0.0)) / p.z() + principal;
+        Vector2dd result = (focal() * p.xy() + Vector2dd(skew() * p.y(), 0.0)) / p.z() + principal();
         return result;
     }
 
-    Vector2dd reprojectionError(const Vector3dd &p, const Vector2dd &pp) const
-    {
-        return project(p) - pp;
-    }
-    Vector3dd crossProductError(const Vector3dd &p, const Vector2dd &pp)
-    {
-        return p.normalised() ^ reverse(pp).normalised();
-    }
-
-    /**
-     * \depricated Violates degToRad Policy.
-     **/
-    double angleError(const Vector3dd &p, const Vector2dd &pp)
-    {
-        return radToDeg(reverse(pp).normalised().angleTo(p.normalised()));
-    }
-    Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp)
-    {
-        return reverse(pp).normalised() - p.normalised();
-    }
     static Matrix44 RayDiffNormalizerDiff(const double &ux, const double &uy, const double &uz);
-
 
     virtual Vector3dd reverse(const Vector2dd &p) const override
     {
         Vector2dd result;
-        result[1] = (p[1] - principal[1]) / focal[1];
-        result[0] = (p[0] - skew * result[1] - principal[0]) / focal[0];
+        result.y() = (p[1] - principalY()) / focalY();
+        result.x() = (p[0] - skew() * result.y() - principalX()) / focalX();
         return Vector3dd(result.x(), result.y(), 1.0);
     }
 
@@ -108,11 +81,34 @@ struct PinholeCameraIntrinsics : public CameraProjection
         }
         Vector2dd proj = project(p);
 
-        if (!proj.isInRect(Vector2dd(0.0, 0.0), size))
+        if (!proj.isInRect(Vector2dd(0.0, 0.0), size()))
         {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Returns target image size
+     **/
+    virtual Vector2dd size() const override
+    {
+        return  Vector2dd(sizeX(), sizeY());
+    }
+
+    virtual Vector2dd distortedSize() const override
+    {
+        return  Vector2dd(distortedSizeX(), distortedSizeY());
+    }
+
+    Vector2dd focal() const
+    {
+        return  Vector2dd(focalX(), focalY());
+    }
+
+    Vector2dd principal() const
+    {
+        return  Vector2dd(principalX(), principalY());
     }
 
     explicit operator Matrix33() const  { return getKMatrix33(); }
@@ -158,9 +154,9 @@ struct PinholeCameraIntrinsics : public CameraProjection
     double   getVFov() const;
     double   getHFov() const;
 
-    double   getAspect() const          { return size.y() / size.x(); }
+    double   getAspect() const          { return sizeY() / sizeX(); }
 
-    template<class VisitorType>
+    /*template<class VisitorType>
     void accept(VisitorType &visitor)
     {
         static const Vector2dd DEFAULT_SIZE(DEFAULT_SIZE_X, DEFAULT_SIZE_Y);
@@ -172,16 +168,24 @@ struct PinholeCameraIntrinsics : public CameraProjection
         visitor.visit(skew         , 0.0                 , "skew");
         visitor.visit(size         , DEFAULT_SIZE        , "size");
         visitor.visit(distortedSize, DEFAULT_SIZE        , "distortedSize");
-    }
+    }*/
 
     /* Helper pseudonim getters */
-    double  w() const    { return size.x();      }
-    double  h() const    { return size.y();      }
+    double cx() const    { return principalX(); }
+    double cy() const    { return principalY(); }
+    double fx() const    { return focalX(); }
+    double fy() const    { return focalY(); }
 
-    double cx() const    { return principal.x(); }
-    double cy() const    { return principal.y(); }
-    double fx() const    { return focal.x(); }
-    double fy() const    { return focal.y(); }
+    /* Misc */
+    virtual PinholeCameraIntrinsics *clone() const
+    {
+        PinholeCameraIntrinsics *p = new PinholeCameraIntrinsics();
+        *p = *this;
+        return p;
+    }
+
+    virtual ~PinholeCameraIntrinsics() {}
+
 
 };
 
@@ -195,8 +199,8 @@ public:
 
     GenericPinholeCameraIntrinsics(const PinholeCameraIntrinsics &data)
     {
-        focal     = Vector2d<DoubleType>(DoubleType(data.focal.x()), DoubleType(data.focal.y()));
-        principal = Vector2d<DoubleType>(DoubleType(data.principal.x()), DoubleType(data.principal.y()));
+        focal     = Vector2d<DoubleType>(DoubleType(data.focalX()), DoubleType(data.focalY()));
+        principal = Vector2d<DoubleType>(DoubleType(data.principalX()), DoubleType(data.principalY()));
         skew      = DoubleType(data.skew);
     }
 

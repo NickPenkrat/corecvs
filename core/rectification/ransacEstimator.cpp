@@ -214,8 +214,8 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
             Vector2dd startPixel = obs1->getUndist();
             Vector2dd endPixel   = obs2->getUndist();
 
-            Vector2dd sta = camera1->intrinsics.reverse(startPixel).xy();
-            Vector2dd end = camera2->intrinsics.reverse(endPixel  ).xy();
+            Vector2dd sta = camera1->intrinsics->reverse(startPixel).xy();
+            Vector2dd end = camera2->intrinsics->reverse(endPixel  ).xy();
 
             data.emplace_back(Correspondence(sta, end));
             dataPtr.push_back(&data.back());
@@ -224,7 +224,8 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
 
     EssentialMatrix model;
 
-    double thresholdScaler = camera1->intrinsics.fx();
+    // MEFIXASAP
+    double thresholdScaler = 1000; //camera1->intrinsics.fx();
     RansacParameters scaledParams = params;
     scaledParams.setInlierThreshold(scaledParams.inlierThreshold() / thresholdScaler);
 

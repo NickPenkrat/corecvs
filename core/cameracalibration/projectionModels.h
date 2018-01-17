@@ -27,6 +27,13 @@ public:
     virtual bool      isVisible(const Vector3dd &p) const = 0;
 
     /**
+     * Returns target image size
+     **/
+    virtual Vector2dd size() const = 0;
+
+    virtual Vector2dd distortedSize() const = 0;
+
+    /**
      *  Optional inteface part that automates projection usage as function
      **/
     template<class ElementType>
@@ -35,7 +42,29 @@ public:
         return atan2(ray.xy().l2Metric(), ray.z());
     }
 
+    virtual CameraProjection *clone() const = 0;
+
     virtual ~CameraProjection();
+
+    /* Now some helper methods */
+    double  w() const  { return size().x(); }
+    double  h() const  { return size().y(); }
+
+    Vector2dd reprojectionError(const Vector3dd &p, const Vector2dd &pp) const
+    {
+        return project(p) - pp;
+    }
+    Vector3dd crossProductError(const Vector3dd &p, const Vector2dd &pp)
+    {
+        return p.normalised() ^ reverse(pp).normalised();
+    }
+
+    Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp)
+    {
+        return reverse(pp).normalised() - p.normalised();
+    }
+
+
 };
 
 

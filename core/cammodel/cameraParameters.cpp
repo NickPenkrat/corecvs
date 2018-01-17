@@ -87,19 +87,20 @@ double CameraIntrinsicsLegacy::getHFov() const
 PinholeCameraIntrinsics CameraIntrinsicsLegacy::toPinholeCameraIntrinsics() const
 {
     PinholeCameraIntrinsics intrinsics;
-    intrinsics.principal.x() = center.x();
-    intrinsics.principal.y() = center.y();
+    intrinsics.setPrincipalX(center.x());
+    intrinsics.setPrincipalY(center.y());
 
-    intrinsics.size.x() = resolution.x();
-    intrinsics.size.y() = resolution.y();
+    intrinsics.setSizeX(resolution.x());
+    intrinsics.setSizeY(resolution.y());
 
     SYNC_PRINT(("CameraIntrinsicsLegacy::toPinholeCameraIntrinsics() f=%lf k=%lf resolutionx=%lf\n", f, k, resolution.x()));
 
-    intrinsics.focal.x() = /*resolution.x() **/ f / k;
-    intrinsics.focal.y() = /*resolution.y() **/ f / k;
+    intrinsics.setFocalX(f / k);
+    intrinsics.setFocalY(f / k);
 
-    intrinsics.skew = 0;
-    intrinsics.distortedSize  = intrinsics.size;
+    intrinsics.setSkew(0);
+    intrinsics.setDistortedSizeX(intrinsics.size().x());
+    intrinsics.setDistortedSizeY(intrinsics.size().y());
 
     return intrinsics;
 }
