@@ -243,6 +243,7 @@ public:
         // MEFIXASAP
         //visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
 
+        //visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
 
         visitor.visit(extrinsics, CameraLocationData()           , "extrinsics");
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");

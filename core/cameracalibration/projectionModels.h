@@ -81,12 +81,31 @@ public:
         return reverse(pp).normalised() - p.normalised();
     }
 
+    /* Serialization is a bit more tricky. So far - stupid approach */
+
+
+    template<class Visitor>
+    void accept(Visitor &visitor)
+    {
+        visitor.visit((int&)projection, PINHOLE, "projectionType");
+
+        switch (type) {
+            case  PINHOLE:
+            case  EQUIDISTANT:
+            case  CATADIOPTRIC:
+            case  STEREOGRAPHIC:
+            case  EQUISOLID:
+            case  ORTHOGRAPIC:
+        }
+
+    }
+
+
     /* Common method */
     bool isPinhole() const
     {
         return projection == PINHOLE;
     }
-
 
 };
 
