@@ -49,6 +49,17 @@ public:
       , extrinsics(_extrinsics)
     {}
 
+    CameraModel(const CameraModel &other)
+    {
+        copyModelFrom(other);
+    }
+
+    CameraModel &operator =(CameraModel &other)
+    {
+        copyModelFrom(other);
+        return *this;
+    }
+
 
 
     template <bool full=false>
@@ -196,22 +207,24 @@ public:
     }
 
     /* This method produces camera model that is a copy, but works for downsampled image */
-    // MEFIXASAP
-    /*
     CameraModel scaledModel(double scaleFactor = 0.5)
     {
         CameraModel model = *this;
-        model.intrinsics.principal = model.intrinsics.principal * scaleFactor;
-        model.intrinsics.focal = model.intrinsics.focal * scaleFactor;
-        model.intrinsics.size  = model.intrinsics.size  * scaleFactor;
-        model.intrinsics.distortedSize = model.intrinsics.distortedSize  * scaleFactor;
+        if (!model.intrinsics->isPinhole())
+        {
+            return model;
+        }
+
+        PinholeCameraIntrinsics *intr = static_cast<PinholeCameraIntrinsics *>(model.intrinsics.get());
+
+        intr->scale(scaleFactor);
 
         model.distortion.setNormalizingFocal(model.distortion.normalizingFocal() * scaleFactor);
         model.distortion.setPrincipalPoint  (model.distortion.principalPoint() * scaleFactor);
         model.distortion.setShiftX(model.distortion.shiftX() * scaleFactor);
         model.distortion.setShiftY(model.distortion.shiftY() * scaleFactor);
         return model;
-    }*/
+    }
 
     void setLocation(const Affine3DQ &location)
     {
@@ -260,6 +273,14 @@ public:
     }
 
     void prettyPrint(std::ostream &out = cout);
+
+    PinholeCameraIntrinsics *getPinhole() const
+    {
+        if (intrinsics->isPinhole()) {
+            return static_cast<PinholeCameraIntrinsics *>(intrinsics.get());
+        }
+        return NULL;
+    }
 };
 
 

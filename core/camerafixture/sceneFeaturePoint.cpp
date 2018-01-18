@@ -25,7 +25,10 @@ Vector2dd SceneObservation::getUndist() const
     if (camera != NULL && (validityFlags & ValidFlags::OBSERVATION_VALID))
     {
         // This is a temporary solution. Z value should be computed, not just set to focal
-        observDir = Vector3dd(camera->distortion.mapBackward(observation), camera->intrinsics.focal.x());
+        // MEFIXASAP
+        //observDir = Vector3dd(camera->distortion.mapBackward(observation), camera->intrinsics.focal.x());
+        observDir = camera->intrinsics->reverse(camera->distortion.mapBackward(observation));
+
         validityFlags |= (int)ValidFlags::DIRECTION_VALID;
         return observDir.xy();
     }
@@ -52,7 +55,8 @@ void SceneObservation::setUndist(const Vector2dd &undist)
     if (camera != NULL)
     {
         // This is a temporary solution. Z value should be computed, not just set to focal
-        observDir = Vector3dd(undist, camera->intrinsics.focal.x());
+        // MEFIXASAP
+        //observDir = Vector3dd(undist, camera->intrinsics.focal.x());
         validityFlags = ValidFlags::DIRECTION_VALID;
     }
     else {

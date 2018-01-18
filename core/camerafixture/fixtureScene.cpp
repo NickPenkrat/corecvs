@@ -597,7 +597,7 @@ void FixtureScene::merge(FixtureScene *other)
     for(size_t i = 0; i < other->mOrphanCameras.size(); i++)
     {
         FixtureCamera *cam = createCamera();
-        *static_cast<CameraModel *>(cam) = *(other->mOrphanCameras[i]);
+        cam->copyModelFrom(*other->mOrphanCameras[i]);
     }
 
     int oldFixtureNumber = (int)mFixtures.size();
@@ -613,7 +613,7 @@ void FixtureScene::merge(FixtureScene *other)
         for(size_t j = 0; j < otherFixture->cameras.size(); j++)
         {
             FixtureCamera *cam = createCamera();
-            *static_cast<CameraModel *>(cam) = *(otherFixture->cameras[j]);
+            cam->copyModelFrom(*otherFixture->cameras[j]);
             addCameraToFixture(cam, newFixture);
         }
     }
@@ -740,7 +740,7 @@ void FixtureScene::dumpInfo(ostream &out, bool brief)
             {
                 FixtureCamera *cam = fixture->cameras[j];
                 out << "     " << "Camera <" << cam->nameId << "> "  << endl;
-                out << "        " << "Size [" << cam->intrinsics.w() << " x " << cam->intrinsics.h() << "] "  << endl;
+                out << "        " << "Size [" << cam->intrinsics->w() << " x " << cam->intrinsics->h() << "] "  << endl;
                 out << "        " << "Images "  <<   cam->mImages.size() << endl;
 
             }
@@ -1051,8 +1051,8 @@ RGB24Buffer *ImageRelatedData::getUndistRGB24BufferPtr()
     DisplacementBuffer transform = camera->transform(DistortionApplicationParameters());
     corecvs::RGB24Buffer* buffer = getImage()->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(
                 &transform,
-                camera->intrinsics.size.y(),
-                camera->intrinsics.size.x());
+                camera->intrinsics->size().y(),
+                camera->intrinsics->size().x());
     return buffer;
 }
 

@@ -20,7 +20,7 @@ namespace corecvs {
  *
  **/
 
-struct PinholeCameraIntrinsics : public CameraProjection, public PinholeCameraIntrinsicsBaseParameters
+struct PinholeCameraIntrinsics : public PinholeCameraIntrinsicsBaseParameters,  public CameraProjection
 {
 
     const static int DEFAULT_SIZE_X = 2592;
@@ -42,15 +42,17 @@ struct PinholeCameraIntrinsics : public CameraProjection, public PinholeCameraIn
             double skew = 0.0,
             Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y),
             Vector2dd distortedSize = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y))
-      : PinholeCameraIntrinsicsBaseParameters(fx, fy, cx, cy, skew, size.x(), size.y(), distortedSize.x(), distortedSize.y())
+      : PinholeCameraIntrinsicsBaseParameters(fx, fy, cx, cy, skew, size.x(), size.y(), distortedSize.x(), distortedSize.y()),
+        CameraProjection(PINHOLE)
     {}
 
-    PinholeCameraIntrinsics(Vector2dd resolution, double hfov);
+    PinholeCameraIntrinsics(const Vector2dd &resolution, double hfov);
 
     PinholeCameraIntrinsics(Vector2dd resolution, Vector2dd principal, double focal, double skew = 0.0) :
         PinholeCameraIntrinsicsBaseParameters(
             focal, focal, principal.x(), principalY(), skew
-          , resolution.x(), resolution.y(), resolution.x(), resolution.y())
+          , resolution.x(), resolution.y(), resolution.x(), resolution.y()),
+        CameraProjection(PINHOLE)
     {
     }
 
@@ -106,10 +108,23 @@ struct PinholeCameraIntrinsics : public CameraProjection, public PinholeCameraIn
         return  Vector2dd(focalX(), focalY());
     }
 
-    Vector2dd principal() const
+    virtual Vector2dd principal() const override
     {
         return  Vector2dd(principalX(), principalY());
     }
+
+    void setSize(const Vector2dd &size)
+    {
+        mSizeX = size.x();
+        mSizeY = size.y();
+    }
+
+    void setDistortedSize(const Vector2dd &size)
+    {
+        mDistortedSizeX = size.x();
+        mDistortedSizeY = size.y();
+    }
+
 
     explicit operator Matrix33() const  { return getKMatrix33(); }
 
@@ -169,6 +184,22 @@ struct PinholeCameraIntrinsics : public CameraProjection, public PinholeCameraIn
         visitor.visit(size         , DEFAULT_SIZE        , "size");
         visitor.visit(distortedSize, DEFAULT_SIZE        , "distortedSize");
     }*/
+
+
+    void scale(double scaleFactor)
+    {
+        mPrincipalX *= scaleFactor;
+        mPrincipalY *= scaleFactor;
+
+        mFocalX *= scaleFactor;
+        mFocalY *= scaleFactor;
+
+        mSizeX *= scaleFactor;
+        mSizeY *= scaleFactor;
+
+        mDistortedSizeX *= scaleFactor;
+        mDistortedSizeY *= scaleFactor;
+    }
 
     /* Helper pseudonim getters */
     double cx() const    { return principalX(); }

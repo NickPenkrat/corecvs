@@ -9,6 +9,22 @@ namespace corecvs {
 
 class CameraProjection {
 public:
+    enum ProjectionType {
+        PINHOLE = 0,
+        EQUIDISTANT,
+        CATADIOPTRIC,
+        STEREOGRAPHIC,
+        EQUISOLID,
+        ORTHOGRAPIC /*Other impelementation*/
+
+    };
+
+    ProjectionType projection = PINHOLE;
+
+    CameraProjection(ProjectionType projection) :
+        projection(projection)
+    {}
+
     /**
      * Returns 2d image point of the 3d target object
      *
@@ -33,6 +49,7 @@ public:
 
     virtual Vector2dd distortedSize() const = 0;
 
+    virtual Vector2dd principal() const = 0;
     /**
      *  Optional inteface part that automates projection usage as function
      **/
@@ -64,6 +81,12 @@ public:
         return reverse(pp).normalised() - p.normalised();
     }
 
+    /* Common method */
+    bool isPinhole() const
+    {
+        return projection == PINHOLE;
+    }
+
 
 };
 
@@ -75,6 +98,7 @@ public:
     double    focal;            /**< Focal length */
 
     StereographicProjection(Vector2dd principal, double focal) :
+        CameraProjection(STEREOGRAPHIC),
         principal(principal),
         focal(focal)
     {}
@@ -117,6 +141,7 @@ public:
     double    focal;            /**< Focal length */
 
     EquisolidAngleProjection(Vector2dd principal, double focal) :
+        CameraProjection(EQUISOLID),
         principal(principal),
         focal(focal)
     {}
@@ -153,6 +178,7 @@ public:
     double    focal;            /**< Focal length */
 
     OrthographicProjection(Vector2dd principal, double focal) :
+        CameraProjection(ORTHOGRAPIC),
         principal(principal),
         focal(focal)
     {}

@@ -28,8 +28,8 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
     //SYNC_PRINT(("CalibrationDrawHelpers::drawCamera(): called \n"));
     //cout << "Camera color: " << mesh.currentColor << endl;
 
-    double w = cam.intrinsics.w();
-    double h = cam.intrinsics.h();
+    double w = cam.intrinsics->w();
+    double h = cam.intrinsics->h();
 
     Vector3dd
             center      = Vector3dd( 0,  0,  0),
@@ -56,52 +56,58 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
     };
 
     const int edgenumber = CORE_COUNT_OF(edges) / 2;
-    Matrix33 invK   = cam.intrinsics.getInvKMatrix33();
 
-    for (int i = 0; i < edgenumber; ++i)
+    if (cam.intrinsics->isPinhole())
     {
-        Vector3dd v1 = cam.extrinsics.camToWorld(invK * edges[i * 2    ]);
-        Vector3dd v2 = cam.extrinsics.camToWorld(invK * edges[i * 2 + 1]);
+        PinholeCameraIntrinsics *pinhole = static_cast<PinholeCameraIntrinsics *>(cam.intrinsics.get());
+        Matrix33 invK   = pinhole->getInvKMatrix33();
 
-        mesh.addLine(v1, v2);
-     //   cout << v1 << " " << v2 << endl;
-    }
-
-    RGBColor color = mesh.currentColor;
-
-    if (solidCameras())
-    {
-        Vector3dd faces[] =
+        for (int i = 0; i < edgenumber; ++i)
         {
-            topLeft , topRight   , bottomLeft,
-            topRight, bottomRight, bottomLeft,
+            Vector3dd v1 = cam.extrinsics.camToWorld(invK * edges[i * 2    ]);
+            Vector3dd v2 = cam.extrinsics.camToWorld(invK * edges[i * 2 + 1]);
 
-            center  , topLeft    , bottomLeft,
-            center  , bottomLeft , bottomRight,
-            center  , bottomRight, topRight,
-            center  , topRight   , topLeft
-        };
-
-        const int facenumber = CORE_COUNT_OF(faces) / 3;
-
-        for (int i = 0; i < facenumber; ++i)
-        {
-            if (i == 0) {
-                mesh.setColor(color);
-            } else {
-                mesh.setColor(RGBColor::Yellow());
-
-            }
-
-            Vector3dd v1 = cam.extrinsics.camToWorld(invK * faces[i * 3    ]);
-            Vector3dd v2 = cam.extrinsics.camToWorld(invK * faces[i * 3 + 1]);
-            Vector3dd v3 = cam.extrinsics.camToWorld(invK * faces[i * 3 + 2]);
-
-            mesh.addTriangle(v1, v2, v3);
+            mesh.addLine(v1, v2);
          //   cout << v1 << " " << v2 << endl;
         }
-    }
 
+        RGBColor color = mesh.currentColor;
+
+        if (solidCameras())
+        {
+            Vector3dd faces[] =
+            {
+                topLeft , topRight   , bottomLeft,
+                topRight, bottomRight, bottomLeft,
+
+                center  , topLeft    , bottomLeft,
+                center  , bottomLeft , bottomRight,
+                center  , bottomRight, topRight,
+                center  , topRight   , topLeft
+            };
+
+            const int facenumber = CORE_COUNT_OF(faces) / 3;
+
+            for (int i = 0; i < facenumber; ++i)
+            {
+                if (i == 0) {
+                    mesh.setColor(color);
+                } else {
+                    mesh.setColor(RGBColor::Yellow());
+
+                }
+
+                Vector3dd v1 = cam.extrinsics.camToWorld(invK * faces[i * 3    ]);
+                Vector3dd v2 = cam.extrinsics.camToWorld(invK * faces[i * 3 + 1]);
+                Vector3dd v3 = cam.extrinsics.camToWorld(invK * faces[i * 3 + 2]);
+
+                mesh.addTriangle(v1, v2, v3);
+             //   cout << v1 << " " << v2 << endl;
+            }
+        }
+
+        mesh.setColor(color);
+    }
 
     if (printNames())
     {
@@ -112,7 +118,7 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
         mesh.popTransform();
     }
 
-    mesh.setColor(color);
+
 
     //Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
 

@@ -46,8 +46,8 @@ int SceneStereoAlignerBlock::operator ()()
     /* We would use existing code, though it is an inverse abstraction.
      * We already know all the geometry, but will be using code based on the Essential Matrix */
 
-    Vector2dd lSize = camera1->intrinsics.size;
-    Vector2dd rSize = camera2->intrinsics.size;
+    Vector2dd lSize = camera1->intrinsics->size();
+    Vector2dd rSize = camera2->intrinsics->size();
 
     Vector2dd size  = (lSize + rSize) / 2;
 
@@ -141,8 +141,8 @@ int SceneStereoAlignerBlock::operator ()()
         cam1->extrinsics = CameraLocationData(Affine3DQ::Identity());
         cam2->extrinsics = CameraLocationData(relativeTransform);
 
-        cam1->intrinsics = camera1->intrinsics;
-        cam2->intrinsics = camera2->intrinsics;
+        cam1->intrinsics.reset(camera1->intrinsics->clone());
+        cam2->intrinsics.reset(camera2->intrinsics->clone());
 
         if (mParameters.produceObservations())
         {

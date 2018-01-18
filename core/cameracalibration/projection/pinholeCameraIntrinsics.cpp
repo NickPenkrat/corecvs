@@ -1,4 +1,4 @@
-#include "core/cameracalibration/pinholeCameraIntrinsics.h"
+#include "core/cameracalibration/projection/pinholeCameraIntrinsics.h"
 
 using namespace std;
 
@@ -140,13 +140,13 @@ Matrix44 PinholeCameraIntrinsics::getFrustumMatrix(double zNear, double zFar) co
     double zDepth  = zNear - zFar;
 
     Matrix44 KF =  Matrix44 (
-        focal.x(),   skew   ,          0.0            ,    /*principal.x()*/ 0,
-           0.0   ,-focal.y(),          0.0            ,    /*principal.y()*/ 0,
+        focalX(),   skew()  ,          0.0            ,    /*principal.x()*/ 0,
+           0.0   ,-focalY() ,          0.0            ,    /*principal.y()*/ 0,
            0.0   ,    0.0   , -(zFar + zNear) / zDepth, 2 * zFar * zNear / zDepth,
            0.0   ,    0.0   ,          1.0            ,        0.0
     );
 
-    Matrix44 D = /*Matrix44::Shift(0.5, 0.5, 0.0) **/ Matrix44::Diagonal(2.0 / size.x(), 2.0 / size.y(), 1.0, 1.0);
+    Matrix44 D = /*Matrix44::Shift(0.5, 0.5, 0.0) **/ Matrix44::Diagonal(2.0 / sizeX(), 2.0 / sizeY(), 1.0, 1.0);
 
     cout << "K Matrix:" << endl;
     cout <<  KF;

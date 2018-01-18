@@ -173,8 +173,14 @@ public:
 
     Matrix33 fundamentalTo(FixtureCamera *thisCam, CameraFixture *other, FixtureCamera *otherCam)
     {
-        Matrix33 K1 = thisCam->intrinsics.getKMatrix33();
-        Matrix33 K2 = otherCam->intrinsics.getKMatrix33();
+        if (!thisCam->intrinsics->isPinhole() || !otherCam->intrinsics->isPinhole())
+            return EssentialMatrix();
+
+        PinholeCameraIntrinsics *intrinsics1 = static_cast<PinholeCameraIntrinsics *>(thisCam ->intrinsics.get());
+        PinholeCameraIntrinsics *intrinsics2 = static_cast<PinholeCameraIntrinsics *>(otherCam->intrinsics.get());
+
+        Matrix33 K1 = intrinsics1->getKMatrix33();
+        Matrix33 K2 = intrinsics2->getKMatrix33();
         return K1.inv().transposed() * essentialTo(thisCam, other, otherCam) * K2.inv();
     }
 
