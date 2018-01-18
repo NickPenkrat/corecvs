@@ -539,13 +539,17 @@ void CloudViewDialog::setCamera(const CameraModel &model)
 
     qDebug() << "CloudViewDialog::setCamera() : setting camera";
 
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    OpenGLTools::glMultMatrixMatrix44(model.intrinsics.getFrustumMatrix());
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    mCamera = model.getPositionMatrix();
+    PinholeCameraIntrinsics *pinhole = model.getPinhole();
+    if (pinhole != NULL)
+    {
+        glViewport(0, 0, width, height);
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        OpenGLTools::glMultMatrixMatrix44(pinhole->getFrustumMatrix());
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        mCamera = model.getPositionMatrix();
+    }
 
     mUi.widget->update();
 }

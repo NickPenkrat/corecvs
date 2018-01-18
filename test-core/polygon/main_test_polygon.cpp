@@ -1019,8 +1019,8 @@ TEST(polygon, CameraView)
 {
     CameraModel cam1, cam2;
 
-    cam1.intrinsics = PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(50));
-    cam2.intrinsics = PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(50));
+    cam1.intrinsics.reset(new PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(50)));
+    cam2.intrinsics.reset(new PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(50)));
 
     cam1.setLocation(Affine3DQ::Shift(-10, 0, 0) * Affine3DQ::RotationY(degToRad(10)) * Affine3DQ::RotationX(degToRad(4)));
     cam1.setLocation(Affine3DQ::Shift( 10, 0, 0) * Affine3DQ::RotationY(degToRad(-10)));

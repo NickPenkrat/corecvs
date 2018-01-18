@@ -418,7 +418,7 @@ void MeshFilter::removeUnreferencedVertices(
 
 }
 
-void MeshFilter::removeIsolatedPieces(Mesh3DDecorated &mesh, int minCountOfFaces)
+void MeshFilter::removeIsolatedPieces(Mesh3DDecorated &mesh, unsigned minCountOfFaces)
 {
     // for each position get indices of triangles which contains it
         std::vector<std::vector<size_t>> v(mesh.vertexes.size());

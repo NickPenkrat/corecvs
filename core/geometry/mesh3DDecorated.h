@@ -115,7 +115,7 @@ public:
     void removeUnreferencedVertices(Mesh3DDecorated &mesh);
 
     static
-    void removeIsolatedPieces(Mesh3DDecorated &mesh,  int minCountOfFaces);
+    void removeIsolatedPieces(Mesh3DDecorated &mesh,  unsigned minCountOfFaces);
 
     static
     void removeZeroAreaFaces(Mesh3DDecorated &mesh);

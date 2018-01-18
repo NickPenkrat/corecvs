@@ -78,32 +78,41 @@ void printMatrixInfo (const Matrix33 &matrix)
 
 TEST(Rectification, testEssentialDecomposition)
 {
-	corecvs::CameraModel cam1(PinholeCameraIntrinsics(100.0, 100.0, 100.0, 100.0, 0.0, Vector2dd(800, 800), Vector2dd(800, 800)));
-	auto cam2 = cam1;
+    CameraModel cam1(PinholeCameraIntrinsics(100.0, 100.0, 100.0, 100.0, 0.0, Vector2dd(800, 800), Vector2dd(800, 800)));
+    CameraModel cam2 = cam1;
 	cam1.extrinsics.position = corecvs::Vector3dd(10, 0, 0);
 	EssentialDecomposition ed = cam1.essentialDecomposition(cam2);
     std::mt19937 rng(DEFAULT_SEED);
     std::uniform_real_distribution<double> runif(-1e3, 1e3);
+
+
+    PinholeCameraIntrinsics *pinhole1 = cam1.getPinhole();
+    PinholeCameraIntrinsics *pinhole2 = cam2.getPinhole();
+
+    ASSERT_TRUE(pinhole1 != NULL && pinhole2 != NULL);
+
 	for (int i = 0; i < RNG_RETRIES; ++i)
 	{
-		corecvs::Vector3dd pt(runif(rng), runif(rng), +1000);
-		auto ptl = cam1.project(pt);
-		auto ptr = cam2.project(pt);
+        Vector3dd pt(runif(rng), runif(rng), +1000);
+        Vector2dd ptl = cam1.project(pt);
+        Vector2dd ptr = cam2.project(pt);
 		double scaleL, scaleR, foo;
-		auto K1 = cam1.intrinsics.getKMatrix33().inv();
-		auto K2 = cam2.intrinsics.getKMatrix33().inv();
+        Matrix33 K1 = pinhole1->getKMatrix33().inv();
+        Matrix33 K2 = pinhole2->getKMatrix33().inv();
+
 		ed.getScaler(K1 * ptl, K2 * ptr, scaleL, scaleR, foo);
 		ASSERT_TRUE(scaleL > 0.0 && scaleR > 0.0);
 	}
 	for (int i = 0; i < RNG_RETRIES; ++i)
 	{
-		corecvs::Vector3dd pt(runif(rng), runif(rng), -1000);
-		auto ptl = cam1.project(pt);
-		auto ptr = cam2.project(pt);
+        Vector3dd pt(runif(rng), runif(rng), -1000);
+        Vector2dd ptl = cam1.project(pt);
+        Vector2dd ptr = cam2.project(pt);
 		double scaleL, scaleR, foo;
-		auto K1 = cam1.intrinsics.getKMatrix33().inv();
-		auto K2 = cam2.intrinsics.getKMatrix33().inv();
-		ed.getScaler(K1 * ptl, K2 * ptr, scaleL, scaleR, foo);
+        Matrix33 K1 = pinhole1->getKMatrix33().inv();
+        Matrix33 K2 = pinhole2->getKMatrix33().inv();
+
+        ed.getScaler(K1 * ptl, K2 * ptr, scaleL, scaleR, foo);
 		ASSERT_TRUE(scaleL < 0.0 && scaleR < 0.0);
 	}
 }
@@ -493,7 +502,7 @@ TEST(Rectification, testRectifiedModel)
     /* Trivial camera */
     CameraModel model;
     model.setLocation(Affine3DQ::Identity());
-    model.intrinsics = PinholeCameraIntrinsics(Vector2dd(200,200), degToRad(60));
+    model.intrinsics.reset(new PinholeCameraIntrinsics(Vector2dd(200,200), degToRad(60)));
 
     /* New Plane */
     PlaneFrame xy = PlaneFrame::PlaneXY();
@@ -732,7 +741,7 @@ TEST(Rectification, testMoveCameras)
     cout << "Sanity2:" << realDirection.normalised() << endl;
 
     CameraModel dummy;
-    dummy.intrinsics = PinholeCameraIntrinsics(Vector2dd(300,200), degToRad(50));
+    dummy.intrinsics.reset(new PinholeCameraIntrinsics(Vector2dd(300,200), degToRad(50)));
     dummy.setLocation(Affine3DQ::Identity());
 
     CalibrationDrawHelpers drawer;

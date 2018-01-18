@@ -2,7 +2,7 @@
 #define CAMERAMODEL_H
 
 #include "calibrationLocation.h"
-#include "pinholeCameraIntrinsics.h"
+#include "core/cameracalibration/projection/pinholeCameraIntrinsics.h"
 #include "core/buffers/displacementBuffer.h"
 #include "core/xml/generated/distortionApplicationParameters.h"
 #include "core/rectification/essentialMatrix.h"
@@ -37,7 +37,8 @@ public:
     std::string     nameId;
 
 public:
-    CameraModel()
+    CameraModel(CameraProjection *projecton = new PinholeCameraIntrinsics) :
+        intrinsics(projecton)
     {}
 
     CameraModel(
@@ -54,7 +55,7 @@ public:
         copyModelFrom(other);
     }
 
-    CameraModel &operator =(CameraModel &other)
+    CameraModel &operator =(const CameraModel &other)
     {
         copyModelFrom(other);
         return *this;
@@ -274,6 +275,11 @@ public:
 
     void prettyPrint(std::ostream &out = cout);
 
+    /**
+       Shortcut for most popular distortion type -
+            returns PinholeCameraIntrinsics intrisics if this model is pinhole
+            returns NULL otherwise;
+     **/
     PinholeCameraIntrinsics *getPinhole() const
     {
         if (intrinsics->isPinhole()) {
