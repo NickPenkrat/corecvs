@@ -23,7 +23,6 @@ bool LibjpegFileReader::acceptsFile(string name)
 
 RGB24Buffer *LibjpegFileReader::load(string name)
 {
-
     struct jpeg_decompress_struct cinfo;
     struct jpeg_error_mgr jerr;
     JSAMPARRAY buffer;
@@ -92,20 +91,18 @@ RGB24Buffer *LibjpegFileReader::load(string name)
 }
 
 LibjpegFileReader::LibjpegFileReader()
-{
-
-}
+{}
 
 LibjpegFileReader::~LibjpegFileReader()
-{
-
-}
+{}
 
 
 bool LibjpegRuntimeTypeBufferLoader::acceptsFile(std::string name)
 {
     return HelperUtils::endsWith(name, LibjpegFileReader::prefix1) ||
-           HelperUtils::endsWith(name, LibjpegFileReader::prefix2) ;
+           HelperUtils::endsWith(name, LibjpegFileReader::prefix2) ||
+           HelperUtils::endsWith(name, LibjpegFileReader::prefix3) ||
+           HelperUtils::endsWith(name, LibjpegFileReader::prefix4);
 }
 
 RuntimeTypeBuffer *LibjpegRuntimeTypeBufferLoader::load(std::string name)
@@ -161,13 +158,12 @@ RuntimeTypeBuffer *LibjpegRuntimeTypeBufferLoader::load(std::string name)
                 SYNC_PRINT(("-(%dx%d)\n", i, j ));
             }
 #endif
-
             uint8_t gray = RGBColor(
                 buffer[0][j*cinfo.output_components + 0],
                 buffer[0][j*cinfo.output_components + 1],
                 buffer[0][j*cinfo.output_components + 2]).brightness();
 
-            result->at<uint8_t>(i,j) =  gray;
+            result->at<uint8_t>(i,j) = gray;
         }
     }
 
@@ -179,11 +175,7 @@ RuntimeTypeBuffer *LibjpegRuntimeTypeBufferLoader::load(std::string name)
 }
 
 LibjpegRuntimeTypeBufferLoader::LibjpegRuntimeTypeBufferLoader()
-{
-
-}
+{}
 
 LibjpegRuntimeTypeBufferLoader::~LibjpegRuntimeTypeBufferLoader()
-{
-
-}
+{}
