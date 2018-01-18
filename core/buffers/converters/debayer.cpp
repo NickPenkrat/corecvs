@@ -66,7 +66,7 @@ corecvs::RGB48Buffer *Debayer::DemosaicRgb48(corecvs::G12Buffer* bayer, const De
         meta["cam_mul"][2] = params.gains()[2];
     }
 
-    L_DDEBUG_P("bits:%d maxval:%d outBits:%d bpos:%d method:%s gamma:[%.1f,%.1f] gains:[%.1f,%.1f,%.1f]"
+    L_INFO_P("bits:%d maxval:%d outBits:%d bpos:%d method:%s gamma:[%.1f,%.1f] gains:[%.1f,%.1f,%.1f]"
         , (int)meta["bits"][0]
         , (int)meta["white"][0]
         , params.numBitsOut()

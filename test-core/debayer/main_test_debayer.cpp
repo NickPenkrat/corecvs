@@ -57,108 +57,78 @@ TEST(Debayer, colorTestYchannel)
     FILE* out = fopen("out.csv", "w");
     fprintf(out, "#, RMSD (double), RMSD, improvement, maxabs, coords maxabs\n");
 
-    G12Buffer *ppm = PPMLoader().loadG12("data/testdata/test_debayer.pgm");
-    if (ppm == nullptr) {
-        cout << "couldn't open test image" << endl;
-        return;
-    }
+    std::unique_ptr<G12Buffer> p(PPMLoader().loadG12("data/testdata/test_debayer.pgm"));
+    CORE_ASSERT_TRUE(p != NULL, "PGM test image load failed");
 
-    Debayer d(ppm, 8, nullptr, 0);
+    Debayer d(p.get(), 8, nullptr, 0);
 
-    RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
-    d.toRGB48(DebayerMethod::BILINEAR, result);
+    std::unique_ptr<RGB48Buffer> result(new RGB48Buffer(p->h, p->w, false));
+    d.toRGB48(DebayerMethod::BILINEAR, result.get());
 
-    double error = ErrorMetrics::Yrmsd(ppm, result, 3, 8);
+    double error = ErrorMetrics::Yrmsd(p.get(), result.get(), 3, 8);
 
     // TODO: clarify issue with Y-channel extraction yielding results of different brightness
     printf("RMSD between Y-channel images: %.3lf", error);
     CORE_ASSERT_TRUE(error < 15, "RMSE is too high!");
-
-    delete_safe(ppm);
-    delete_safe(result);
 
     fclose(out);
 }
 
 TEST(Debayer, colorTestNearest)
 {
-    G12Buffer *ppm = PPMLoader().loadG12("data/testdata/test_debayer.pgm");
-    if (ppm == nullptr) {
-        cout << "couldn't open test image" << endl;
-        return;
-    }
-    CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
-    CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
-    Debayer d(ppm);
-    RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
-    d.toRGB48(DebayerMethod::NEAREST, result);
+    std::unique_ptr<G12Buffer> p(PPMLoader().loadG12("data/testdata/test_debayer.pgm"));
+    CORE_ASSERT_TRUE(p != NULL, "PPM Image load failed");
+    CORE_ASSERT_TRUE(p->verify(), "PPM Image verification failed");
+
+    Debayer d(p.get());
+    std::unique_ptr<RGB48Buffer> result(new RGB48Buffer(p->h, p->w, false));
+    d.toRGB48(DebayerMethod::NEAREST, result.get());
 
     int64_t r_sum = 0, g_sum = 0, b_sum = 0;
-    performTest(r_sum, g_sum, b_sum, result);
-
-    delete_safe(ppm);
-    delete_safe(result);
+    performTest(r_sum, g_sum, b_sum, result.get());
 }
 
 TEST(Debayer, colorTestBilinear)
 {
-    G12Buffer *ppm = PPMLoader().loadG12("data/testdata/test_debayer.pgm");
-    if (ppm == nullptr) {
-        cout << "couldn't open test image" << endl;
-        return;
-    }
-    CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
-    CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
-    Debayer d(ppm);
-    RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
-    d.toRGB48(DebayerMethod::BILINEAR, result);
+    std::unique_ptr<G12Buffer> p(PPMLoader().loadG12("data/testdata/test_debayer.pgm"));
+    CORE_ASSERT_TRUE(p != NULL, "PPM Image load failed");
+    CORE_ASSERT_TRUE(p->verify(), "PPM Image verification failed");
+    Debayer d(p.get());
+    std::unique_ptr<RGB48Buffer> result(new RGB48Buffer(p->h, p->w, false));
+
+    d.toRGB48(DebayerMethod::BILINEAR, result.get());
 
     int64_t r_sum = 0, g_sum = 0, b_sum = 0;
-    performTest(r_sum, g_sum, b_sum, result);
-
-    delete_safe(ppm);
-    delete_safe(result);
+    performTest(r_sum, g_sum, b_sum, result.get());
 }
 
 TEST(Debayer, colorTestAHD)
 {
-    G12Buffer *ppm = PPMLoader().loadG12("data/testdata/test_debayer.pgm");
-    if (ppm == nullptr) {
-        cout << "couldn't open test image" << endl;
-        return;
-    }
-    CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
-    CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
-    Debayer d(ppm);
-    RGB48Buffer* result = new RGB48Buffer(ppm->h, ppm->w, false);
-    d.toRGB48(DebayerMethod::AHD, result);
+    std::unique_ptr<G12Buffer> p(PPMLoader().loadG12("data/testdata/test_debayer.pgm"));
+    CORE_ASSERT_TRUE(p != NULL, "PPM Image load failed");
+    CORE_ASSERT_TRUE(p->verify(), "PPM Image verification failed");
+    Debayer d(p.get());
+    std::unique_ptr<RGB48Buffer> result(new RGB48Buffer(p->h, p->w, false));
+    d.toRGB48(DebayerMethod::AHD, result.get());
 
     int64_t r_sum = 0, g_sum = 0, b_sum = 0;
-    performTest(r_sum, g_sum, b_sum, result);
-
-    delete_safe(ppm);
-    delete_safe(result);
+    performTest(r_sum, g_sum, b_sum, result.get());
 }
 
 TEST(Debayer, bayerShiftTest) 
 {
-    RGB48Buffer *ppm = PPMLoader().loadRgb48("data/testdata/test_ppm.ppm");
-    if (ppm == nullptr) {
-        cout << "couldn't open test image" << endl;
-        return;
-    }
-    G12Buffer *g = new G12Buffer(ppm->getSize(), false);
+    std::unique_ptr<RGB48Buffer> ppm(PPMLoader().loadRgb48("data/testdata/test_ppm.ppm"));
+    EXPECT_TRUE(ppm.get() != nullptr);
+
+    std::unique_ptr<G12Buffer> g(new G12Buffer(ppm->getSize(), false));
 
     for (int k = 0; k < 4; k++) {
         for (int i = 0; i < ppm->h; i++) {
             for (int j = 0; j < ppm->w; j++) {
-                g->element(i, j) = ppm->element(i, j)[Debayer(g, 8, nullptr, k).colorFromBayerPos(i, j, false)];
+                g->element(i, j) = ppm->element(i, j)[Debayer(g.get(), 8, nullptr, k).colorFromBayerPos(i, j, false)];
             }
         }
 
-        printf("Bayer phase %d, RMSD is: %lf\n", k, ErrorMetrics::Yrmsd(g, ppm, 3, 8));
+        printf("Bayer phase %d, RMSD is: %lf\n", k, ErrorMetrics::Yrmsd(g.get(), ppm.get(), 3, 8));
     }
-
-    delete_safe(g);
-    delete_safe(ppm);
 }
