@@ -10,9 +10,7 @@ exists(../../../../config.pri) {
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
-!build_pass: message(Including gtest)
 GTEST_SRC_PATH = "$$(GTEST_SRC_PATH)"
-
 isEmpty(GTEST_SRC_PATH) {
     GTEST_SRC_PATH="$$ROOT_DIR/siblings/gtest"
 }
@@ -36,9 +34,7 @@ exists($$GTEST_SRC_PATH) {
             LIBS += -lgtest
         }
     } else {
-        !build_pass: message(Using gtest from $$GTEST_PATH)
         INCLUDEPATH += "$$GTEST_PATH"/include
-
         win32 {
             equals(QMAKE_TARGET.arch, "x86") {
                 GTEST_PATH_BUILD = "$$GTEST_PATH"/build_x86
@@ -55,6 +51,7 @@ exists($$GTEST_SRC_PATH) {
 
             !build_pass: message(Using gtest from <$$GTEST_PATH/build/Release|Debug>)
         } else {
+            !build_pass: message(Using gtest from $$GTEST_PATH)
             LIBS += -L"$$GTEST_PATH_BUILD/lib" -lgtest
         }
     }
