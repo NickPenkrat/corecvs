@@ -232,7 +232,7 @@ public:
     {
         focal     = Vector2d<DoubleType>(DoubleType(data.focalX()), DoubleType(data.focalY()));
         principal = Vector2d<DoubleType>(DoubleType(data.principalX()), DoubleType(data.principalY()));
-        skew      = DoubleType(data.skew);
+        skew      = DoubleType(data.skew());
     }
 
     Vector2d<DoubleType> project(const Vector3d<DoubleType> &p) const

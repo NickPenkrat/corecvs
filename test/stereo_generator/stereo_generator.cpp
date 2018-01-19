@@ -28,6 +28,8 @@ std::string postfix=".jpg";
 
 std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vector3dd, double> getRectifyingTransform(corecvs::FixtureCamera &camL, corecvs::FixtureCamera &camR, const corecvs::Matrix33 &newK)
 {
+    CORE_ASSERT_TRUE((camL.getPinhole() != NULL && camR.getPinhole() != NULL), "Only Pinhole cameras are supported");
+
 	auto F = camL.fundamentalTo(camR);
 	F /= F.a(2, 2);
 	// 1. camL goes to K[I|0]
@@ -63,7 +65,7 @@ std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vec
 
 
 	// 3. Now we rotate all the world till [t,0,0] and dir of first camera are in y=0
-	auto d = camL.rayFromPixel(camL.intrinsics.size/2.0).a.normalised();
+    auto d = camL.rayFromPixel(camL.getPinhole()->size() / 2.0).a.normalised();
 	d /= std::sqrt(d[1] * d[1] + d[2] * d[2]);
 	corecvs::Matrix33 RD(1.0,  0.0,  0.0,
                          0.0, d[2], d[1],
@@ -88,8 +90,8 @@ std::tuple<corecvs::Matrix33, corecvs::Matrix33, corecvs::Matrix33, corecvs::Vec
 	// X = Rl^tR^tX2+Cl
 	std::get<3>(res) = Tl;
 	std::get<2>(res) = (R1 ^ Q).toMatrix();
-	std::get<1>(res) = (newK * camR.extrinsics.orientation.conjugated().toMatrix() * camR.intrinsics.getKMatrix33().inv());
-	std::get<0>(res) = (newK * camL.extrinsics.orientation.conjugated().toMatrix() * camL.intrinsics.getKMatrix33().inv());
+    std::get<1>(res) = (newK * camR.extrinsics.orientation.conjugated().toMatrix() * camR.getPinhole()->getKMatrix33().inv());
+    std::get<0>(res) = (newK * camL.extrinsics.orientation.conjugated().toMatrix() * camL.getPinhole()->getKMatrix33().inv());
 
 	auto ff =  std::get<0>(res).inv().transposed()*F*std::get<1>(res).inv();
 	double maxv = 0.0;
@@ -112,8 +114,8 @@ void createRectified(corecvs::CameraFixture *fl, corecvs::FixtureCamera *cL, cor
 	auto cl = fl->getWorldCamera(cL),
 	     cr = fr->getWorldCamera(cR);
 	auto rt = getRectifyingTransform(cl, cr, Kn);
-	auto dl = corecvs::RadialCorrection(cl.distortion).getUndistortionTransformation(cl.intrinsics.size, cl.intrinsics.distortedSize, 0.25, false);	
-	auto dr = corecvs::RadialCorrection(cr.distortion).getUndistortionTransformation(cr.intrinsics.size, cr.intrinsics.distortedSize, 0.25, false);
+    auto dl = corecvs::RadialCorrection(cl.distortion).getUndistortionTransformation(cl.intrinsics->size(), cl.intrinsics->distortedSize(), 0.25, false);
+    auto dr = corecvs::RadialCorrection(cr.distortion).getUndistortionTransformation(cr.intrinsics->size(), cr.intrinsics->distortedSize(), 0.25, false);
 
 	std::stringstream ssL, ssR;
 	ssL << prefix << fl->name << cl.nameId << postfix;
@@ -124,12 +126,12 @@ void createRectified(corecvs::CameraFixture *fl, corecvs::FixtureCamera *cL, cor
 	                                      imgR(QTRGB24Loader().load(ssR.str()));
 	std::cout << imgL->w << "x" << imgL->h << std::endl;
 	std::cout << imgR->w << "x" << imgR->h << std::endl;
-	std::unique_ptr<corecvs::RGB24Buffer> uL(imgL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dl, cl.intrinsics.size[1], cl.intrinsics.size[0])),
-	                                      uR(imgR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dr, cr.intrinsics.size[1], cr.intrinsics.size[0]));
+    std::unique_ptr<corecvs::RGB24Buffer> uL(imgL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dl, cl.intrinsics->size()[1], cl.intrinsics->size()[0])),
+                                          uR(imgR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&dr, cr.intrinsics->size()[1], cr.intrinsics->size()[0]));
 	corecvs::DisplacementBuffer pl(&std::get<0>(rt), size[1], size[0]),
                                 pr(&std::get<1>(rt), size[1], size[0]);
-	std::unique_ptr<corecvs::RGB24Buffer> iL(uL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&pl, cl.intrinsics.size[1], cl.intrinsics.size[0])),
-	                                      iR(uR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&pr, cr.intrinsics.size[1], cr.intrinsics.size[0]));
+    std::unique_ptr<corecvs::RGB24Buffer> iL(uL->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&pl, cl.intrinsics->size()[1], cl.intrinsics->size()[0])),
+                                          iR(uR->doReverseDeformationBlTyped<corecvs::DisplacementBuffer>(&pr, cr.intrinsics->size()[1], cr.intrinsics->size()[0]));
 	for (int i = 10; i < iL->h; i += 20)
 		for (int j = 0; j < iL->w; ++j)
 			iL->element(i, j) = iR->element(i, j) = corecvs::RGBColor(255, 0, 0);
@@ -165,13 +167,17 @@ int main(int argc, char **argv)
 	std::vector<double> focals;
 	double maxW = 0.0, maxH = 0.0;
 
-	for (auto& f: fs.fixtures())
-		for (auto& c: f->cameras)
+
+    for (CameraFixture* f: fs.fixtures())
+        for (FixtureCamera *c: f->cameras)
 		{
+            CORE_ASSERT_TRUE((c->getPinhole() != NULL), "Only Pinhole cameras are supported");
+
+
 			std::cout << "Will use image " << prefix << f->name << c->nameId << postfix << std::endl;
-			maxW = std::max(maxW, c->intrinsics.size[0]);
-			maxH = std::max(maxH, c->intrinsics.size[1]);
-			focals.push_back(c->intrinsics.focal[0]);
+            maxW = std::max(maxW, c->intrinsics->size()[0]);
+            maxH = std::max(maxH, c->intrinsics->size()[1]);
+            focals.push_back(c->getPinhole()->focal()[0]);
 		}
 	std::sort(focals.begin(), focals.end());
 	maxW *= 1.1;

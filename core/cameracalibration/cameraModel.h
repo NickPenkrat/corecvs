@@ -162,13 +162,10 @@ public:
         return intrinsics->crossProductError(extrinsics.project(p), pp);
     }
 
-    /**
-     *   Depricated
-     **/
-   /* double angleError(const Vector3dd &p, const Vector2dd &pp)
+    double angleErrorRad(const Vector3dd &p, const Vector2dd &pp)
     {
-        return intrinsics->angleError(extrinsics.project(p), pp);
-    }*/
+        return intrinsics->angleErrorRad(extrinsics.project(p), pp);
+    }
 
     Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp)
     {

@@ -54,13 +54,15 @@ void testJSON_FixtureScene()
         Affine3DQ position(Quaternion::RotationZ(angle), Vector3dd::FromCylindrical(angle, 5.0, 0.0));
 
         model.extrinsics = CameraLocationData(position);
-        model.intrinsics.principal.x() = 100;
-        model.intrinsics.principal.y() = 100;
 
-        model.intrinsics.focal.x() = 100;
-        model.intrinsics.focal.y() = 100;
+        model.getPinhole()->setPrincipalX(100);
+        model.getPinhole()->setPrincipalY(100);
 
-        model.intrinsics.size = Vector2dd(200, 200);
+        model.getPinhole()->setFocalX(100);
+        model.getPinhole()->setFocalY(100);
+
+        model.getPinhole()->setSize(Vector2dd(200, 200));
+        model.getPinhole()->setDistortedSize(Vector2dd(200, 200));
 
         //SYNC_PRINT(("Length: %d\n", scene->fixtures.size()));
 
@@ -130,11 +132,16 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 
 
     CameraModel model;
-    model.intrinsics.principal.x() = 320;
-    model.intrinsics.principal.y() = 240;
-    model.intrinsics.focal.x() = 589;
-    model.intrinsics.focal.y() = 589;
-    model.intrinsics.size = Vector2dd(640, 480);
+
+    model.getPinhole()->setPrincipalX(320);
+    model.getPinhole()->setPrincipalY(240);
+
+    model.getPinhole()->setFocalX(589);
+    model.getPinhole()->setFocalY(589);
+
+    model.getPinhole()->setSize(Vector2dd(640, 480));
+    model.getPinhole()->setDistortedSize(Vector2dd(640, 480));
+
     model.distortion.mKoeff = std::vector<double>({std::numeric_limits<double>::min()});
 
     if (useDistortion)
@@ -145,7 +152,7 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
         model.distortion.setTangentialX(0.01);
         model.distortion.setTangentialY(0.01);
         model.distortion.mKoeff.push_back(0.5);
-        model.distortion.setNormalizingFocal(model.intrinsics.size.l2Metric());
+        model.distortion.setNormalizingFocal(model.getPinhole()->size().l2Metric());
     }
 
 
@@ -165,9 +172,9 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
     scene->positionCameraInFixture(fixture, camera2
                                    , Affine3DQ(Vector3dd::OrtY() * 10.0));
 
-    RGB24Buffer *image1 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(39));
-    RGB24Buffer *image2 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(56));
-    RGB24Buffer *image3 = new RGB24Buffer(model.intrinsics.h(), model.intrinsics.w(), RGBColor::gray(75));
+    RGB24Buffer *image1 = new RGB24Buffer(model.intrinsics->h(), model.intrinsics->w(), RGBColor::gray(39));
+    RGB24Buffer *image2 = new RGB24Buffer(model.intrinsics->h(), model.intrinsics->w(), RGBColor::gray(56));
+    RGB24Buffer *image3 = new RGB24Buffer(model.intrinsics->h(), model.intrinsics->w(), RGBColor::gray(75));
 
     image1->checkerBoard(20, RGBColor::Gray(50));
     image2->checkerBoard(20, RGBColor::Gray(50));
@@ -280,7 +287,7 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
         SYNC_PRINT(("Saving ideal images\n"));
 
     } else {
-        FixedPointDisplace displacer(model.distortion, model.intrinsics.h(), model.intrinsics.w());
+        FixedPointDisplace displacer(model.distortion, model.intrinsics->h(), model.intrinsics->w());
         RGB24Buffer *dist1 = image1->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
         RGB24Buffer *dist2 = image2->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
         RGB24Buffer *dist3 = image3->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);

@@ -141,20 +141,27 @@ void CameraModelParametersControlWidget::getParameters(CameraModel& params) cons
     ui->extrinsicWorldWidget->getParameters(location);
     params.setLocation(location);
 
-    params.intrinsics.focal.x() = ui->spinBoxFocalX->value();
-    params.intrinsics.focal.y() = ui->spinBoxFocalY->value();
+    PinholeCameraIntrinsics *pinhole = params.getPinhole();
 
-    params.intrinsics.principal.x() = ui->spinBoxCx->value();
-    params.intrinsics.principal.y() = ui->spinBoxCy->value();
+    if (pinhole != NULL) {
+        pinhole->setFocalX(ui->spinBoxFocalX->value());
+        pinhole->setFocalX(ui->spinBoxFocalY->value());
+
+        pinhole->setPrincipalX(ui->spinBoxCx->value());
+        pinhole->setPrincipalY(ui->spinBoxCy->value());
+
+        pinhole->setSizeX(ui->spinBoxSizeX->value());
+        pinhole->setSizeY(ui->spinBoxSizeY->value());
+
+        pinhole->setDistortedSizeX(ui->spinBoxSizeDistortedX->value());
+        pinhole->setDistortedSizeX(ui->spinBoxSizeDistortedY->value());
+
+        pinhole->setSkew(ui->spinBoxSkew->value());
+    } else {
+
+    }
 
 
-    params.intrinsics.size.x() =  ui->spinBoxSizeX->value();
-    params.intrinsics.size.y() =  ui->spinBoxSizeY->value();
-
-    params.intrinsics.distortedSize.x() =  ui->spinBoxSizeDistortedX->value();
-    params.intrinsics.distortedSize.y() =  ui->spinBoxSizeDistortedY->value();
-
-    params.intrinsics.skew = ui->spinBoxSkew->value();
 }
 
 CameraModel *CameraModelParametersControlWidget::createParameters() const
@@ -179,24 +186,30 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
     ui->extrinsicWorldWidget->setParameters(input.getAffine());
     ui->extrinsicCamWidget->setParameters(FixtureScene::DEFAULT_WORLD_TO_CAMERA * input.getAffine());
 
-    ui->spinBoxFocalX->setValue(input.intrinsics.fx());
-    ui->spinBoxFocalY->setValue(input.intrinsics.fy());
+    PinholeCameraIntrinsics *pinhole = input.getPinhole();
 
-    ui->spinBoxCx->setValue(input.intrinsics.cx());
-    ui->spinBoxCy->setValue(input.intrinsics.cy());
+    if (pinhole != NULL)
+    {
+        ui->spinBoxFocalX->setValue(pinhole->focalX());
+        ui->spinBoxFocalY->setValue(pinhole->focalY());
 
-    ui->spinBoxSizeX->setValue(input.intrinsics.size.x());
-    ui->spinBoxSizeX->setValue(input.intrinsics.size.y());
+        ui->spinBoxCx->setValue(pinhole->principalX());
+        ui->spinBoxCy->setValue(pinhole->principalY());
 
-    ui->spinBoxSizeDistortedX->setValue(input.intrinsics.distortedSize.x());
-    ui->spinBoxSizeDistortedY->setValue(input.intrinsics.distortedSize.y());
+        ui->spinBoxSizeX->setValue(pinhole->sizeX());
+        ui->spinBoxSizeX->setValue(pinhole->sizeY());
 
-    ui->spinBoxSkew->setValue(input.intrinsics.skew);
+        ui->spinBoxSizeDistortedX->setValue(pinhole->distortedSizeX());
+        ui->spinBoxSizeDistortedY->setValue(pinhole->distortedSizeY());
 
-    ui->infoLabel->setText(QString("Size(xy):[%1 x %2] dist:[%3 x %4]")
-                .arg(input.intrinsics.size.x()).arg(input.intrinsics.size.y())
-                .arg(input.intrinsics.distortedSize.x()).arg(input.intrinsics.distortedSize.y()));
+        ui->spinBoxSkew->setValue(pinhole->skew());
 
+        ui->infoLabel->setText(QString("Size(xy):[%1 x %2] dist:[%3 x %4]")
+                    .arg(pinhole->sizeX())         .arg(pinhole->sizeY())
+                    .arg(pinhole->distortedSizeX()).arg(pinhole->distortedSizeY()));
+    } else {
+        layout()->addWidget(new QLabel("Test"));
+    }
 
     blockSignals(wasBlocked);
     backup = input;

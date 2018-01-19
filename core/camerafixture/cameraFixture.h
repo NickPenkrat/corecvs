@@ -129,13 +129,11 @@ public:
         return cam->crossProductError(location.inverted().apply(p), pp);
     }
 
-    /** \depricated */
-    /*
-    double angleError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
+    double angleErrorRad(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
     {
-        return cam->angleError(location.inverted().apply(p), pp);
+        return cam->angleErrorRad(location.inverted().apply(p), pp);
     }
-    */
+
 
     Vector3dd rayDiffError(const Vector3dd &p, const Vector2dd &pp, FixtureCamera* cam)
     {

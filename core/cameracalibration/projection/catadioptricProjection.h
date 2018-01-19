@@ -7,6 +7,8 @@
 
 #include "core/cameracalibration/projection/projectionModels.h"
 #include "core/xml/generated/projectionBaseParameters.h"
+#include "core/xml/generated/catadioptricBaseParameters.h"
+
 
 namespace corecvs{
 
@@ -18,11 +20,11 @@ class GenericCatadioptricProjection : public CameraProjection {
 };
 
 
-class CatadioptricProjection : public ProjectionBaseParameters, public CameraProjection
+class CatadioptricProjection : public CatadioptricBaseParameters, public CameraProjection
 {
 public:
     CatadioptricProjection(const Vector2dd &principal, double focal, const Vector2dd &size) :
-        ProjectionBaseParameters(principal.x(), principal.y(), focal, size.x(), size.y(), size.x(), size.y()),
+        CatadioptricBaseParameters(principal.x(), principal.y(), focal, {} ,size.x(), size.y(), size.x(), size.y()),
         CameraProjection(CATADIOPTRIC)
     {
 
@@ -117,6 +119,9 @@ public:
         res = cameraRef - camera;
         return true;
 #else
+
+
+
         CORE_UNUSED(p);
         return Vector3dd::Zero();
 #endif
