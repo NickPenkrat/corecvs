@@ -5,6 +5,12 @@
     <field type="double"    name="principalY"        defaultValue="320" comment="The center of projection \f$y_c\f$"/>
 
     <field type="double"    name="focal"      defaultValue="820.427" min="0"      max="99999.0" step="1"/>
+
+    <field type="double"    name="sizeX"   suffix="px"   defaultValue="240" comment="Model image resolution X" />
+    <field type="double"    name="sizeY"   suffix="px"   defaultValue="320" comment="Model image resolution Y"/>
+
+    <field type="double"    name="distortedSizeX" defaultValue="240" comment="Source image resolution X" />
+    <field type="double"    name="distortedSizeY" defaultValue="320" comment="Source image resolution Y"/>
   </class>
 
 
@@ -38,10 +44,10 @@
 
     <field type="double"    name="skew"        decimals="5"  defaultValue="0.0" min="-99999.0"  max="99999.0" step="0.001"/>
 
-    <field type="double"    name="sizeX"   suffix="px"   defaultValue="240" comment="Model image resolution X" />
-    <field type="double"    name="sizeY"   suffix="px"   defaultValue="320" comment="Model image resolution Y"/>
+    <field type="double"    name="sizeX"   suffix="px"   defaultValue="2592" comment="Model image resolution X" />
+    <field type="double"    name="sizeY"   suffix="px"   defaultValue="1944" comment="Model image resolution Y"/>
 
-    <field type="double"    name="distortedSizeX" defaultValue="240" comment="Source image resolution X" />
-    <field type="double"    name="distortedSizeY" defaultValue="320" comment="Source image resolution Y"/>
+    <field type="double"    name="distortedSizeX" defaultValue="2592" comment="Source image resolution X" />
+    <field type="double"    name="distortedSizeY" defaultValue="1944" comment="Source image resolution Y"/>
   </class>
 </poco>

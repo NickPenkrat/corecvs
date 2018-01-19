@@ -5,7 +5,7 @@
 #include "core/math/vector/vector3d.h"
 #include "core/function/function.h"
 
-#include "core/cameracalibration/projectionModels.h"
+#include "core/cameracalibration/projection/projectionModels.h"
 #include "core/xml/generated/projectionBaseParameters.h"
 
 namespace corecvs{
@@ -70,8 +70,10 @@ public:
  **/
 class EquidistantProjection : public ProjectionBaseParameters, public CameraProjection {
 public:
-    EquidistantProjection(const Vector2dd &principal, double focal) :
-        ProjectionBaseParameters(principal.x(), principal.y(), focal),
+    EquidistantProjection() : CameraProjection(EQUIDISTANT) {}
+
+    EquidistantProjection(const Vector2dd &principal, double focal, const Vector2dd &size) :
+        ProjectionBaseParameters(principal.x(), principal.y(), focal, size.x(), size.y(), size.x(), size.y()),
         CameraProjection(EQUIDISTANT)
     {
 
@@ -102,6 +104,36 @@ public:
     {
         return false;
     }
+
+    virtual Vector2dd size() const override
+    {
+        return  Vector2dd(sizeX(), sizeY());
+    }
+
+    virtual Vector2dd distortedSize() const override
+    {
+        return  Vector2dd(distortedSizeX(), distortedSizeY());
+    }
+
+    /*Vector2dd focal() const
+    {
+        return  Vector2dd(focalX(), focalY());
+    }*/
+
+    virtual Vector2dd principal() const override
+    {
+        return  Vector2dd(principalX(), principalY());
+    }
+
+    /* Misc */
+    virtual EquidistantProjection *clone() const
+    {
+        EquidistantProjection *p = new EquidistantProjection();
+        *p = *this;
+        return p;
+    }
+
+    virtual ~EquidistantProjection() {}
 };
 
 }

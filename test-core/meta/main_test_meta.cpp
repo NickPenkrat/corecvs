@@ -487,7 +487,11 @@ TEST(meta, genEssentialCostFunction)
     "    double Tz = in[EssentialEstimator::CostFunctionBase::TRANSLATION_Z]; \n"
 
     "    Vector2dd start = c->start;\n"
-    "    Vector2dd end   = c->end;\n";
+    "    Vector2dd end   = c->end;\n"
+    "    double startx = start.x();\n"
+    "    double starty = start.y();\n"
+    "    double endx = end.x();\n"
+    "    double endy = end.y();\n";
 
     file << "   double value = ";
     node->codeGenCpp(2, style);

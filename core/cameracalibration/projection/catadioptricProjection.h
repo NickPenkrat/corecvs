@@ -1,11 +1,12 @@
 #ifndef CATADIOPTRICPROJECTION_H
 #define CATADIOPTRICPROJECTION_H
 
-#include "vector2d.h"
-#include "vector3d.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
+#include "core/function/function.h"
 
-#include "projectionModels.h"
-#include "projectionBaseParameters.h"
+#include "core/cameracalibration/projection/projectionModels.h"
+#include "core/xml/generated/projectionBaseParameters.h"
 
 namespace corecvs{
 
@@ -16,12 +17,13 @@ class GenericCatadioptricProjection : public CameraProjection {
 
 };
 
-#if 0
+
 class CatadioptricProjection : public ProjectionBaseParameters, public CameraProjection
 {
 public:
-    CatadioptricProjection(const Vector2dd &principal, double focal) :
-        ProjectionBaseParameters(principal.x(), principal.y(), focal)
+    CatadioptricProjection(const Vector2dd &principal, double focal, const Vector2dd &size) :
+        ProjectionBaseParameters(principal.x(), principal.y(), focal, size.x(), size.y(), size.x(), size.y()),
+        CameraProjection(CATADIOPTRIC)
     {
 
     }
@@ -29,6 +31,7 @@ public:
 
     virtual Vector2dd project(const Vector3dd &p) const override
     {
+#if 0
         Vector3d n =
             point.squaredNorm() == 0.0 ? Vector3d(0, 0, 1) : point.normalized();
         double rho_tilde = n.template block<2, 1>(0, 0).norm();
@@ -69,10 +72,16 @@ public:
         }
         return n.template block<2, 1>(0, 0) * bestRoot * intrinsics[0] +
                Vector2d(intrinsics[1], intrinsics[2]);
+#else
+        CORE_UNUSED(p);
+        return Vector2dd::Zero();
+#endif
+
     }
 
     virtual Vector3dd reverse(const Vector2dd &p) const override
     {
+#if 0
         Map<const SE3<T>> camToWorld(pose);
         Map<const Eigen::Matrix<T, 3, 1>> intrinsics(intrinsic);
         Map<const Eigen::Matrix<T, -1, 1>> poly(catadioptric, polyN);
@@ -107,10 +116,13 @@ public:
 
         res = cameraRef - camera;
         return true;
+#else
+        CORE_UNUSED(p);
+        return Vector3dd::Zero();
+#endif
     }
 
 };
-#endif
 
 }
 

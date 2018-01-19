@@ -2,7 +2,6 @@
 #define CAMERAMODEL_H
 
 #include "calibrationLocation.h"
-#include "core/cameracalibration/projection/pinholeCameraIntrinsics.h"
 #include "core/buffers/displacementBuffer.h"
 #include "core/xml/generated/distortionApplicationParameters.h"
 #include "core/rectification/essentialMatrix.h"
@@ -13,7 +12,79 @@
 #include "core/alignment/selectableGeometryFeatures.h"
 
 
+#include "core/cameracalibration/projection/pinholeCameraIntrinsics.h"
+#include "core/cameracalibration/projection/equidistantProjection.h"
+#include "core/cameracalibration/projection/equisolidAngleProjection.h"
+#include "core/cameracalibration/projection/catadioptricProjection.h"
+#include "core/cameracalibration/projection/stereographicProjection.h"
+
 namespace corecvs {
+
+
+/**
+ * Serialization is a bit more tricky. So far - stupid approach
+ *
+ * This class is a wrapper that is able to manually transform dinamic polimorphism into static for ProjectionType hierarchy
+ *
+ **/
+class ProjectionFactory {
+public:
+    std::unique_ptr<CameraProjection> &target;
+
+    ProjectionFactory(std::unique_ptr<CameraProjection> &target) :
+        target(target) {}
+
+
+    static CameraProjection *projectionById(CameraProjection::ProjectionType &projection)
+    {
+        switch (projection) {
+            case  CameraProjection::PINHOLE:
+            default:
+                return new PinholeCameraIntrinsics();
+            case  CameraProjection::EQUIDISTANT:
+                return new EquidistantProjection();
+            /*case  CameraProjection::CATADIOPTRIC:
+                return new CatadioptricProjection();*/
+            case  CameraProjection::STEREOGRAPHIC:
+                return new StereographicProjection();
+            case  CameraProjection::EQUISOLID:
+                return new EquisolidAngleProjection();
+        }
+        return NULL;
+    }
+
+    template<class Visitor>
+    void accept(Visitor &visitor)
+    {
+
+        CameraProjection::ProjectionType projection = target->projection;
+        visitor.visit((int&)projection, (int)CameraProjection::PINHOLE, "projectionType");
+
+        if (projection != target->projection)
+        {
+            target.reset(projectionById(projection));
+        }
+
+        switch (projection) {
+            case  CameraProjection::PINHOLE:
+                static_cast<PinholeCameraIntrinsics *>(target.get())->accept<Visitor>(visitor); break;
+            case  CameraProjection::EQUIDISTANT:
+                static_cast<EquidistantProjection *>  (target.get())->accept<Visitor>(visitor); break;
+            case  CameraProjection::CATADIOPTRIC:
+                static_cast<CatadioptricProjection *> (target.get())->accept<Visitor>(visitor); break;
+            case  CameraProjection::STEREOGRAPHIC:
+                static_cast<StereographicProjection *>(target.get())->accept<Visitor>(visitor); break;
+            case  CameraProjection::EQUISOLID:
+                static_cast<EquisolidAngleProjection *>(target.get())->accept<Visitor>(visitor); break;
+            /*case  CameraProjection::ORTHOGRAPIC:
+                static_cast<EquidistantProjection *>(target.get())->accept<Visitor>(visitor); break;*/
+            default:
+                break;
+
+        }
+    }
+
+};
 
 class CameraModel
 {
@@ -21,7 +92,6 @@ public:
     /**/
     //PinholeCameraIntrinsics  intrinsics;
     std::unique_ptr<CameraProjection> intrinsics;
-
     /**/
     LensDistortionModelParameters   distortion;
     /**/
@@ -243,6 +313,8 @@ public:
         // MEFIXASAP
         //visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
 
+        ProjectionFactory wrapper(intrinsics);
+        visitor.visit(wrapper, "intrinsics");
         //visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
 
         visitor.visit(extrinsics, CameraLocationData()           , "extrinsics");

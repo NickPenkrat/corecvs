@@ -128,7 +128,7 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
         (
           PinholeCameraIntrinsicsBaseParameters::SIZEX_ID,
           offsetof(PinholeCameraIntrinsicsBaseParameters, mSizeX),
-          240,
+          2592,
           "sizeX",
           "sizeX",
           "Model image resolution X"
@@ -142,7 +142,7 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
         (
           PinholeCameraIntrinsicsBaseParameters::SIZEY_ID,
           offsetof(PinholeCameraIntrinsicsBaseParameters, mSizeY),
-          320,
+          1944,
           "sizeY",
           "sizeY",
           "Model image resolution Y"
@@ -156,7 +156,7 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
         (
           PinholeCameraIntrinsicsBaseParameters::DISTORTEDSIZEX_ID,
           offsetof(PinholeCameraIntrinsicsBaseParameters, mDistortedSizeX),
-          240,
+          2592,
           "distortedSizeX",
           "distortedSizeX",
           "Source image resolution X"
@@ -169,7 +169,7 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
         (
           PinholeCameraIntrinsicsBaseParameters::DISTORTEDSIZEY_ID,
           offsetof(PinholeCameraIntrinsicsBaseParameters, mDistortedSizeY),
-          320,
+          1944,
           "distortedSizeY",
           "distortedSizeY",
           "Source image resolution Y"

@@ -43,6 +43,10 @@ public:
         PRINCIPALX_ID,
         PRINCIPALY_ID,
         FOCAL_ID,
+        SIZEX_ID,
+        SIZEY_ID,
+        DISTORTEDSIZEX_ID,
+        DISTORTEDSIZEY_ID,
         PROJECTION_BASE_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -65,6 +69,30 @@ public:
      * focal 
      */
     double mFocal;
+
+    /** 
+     * \brief sizeX 
+     * Model image resolution X 
+     */
+    double mSizeX;
+
+    /** 
+     * \brief sizeY 
+     * Model image resolution Y 
+     */
+    double mSizeY;
+
+    /** 
+     * \brief distortedSizeX 
+     * Source image resolution X 
+     */
+    double mDistortedSizeX;
+
+    /** 
+     * \brief distortedSizeY 
+     * Source image resolution Y 
+     */
+    double mDistortedSizeY;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -91,6 +119,26 @@ public:
         return mFocal;
     }
 
+    double sizeX() const
+    {
+        return mSizeX;
+    }
+
+    double sizeY() const
+    {
+        return mSizeY;
+    }
+
+    double distortedSizeX() const
+    {
+        return mDistortedSizeX;
+    }
+
+    double distortedSizeY() const
+    {
+        return mDistortedSizeY;
+    }
+
     /* Section with setters */
     void setPrincipalX(double principalX)
     {
@@ -107,6 +155,26 @@ public:
         mFocal = focal;
     }
 
+    void setSizeX(double sizeX)
+    {
+        mSizeX = sizeX;
+    }
+
+    void setSizeY(double sizeY)
+    {
+        mSizeY = sizeY;
+    }
+
+    void setDistortedSizeX(double distortedSizeX)
+    {
+        mDistortedSizeX = distortedSizeX;
+    }
+
+    void setDistortedSizeY(double distortedSizeY)
+    {
+        mDistortedSizeY = distortedSizeY;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -115,6 +183,10 @@ template<class VisitorType>
         visitor.visit(mPrincipalX,                static_cast<const corecvs::DoubleField *>(fields()[PRINCIPALX_ID]));
         visitor.visit(mPrincipalY,                static_cast<const corecvs::DoubleField *>(fields()[PRINCIPALY_ID]));
         visitor.visit(mFocal,                     static_cast<const corecvs::DoubleField *>(fields()[FOCAL_ID]));
+        visitor.visit(mSizeX,                     static_cast<const corecvs::DoubleField *>(fields()[SIZEX_ID]));
+        visitor.visit(mSizeY,                     static_cast<const corecvs::DoubleField *>(fields()[SIZEY_ID]));
+        visitor.visit(mDistortedSizeX,            static_cast<const corecvs::DoubleField *>(fields()[DISTORTEDSIZEX_ID]));
+        visitor.visit(mDistortedSizeY,            static_cast<const corecvs::DoubleField *>(fields()[DISTORTEDSIZEY_ID]));
     }
 
     ProjectionBaseParameters()
@@ -127,11 +199,19 @@ template<class VisitorType>
           double principalX
         , double principalY
         , double focal
+        , double sizeX
+        , double sizeY
+        , double distortedSizeX
+        , double distortedSizeY
     )
     {
         mPrincipalX = principalX;
         mPrincipalY = principalY;
         mFocal = focal;
+        mSizeX = sizeX;
+        mSizeY = sizeY;
+        mDistortedSizeX = distortedSizeX;
+        mDistortedSizeY = distortedSizeY;
     }
 
     bool operator ==(const ProjectionBaseParameters &other) const 
@@ -139,6 +219,10 @@ template<class VisitorType>
         if ( !(this->mPrincipalX == other.mPrincipalX)) return false;
         if ( !(this->mPrincipalY == other.mPrincipalY)) return false;
         if ( !(this->mFocal == other.mFocal)) return false;
+        if ( !(this->mSizeX == other.mSizeX)) return false;
+        if ( !(this->mSizeY == other.mSizeY)) return false;
+        if ( !(this->mDistortedSizeX == other.mDistortedSizeX)) return false;
+        if ( !(this->mDistortedSizeY == other.mDistortedSizeY)) return false;
         return true;
     }
     friend std::ostream& operator << (std::ostream &out, ProjectionBaseParameters &toSave)

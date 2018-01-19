@@ -84,6 +84,60 @@ int ProjectionBaseParameters::staticInit()
     field2->precision=2;
     fields().push_back(field2);
     /*  */ 
+    DoubleField* field3 = new DoubleField
+        (
+          ProjectionBaseParameters::SIZEX_ID,
+          offsetof(ProjectionBaseParameters, mSizeX),
+          240,
+          "sizeX",
+          "sizeX",
+          "Model image resolution X"
+        );
+    field3->widgetHint=BaseField::SPIN_BOX;
+    field3->suffixHint="px";
+    field3->precision=2;
+    fields().push_back(field3);
+    /*  */ 
+    DoubleField* field4 = new DoubleField
+        (
+          ProjectionBaseParameters::SIZEY_ID,
+          offsetof(ProjectionBaseParameters, mSizeY),
+          320,
+          "sizeY",
+          "sizeY",
+          "Model image resolution Y"
+        );
+    field4->widgetHint=BaseField::SPIN_BOX;
+    field4->suffixHint="px";
+    field4->precision=2;
+    fields().push_back(field4);
+    /*  */ 
+    DoubleField* field5 = new DoubleField
+        (
+          ProjectionBaseParameters::DISTORTEDSIZEX_ID,
+          offsetof(ProjectionBaseParameters, mDistortedSizeX),
+          240,
+          "distortedSizeX",
+          "distortedSizeX",
+          "Source image resolution X"
+        );
+    field5->widgetHint=BaseField::SPIN_BOX;
+    field5->precision=2;
+    fields().push_back(field5);
+    /*  */ 
+    DoubleField* field6 = new DoubleField
+        (
+          ProjectionBaseParameters::DISTORTEDSIZEY_ID,
+          offsetof(ProjectionBaseParameters, mDistortedSizeY),
+          320,
+          "distortedSizeY",
+          "distortedSizeY",
+          "Source image resolution Y"
+        );
+    field6->widgetHint=BaseField::SPIN_BOX;
+    field6->precision=2;
+    fields().push_back(field6);
+    /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Projection Base Parameters")]= &reflection;
    return 0;

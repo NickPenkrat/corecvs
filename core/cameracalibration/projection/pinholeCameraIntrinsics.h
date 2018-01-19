@@ -2,7 +2,7 @@
 #define PINHOLECAMERAINTRINSICS_H
 
 #include "core/math/matrix/matrix44.h"
-#include "core/cameracalibration/projectionModels.h"
+#include "core/cameracalibration/projection/projectionModels.h"
 #include "core/xml/generated/pinholeCameraIntrinsicsBaseParameters.h"
 #include "core/math/mathUtils.h"
 
