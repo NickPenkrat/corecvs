@@ -57,15 +57,16 @@ public:
     void accept(Visitor &visitor)
     {
 
-        CameraProjection::ProjectionType projection = target->projection;
-        visitor.visit((int&)projection, (int)CameraProjection::PINHOLE, "projectionType");
+        int projectionNum = (int)target->projection;
+        visitor.visit((int&)projectionNum, (int)CameraProjection::PINHOLE, "projectionType");
+        CameraProjection::ProjectionType projectionType = (CameraProjection::ProjectionType)projectionNum;
 
-        if (projection != target->projection)
+        if (projectionType != target->projection)
         {
-            target.reset(projectionById(projection));
+            target.reset(projectionById(projectionType));
         }
 
-        switch (projection) {
+        switch (projectionType) {
             case  CameraProjection::PINHOLE:
                 static_cast<PinholeCameraIntrinsics *>(target.get())->accept<Visitor>(visitor); break;
             case  CameraProjection::EQUIDISTANT:

@@ -71,8 +71,8 @@ struct PinholeCameraIntrinsics : public PinholeCameraIntrinsicsBaseParameters,  
     virtual Vector3dd reverse(const Vector2dd &p) const override
     {
         Vector2dd result;
-        result.y() = (p[1] - principalY()) / focalY();
-        result.x() = (p[0] - skew() * result.y() - principalX()) / focalX();
+        result.y() = (p.y() - principalY()) / focalY();
+        result.x() = (p.x() - skew() * result.y() - principalX()) / focalX();
         return Vector3dd(result.x(), result.y(), 1.0);
     }
 
@@ -103,14 +103,14 @@ struct PinholeCameraIntrinsics : public PinholeCameraIntrinsicsBaseParameters,  
         return  Vector2dd(distortedSizeX(), distortedSizeY());
     }
 
-    Vector2dd focal() const
-    {
-        return  Vector2dd(focalX(), focalY());
-    }
-
     virtual Vector2dd principal() const override
     {
         return  Vector2dd(principalX(), principalY());
+    }
+
+    Vector2dd focal() const
+    {
+        return  Vector2dd(focalX(), focalY());
     }
 
     void setSize(const Vector2dd &size)
@@ -125,6 +125,23 @@ struct PinholeCameraIntrinsics : public PinholeCameraIntrinsicsBaseParameters,  
         mDistortedSizeY = size.y();
     }
 
+    void setFocal(const Vector2dd &focal)
+    {
+        mFocalX = focal.x();
+        mFocalY = focal.y();
+    }
+
+    void setPrincipal(const Vector2dd &principal)
+    {
+        mPrincipalX = principal.x();
+        mPrincipalY = principal.y();
+    }
+
+    void setPrincipal(int id, const double &principalDim)
+    {
+        if (id == 0) mPrincipalX = principalDim; return;
+        if (id == 1) mPrincipalY = principalDim; return;
+    }
 
     explicit operator Matrix33() const  { return getKMatrix33(); }
 

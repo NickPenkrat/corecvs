@@ -1,6 +1,8 @@
 #ifndef CATADIOPTRICPROJECTION_H
 #define CATADIOPTRICPROJECTION_H
 
+#include "core/polynomial/polynomial.h"
+
 #include "core/math/vector/vector2d.h"
 #include "core/math/vector/vector3d.h"
 #include "core/function/function.h"
@@ -83,7 +85,7 @@ public:
 
     virtual Vector3dd reverse(const Vector2dd &p) const override
     {
-#if 0
+    /*
         Map<const SE3<T>> camToWorld(pose);
         Map<const Eigen::Matrix<T, 3, 1>> intrinsics(intrinsic);
         Map<const Eigen::Matrix<T, -1, 1>> poly(catadioptric, polyN);
@@ -118,13 +120,48 @@ public:
 
         res = cameraRef - camera;
         return true;
-#else
+    */
+        Vector2dd preDeform = (p - principal()) / focal();
+
+        double d2 = preDeform.sumAllElementsSq();
+        double d  = std::sqrt(d2);
+
+        double f = 1.0;
+        double x = d;
+
+        /* We actually should add starting from higher powers (smaller value) */
+        for (size_t i = 0; i < mR.size(); i +=2)
+        {
+            f += x * mR[i];
+            x *= d2;
+        }
+
+        x = d2;
+        for (size_t i = 1; i < mR.size(); i +=2)
+        {
+            f += x * mR[i];
+            x *= d2;
+        }
+        return Vector3dd(preDeform.x(), preDeform.y(), f).normalised();
+    }
 
 
+    /**
+     * Returns target image size
+     **/
+    virtual Vector2dd size() const override
+    {
+        return  Vector2dd(sizeX(), sizeY());
+    }
 
-        CORE_UNUSED(p);
-        return Vector3dd::Zero();
-#endif
+    virtual Vector2dd distortedSize() const override
+    {
+        return  Vector2dd(distortedSizeX(), distortedSizeY());
+    }
+
+    virtual Vector2dd principal() const override
+    {
+        return  Vector2dd(principalX(), principalY());
     }
 
 };

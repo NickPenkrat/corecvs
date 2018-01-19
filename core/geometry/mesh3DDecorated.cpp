@@ -262,7 +262,7 @@ void MeshFilter::removeDuplicatedVertices(Mesh3DDecorated &mesh)
         for (auto it = mesh.vertexes.begin(); it != mesh.vertexes.end(); it++, ++index)
         {
             auto itInner = std::find(newVertices.begin(), newVertices.end(), *it);
-            int itIndex = std::distance(newVertices.begin(), itInner);
+            size_t itIndex = std::distance(newVertices.begin(), itInner);
             bool isNewNormals = false;
             bool isNewTCoords = false;
             if (!mesh.normalCoords.empty())
