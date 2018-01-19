@@ -1,16 +1,33 @@
 <poco version="5.0">
 
+  <enum name="ProjectionType">
+
+    <!--    PINHOLE = 0,
+        EQUIDISTANT,
+        CATADIOPTRIC,
+        STEREOGRAPHIC,
+        EQUISOLID, -->
+
+    <item name="PINHOLE"       id="0" />
+    <item name="EQUIDISTANT"   id="1" />
+    <item name="CATADIOPTRIC"  id="2" />
+    <item name="STEREOGRAPHIC" id="3" />
+    <item name="EQUISOLID"     id="4" />
+    <item name="ORTHOGRAPHIC"  id="5" />
+  </enum>
+
+
   <class name="Projection Base Parameters" description="">
-    <field type="double"    name="principalX"        defaultValue="240" comment="The center of projection \f$x_c\f$" />
-    <field type="double"    name="principalY"        defaultValue="320" comment="The center of projection \f$y_c\f$"/>
+    <field type="double"    name="principalX"        defaultValue="240" min="-99999" max="99999" comment="The center of projection \f$x_c\f$" />
+    <field type="double"    name="principalY"        defaultValue="320" min="-99999" max="99999" comment="The center of projection \f$y_c\f$"/>
 
     <field type="double"    name="focal"      defaultValue="820.427" min="0"      max="99999.0" step="1"/>
 
-    <field type="double"    name="sizeX"   suffix="px"   defaultValue="240" comment="Model image resolution X" />
-    <field type="double"    name="sizeY"   suffix="px"   defaultValue="320" comment="Model image resolution Y"/>
+    <field type="double"    name="sizeX"   suffix="px"   defaultValue="240" min="0" max="99999" comment="Model image resolution X" />
+    <field type="double"    name="sizeY"   suffix="px"   defaultValue="320" min="0" max="99999" comment="Model image resolution Y"/>
 
-    <field type="double"    name="distortedSizeX" defaultValue="240" comment="Source image resolution X" />
-    <field type="double"    name="distortedSizeY" defaultValue="320" comment="Source image resolution Y"/>
+    <field type="double"    name="distortedSizeX" defaultValue="240" min="0" max="99999" comment="Source image resolution X" />
+    <field type="double"    name="distortedSizeY" defaultValue="320" min="0" max="99999" comment="Source image resolution Y"/>
   </class>
 
 
@@ -44,27 +61,27 @@
 
     <field type="double"    name="skew"        decimals="5"  defaultValue="0.0" min="-99999.0"  max="99999.0" step="0.001"/>
 
-    <field type="double"    name="sizeX"   suffix="px"   defaultValue="2592" comment="Model image resolution X" />
-    <field type="double"    name="sizeY"   suffix="px"   defaultValue="1944" comment="Model image resolution Y"/>
+    <field type="double"    name="sizeX"   suffix="px"   defaultValue="2592" max="99999.0" comment="Model image resolution X" />
+    <field type="double"    name="sizeY"   suffix="px"   defaultValue="1944" max="99999.0" comment="Model image resolution Y"/>
 
-    <field type="double"    name="distortedSizeX" defaultValue="2592" comment="Source image resolution X" />
-    <field type="double"    name="distortedSizeY" defaultValue="1944" comment="Source image resolution Y"/>
+    <field type="double"    name="distortedSizeX" defaultValue="2592" max="99999.0" comment="Source image resolution X" />
+    <field type="double"    name="distortedSizeY" defaultValue="1944" max="99999.0" comment="Source image resolution Y"/>
   </class>
 
 
   <class name="Catadioptric Base Parameters" description="">
-    <field type="double"    name="principalX"        defaultValue="240" comment="The center of projection \f$x_c\f$" />
-    <field type="double"    name="principalY"        defaultValue="320" comment="The center of projection \f$y_c\f$"/>
+    <field type="double"    name="principalX"   defaultValue="240" min="0"   max="99999.0" comment="The center of projection \f$x_c\f$" />
+    <field type="double"    name="principalY"   defaultValue="320" min="0"   max="99999.0" comment="The center of projection \f$y_c\f$"/>
 
-    <field type="double"    name="focal"      defaultValue="820.427" min="0"      max="99999.0" step="1"/>
+    <field type="double"    name="focal"        defaultValue="820.427" min="0"      max="99999.0" step="1"/>
 
-    <field type="double"    name="r"  size="6"    defaultValue="820.427" min="0"      max="99999.0" step="1"/>
+    <field type="double"    name="r"  size="6"  defaultValue="820.427" min="0"      max="99999.0" step="1"/>
 
-    <field type="double"    name="sizeX"   suffix="px"   defaultValue="240" comment="Model image resolution X" />
-    <field type="double"    name="sizeY"   suffix="px"   defaultValue="320" comment="Model image resolution Y"/>
+    <field type="double"    name="sizeX"   suffix="px"   defaultValue="240" max="99999.0" comment="Model image resolution X" />
+    <field type="double"    name="sizeY"   suffix="px"   defaultValue="320" max="99999.0" comment="Model image resolution Y"/>
 
-    <field type="double"    name="distortedSizeX" defaultValue="240" comment="Source image resolution X" />
-    <field type="double"    name="distortedSizeY" defaultValue="320" comment="Source image resolution Y"/>
+    <field type="double"    name="distortedSizeX" defaultValue="240" max="99999.0" comment="Source image resolution X" />
+    <field type="double"    name="distortedSizeY" defaultValue="320" max="99999.0" comment="Source image resolution Y"/>
   </class>
 
 

@@ -131,7 +131,10 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           2592,
           "sizeX",
           "sizeX",
-          "Model image resolution X"
+          "Model image resolution X",
+          true,
+         0,
+         99999
         );
     field5->widgetHint=BaseField::SPIN_BOX;
     field5->suffixHint="px";
@@ -145,7 +148,10 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           1944,
           "sizeY",
           "sizeY",
-          "Model image resolution Y"
+          "Model image resolution Y",
+          true,
+         0,
+         99999
         );
     field6->widgetHint=BaseField::SPIN_BOX;
     field6->suffixHint="px";
@@ -159,7 +165,10 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           2592,
           "distortedSizeX",
           "distortedSizeX",
-          "Source image resolution X"
+          "Source image resolution X",
+          true,
+         0,
+         99999
         );
     field7->widgetHint=BaseField::SPIN_BOX;
     field7->precision=2;
@@ -172,7 +181,10 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           1944,
           "distortedSizeY",
           "distortedSizeY",
-          "Source image resolution Y"
+          "Source image resolution Y",
+          true,
+         0,
+         99999
         );
     field8->widgetHint=BaseField::SPIN_BOX;
     field8->precision=2;

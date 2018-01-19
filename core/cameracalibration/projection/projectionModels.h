@@ -1,14 +1,16 @@
 #ifndef PROJECTIONMODELS_H
 #define PROJECTIONMODELS_H
 
+#include "core/xml/generated/projectionType.h"
+
 #include "core/math/vector/vector2d.h"
 #include "core/math/vector/vector3d.h"
-
 
 namespace corecvs {
 
 class CameraProjection {
 public:
+#if 0
     enum ProjectionType {
         PINHOLE = 0,
         EQUIDISTANT,
@@ -16,12 +18,12 @@ public:
         STEREOGRAPHIC,
         EQUISOLID,
         ORTHOGRAPIC /*Other impelementation*/
-
     };
+#endif
 
-    ProjectionType projection = PINHOLE;
+    ProjectionType::ProjectionType projection = ProjectionType::PINHOLE;
 
-    CameraProjection(ProjectionType projection) :
+    CameraProjection(ProjectionType::ProjectionType projection) :
         projection(projection)
     {}
 
@@ -89,7 +91,7 @@ public:
     /* Common method */
     bool isPinhole() const
     {
-        return projection == PINHOLE;
+        return projection == ProjectionType::PINHOLE;
     }
 
 };
@@ -106,7 +108,7 @@ public:
     double    focal;            /**< Focal length */
 
     OrthographicProjection(Vector2dd principal, double focal) :
-        CameraProjection(ORTHOGRAPIC),
+        CameraProjection(ProjectionType::ORTHOGRAPHIC),
         principal(principal),
         focal(focal)
     {}

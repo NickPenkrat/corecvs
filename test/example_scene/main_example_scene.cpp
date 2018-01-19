@@ -309,11 +309,32 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 
     /** Geometry **/
     FixtureSceneGeometry *geometry = scene->createSceneGeometry();
+    geometry->color   = RGBColor::Red();
     geometry->frame   = PlaneFrame(Vector3dd(100,0,0), Vector3dd(0,1,0), Vector3dd(0,0,1));
     geometry->polygon = Polygon::RegularPolygon(5, Vector2dd::Zero(), 50, 0);
     geometry->relatedPoints.push_back(scene->featurePoints()[0]);
     geometry->relatedPoints.push_back(scene->featurePoints()[1]);
     geometry->relatedPoints.push_back(scene->featurePoints()[2]);
+
+    /** Two additional cameras with non pinhole models */
+
+    /** Equidistant **/
+    CameraModel equidist;
+    equidist.intrinsics.reset(new EquidistantProjection(Vector2dd(100,100), 100, Vector2dd(200,200)));
+    equidist.setLocation(Affine3DQ::Shift(30,0,0));
+
+    FixtureCamera *cameraEq = scene->createCamera();
+    cameraEq->nameId = "equidist";
+    cameraEq->copyModelFrom(equidist);
+
+    /** Catadioptric **/
+    CameraModel catadioptric;
+    catadioptric.intrinsics.reset(new CatadioptricProjection(Vector2dd(100,100), 100, Vector2dd(200,200)));
+    catadioptric.setLocation(Affine3DQ::Shift(40,0,0));
+
+    FixtureCamera *cameraCat = scene->createCamera();
+    cameraCat->nameId = "catadioptric";
+    cameraCat->copyModelFrom(catadioptric);
 
 
 

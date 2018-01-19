@@ -35,31 +35,16 @@ public:
         target(target) {}
 
 
-    static CameraProjection *projectionById(CameraProjection::ProjectionType &projection)
-    {
-        switch (projection) {
-            case  CameraProjection::PINHOLE:
-            default:
-                return new PinholeCameraIntrinsics();
-            case  CameraProjection::EQUIDISTANT:
-                return new EquidistantProjection();
-            /*case  CameraProjection::CATADIOPTRIC:
-                return new CatadioptricProjection();*/
-            case  CameraProjection::STEREOGRAPHIC:
-                return new StereographicProjection();
-            case  CameraProjection::EQUISOLID:
-                return new EquisolidAngleProjection();
-        }
-        return NULL;
-    }
+    static CameraProjection *projectionById(ProjectionType::ProjectionType &projection);
+    static Reflection       *reflectionById(ProjectionType::ProjectionType &projection);
 
     template<class Visitor>
     void accept(Visitor &visitor)
     {
 
         int projectionNum = (int)target->projection;
-        visitor.visit((int&)projectionNum, (int)CameraProjection::PINHOLE, "projectionType");
-        CameraProjection::ProjectionType projectionType = (CameraProjection::ProjectionType)projectionNum;
+        visitor.visit((int&)projectionNum, (int)ProjectionType::PINHOLE, "projectionType");
+        ProjectionType::ProjectionType projectionType = (ProjectionType::ProjectionType)projectionNum;
 
         if (projectionType != target->projection)
         {
@@ -67,15 +52,15 @@ public:
         }
 
         switch (projectionType) {
-            case  CameraProjection::PINHOLE:
+            case  ProjectionType::PINHOLE:
                 static_cast<PinholeCameraIntrinsics *>(target.get())->accept<Visitor>(visitor); break;
-            case  CameraProjection::EQUIDISTANT:
+            case  ProjectionType::EQUIDISTANT:
                 static_cast<EquidistantProjection *>  (target.get())->accept<Visitor>(visitor); break;
-            case  CameraProjection::CATADIOPTRIC:
+            case  ProjectionType::CATADIOPTRIC:
                 static_cast<CatadioptricProjection *> (target.get())->accept<Visitor>(visitor); break;
-            case  CameraProjection::STEREOGRAPHIC:
+            case  ProjectionType::STEREOGRAPHIC:
                 static_cast<StereographicProjection *>(target.get())->accept<Visitor>(visitor); break;
-            case  CameraProjection::EQUISOLID:
+            case  ProjectionType::EQUISOLID:
                 static_cast<EquisolidAngleProjection *>(target.get())->accept<Visitor>(visitor); break;
             /*case  CameraProjection::ORTHOGRAPIC:
                 static_cast<EquidistantProjection *>(target.get())->accept<Visitor>(visitor); break;*/

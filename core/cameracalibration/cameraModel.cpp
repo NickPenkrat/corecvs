@@ -199,7 +199,7 @@ Polygon CameraModel::projectViewport(const CameraModel &right, double pyramidLen
 
 
 PinholeCameraIntrinsics::PinholeCameraIntrinsics(const Vector2dd &resolution, double hfov) :
-    CameraProjection(PINHOLE)
+    CameraProjection(ProjectionType::PINHOLE)
 {
     mPrincipalX = resolution.x() / 2.0;
     mPrincipalY = resolution.y() / 2.0;
@@ -519,6 +519,44 @@ void CameraModel::prettyPrint(std::ostream &out)
     PrinterVisitor visitor(3, 3, out);
     cout << "Camera:" << nameId << std::endl;
     accept(visitor);
+}
+
+/* FACTORY */
+
+CameraProjection *ProjectionFactory::projectionById(ProjectionType::ProjectionType &projection)
+{
+    switch (projection) {
+    case  ProjectionType::PINHOLE:
+    default:
+        return new PinholeCameraIntrinsics();
+    case  ProjectionType::EQUIDISTANT:
+        return new EquidistantProjection();
+    case  ProjectionType::CATADIOPTRIC:
+        return new CatadioptricProjection();
+    case  ProjectionType::STEREOGRAPHIC:
+        return new StereographicProjection();
+    case  ProjectionType::EQUISOLID:
+        return new EquisolidAngleProjection();
+    }
+    return NULL;
+}
+
+Reflection *ProjectionFactory::reflectionById(ProjectionType::ProjectionType &projection)
+{
+    switch (projection) {
+    case  ProjectionType::PINHOLE:
+    default:
+        return &PinholeCameraIntrinsics::reflection;
+    case  ProjectionType::EQUIDISTANT:
+        return &EquidistantProjection::reflection;
+    case  ProjectionType::CATADIOPTRIC:
+        return &CatadioptricProjection::reflection;
+    case  ProjectionType::STEREOGRAPHIC:
+        return &StereographicProjection::reflection;
+    case  ProjectionType::EQUISOLID:
+        return &EquisolidAngleProjection::reflection;
+    }
+    return NULL;
 }
 
 

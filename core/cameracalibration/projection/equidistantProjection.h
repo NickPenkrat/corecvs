@@ -70,11 +70,11 @@ public:
  **/
 class EquidistantProjection : public ProjectionBaseParameters, public CameraProjection {
 public:
-    EquidistantProjection() : CameraProjection(EQUIDISTANT) {}
+    EquidistantProjection() : CameraProjection(ProjectionType::EQUIDISTANT) {}
 
     EquidistantProjection(const Vector2dd &principal, double focal, const Vector2dd &size) :
         ProjectionBaseParameters(principal.x(), principal.y(), focal, size.x(), size.y(), size.x(), size.y()),
-        CameraProjection(EQUIDISTANT)
+        CameraProjection(ProjectionType::EQUIDISTANT)
     {
 
     }

@@ -44,6 +44,14 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
 
     ui->extrinsicCamWidget->setEnabled(false);
 
+    /* */
+
+    intrinsicsType = new QComboBox;
+    layout()->addWidget(intrinsicsType);
+    for (int i = 0; i < ProjectionType::PROJECTIONTYPE_LAST; i++)
+    {
+        intrinsicsType->addItem(ProjectionType::getName((ProjectionType::ProjectionType)i));
+    }
 }
 
 CameraModelParametersControlWidget::~CameraModelParametersControlWidget()
@@ -207,9 +215,16 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
         ui->infoLabel->setText(QString("Size(xy):[%1 x %2] dist:[%3 x %4]")
                     .arg(pinhole->sizeX())         .arg(pinhole->sizeY())
                     .arg(pinhole->distortedSizeX()).arg(pinhole->distortedSizeY()));
-    } else {
-        layout()->addWidget(new QLabel("Test"));
     }
+
+    /**/
+    intrinsicsType->setCurrentIndex(input.intrinsics->projection);
+
+    delete_safe(intrinsicsWidget);
+    intrinsicsWidget = new ReflectionWidget(ProjectionFactory::reflectionById(input.intrinsics->projection));
+    intrinsicsWidget->setParameters((void *)input.intrinsics.get());
+    layout()->addWidget(intrinsicsWidget);
+
 
     blockSignals(wasBlocked);
     backup = input;

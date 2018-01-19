@@ -231,6 +231,7 @@ enums+=" lineDistortionEstimatorCost"
 enums+=" distortionResizePolicy"
 enums+=" checkerboardDetectionAlgorithm"
 enums+=" bitcodeBoardOrientation"
+enums+=" projectionType"
 
 classes+=" lensDistortionModelParametersBase"
 classes+=" homorgaphyReconstructorBlockBase"

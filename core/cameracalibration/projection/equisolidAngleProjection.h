@@ -19,12 +19,12 @@ public:
     //double    focal;            /**< Focal length */
 
     EquisolidAngleProjection() :
-        CameraProjection(EQUISOLID)
+        CameraProjection(ProjectionType::EQUISOLID)
     {}
 
     EquisolidAngleProjection(const Vector2dd &principal, double focal, const Vector2dd &size) :
         ProjectionBaseParameters(principal.x(), principal.y(), focal, size.x(), size.y(), size.x(), size.y()),
-        CameraProjection(EQUISOLID)
+        CameraProjection(ProjectionType::EQUISOLID)
     {}
 
     // CameraProjection interface

@@ -21,13 +21,22 @@ class GenericCatadioptricProjection : public CameraProjection {
 
 };
 
-
+/**
+ *   It is crucial that Parameters come first in inheritance.
+ *   We may relay on this if we want to use CatadioptricBaseParameters::reflection
+ *   also for CatadioptricBaseParameters itself. Otherwise offsets could be wrong
+ **/
 class CatadioptricProjection : public CatadioptricBaseParameters, public CameraProjection
 {
 public:
+
+    CatadioptricProjection() :
+        CameraProjection(ProjectionType::CATADIOPTRIC)
+    {}
+
     CatadioptricProjection(const Vector2dd &principal, double focal, const Vector2dd &size) :
         CatadioptricBaseParameters(principal.x(), principal.y(), focal, {} ,size.x(), size.y(), size.x(), size.y()),
-        CameraProjection(CATADIOPTRIC)
+        CameraProjection(ProjectionType::CATADIOPTRIC)
     {
 
     }
@@ -145,6 +154,10 @@ public:
         return Vector3dd(preDeform.x(), preDeform.y(), f).normalised();
     }
 
+    virtual bool isVisible(const Vector3dd &p) const override
+    {
+        return true;
+    }
 
     /**
      * Returns target image size
@@ -163,6 +176,18 @@ public:
     {
         return  Vector2dd(principalX(), principalY());
     }
+
+    /* Misc */
+    virtual CatadioptricProjection *clone() const override
+    {
+        CatadioptricProjection *p = new CatadioptricProjection();
+        *p = *this;
+        return p;
+    }
+
+
+
+    virtual ~CatadioptricProjection() {}
 
 };
 

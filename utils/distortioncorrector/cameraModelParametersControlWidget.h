@@ -2,6 +2,8 @@
 #define CAMERAMODELPARAMETERSCONTROLWIDGET_H
 
 #include <QWidget>
+#include <QComboBox>
+
 #include "parametersControlWidgetBase.h"
 #include "core/alignment/lensDistortionModelParameters.h"
 
@@ -9,6 +11,8 @@
 
 #include "core/math/quaternion.h"
 #include "core/math/vector/vector3d.h"
+
+#include "reflectionWidget.h"
 
 namespace Ui {
 class CameraModelParametersControlWidget;
@@ -61,6 +65,10 @@ protected:
 
     Ui::CameraModelParametersControlWidget *ui;
     CameraModel backup;
+
+    /**/
+    QComboBox *intrinsicsType = NULL;
+    ReflectionWidget *intrinsicsWidget = NULL;
 
 };
 

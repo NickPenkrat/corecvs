@@ -49,7 +49,10 @@ int CatadioptricBaseParameters::staticInit()
           240,
           "principalX",
           "principalX",
-          "The center of projection \f$x_c\f$"
+          "The center of projection \f$x_c\f$",
+          true,
+         0,
+         99999
         );
     field0->widgetHint=BaseField::SPIN_BOX;
     field0->precision=2;
@@ -62,7 +65,10 @@ int CatadioptricBaseParameters::staticInit()
           320,
           "principalY",
           "principalY",
-          "The center of projection \f$y_c\f$"
+          "The center of projection \f$y_c\f$",
+          true,
+         0,
+         99999
         );
     field1->widgetHint=BaseField::SPIN_BOX;
     field1->precision=2;
@@ -104,7 +110,10 @@ int CatadioptricBaseParameters::staticInit()
           240,
           "sizeX",
           "sizeX",
-          "Model image resolution X"
+          "Model image resolution X",
+          true,
+         0,
+         99999
         );
     field4->widgetHint=BaseField::SPIN_BOX;
     field4->suffixHint="px";
@@ -118,7 +127,10 @@ int CatadioptricBaseParameters::staticInit()
           320,
           "sizeY",
           "sizeY",
-          "Model image resolution Y"
+          "Model image resolution Y",
+          true,
+         0,
+         99999
         );
     field5->widgetHint=BaseField::SPIN_BOX;
     field5->suffixHint="px";
@@ -132,7 +144,10 @@ int CatadioptricBaseParameters::staticInit()
           240,
           "distortedSizeX",
           "distortedSizeX",
-          "Source image resolution X"
+          "Source image resolution X",
+          true,
+         0,
+         99999
         );
     field6->widgetHint=BaseField::SPIN_BOX;
     field6->precision=2;
@@ -145,7 +160,10 @@ int CatadioptricBaseParameters::staticInit()
           320,
           "distortedSizeY",
           "distortedSizeY",
-          "Source image resolution Y"
+          "Source image resolution Y",
+          true,
+         0,
+         99999
         );
     field7->widgetHint=BaseField::SPIN_BOX;
     field7->precision=2;

@@ -43,7 +43,7 @@ struct PinholeCameraIntrinsics : public PinholeCameraIntrinsicsBaseParameters,  
             Vector2dd size = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y),
             Vector2dd distortedSize = Vector2dd(DEFAULT_SIZE_X, DEFAULT_SIZE_Y))
       : PinholeCameraIntrinsicsBaseParameters(fx, fy, cx, cy, skew, size.x(), size.y(), distortedSize.x(), distortedSize.y()),
-        CameraProjection(PINHOLE)
+        CameraProjection(ProjectionType::PINHOLE)
     {}
 
     PinholeCameraIntrinsics(const Vector2dd &resolution, double hfov);
@@ -52,7 +52,7 @@ struct PinholeCameraIntrinsics : public PinholeCameraIntrinsicsBaseParameters,  
         PinholeCameraIntrinsicsBaseParameters(
             focal, focal, principal.x(), principalY(), skew
           , resolution.x(), resolution.y(), resolution.x(), resolution.y()),
-        CameraProjection(PINHOLE)
+        CameraProjection(ProjectionType::PINHOLE)
     {
     }
 
