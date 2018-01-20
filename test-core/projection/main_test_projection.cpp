@@ -13,6 +13,7 @@
 
 #include "core/cameracalibration/projection/equidistantProjection.h"
 #include "core/cameracalibration/projection/equisolidAngleProjection.h"
+#include "core/cameracalibration/projection/catadioptricProjection.h"
 #include "core/utils/global.h"
 
 using namespace std;
@@ -33,7 +34,7 @@ TEST(projection, testEquidistant)
     cout << " RayDir: " << p << endl;
     cout << "RSource: " << rsource << endl;
 
-    ASSERT_TRUE(source.notTooFar(rsource));
+    ASSERT_TRUE(source.notTooFar(rsource, 1e-7));
 }
 
 
@@ -51,5 +52,22 @@ TEST(projection, testEquisolid)
     cout << " RayDir: " << p << endl;
     cout << "RSource: " << rsource << endl;
 
-    ASSERT_TRUE(source.notTooFar(rsource));
+    ASSERT_TRUE(source.notTooFar(rsource, 1e-7));
+}
+
+TEST(projection, testCatadioptric)
+{
+    CatadioptricProjection projection;
+
+    Vector2dd source(Vector2dd(1.0, 1.0));
+    Vector3dd p = projection.reverse(source);
+    Vector2dd rsource = projection.project(p);
+
+    cout << "CatadioptricBaseParameters:" << endl
+         << projection << endl;
+    cout << " Source: " << source << endl;
+    cout << " RayDir: " << p << endl;
+    cout << "RSource: " << rsource << endl;
+
+    ASSERT_TRUE(source.notTooFar(rsource, 1e-7));
 }

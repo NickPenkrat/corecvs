@@ -137,13 +137,13 @@ public:
         vector<double> roots;
 
         coefs.resize(mN.size() + 1);
-        coefs.push_back(1.0 - norm.z());
+        coefs.push_back(1.0);
+        coefs.push_back(- norm.z() / norm.xy().l2Metric());
         coefs.insert(coefs.end(), mN.begin(), mN.end());
 
         Polynomial poly(coefs);
         PolynomialSolver solver;
         solver.solve(poly, roots);
-
 
         return Vector2dd::Zero();
 #endif

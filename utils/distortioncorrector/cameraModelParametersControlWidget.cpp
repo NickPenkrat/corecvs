@@ -51,6 +51,7 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     }
     QObject::connect(ui->projectionTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(paramsChangedInUI()));
 
+    ui->projectionFrame->setLayout(new QGridLayout);
 }
 
 CameraModelParametersControlWidget::~CameraModelParametersControlWidget()
