@@ -31,6 +31,27 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     QObject::connect(ui->spinBoxSizeDistortedY, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 
     QObject::connect(ui->spinBoxSkew, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+
+    /* So far just hide old stuff*/
+    if (true)
+    {
+        ui->oldFrame->hide();
+        ui->spinBoxFocalX->hide();
+        ui->spinBoxFocalY->hide();
+
+        ui->spinBoxCx->hide();
+        ui->spinBoxCy->hide();
+
+        ui->spinBoxSizeX->hide();
+        ui->spinBoxSizeY->hide();
+
+        ui->spinBoxSizeDistortedX->hide();
+        ui->spinBoxSizeDistortedY->hide();
+
+        ui->spinBoxSkew->hide();
+    }
+
+
 //    writeUi();
     /* Addintional buttons */
 

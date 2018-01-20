@@ -106,10 +106,11 @@ int CatadioptricBaseParameters::staticInit()
           "n",
           "n",
           true,
-         1.68557e-316,
-         6.89924e-310,
-         -99999
+         -99999,
+         99999,
+         0.01
         );
+    field3->precision=6;
     fields().push_back(field3);
     /*  */ 
     DoubleField* field4 = new DoubleField

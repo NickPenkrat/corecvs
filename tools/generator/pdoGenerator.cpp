@@ -701,7 +701,7 @@ void PDOGenerator::generatePDOCpp()
 
             }
         }
-        if (type == BaseField::TYPE_DOUBLE || type == BaseField::TYPE_DOUBLE_VECTOR) {
+        if (type == BaseField::TYPE_DOUBLE) {
             const DoubleField *dfield = static_cast<const DoubleField *>(field);
             if (dfield->hasAdditionalValues)
             {
@@ -714,7 +714,19 @@ void PDOGenerator::generatePDOCpp()
 
             }
         }
+        if (type == BaseField::TYPE_DOUBLE_VECTOR) {
+            const DoubleVectorField *dfield = static_cast<const DoubleVectorField *>(field);
+            if (dfield->hasAdditionalValues)
+            {
+    result+=
+    ",\n"
+    "          true,\n"
+    "         " + QString::number(dfield->min) + ",\n"
+    "         " + QString::number(dfield->max) + ",\n"
+    "         " + QString::number(dfield->step);
 
+            }
+        }
 
     } else if (type == BaseField::TYPE_COMPOSITE) {
         const CompositeField *cfield = static_cast<const CompositeField *>(field);

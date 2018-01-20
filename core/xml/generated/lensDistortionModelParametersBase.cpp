@@ -103,12 +103,9 @@ int LensDistortionModelParametersBase::staticInit()
           6,
           "koeff",
           "koeff",
-          "Polynom to describe radial correction",
-          true,
-         9.79086e-317,
-         2.96439e-323,
-         0
+          "Polynom to describe radial correction"
         );
+    field4->precision=2;
     fields().push_back(field4);
     /*  */ 
     DoubleField* field5 = new DoubleField

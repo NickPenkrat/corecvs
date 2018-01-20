@@ -306,6 +306,15 @@ void ConfigLoader::loadClasses(QDomDocument const &config, QFileInfo const &curr
                             , minValue.toDouble()
                             , maxValue.toDouble()
                             , stepValue.isEmpty() ? 1.0 : stepValue.toDouble());
+
+                    int decimals = 2;
+                    bool ok;
+                    int parsed = fieldElement.attribute("decimals").toInt(&ok);
+                    if (ok) {
+                        decimals = parsed;
+                    }
+                    field->precision = decimals;
+
                 }
                /* else if (type == "bool")
                 {

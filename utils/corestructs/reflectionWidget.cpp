@@ -105,7 +105,8 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                         spinBox->setSingleStep(dField->step);
                     }
 
-                    spinBox->setDecimals(dField->precision);
+                    if (dField->precision != -1)
+                        spinBox->setDecimals(dField->precision);
 
                     if (dField->suffixHint != NULL)
                         spinBox->setSuffix(dField->suffixHint);
@@ -219,7 +220,11 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                     vectorWidget->setMinimum(dField->min);
                     vectorWidget->setMaximum(dField->max);
                     vectorWidget->setSingleStep(dField->step);
-                    vectorWidget->setDecimals(dField->precision);
+
+                    if (dField->precision != -1)
+                        vectorWidget->setDecimals(dField->precision);
+
+                    //SYNC_PRINT(("DoubleVectorField %lf %lf %lf %d\n", dField->min, dField->max, dField->step, dField->precision));
                 }
                 vectorWidget->setValue(dField->defaultValue);
                 gridLayout->addWidget(vectorWidget, i, WIDGET_COLUMN, 1, 1);

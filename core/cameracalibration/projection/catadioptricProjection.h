@@ -58,16 +58,16 @@ class GenericCatadioptricProjection : public CameraProjection {
  *
  *   \f[ \overrightarrow d_n = \overrightarrow {(x_r,y_r,z_r)} \f]
  *
- *  Ray
- *    \f[ z = ({{z_r} \over {\sqrt {(x_r^2, y_r^2)}}}) r \f]
- *  Polynom
- *    \f[ z = 1 + 0 \cdot r + n_0 r^2 + n_1 r^3 + \cdots + n_i r^{i+2} \f]
+ *  Ray \f$ z = ({{z_r} \over {\sqrt {(x_r^2, y_r^2)}}}) r \f$
+ *  Polynom \f$ z = 1 + 0 \cdot r + n_0 r^2 + n_1 r^3 + \cdots + n_i r^{i+2} \f$
  *
- *  Subtracting and solving
+ *  Subtracting and solving for \f$r\f$
  *
- *    \f[ 0 = 1 - (z_r / \sqrt(x_r^2 + y_r^2)) *r + n_0 r^2 + n_1 r^3 + \cdots + n_i r^{i+2} \f]
+ *    \f[ 0 = 1 - (z_r / \sqrt{x_r^2 + y_r^2}) *r + n_0 r^2 + n_1 r^3 + \cdots + n_i r^{i+2} \f]
  *
- *  We expect an abs smallest real root to be the r value we need
+ *  We expect an smallest real positive root to be the \f$r\f$ value we need. Finally
+ *    \f[ p = \left({{x_r} \over {\sqrt {(x_r^2 + y_r^2)}}} r, {{y_r} \over {\sqrt {(x_r^2 + y_r^2)}}} r \right) \cdot f + \overrightarrow{p}_{principal} \f]
+ *
  *
  **/
 
