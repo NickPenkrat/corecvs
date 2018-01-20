@@ -132,20 +132,38 @@ public:
         return n.template block<2, 1>(0, 0) * bestRoot * intrinsics[0] +
                Vector2d(intrinsics[1], intrinsics[2]);
 #else
+        // SYNC_PRINT(("CatadioptricProjection::project(%lf %lf %lf):called\n", p.x(), p.y(), p.z()));
+
         Vector3dd norm = p.normalised();
         vector<double> coefs;
         vector<double> roots;
 
-        coefs.resize(mN.size() + 1);
+        coefs.reserve(mN.size() + 2);
         coefs.push_back(1.0);
         coefs.push_back(- norm.z() / norm.xy().l2Metric());
         coefs.insert(coefs.end(), mN.begin(), mN.end());
+
+        while (coefs.back() == 0.0) {
+            coefs.pop_back();
+        }
 
         Polynomial poly(coefs);
         PolynomialSolver solver;
         solver.solve(poly, roots);
 
-        return Vector2dd::Zero();
+        // cout << "Polinom:" << poly << std::endl;
+        // cout << "Roots:";
+        double bestRoot = std::numeric_limits<double>::max();
+        for (size_t i = 0; i < roots.size(); i++)
+        {
+           // cout << roots[i] << " ";
+           if (roots[i] < 0)
+               continue;
+           bestRoot = std::min(bestRoot, roots[i]);
+        }
+        //cout << endl;
+
+        return norm.xy().normalised() * bestRoot * focal() + principal();
 #endif
 
     }
