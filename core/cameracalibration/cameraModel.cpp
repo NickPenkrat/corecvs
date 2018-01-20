@@ -523,7 +523,7 @@ void CameraModel::prettyPrint(std::ostream &out)
 
 /* FACTORY */
 
-CameraProjection *ProjectionFactory::projectionById(ProjectionType::ProjectionType &projection)
+CameraProjection *ProjectionFactory::projectionById(const ProjectionType::ProjectionType &projection)
 {
     switch (projection) {
     case  ProjectionType::PINHOLE:
@@ -541,7 +541,7 @@ CameraProjection *ProjectionFactory::projectionById(ProjectionType::ProjectionTy
     return NULL;
 }
 
-Reflection *ProjectionFactory::reflectionById(ProjectionType::ProjectionType &projection)
+Reflection *ProjectionFactory::reflectionById(const ProjectionType::ProjectionType &projection)
 {
     switch (projection) {
     case  ProjectionType::PINHOLE:

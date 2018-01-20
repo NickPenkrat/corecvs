@@ -26,12 +26,6 @@ public:
 
     ElementType parameter[PARAMTER_LAST];
 
-    /** Focal length */
-    ElementType focal() const
-    {
-        return parameter[FOCAL];
-    }
-
     GenericEquidistantProjection(const ElementType &cx, const ElementType &cy, const ElementType &focal)
     {
         parameter[PRINCIPAL_X] = cx;
@@ -46,14 +40,20 @@ public:
         return Vector2d<ElementType>(parameter[PRINCIPAL_X], parameter[PRINCIPAL_Y]);
     }
 
-    void project(const Vector3d<ElementType> &in, Vector2d<ElementType> out) const
+    /** Focal length */
+    ElementType focal() const
+    {
+        return parameter[FOCAL];
+    }
+
+    void project(const Vector3d<ElementType> &in, Vector2d<ElementType> &out) const
     {
         ElementType tau = in.angleToZ();
         Vector2d<ElementType> dir = in.xy().normalised();
         out = dir * focal() * tau + principal();
     }
 
-    void reverse(const Vector2d<ElementType> &in, Vector3d<ElementType> out) const
+    void reverse(const Vector2d<ElementType> &in, Vector3d<ElementType> &out) const
     {
         Vector2d<ElementType> shift = in - principal();
         ElementType r = shift.l2Metric();
@@ -65,8 +65,7 @@ public:
 
 
 /**
-    \attention BE AWARE Reflection for this class is manually written
-
+ *
  **/
 class EquidistantProjection : public ProjectionBaseParameters, public CameraProjection {
 public:
@@ -131,6 +130,11 @@ public:
         EquidistantProjection *p = new EquidistantProjection();
         *p = *this;
         return p;
+    }
+
+    virtual DynamicObjectWrapper getDynamicWrapper() override
+    {
+        return DynamicObjectWrapper(&reflection, static_cast<ProjectionBaseParameters *>(this));
     }
 
     virtual ~EquidistantProjection() {}

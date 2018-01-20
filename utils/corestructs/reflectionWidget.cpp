@@ -103,9 +103,10 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                         spinBox->setMinimum(dField->min);
                         spinBox->setMaximum(dField->max);
                         spinBox->setSingleStep(dField->step);
-                        // spinBox->setDecimals(); /*Not supported so far*/
                     }
+
                     spinBox->setDecimals(dField->precision);
+
                     if (dField->suffixHint != NULL)
                         spinBox->setSuffix(dField->suffixHint);
                     if (dField->prefixHint != NULL)
@@ -217,8 +218,8 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
                 {
                     vectorWidget->setMinimum(dField->min);
                     vectorWidget->setMaximum(dField->max);
-                    // vectorWidget->setSingleStep(dField->step);
-                    // spinBox->setDecimals(); /*Not supported so far*/
+                    vectorWidget->setSingleStep(dField->step);
+                    vectorWidget->setDecimals(dField->precision);
                 }
                 vectorWidget->setValue(dField->defaultValue);
                 gridLayout->addWidget(vectorWidget, i, WIDGET_COLUMN, 1, 1);

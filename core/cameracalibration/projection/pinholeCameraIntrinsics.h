@@ -232,6 +232,12 @@ struct PinholeCameraIntrinsics : public PinholeCameraIntrinsicsBaseParameters,  
         return p;
     }
 
+    virtual DynamicObjectWrapper getDynamicWrapper() override
+    {
+        return DynamicObjectWrapper(&reflection, static_cast<PinholeCameraIntrinsicsBaseParameters *>(this));
+    }
+
+
     virtual ~PinholeCameraIntrinsics() {}
 
 

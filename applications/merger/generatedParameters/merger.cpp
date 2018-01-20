@@ -71,7 +71,8 @@ int Merger::staticInit()
           "Undist Focal",
           true,
          0,
-         99999
+         99999,
+         0.1
         );
     field1->widgetHint=BaseField::SPIN_BOX;
     field1->suffixHint="px";
@@ -88,7 +89,8 @@ int Merger::staticInit()
           "Sensor Width",
           true,
          0,
-         99999
+         99999,
+         0.1
         );
     field2->widgetHint=BaseField::SPIN_BOX;
     field2->suffixHint="mm";
@@ -105,7 +107,8 @@ int Merger::staticInit()
           "Distortion Overshoot",
           true,
          0,
-         99999
+         99999,
+         10
         );
     field3->suffixHint="px";
     fields().push_back(field3);
@@ -168,7 +171,8 @@ int Merger::staticInit()
           "frameToUndist",
           true,
          0,
-         3
+         3,
+         1
         );
     fields().push_back(field8);
     /*  */ 
@@ -182,7 +186,8 @@ int Merger::staticInit()
           "Out Size H",
           true,
          10,
-         99999
+         99999,
+         1
         );
     field9->widgetHint=BaseField::SPIN_BOX;
     field9->suffixHint="px";
@@ -199,7 +204,8 @@ int Merger::staticInit()
           "Out Phy Size L",
           true,
          1,
-         99999
+         99999,
+         1
         );
     field10->widgetHint=BaseField::SPIN_BOX;
     field10->suffixHint="dm";
@@ -216,7 +222,8 @@ int Merger::staticInit()
           "Out Phy Size W",
           true,
          1,
-         99999
+         99999,
+         1
         );
     field11->widgetHint=BaseField::SPIN_BOX;
     field11->suffixHint="dm";
@@ -233,7 +240,8 @@ int Merger::staticInit()
           "ground Z",
           true,
          -99999,
-         99999
+         99999,
+         1
         );
     field12->widgetHint=BaseField::SPIN_BOX;
     field12->precision=2;
@@ -249,7 +257,8 @@ int Merger::staticInit()
           "FOV1",
           true,
          1,
-         360
+         360,
+         1
         );
     field13->widgetHint=BaseField::SPIN_BOX;
     field13->suffixHint="deg";
@@ -300,7 +309,8 @@ int Merger::staticInit()
           "FOV2",
           true,
          1,
-         360
+         360,
+         1
         );
     field16->widgetHint=BaseField::SPIN_BOX;
     field16->suffixHint="deg";
@@ -351,7 +361,8 @@ int Merger::staticInit()
           "FOV3",
           true,
          1,
-         360
+         360,
+         1
         );
     field19->widgetHint=BaseField::SPIN_BOX;
     field19->suffixHint="deg";
@@ -402,7 +413,8 @@ int Merger::staticInit()
           "FOV4",
           true,
          1,
-         360
+         360,
+         1
         );
     field22->widgetHint=BaseField::SPIN_BOX;
     field22->suffixHint="deg";

@@ -59,6 +59,8 @@ void DoubleVectorWidget::addEntry()
     widget->show();
     widget->setMaximum(mMaximum);
     widget->setMinimum(mMinimum);
+    widget->setDecimals(mDecimals);
+    widget->setSingleStep(mSingleStep);
 
     ui->listWidget->setItemWidget(item, widget);
     connect(widget, SIGNAL(valueChanged(double)), this, SIGNAL(valueChanged()));
@@ -132,6 +134,16 @@ void DoubleVectorWidget::setMinimum(double value)
     }
 }
 
+void DoubleVectorWidget::setDecimals(int value)
+{
+    mDecimals = value;
+}
+
+void DoubleVectorWidget::setSingleStep(double value)
+{
+    mSingleStep = value;
+}
+
 double DoubleVectorWidget::maximum()
 {
     return mMaximum;
@@ -140,6 +152,16 @@ double DoubleVectorWidget::maximum()
 double DoubleVectorWidget::minimum()
 {
     return mMinimum;
+}
+
+int DoubleVectorWidget::decimals()
+{
+    return mDecimals;
+}
+
+double DoubleVectorWidget::singleStep()
+{
+    return mSingleStep;
 }
 
 

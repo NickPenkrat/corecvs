@@ -2,9 +2,12 @@
 #define PROJECTIONMODELS_H
 
 #include "core/xml/generated/projectionType.h"
+#include "core/reflection/dynamicObject.h"
 
 #include "core/math/vector/vector2d.h"
 #include "core/math/vector/vector3d.h"
+
+#include "core/cameracalibration/projection/projectionModels.h"
 
 namespace corecvs {
 
@@ -62,6 +65,7 @@ public:
     }
 
     virtual CameraProjection *clone() const = 0;
+    virtual DynamicObjectWrapper getDynamicWrapper() = 0;
 
     virtual ~CameraProjection();
 
@@ -101,7 +105,7 @@ public:
 
 
 
-class OrthographicProjection : public CameraProjection {
+class OrthographicProjection : /*public ProjectionBaseParameters,*/ public CameraProjection {
 public:
 
     Vector2dd principal;        /**< Principal point of optical axis on image plane (in pixel). Usually center of imager */
@@ -136,6 +140,13 @@ public:
     {
         return false;
     }
+
+    /*
+    virtual DynamicObjectWrapper *getDynamicWrapper() override
+    {
+        return DynamicObjectWrapper(&reflection, static_cast<ProjectionBaseParameters *>(this));
+    }
+    */
 };
 
 

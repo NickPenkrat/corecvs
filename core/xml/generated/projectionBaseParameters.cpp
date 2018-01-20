@@ -52,9 +52,11 @@ int ProjectionBaseParameters::staticInit()
           "The center of projection \f$x_c\f$",
           true,
          -99999,
-         99999
+         99999,
+         1
         );
     field0->widgetHint=BaseField::SPIN_BOX;
+    field0->suffixHint="px";
     field0->precision=2;
     fields().push_back(field0);
     /*  */ 
@@ -68,9 +70,11 @@ int ProjectionBaseParameters::staticInit()
           "The center of projection \f$y_c\f$",
           true,
          -99999,
-         99999
+         99999,
+         1
         );
     field1->widgetHint=BaseField::SPIN_BOX;
+    field1->suffixHint="px";
     field1->precision=2;
     fields().push_back(field1);
     /*  */ 
@@ -84,7 +88,8 @@ int ProjectionBaseParameters::staticInit()
           "focal",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field2->widgetHint=BaseField::SPIN_BOX;
     field2->precision=2;
@@ -100,7 +105,8 @@ int ProjectionBaseParameters::staticInit()
           "Model image resolution X",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field3->widgetHint=BaseField::SPIN_BOX;
     field3->suffixHint="px";
@@ -117,7 +123,8 @@ int ProjectionBaseParameters::staticInit()
           "Model image resolution Y",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field4->widgetHint=BaseField::SPIN_BOX;
     field4->suffixHint="px";
@@ -134,9 +141,11 @@ int ProjectionBaseParameters::staticInit()
           "Source image resolution X",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field5->widgetHint=BaseField::SPIN_BOX;
+    field5->suffixHint="px";
     field5->precision=2;
     fields().push_back(field5);
     /*  */ 
@@ -150,9 +159,11 @@ int ProjectionBaseParameters::staticInit()
           "Source image resolution Y",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field6->widgetHint=BaseField::SPIN_BOX;
+    field6->suffixHint="px";
     field6->precision=2;
     fields().push_back(field6);
     /*  */ 

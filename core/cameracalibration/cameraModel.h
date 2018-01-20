@@ -8,6 +8,7 @@
 #include "core/alignment/lensDistortionModelParameters.h"
 #include "core/alignment/pointObservation.h"
 #include "core/geometry/polygons.h"
+#include "core/reflection/dynamicObject.h"
 
 #include "core/alignment/selectableGeometryFeatures.h"
 
@@ -35,8 +36,8 @@ public:
         target(target) {}
 
 
-    static CameraProjection *projectionById(ProjectionType::ProjectionType &projection);
-    static Reflection       *reflectionById(ProjectionType::ProjectionType &projection);
+    static CameraProjection     *projectionById(const ProjectionType::ProjectionType &projection);
+    static Reflection           *reflectionById(const ProjectionType::ProjectionType &projection);
 
     template<class Visitor>
     void accept(Visitor &visitor)

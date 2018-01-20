@@ -70,7 +70,8 @@ int DebayerParameters::staticInit()
           "Bayer pos",
           true,
          -1,
-         255
+         255,
+         1
         );
     fields().push_back(field1);
     /*  */ 

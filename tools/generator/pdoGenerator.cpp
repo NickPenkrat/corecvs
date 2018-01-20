@@ -696,11 +696,12 @@ void PDOGenerator::generatePDOCpp()
     ",\n"
     "          true,\n"
     "         " + QString::number(ifield->min) + ",\n"
-    "         " + QString::number(ifield->max);
+    "         " + QString::number(ifield->max) + ",\n"
+    "         " + QString::number(ifield->step);
 
             }
         }
-        if (type == BaseField::TYPE_DOUBLE) {
+        if (type == BaseField::TYPE_DOUBLE || type == BaseField::TYPE_DOUBLE_VECTOR) {
             const DoubleField *dfield = static_cast<const DoubleField *>(field);
             if (dfield->hasAdditionalValues)
             {
@@ -708,7 +709,8 @@ void PDOGenerator::generatePDOCpp()
     ",\n"
     "          true,\n"
     "         " + QString::number(dfield->min) + ",\n"
-    "         " + QString::number(dfield->max);
+    "         " + QString::number(dfield->max) + ",\n"
+    "         " + QString::number(dfield->step);
 
             }
         }

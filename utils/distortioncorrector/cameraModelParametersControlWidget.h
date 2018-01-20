@@ -67,9 +67,10 @@ protected:
     CameraModel backup;
 
     /**/
-    QComboBox *intrinsicsType = NULL;
+    //QComboBox *intrinsicsType = NULL;
     ReflectionWidget *intrinsicsWidget = NULL;
 
+    void assertProjectionMatch();
 };
 
 

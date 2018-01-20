@@ -52,7 +52,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "focalX",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field0->widgetHint=BaseField::SPIN_BOX;
     field0->precision=2;
@@ -68,7 +69,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "focalY",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field1->widgetHint=BaseField::SPIN_BOX;
     field1->precision=2;
@@ -84,7 +86,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "The center of projection \f$x_c\f$",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field2->widgetHint=BaseField::SPIN_BOX;
     field2->suffixHint="px";
@@ -101,7 +104,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "The center of projection \f$y_c\f$",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field3->widgetHint=BaseField::SPIN_BOX;
     field3->suffixHint="px";
@@ -118,7 +122,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "skew",
           true,
          -99999,
-         99999
+         99999,
+         0.001
         );
     field4->widgetHint=BaseField::SPIN_BOX;
     field4->precision=5;
@@ -134,7 +139,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "Model image resolution X",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field5->widgetHint=BaseField::SPIN_BOX;
     field5->suffixHint="px";
@@ -151,7 +157,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "Model image resolution Y",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field6->widgetHint=BaseField::SPIN_BOX;
     field6->suffixHint="px";
@@ -168,7 +175,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "Source image resolution X",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field7->widgetHint=BaseField::SPIN_BOX;
     field7->precision=2;
@@ -184,7 +192,8 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
           "Source image resolution Y",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field8->widgetHint=BaseField::SPIN_BOX;
     field8->precision=2;

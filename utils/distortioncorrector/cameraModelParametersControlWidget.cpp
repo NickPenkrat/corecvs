@@ -45,13 +45,12 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     ui->extrinsicCamWidget->setEnabled(false);
 
     /* */
-
-    intrinsicsType = new QComboBox;
-    layout()->addWidget(intrinsicsType);
     for (int i = 0; i < ProjectionType::PROJECTIONTYPE_LAST; i++)
     {
-        intrinsicsType->addItem(ProjectionType::getName((ProjectionType::ProjectionType)i));
+        ui->projectionTypeComboBox->addItem(ProjectionType::getName((ProjectionType::ProjectionType)i));
     }
+    QObject::connect(ui->projectionTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(paramsChangedInUI()));
+
 }
 
 CameraModelParametersControlWidget::~CameraModelParametersControlWidget()
@@ -130,8 +129,22 @@ void CameraModelParametersControlWidget::resetPressed()
     emit paramsChanged();
 }
 
+void CameraModelParametersControlWidget::assertProjectionMatch()
+{
+    Reflection *ref = ProjectionFactory::reflectionById((ProjectionType::ProjectionType)ui->projectionTypeComboBox->currentIndex());
+    if (intrinsicsWidget == NULL || ref != intrinsicsWidget->reflection)
+    {
+        delete_safe(intrinsicsWidget);
+        intrinsicsWidget = new ReflectionWidget(ref);
+        QObject::connect(intrinsicsWidget, SIGNAL(paramsChanged()), this, SLOT(paramsChangedInUI()));
+        ui->projectionFrame->layout()->addWidget(intrinsicsWidget);
+     }
+}
+
 void CameraModelParametersControlWidget::paramsChangedInUI()
 {
+    assertProjectionMatch();
+
 //    qDebug() << "CameraModelParametersControlWidget::paramsChangedInUI(): pressed";
     ui->revertButton->setEnabled(true);
     emit paramsChanged();
@@ -167,8 +180,19 @@ void CameraModelParametersControlWidget::getParameters(CameraModel& params) cons
         pinhole->setSkew(ui->spinBoxSkew->value());
     } else {
 
-    }
+        ProjectionType::ProjectionType curId = (ProjectionType::ProjectionType) ui->projectionTypeComboBox->currentIndex();
+        if (params.intrinsics->projection != curId)
+        {
+            params.intrinsics.reset(ProjectionFactory::projectionById(curId));
+        }
 
+        Reflection *ref = ProjectionFactory::reflectionById(params.intrinsics->projection);
+        if (intrinsicsWidget != NULL && intrinsicsWidget->reflection == ref)
+        {
+            DynamicObjectWrapper wrapper = params.intrinsics->getDynamicWrapper();
+            intrinsicsWidget->getParameters(wrapper.rawObject);
+        }
+    }
 
 }
 
@@ -212,19 +236,17 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
 
         ui->spinBoxSkew->setValue(pinhole->skew());
 
-        ui->infoLabel->setText(QString("Size(xy):[%1 x %2] dist:[%3 x %4]")
+        /*ui->infoLabel->setText(QString("Size(xy):[%1 x %2] dist:[%3 x %4]")
                     .arg(pinhole->sizeX())         .arg(pinhole->sizeY())
-                    .arg(pinhole->distortedSizeX()).arg(pinhole->distortedSizeY()));
+                    .arg(pinhole->distortedSizeX()).arg(pinhole->distortedSizeY()));*/
     }
 
     /**/
-    intrinsicsType->setCurrentIndex(input.intrinsics->projection);
+    ui->projectionTypeComboBox->setCurrentIndex(input.intrinsics->projection);
 
-    delete_safe(intrinsicsWidget);
-    intrinsicsWidget = new ReflectionWidget(ProjectionFactory::reflectionById(input.intrinsics->projection));
-    intrinsicsWidget->setParameters((void *)input.intrinsics.get());
-    layout()->addWidget(intrinsicsWidget);
-
+    assertProjectionMatch();
+    DynamicObjectWrapper wrapper = input.intrinsics->getDynamicWrapper();
+    intrinsicsWidget->setParameters(wrapper.rawObject);
 
     blockSignals(wasBlocked);
     backup = input;

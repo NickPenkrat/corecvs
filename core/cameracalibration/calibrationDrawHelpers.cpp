@@ -107,7 +107,58 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
         }
 
         mesh.setColor(color);
+    } else {
+        int STEP=10;
+
+        Vector3dd center = cam.extrinsics.camToWorld(Vector3dd::Zero());
+
+        AbstractBuffer<Vector3dd> poses (STEP, STEP);
+        for (int i = 0; i < STEP; i++)
+        {
+            for (int j = 0; j < STEP; j++)
+            {
+                Vector2dd pos = cam.intrinsics->size() / (STEP - 1) * Vector2dd(j,i);
+                Vector3dd dir = cam.extrinsics.camToWorld(cam.intrinsics->reverse(pos) * scale);
+                poses.element(i,j) = dir;
+            }
+        }
+
+        mesh.addLine(center, poses.element(     0,      0));
+        mesh.addLine(center, poses.element(     0, STEP-1));
+        mesh.addLine(center, poses.element(STEP-1,      0));
+        mesh.addLine(center, poses.element(STEP-1, STEP-1));
+
+        for (int i = 0; i < STEP - 1 ; i++)
+        {
+            for (int j = 0; j <  STEP - 1; j++)
+            {
+                RGBColor color = mesh.currentColor;
+                if (i == 0 && j == 0) {
+                    mesh.setColor(RGBColor::Yellow());
+                }
+
+                mesh.addLine(poses.element(i,j), poses.element(i    ,j + 1));
+                mesh.addLine(poses.element(i,j), poses.element(i + 1,j    ));
+
+                if (i == 0 && j == 0) {
+                    mesh.setColor(color);
+                }
+
+            }
+        }
+
+        for (int i = 0; i < STEP - 1 ; i++)
+        {
+             mesh.addLine(poses.element(i,STEP - 1), poses.element(i + 1, STEP - 1));
+        }
+
+        for (int j = 0; j <  STEP - 1; j++)
+        {
+            mesh.addLine(poses.element(STEP - 1, j), poses.element(STEP - 1, j + 1));
+        }
+
     }
+
 
     if (printNames())
     {
@@ -249,8 +300,10 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, 
 
 void CalibrationDrawHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, double scale)
 {
+    int count = 0;
     for (FixtureCamera *cam: scene.orphanCameras())
     {
+        mesh.setColor(palette[count++]);
         drawCamera(mesh, *cam, scale);
     }
 

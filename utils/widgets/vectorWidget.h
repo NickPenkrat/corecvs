@@ -41,9 +41,15 @@ public:
 
     double mMinimum;
     double mMaximum;
+    int mDecimals;
+    double mSingleStep;
+
 
     Q_PROPERTY(double maximum READ maximum WRITE setMaximum);
     Q_PROPERTY(double minimum READ minimum WRITE setMinimum);
+
+    Q_PROPERTY(int    decimals   READ decimals WRITE setDecimals);
+    Q_PROPERTY(double singleStep READ singleStep WRITE setSingleStep);
 
 
 public slots:
@@ -54,9 +60,14 @@ public slots:
     void setMaximum(double value);
     void setMinimum(double value);
 
+    void setDecimals  (int value);
+    void setSingleStep(double value);
+
 public:
     double maximum();
     double minimum();
+    int decimals();
+    double singleStep();
 
 signals:
     void valueChanged();

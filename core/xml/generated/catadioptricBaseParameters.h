@@ -43,7 +43,7 @@ public:
         PRINCIPALX_ID,
         PRINCIPALY_ID,
         FOCAL_ID,
-        R_ID,
+        N_ID,
         SIZEX_ID,
         SIZEY_ID,
         DISTORTEDSIZEX_ID,
@@ -72,10 +72,10 @@ public:
     double mFocal;
 
     /** 
-     * \brief r 
-     * r 
+     * \brief n 
+     * n 
      */
-    vector<double> mR;
+    vector<double> mN;
 
     /** 
      * \brief sizeX 
@@ -126,9 +126,9 @@ public:
         return mFocal;
     }
 
-    vector<double> r() const
+    vector<double> n() const
     {
-        return mR;
+        return mN;
     }
 
     double sizeX() const
@@ -167,9 +167,9 @@ public:
         mFocal = focal;
     }
 
-    void setR(vector<double> r)
+    void setN(vector<double> n)
     {
-        mR = r;
+        mN = n;
     }
 
     void setSizeX(double sizeX)
@@ -200,7 +200,7 @@ template<class VisitorType>
         visitor.visit(mPrincipalX,                static_cast<const corecvs::DoubleField *>(fields()[PRINCIPALX_ID]));
         visitor.visit(mPrincipalY,                static_cast<const corecvs::DoubleField *>(fields()[PRINCIPALY_ID]));
         visitor.visit(mFocal,                     static_cast<const corecvs::DoubleField *>(fields()[FOCAL_ID]));
-        visitor.visit(mR,                         static_cast<const corecvs::DoubleVectorField *>(fields()[R_ID]));
+        visitor.visit(mN,                         static_cast<const corecvs::DoubleVectorField *>(fields()[N_ID]));
         visitor.visit(mSizeX,                     static_cast<const corecvs::DoubleField *>(fields()[SIZEX_ID]));
         visitor.visit(mSizeY,                     static_cast<const corecvs::DoubleField *>(fields()[SIZEY_ID]));
         visitor.visit(mDistortedSizeX,            static_cast<const corecvs::DoubleField *>(fields()[DISTORTEDSIZEX_ID]));
@@ -217,7 +217,7 @@ template<class VisitorType>
           double principalX
         , double principalY
         , double focal
-        , vector<double> r
+        , vector<double> n
         , double sizeX
         , double sizeY
         , double distortedSizeX
@@ -227,7 +227,7 @@ template<class VisitorType>
         mPrincipalX = principalX;
         mPrincipalY = principalY;
         mFocal = focal;
-        mR = r;
+        mN = n;
         mSizeX = sizeX;
         mSizeY = sizeY;
         mDistortedSizeX = distortedSizeX;
@@ -239,7 +239,7 @@ template<class VisitorType>
         if ( !(this->mPrincipalX == other.mPrincipalX)) return false;
         if ( !(this->mPrincipalY == other.mPrincipalY)) return false;
         if ( !(this->mFocal == other.mFocal)) return false;
-        if ( !(this->mR == other.mR)) return false;
+        if ( !(this->mN == other.mN)) return false;
         if ( !(this->mSizeX == other.mSizeX)) return false;
         if ( !(this->mSizeY == other.mSizeY)) return false;
         if ( !(this->mDistortedSizeX == other.mDistortedSizeX)) return false;

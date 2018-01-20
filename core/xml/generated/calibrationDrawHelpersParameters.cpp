@@ -64,7 +64,8 @@ int CalibrationDrawHelpersParameters::staticInit()
           "Scale For Cameras",
           true,
          0.01,
-         1000
+         1000,
+         1
         );
     field1->widgetHint=BaseField::SPIN_BOX;
     field1->precision=2;
@@ -200,7 +201,8 @@ int CalibrationDrawHelpersParameters::staticInit()
           "Projection Ray Length",
           true,
          0.01,
-         1000
+         1000,
+         1
         );
     field12->widgetHint=BaseField::SPIN_BOX;
     field12->precision=2;

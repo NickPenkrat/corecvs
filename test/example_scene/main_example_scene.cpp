@@ -321,7 +321,7 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
     /** Equidistant **/
     CameraModel equidist;
     equidist.intrinsics.reset(new EquidistantProjection(Vector2dd(100,100), 100, Vector2dd(200,200)));
-    equidist.setLocation(Affine3DQ::Shift(30,0,0));
+    equidist.setLocation(Affine3DQ::Shift(0,30,0));
 
     FixtureCamera *cameraEq = scene->createCamera();
     cameraEq->nameId = "equidist";
@@ -330,7 +330,7 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
     /** Catadioptric **/
     CameraModel catadioptric;
     catadioptric.intrinsics.reset(new CatadioptricProjection(Vector2dd(100,100), 100, Vector2dd(200,200)));
-    catadioptric.setLocation(Affine3DQ::Shift(40,0,0));
+    catadioptric.setLocation(Affine3DQ::Shift(0,40,0));
 
     FixtureCamera *cameraCat = scene->createCamera();
     cameraCat->nameId = "catadioptric";

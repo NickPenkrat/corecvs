@@ -52,9 +52,11 @@ int CatadioptricBaseParameters::staticInit()
           "The center of projection \f$x_c\f$",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field0->widgetHint=BaseField::SPIN_BOX;
+    field0->suffixHint="px";
     field0->precision=2;
     fields().push_back(field0);
     /*  */ 
@@ -68,9 +70,11 @@ int CatadioptricBaseParameters::staticInit()
           "The center of projection \f$y_c\f$",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field1->widgetHint=BaseField::SPIN_BOX;
+    field1->suffixHint="px";
     field1->precision=2;
     fields().push_back(field1);
     /*  */ 
@@ -83,23 +87,28 @@ int CatadioptricBaseParameters::staticInit()
           "focal",
           "focal",
           true,
-         0,
-         99999
+         -99999,
+         99999,
+         1
         );
     field2->widgetHint=BaseField::SPIN_BOX;
-    field2->precision=2;
+    field2->precision=6;
     fields().push_back(field2);
     /*  */ 
-    double mR_dv[] = {0,0,0,0,0,0};
+    double mN_dv[] = {0,0,0,0,0,0};
     DoubleVectorField* field3 = new DoubleVectorField
         (
-          CatadioptricBaseParameters::R_ID,
-          offsetof(CatadioptricBaseParameters, mR),
-          vector<double>(mR_dv, mR_dv + 6),
+          CatadioptricBaseParameters::N_ID,
+          offsetof(CatadioptricBaseParameters, mN),
+          vector<double>(mN_dv, mN_dv + 6),
           6,
-          "r",
-          "r",
-          "r"
+          "n",
+          "n",
+          "n",
+          true,
+         1.68557e-316,
+         6.89924e-310,
+         -99999
         );
     fields().push_back(field3);
     /*  */ 
@@ -113,7 +122,8 @@ int CatadioptricBaseParameters::staticInit()
           "Model image resolution X",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field4->widgetHint=BaseField::SPIN_BOX;
     field4->suffixHint="px";
@@ -130,7 +140,8 @@ int CatadioptricBaseParameters::staticInit()
           "Model image resolution Y",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field5->widgetHint=BaseField::SPIN_BOX;
     field5->suffixHint="px";
@@ -147,9 +158,11 @@ int CatadioptricBaseParameters::staticInit()
           "Source image resolution X",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field6->widgetHint=BaseField::SPIN_BOX;
+    field6->suffixHint="px";
     field6->precision=2;
     fields().push_back(field6);
     /*  */ 
@@ -163,9 +176,11 @@ int CatadioptricBaseParameters::staticInit()
           "Source image resolution Y",
           true,
          0,
-         99999
+         99999,
+         1
         );
     field7->widgetHint=BaseField::SPIN_BOX;
+    field7->suffixHint="px";
     field7->precision=2;
     fields().push_back(field7);
     /*  */ 
