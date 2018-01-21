@@ -18,6 +18,7 @@
 #include "mergerControlWidget.h"
 #include "cloudViewDialog.h"
 
+#include "cameraModelParametersControlWidget.h"
 
 #define UI_NAME_RECORDER "merger"
 
@@ -41,16 +42,24 @@ signals:
     void recordingTriggered();
     void recordingReset();
 
+    void newCarScene(QSharedPointer<FixtureScene> scene);
+
 public slots:
     void mergerControlParametersChanged(QSharedPointer<Merger> params);
 
     virtual void processResult();
 
     void errorMessage(QString message);
+
+    /* */
+    void virtualCamsChanged();
+
 private:
     bool mIsRecording;
 
     MergerControlWidget *mMergerControlWidget;
+
+    CameraModelParametersControlWidget* mCams[4];
 
     QSharedPointer<Merger> mMergerControlParams;
 
@@ -63,6 +72,10 @@ public slots:
     void resetRectification();
 
 public:
+
+    /* We should protect FixtureScene by Mutex... etc... nobody cares. */
+    QSharedPointer<FixtureScene> mMainScene;
+
 
     AdvancedImageWidget *mAdditionalFeed = NULL;
     AdvancedImageWidget *mUnwarpedFeed   = NULL;

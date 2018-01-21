@@ -16,15 +16,21 @@
 
 
 #include "core/utils/global.h"
-
-#include "baseCalculationThread.h"
-#include "imageCaptureInterface.h"
 #include "core/fileformats/ppmLoader.h"
 #include "core/utils/preciseTimer.h"
-#include "generatedParameters/merger.h"
 #include "core/stats/calculationStats.h"
 
 #include "core/geometry/mesh3DDecorated.h"
+#include "core/camerafixture/fixtureScene.h"
+
+#include "baseCalculationThread.h"
+#include "imageCaptureInterface.h"
+
+#include "generatedParameters/merger.h"
+
+
+using namespace corecvs;
+
 typedef RGB24Buffer * PtrRGB24Buffer;
 class MergerOutputData : public BaseOutputData
 {
@@ -81,7 +87,8 @@ public:
 
     PtrRGB24Buffer  mMasks[4];// = { NULL, NULL, NULL, NULL };
 
-    FixtureScene  *mCarScene = NULL;
+    //FixtureScene  *mCarScene = NULL;
+    QSharedPointer<FixtureScene> mCarScene;
     TableInverseCache *mUndistort = NULL;
 
     MultiewMapping mMapper;
@@ -91,6 +98,9 @@ public:
     void drawMaskOver(RGB24Buffer *inputRaw, RGB24Buffer *mMasks);
 
 public slots:
+    void sceneParametersChanged(QSharedPointer<FixtureScene> mCarScene);
+
+
     void mergerControlParametersChanged(QSharedPointer<Merger> params);
     void baseControlParametersChanged(QSharedPointer<BaseParameters> params);
     void camerasParametersChanged(QSharedPointer<CamerasConfigParameters> parameters);

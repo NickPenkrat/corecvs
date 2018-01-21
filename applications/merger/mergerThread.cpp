@@ -25,6 +25,8 @@
 #include "legacy/spherical_lut.h"
 #include "core/cammodel/sphericalCorrectionLUT.h"
 
+#include <core/xml/generated/euclidianMoveParameters.h>
+
 // TEST
 // #include "viFlowStatisticsDescriptor.h"
 
@@ -44,7 +46,6 @@ MergerThread::~MergerThread()
     for (int c = 0; c < 4; c++) {
         delete_safe(mMasks[c]);
     }
-    delete_safe(mCarScene);
     delete_safe(mUndistort);
 }
 
@@ -86,28 +87,15 @@ void MergerThread::prepareMapping()
         }
     }
 
-    /* Forming scene */
-    delete_safe(mCarScene);
-    mCarScene = new FixtureScene;
-
-    CameraFixture *body = mCarScene->createCameraFixture();
-    body->setLocation(Affine3DQ::Identity());
-    body->name = "Car Body";
-
-    G12Buffer *fstBuf = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
-    PinholeCameraIntrinsics pinhole1(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV1()));
-    PinholeCameraIntrinsics pinhole2(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV2()));
-    PinholeCameraIntrinsics pinhole3(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV3()));
-    PinholeCameraIntrinsics pinhole4(Vector2dd(fstBuf->w, fstBuf->h), degToRad(mMergerParameters->fOV4()));
-
-
     /** Undistortion would be load only once **/
 
     if (mUndistort == NULL)
     {
         LensDistortionModelParameters disortion;
         JSONGetter loader("lens.json");
-        loader.visit(disortion, "intrinsic");
+        if (!loader.hasError()) {
+            loader.visit(disortion, "intrinsic");
+        }
         cout << disortion << endl;
 
         //disortion.setShift(Vector2dd(400,400));
@@ -116,6 +104,8 @@ void MergerThread::prepareMapping()
         //mUndistort = new DisplacementBuffer(&corr, fstBuf->h, fstBuf->w, false);
 
         int overshoot = mMergerParameters->distortionOvershoot();
+
+        G12Buffer *fstBuf = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
 
         mUndistort = TableInverseCache::CacheInverse(
                       /*  - fstBuf->w,   - fstBuf->h,
@@ -132,25 +122,6 @@ void MergerThread::prepareMapping()
 
 
 
-    FixtureCamera *frontCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(frontCam, body);
-    FixtureCamera *rightCam = mCarScene->createCamera(); mCarScene->addCameraToFixture(rightCam, body);
-    FixtureCamera *backCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(backCam , body);
-    FixtureCamera *leftCam  = mCarScene->createCamera(); mCarScene->addCameraToFixture(leftCam , body);
-
-    frontCam->intrinsics = pinhole1; // frontCam->distortion = inverted.mParams;
-    rightCam->intrinsics = pinhole2; // rightCam->distortion = inverted.mParams;
-    backCam ->intrinsics = pinhole3; // backCam ->distortion = inverted.mParams;
-    leftCam ->intrinsics = pinhole4; // leftCam ->distortion = inverted.mParams;
-
-    frontCam->nameId = "Front";
-    rightCam->nameId = "Right";
-    backCam ->nameId = "Back";
-    leftCam ->nameId = "Left";
-
-    mCarScene->positionCameraInFixture(body, frontCam, getTransform(mMergerParameters->pos1()));
-    mCarScene->positionCameraInFixture(body, rightCam, getTransform(mMergerParameters->pos2()));
-    mCarScene->positionCameraInFixture(body, backCam , getTransform(mMergerParameters->pos3()));
-    mCarScene->positionCameraInFixture(body, leftCam , getTransform(mMergerParameters->pos4()));
 
 
 
@@ -172,8 +143,11 @@ void MergerThread::drawMaskOver(RGB24Buffer *inputRaw, RGB24Buffer *mask)
         }
 }
 
-
-
+void MergerThread::sceneParametersChanged(QSharedPointer<FixtureScene> mCarScene)
+{
+    this->mCarScene = mCarScene;
+    recomputeMergerState = true;
+}
 
 AbstractOutputData* MergerThread::processNewData()
 {
@@ -405,7 +379,7 @@ AbstractOutputData* MergerThread::processNewData()
                          Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
                             continue;
-                        Vector2dd projection = models[c].intrinsics.project(relative);
+                        Vector2dd projection = models[c].intrinsics->project(relative);
                         prj = correctorSq.map(projection);
                         break;
                     }
@@ -414,7 +388,7 @@ AbstractOutputData* MergerThread::processNewData()
                         Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
                             continue;
-                        Vector2dd projection = models[c].intrinsics.project(relative);
+                        Vector2dd projection = models[c].intrinsics->project(relative);
                         prj = corrector.map(projection);
                         break;
                     }
@@ -423,7 +397,7 @@ AbstractOutputData* MergerThread::processNewData()
                         Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
                             continue;
-                        Vector2dd projection = models[c].intrinsics.project(relative);
+                        Vector2dd projection = models[c].intrinsics->project(relative);
                         prj = correctorHD.map(projection);
                         break;
                     }
@@ -432,7 +406,7 @@ AbstractOutputData* MergerThread::processNewData()
                         Vector3dd relative   = models[c].extrinsics.project(pos);
                         if (relative.z() < 0)
                             continue;
-                        Vector2dd projection = models[c].intrinsics.project(relative);
+                        Vector2dd projection = models[c].intrinsics->project(relative);
                         if (mUndistort->isValidCoord((int32_t)projection.y(), (int32_t)projection.x())) {
                             prj = mUndistort->map((int32_t)projection.y(), (int32_t)projection.x());
                         }
