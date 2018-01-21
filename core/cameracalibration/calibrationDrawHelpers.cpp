@@ -108,53 +108,55 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
 
         mesh.setColor(color);
     } else {
-        int STEP=10;
+        int step = gridStepForCameras();
 
         Vector3dd center = cam.extrinsics.camToWorld(Vector3dd::Zero());
 
-        AbstractBuffer<Vector3dd> poses (STEP, STEP);
-        for (int i = 0; i < STEP; i++)
+        AbstractBuffer<Vector3dd> poses (step , step );
+        for (int i = 0; i < step ; i++)
         {
-            for (int j = 0; j < STEP; j++)
+            for (int j = 0; j < step ; j++)
             {
-                Vector2dd pos = cam.intrinsics->size() / (STEP - 1) * Vector2dd(j,i);
+                Vector2dd pos = cam.intrinsics->size() / (step  - 1) * Vector2dd(j,i);
                 Vector3dd dir = cam.extrinsics.camToWorld(cam.intrinsics->reverse(pos) * scale);
                 poses.element(i,j) = dir;
             }
         }
 
         mesh.addLine(center, poses.element(     0,      0));
-        mesh.addLine(center, poses.element(     0, STEP-1));
-        mesh.addLine(center, poses.element(STEP-1,      0));
-        mesh.addLine(center, poses.element(STEP-1, STEP-1));
+        mesh.addLine(center, poses.element(     0, step -1));
+        mesh.addLine(center, poses.element(step -1,      0));
+        mesh.addLine(center, poses.element(step -1, step -1));
 
-        for (int i = 0; i < STEP - 1 ; i++)
+        for (int i = 0; i < step  - 1 ; i++)
         {
-            for (int j = 0; j <  STEP - 1; j++)
+            for (int j = 0; j <  step  - 1; j++)
             {
                 RGBColor color = mesh.currentColor;
-                if (i == 0 && j == 0) {
+                bool cornerMark = (i < step / 2  && j < step / 2);
+
+                if (cornerMark) {
                     mesh.setColor(RGBColor::Yellow());
                 }
 
                 mesh.addLine(poses.element(i,j), poses.element(i    ,j + 1));
                 mesh.addLine(poses.element(i,j), poses.element(i + 1,j    ));
 
-                if (i == 0 && j == 0) {
+                if (cornerMark) {
                     mesh.setColor(color);
                 }
 
             }
         }
 
-        for (int i = 0; i < STEP - 1 ; i++)
+        for (int i = 0; i < step  - 1 ; i++)
         {
-             mesh.addLine(poses.element(i,STEP - 1), poses.element(i + 1, STEP - 1));
+             mesh.addLine(poses.element(i,step  - 1), poses.element(i + 1, step  - 1));
         }
 
-        for (int j = 0; j <  STEP - 1; j++)
+        for (int j = 0; j <  step  - 1; j++)
         {
-            mesh.addLine(poses.element(STEP - 1, j), poses.element(STEP - 1, j + 1));
+            mesh.addLine(poses.element(step  - 1, j), poses.element(step  - 1, j + 1));
         }
 
     }

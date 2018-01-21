@@ -378,7 +378,7 @@ public:
      *
      *
      **/
-    static CameraModel loadCatadioptricFromTxt(std::string &filename);
+    static CameraModel loadCatadioptricFromTxt(const std::string &filename);
     static CameraModel loadCatadioptricFromTxt(std::istream &filename);
 
 
