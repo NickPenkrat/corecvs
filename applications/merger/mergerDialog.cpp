@@ -35,38 +35,40 @@ MergerDialog::MergerDialog()
         mMainScene = QSharedPointer<FixtureScene>(new FixtureScene);
 
         CameraFixture *body = mMainScene->createCameraFixture();
-        body->setLocation(Affine3DQ::Identity());
-        body->name = "Car Body";
 
-        int DEFAULT_H = 480;
-        int DEFAULT_W = 640;
-        Vector2dd size(DEFAULT_W, DEFAULT_H);
+        JSONGetter getter("topview.json");
 
-        PinholeCameraIntrinsics pinhole1(size, degToRad(60));
-        PinholeCameraIntrinsics pinhole2(size, degToRad(60));
-        PinholeCameraIntrinsics pinhole3(size, degToRad(60));
-        PinholeCameraIntrinsics pinhole4(size, degToRad(60));
+        if (!getter.hasError())
+        {
+            getter.visit(*body, "scene");
+        } else {
+            body->setLocation(Affine3DQ::Identity());
+            body->name = "Car Body";
 
-        FixtureCamera *frontCam = mMainScene->createCamera(); mMainScene->addCameraToFixture(frontCam, body);
-        FixtureCamera *rightCam = mMainScene->createCamera(); mMainScene->addCameraToFixture(rightCam, body);
-        FixtureCamera *backCam  = mMainScene->createCamera(); mMainScene->addCameraToFixture(backCam , body);
-        FixtureCamera *leftCam  = mMainScene->createCamera(); mMainScene->addCameraToFixture(leftCam , body);
+            int DEFAULT_H = 480;
+            int DEFAULT_W = 640;
+            Vector2dd size(DEFAULT_W, DEFAULT_H);
 
-        frontCam->intrinsics.reset(pinhole1.clone()); // frontCam->distortion = inverted.mParams;
-        rightCam->intrinsics.reset(pinhole2.clone()); // rightCam->distortion = inverted.mParams;
-        backCam ->intrinsics.reset(pinhole3.clone()); // backCam ->distortion = inverted.mParams;
-        leftCam ->intrinsics.reset(pinhole4.clone()); // leftCam ->distortion = inverted.mParams;
+            PinholeCameraIntrinsics pinhole1(size, degToRad(60));
+            PinholeCameraIntrinsics pinhole2(size, degToRad(60));
+            PinholeCameraIntrinsics pinhole3(size, degToRad(60));
+            PinholeCameraIntrinsics pinhole4(size, degToRad(60));
 
-        frontCam->nameId = "Front";
-        rightCam->nameId = "Right";
-        backCam ->nameId = "Back";
-        leftCam ->nameId = "Left";
+            FixtureCamera *frontCam = mMainScene->createCamera(); mMainScene->addCameraToFixture(frontCam, body);
+            FixtureCamera *rightCam = mMainScene->createCamera(); mMainScene->addCameraToFixture(rightCam, body);
+            FixtureCamera *backCam  = mMainScene->createCamera(); mMainScene->addCameraToFixture(backCam , body);
+            FixtureCamera *leftCam  = mMainScene->createCamera(); mMainScene->addCameraToFixture(leftCam , body);
 
-        /*mMainScene->positionCameraInFixture(body, frontCam, getTransform(mMergerParameters->pos1()));
-        mMainScene->positionCameraInFixture(body, rightCam, getTransform(mMergerParameters->pos2()));
-        mMainScene->positionCameraInFixture(body, backCam , getTransform(mMergerParameters->pos3()));
-        mMainScene->positionCameraInFixture(body, leftCam , getTransform(mMergerParameters->pos4()));*/
+            frontCam->intrinsics.reset(pinhole1.clone()); // frontCam->distortion = inverted.mParams;
+            rightCam->intrinsics.reset(pinhole2.clone()); // rightCam->distortion = inverted.mParams;
+            backCam ->intrinsics.reset(pinhole3.clone()); // backCam ->distortion = inverted.mParams;
+            leftCam ->intrinsics.reset(pinhole4.clone()); // leftCam ->distortion = inverted.mParams;
 
+            frontCam->nameId = "Front";
+            rightCam->nameId = "Right";
+            backCam ->nameId = "Back";
+            leftCam ->nameId = "Left";
+        }
 
     }
 
@@ -89,13 +91,21 @@ void MergerDialog::initParameterWidgets()
     dockWidget()->layout()->addWidget(w);
     mSaveableWidgets.push_back(mMergerControlWidget);
 
+    CameraFixture *carBody = mMainScene->fixtures().front();
+
     for (int i = 0; i < 4; i++)
     {
         mCams[i] = new CameraModelParametersControlWidget();
-        FoldableWidget *wc = new FoldableWidget(this, QString("cam%1").arg(i), mCams[i]);
+        FoldableWidget *wc = new FoldableWidget(this, QString("cam %1").arg(carBody->cameras[i]->nameId.c_str()), mCams[i]);
         dockWidget()->layout()->addWidget(wc);
+        mSaveableWidgets.push_back(mCams[i]);
+
+        mCams[i]->setParameters(*carBody->cameras[i]);
+
+
 
         QObject::connect(mCams[i], SIGNAL(paramsChanged()), this, SLOT(virtualCamsChanged()));
+
     }
 }
 
@@ -148,9 +158,14 @@ void MergerDialog::createCalculator()
             , mergerThread
             , SLOT(presentationControlParametersChanged(QSharedPointer<PresentationParameters>)));
 
+
+   qRegisterMetaType<QSharedPointer<FixtureScene>>("QSharedPointer<FixtureScene>");
+
     connect(this, SIGNAL(newCarScene(QSharedPointer<FixtureScene>))
             , mergerThread
             , SLOT(sceneParametersChanged(QSharedPointer<FixtureScene>)));
+
+    emit newCarScene(mMainScene);
 
 
     mapper->paramsChanged();

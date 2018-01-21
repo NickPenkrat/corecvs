@@ -54,9 +54,13 @@ public:
 };
 
 struct RequestEntry {
-    int sourceBuffer;
-    BilinearMapPoint sourcePos;
-    double weight;
+    RequestEntry() {
+        for (int k = 0; k < 4; k++)
+            weight[k] = 0.0;
+    }
+
+    Vector2dd sourcePos[4];
+    double weight[4];
 };
 
 class MultiewMapping : public AbstractBuffer<RequestEntry, int>
@@ -83,7 +87,12 @@ public:
     MergerThread();
     virtual ~MergerThread();
 
+
+    /* Cached data */
     bool recomputeMergerState = true;
+    MultiewMapping *mMapper = NULL;
+    PlaneFrame mFrame;
+
 
     PtrRGB24Buffer  mMasks[4];// = { NULL, NULL, NULL, NULL };
 
@@ -91,7 +100,7 @@ public:
     QSharedPointer<FixtureScene> mCarScene;
     TableInverseCache *mUndistort = NULL;
 
-    MultiewMapping mMapper;
+
     void prepareMapping();
 
 
@@ -120,10 +129,12 @@ private:
 
     uint32_t mFrameCount;
     QString mPath;
+
     QSharedPointer<Merger> mMergerParameters;
 
+
     bool isUnderLine(Vector2dd point, Vector2dd point1, Vector2dd point2);
-    //FixtureScene *scene = NULL;
+
 
 };
 

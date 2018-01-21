@@ -72,7 +72,12 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     }
     QObject::connect(ui->projectionTypeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(paramsChangedInUI()));
 
-    ui->projectionFrame->setLayout(new QGridLayout);
+    QGridLayout *glayout = new QGridLayout;
+    glayout->setMargin(2);
+    glayout->setContentsMargins(2,2,2,2);
+    glayout->setHorizontalSpacing(2);
+    glayout->setVerticalSpacing(2);
+    ui->projectionFrame->setLayout(glayout);
 }
 
 CameraModelParametersControlWidget::~CameraModelParametersControlWidget()
@@ -201,20 +206,21 @@ void CameraModelParametersControlWidget::getParameters(CameraModel& params) cons
 
         pinhole->setSkew(ui->spinBoxSkew->value());
     } else {
-
-        ProjectionType::ProjectionType curId = (ProjectionType::ProjectionType) ui->projectionTypeComboBox->currentIndex();
-        if (params.intrinsics->projection != curId)
-        {
-            params.intrinsics.reset(ProjectionFactory::projectionById(curId));
-        }
-
-        Reflection *ref = ProjectionFactory::reflectionById(params.intrinsics->projection);
-        if (intrinsicsWidget != NULL && intrinsicsWidget->reflection == ref)
-        {
-            DynamicObjectWrapper wrapper = params.intrinsics->getDynamicWrapper();
-            intrinsicsWidget->getParameters(wrapper.rawObject);
-        }
     }
+
+    ProjectionType::ProjectionType curId = (ProjectionType::ProjectionType) ui->projectionTypeComboBox->currentIndex();
+    if (params.intrinsics->projection != curId)
+    {
+        params.intrinsics.reset(ProjectionFactory::projectionById(curId));
+    }
+
+    Reflection *ref = ProjectionFactory::reflectionById(params.intrinsics->projection);
+    if (intrinsicsWidget != NULL && intrinsicsWidget->reflection == ref)
+    {
+        DynamicObjectWrapper wrapper = params.intrinsics->getDynamicWrapper();
+        intrinsicsWidget->getParameters(wrapper.rawObject);
+    }
+
 
 }
 
