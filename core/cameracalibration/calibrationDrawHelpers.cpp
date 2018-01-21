@@ -159,6 +159,12 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
             mesh.addLine(poses.element(step  - 1, j), poses.element(step  - 1, j + 1));
         }
 
+        RGBColor color = mesh.currentColor;
+        mesh.setColor(RGBColor::Blue());
+        Vector2dd pos = cam.intrinsics->principal();
+        Vector3dd dir = cam.extrinsics.camToWorld(cam.intrinsics->reverse(pos) * scale * 2);
+        mesh.addLine(center, dir);
+        mesh.setColor(color);
     }
 
 
