@@ -122,7 +122,7 @@ TEST(projection, testCatadioptric2)
 TEST(projection, testFormatLoad)
 {
     std::string input =
-    "omnidirectional"
+    "omnidirectional\n"
     "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
     std::istringstream ss(input);
 

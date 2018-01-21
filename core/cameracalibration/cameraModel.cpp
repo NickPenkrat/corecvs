@@ -1,3 +1,4 @@
+#include <fstream>
 #include "cameraModel.h"
 
 namespace corecvs {
@@ -525,8 +526,8 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::string &filename)
 {
     std::ifstream is;
     is.open(filename, std::ifstream::in);
-    load(is);
-    is.close;
+    loadCatadioptricFromTxt(is);
+    is.close();
 }
 
 CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
@@ -552,6 +553,11 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
        n.push_back(v);
    }
 
+   cout << "Type" << cameraType << endl;
+   cout << "s" << s << endl;
+   cout << "c" << c << endl;
+   cout << "n0" << n0 << endl;
+
    CameraModel model;
    CatadioptricProjection projection;
    projection.setFocal(s * n0);
@@ -562,6 +568,8 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
 
    projection.setDistortedSizeX(projection.focal() * 2);
    projection.setDistortedSizeY(projection.focal() * 2);
+
+   projection.mN.clear();
 
    for (size_t i = 0; i < n.size(); i++)
    {
