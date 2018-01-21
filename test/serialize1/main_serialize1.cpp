@@ -521,6 +521,7 @@ void testJSONPrinterArrays()
 }
 #endif
 
+#ifdef WITH_JSONMODERN
 TEST(Serialise, testCalstructs)
 {
     const char input[] =
@@ -592,12 +593,14 @@ TEST(Serialise, testCalstructs1)
     CORE_ASSERT_TRUE(result.orientation.notTooFar(Quaternion(0, 0, 0, 1)), "Orientation parse error");
     CORE_ASSERT_TRUE(result.position   .notTooFar(Vector3dd(-0.13825168557091438, 0.003052130148347319, -0.003139061540835704)), "Vector parse error");
 }
+#endif
 
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
 
 #if 0
 

@@ -2,7 +2,7 @@
   <include name="base.xml"/>
   <include name="../../../core/xml/parameters.xml"/>
 
-  <enum name="Merger Undist Method">
+  <enum name="Merger Undist Method" incpath="">
     <item name="None"          id="0" comment="None"/>
     <item name="Square Table"  id="1" comment="Square Table"/>
     <item name="Radial Table"  id="2" comment="Radial Table"/>
@@ -33,21 +33,19 @@
 
     <field type="double" name="ground Z"                   defaultValue="-20"  min="-99999" max="99999"/>
 
-    <field type="double" name="FOV1"             suffix="deg" defaultValue="120"  min="1"    max="360"/>
     <field type="bool"   name="switch1"  defaultValue="true"  />
-    <field type="Euclidian Move Parameters" name="pos1" />
-
-    <field type="double" name="FOV2"             suffix="deg" defaultValue="120"  min="1"    max="360"/>
     <field type="bool"   name="switch2"  defaultValue="true"  />
-    <field type="Euclidian Move Parameters" name="pos2" />
-
-    <field type="double" name="FOV3"             suffix="deg" defaultValue="120"  min="1"    max="360"/>
     <field type="bool"   name="switch3"  defaultValue="true"  />
-    <field type="Euclidian Move Parameters" name="pos3" />
-
-    <field type="double" name="FOV4"             suffix="deg" defaultValue="120"  min="1"    max="360"/>
     <field type="bool"   name="switch4"  defaultValue="true"  />
-    <field type="Euclidian Move Parameters" name="pos4" />
+
+    <!-- <field type="double" name="FOV1"             suffix="deg" defaultValue="120"  min="1"    max="360"/> -->
+    <!-- <field type="Euclidian Move Parameters" name="pos1" /> -->
+    <!-- <field type="double" name="FOV2"             suffix="deg" defaultValue="120"  min="1"    max="360"/> -->
+    <!-- <field type="Euclidian Move Parameters" name="pos2" /> -->
+    <!-- <field type="double" name="FOV3"             suffix="deg" defaultValue="120"  min="1"    max="360"/> -->
+    <!-- <field type="Euclidian Move Parameters" name="pos3" /> -->
+    <!-- <field type="double" name="FOV4"             suffix="deg" defaultValue="120"  min="1"    max="360"/> -->
+    <!-- <field type="Euclidian Move Parameters" name="pos4" /> -->
 
   </class> 
   

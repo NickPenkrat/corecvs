@@ -14,11 +14,14 @@
 #include <QFileDialog>
 #include <QString>
 #include <QMessageBox>
+#include <foldableWidget.h>
 
 #include "parametersMapper/parametersMapperMerger.h"
 
 #include "sceneShaded.h"
 #include "mesh3DScene.h"
+
+#include <core/camerafixture/cameraFixture.h>
 
 
 MergerDialog::MergerDialog()
@@ -27,6 +30,46 @@ MergerDialog::MergerDialog()
       mMergerControlWidget(NULL)
 {
 //    this->resize(this->width(), this->height() - 65);
+
+    {
+        mMainScene = QSharedPointer<FixtureScene>(new FixtureScene);
+
+        CameraFixture *body = mMainScene->createCameraFixture();
+        body->setLocation(Affine3DQ::Identity());
+        body->name = "Car Body";
+
+        int DEFAULT_H = 480;
+        int DEFAULT_W = 640;
+        Vector2dd size(DEFAULT_W, DEFAULT_H);
+
+        PinholeCameraIntrinsics pinhole1(size, degToRad(60));
+        PinholeCameraIntrinsics pinhole2(size, degToRad(60));
+        PinholeCameraIntrinsics pinhole3(size, degToRad(60));
+        PinholeCameraIntrinsics pinhole4(size, degToRad(60));
+
+        FixtureCamera *frontCam = mMainScene->createCamera(); mMainScene->addCameraToFixture(frontCam, body);
+        FixtureCamera *rightCam = mMainScene->createCamera(); mMainScene->addCameraToFixture(rightCam, body);
+        FixtureCamera *backCam  = mMainScene->createCamera(); mMainScene->addCameraToFixture(backCam , body);
+        FixtureCamera *leftCam  = mMainScene->createCamera(); mMainScene->addCameraToFixture(leftCam , body);
+
+        frontCam->intrinsics.reset(pinhole1.clone()); // frontCam->distortion = inverted.mParams;
+        rightCam->intrinsics.reset(pinhole2.clone()); // rightCam->distortion = inverted.mParams;
+        backCam ->intrinsics.reset(pinhole3.clone()); // backCam ->distortion = inverted.mParams;
+        leftCam ->intrinsics.reset(pinhole4.clone()); // leftCam ->distortion = inverted.mParams;
+
+        frontCam->nameId = "Front";
+        rightCam->nameId = "Right";
+        backCam ->nameId = "Back";
+        leftCam ->nameId = "Left";
+
+        /*mMainScene->positionCameraInFixture(body, frontCam, getTransform(mMergerParameters->pos1()));
+        mMainScene->positionCameraInFixture(body, rightCam, getTransform(mMergerParameters->pos2()));
+        mMainScene->positionCameraInFixture(body, backCam , getTransform(mMergerParameters->pos3()));
+        mMainScene->positionCameraInFixture(body, leftCam , getTransform(mMergerParameters->pos4()));*/
+
+
+    }
+
 
 }
 
@@ -42,9 +85,18 @@ void MergerDialog::initParameterWidgets()
     BaseHostDialog::initParameterWidgets();
 
     mMergerControlWidget = new MergerControlWidget(this, true, UI_NAME_RECORDER);
-    dockWidget()->layout()->addWidget(mMergerControlWidget);
+    FoldableWidget *w = new FoldableWidget(this, "Merger", mMergerControlWidget);
+    dockWidget()->layout()->addWidget(w);
     mSaveableWidgets.push_back(mMergerControlWidget);
 
+    for (int i = 0; i < 4; i++)
+    {
+        mCams[i] = new CameraModelParametersControlWidget();
+        FoldableWidget *wc = new FoldableWidget(this, QString("cam%1").arg(i), mCams[i]);
+        dockWidget()->layout()->addWidget(wc);
+
+        QObject::connect(mCams[i], SIGNAL(paramsChanged()), this, SLOT(virtualCamsChanged()));
+    }
 }
 
 void MergerDialog::initCommon()
@@ -82,17 +134,24 @@ void MergerDialog::createCalculator()
   /*  connect(mapper, SIGNAL(baseParametersParamsChanged(QSharedPointer<BaseParameters>))
             , this, SLOT(baseControlParametersChanged(QSharedPointer<Base>)));*/
 
-    mCalculator = new MergerThread();
+    MergerThread *mergerThread = new MergerThread();
+    mCalculator = mergerThread;
+
 
     connect(mapper, SIGNAL(baseParametersParamsChanged(QSharedPointer<BaseParameters>))
-            , static_cast<MergerThread*>(mCalculator)
+            , mergerThread
             , SLOT(baseControlParametersChanged(QSharedPointer<BaseParameters>)));
     connect(mapper, SIGNAL(mergerParamsChanged(QSharedPointer<Merger>))
-            , static_cast<MergerThread*>(mCalculator)
+            , mergerThread
             , SLOT(mergerControlParametersChanged(QSharedPointer<Merger>)));
     connect(mapper, SIGNAL(presentationParametersParamsChanged(QSharedPointer<PresentationParameters>))
-            , static_cast<MergerThread*>(mCalculator)
+            , mergerThread
             , SLOT(presentationControlParametersChanged(QSharedPointer<PresentationParameters>)));
+
+    connect(this, SIGNAL(newCarScene(QSharedPointer<FixtureScene>))
+            , mergerThread
+            , SLOT(sceneParametersChanged(QSharedPointer<FixtureScene>)));
+
 
     mapper->paramsChanged();
 
@@ -184,6 +243,20 @@ void MergerDialog::errorMessage(QString message)
     QMessageBox msgBox;
     msgBox.setText(message);
     msgBox.exec();
+}
+
+void MergerDialog::virtualCamsChanged()
+{
+    SYNC_PRINT(("MergerDialog::virtualCamsChanged(): called"));
+    for (int i = 0; i < 4; i++)
+    {
+        CameraFixture *carBody = mMainScene->fixtures().front();
+
+        CameraModel model;
+        mCams[i]->getParameters(model);
+        carBody->cameras[i]->copyModelFrom(model);
+    }
+    emit newCarScene(mMainScene);
 }
 
 void MergerDialog::showHistogram()
