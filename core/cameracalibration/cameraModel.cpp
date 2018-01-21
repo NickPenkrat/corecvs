@@ -521,6 +521,59 @@ void CameraModel::prettyPrint(std::ostream &out)
     accept(visitor);
 }
 
+CameraModel CameraModel::loadCatadioptricFromTxt(std::string &filename)
+{
+    std::ifstream is;
+    is.open(filename, std::ifstream::in);
+    load(is);
+    is.close;
+}
+
+CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
+{
+   /* \f[ s c_x c_y i n_0 n_2 ... n_i \f]*/
+   std:string cameraType;
+   double s;
+   Vector2dd c;
+   int imax;
+   double n0;
+
+   stream >> cameraType;
+   stream >> s;
+   stream >> c.x() >> c.y();
+   stream >> imax;
+
+   stream >> n0;
+   vector<double> n;
+   for (int i = 0; i < imax-1; i++)
+   {
+       double v = 0;
+       stream >> v;
+       n.push_back(v);
+   }
+
+   CameraModel model;
+   CatadioptricProjection projection;
+   projection.setFocal(s * n0);
+   projection.setPrincipalX(s * c.x());
+   projection.setPrincipalY(s * c.y());
+   projection.setSizeX(projection.focal() * 2);
+   projection.setSizeY(projection.focal() * 2);
+
+   projection.setDistortedSizeX(projection.focal() * 2);
+   projection.setDistortedSizeY(projection.focal() * 2);
+
+   for (size_t i = 0; i < n.size(); i++)
+   {
+      projection.mN.push_back(n[i] / pow(n0, i + 3));
+   }
+
+   model.intrinsics.reset(projection.clone());
+
+   return model;
+}
+
+
 /* FACTORY */
 
 CameraProjection *ProjectionFactory::projectionById(const ProjectionType::ProjectionType &projection)

@@ -49,8 +49,7 @@ class GenericCatadioptricProjection : public CameraProjection {
  *
  *  \f[ d_n = (q_x, q_y, \sqrt {1 - q_x^2 - q_y ^ 2} ) \f]
  *
- *
- *  \f[ r = ((p_x - p_x^0)/f, (p_y - p_y^0)/f, 1.0 ) = (q_x, q_y, 1.0)\f]
+ *  \f[ \sqrt {1 - q_x^2 - q_y ^ 2} = 1 - {x^2 \over 2} - {x^4 \over 8} - {x^6 \over 16} - {5x^6 \over 128} + \cdots \f]
  *
  *
  *  Thus we had described reverse projection, now we have to consider forward transformation
@@ -71,6 +70,9 @@ class GenericCatadioptricProjection : public CameraProjection {
  *
  **/
 
+/*
+ *  \f[ r = ((p_x - p_x^0)/f, (p_y - p_y^0)/f, 1.0 ) = (q_x, q_y, 1.0)\f]
+*/
 
 class CatadioptricProjection : public CatadioptricBaseParameters, public CameraProjection
 {
