@@ -76,18 +76,21 @@ void MergerThread::prepareMapping()
     /* Loading masks */
     const char *maskFiles[] = {"front-mask.bmp", "right-mask.bmp", "back-mask.bmp", "left-mask.bmp"};
 
+    SYNC_PRINT(("MergerThread::prepareMapping(): re-loading masks\n"));
     for (int c = 0; c < 4; c++) {
         delete_safe(mMasks[c]);
         mMasks[c] = BufferFactory::getInstance()->loadRGB24Bitmap(maskFiles[c]);
         if (mMasks[c] != NULL)
             continue;
 
-        SYNC_PRINT(("Mask %d is zero. Setting blank\n", c));
+        SYNC_PRINT(("  Mask %d is zero. Setting blank\n", c));
         mMasks[c] = new RGB24Buffer(mFrames.getCurrentFrame(Frames::DEFAULT_FRAME)->getSize(), RGBColor::White());
     }
 
     /** Undistortion would be load only once **/
+    SYNC_PRINT(("MergerThread::prepareMapping(): caching undistortion\n"));
 
+    /*
     if (mUndistort == NULL)
     {
         LensDistortionModelParameters disortion;
@@ -111,6 +114,7 @@ void MergerThread::prepareMapping()
                       (double)fstBuf->w, (double)fstBuf->h,
                       0.1, false);
     }
+    */
 
     /* We would fill mapper with caching data*/
     double groundZ = mMergerParameters->groundZ();
@@ -127,34 +131,46 @@ void MergerThread::prepareMapping()
         models[c] = mCarScene->fixtures()[0]->cameras[c]->getWorldCameraModel();
     }
 
+    SYNC_PRINT(("MergerThread::prepareMapping(): caching mapping\n"));
     delete_safe(mMapper);
-    mMapper = new MultiewMapping();
 
-    for (int i = 0; i < mMapper->h; i++)
+    int hSize = mMergerParameters->outSizeH();
+    int wSize = mMergerParameters->outSizeH() / mMergerParameters->outPhySizeW() * mMergerParameters->outPhySizeL();
+
+    mMapper = new MultiewMapping(hSize, wSize);
+
+    SYNC_PRINT(("MergerThread::prepareMapping(): processing: "));
+    int count = 0;
+    int done = 0;
+    parallelable_for(0, mMapper->h, [&](const BlockedRange<int>& r)
     {
-        for (int j = 0; j < mMapper->w; j++)
+        for(int i = r.begin(); i < r.end(); i++)
         {
-            Vector2dd p = Vector2dd( (double)j / mMapper->w, (double)i / mMapper->h);
-            Vector3dd pos = mFrame.getPoint(p);
-
-            for (int c = 0; c < 4; c++)
+            for (int j = 0; j < mMapper->w; j++)
             {
-                Vector3dd posCam = models[c].extrinsics.worldToCam(pos);
-                if (!models[c].intrinsics->isVisible(posCam))
-                    continue;
+                Vector2dd p = Vector2dd( (double)j / mMapper->w, (double)i / mMapper->h);
+                Vector3dd pos = mFrame.getPoint(p);
 
-                Vector2dd prj = models[c].intrinsics->project(posCam);
-                mMapper->element(i, j).sourcePos[c] = prj;
-                if (mMasks[c]->isValidCoord(prj.y(), prj.x()))
-                mMapper->element(i, j).weight[c] = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+                for (int c = 0; c < 4; c++)
+                {
+                    Vector3dd posCam = models[c].extrinsics.worldToCam(pos);
+                    if (!models[c].intrinsics->isVisible(posCam))
+                        continue;
+
+                    Vector2dd prj = models[c].intrinsics->project(posCam);
+                    mMapper->element(i, j).sourcePos[c] = prj;
+                    if (mMasks[c]->isValidCoord(prj.y(), prj.x()))
+                    mMapper->element(i, j).weight[c] = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+                    count++;
+                }
             }
+            done++;
+            if (done % 100 == 0)
+                SYNC_PRINT(("#"));
         }
-
-    }
-
-
-
-
+    });
+    SYNC_PRINT(("\n"));
+    SYNC_PRINT(("MergerThread::prepareMapping(): %d non zero", count));
 
 
 }
@@ -428,6 +444,7 @@ AbstractOutputData* MergerThread::processNewData()
 
     CalibrationDrawHelpers drawer;
     drawer.setPrintNames(true);
+    drawer.setGridStepForCameras(50);
     drawer.drawScene(*outputData->visualisation, *mCarScene, 3);
 
 

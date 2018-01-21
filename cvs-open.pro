@@ -6,8 +6,8 @@ SUBDIRS +=                   \
     core                     \
     utils                    \
     test-core                \
-#    test-core-perf           \
-#    tests_big                \
+    test-core-perf           \
+    tests_big                \
     \   
 
 

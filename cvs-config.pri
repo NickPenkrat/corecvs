@@ -32,7 +32,7 @@ CONFIG +=        \
                  \
    with_native   \
    with_tbb      \
-#   with_openblas \      # activate all three libraries,
+   with_openblas \      # activate all three libraries,
 #   with_mkl      \      #  clarify what
 #   with_fftw     \      #  to use later!
 #   with_opencv   \

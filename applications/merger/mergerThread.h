@@ -63,6 +63,9 @@ struct RequestEntry {
     double weight[4];
 };
 
+typedef AbstractBuffer<RequestEntry, int> MultiewMapping;
+
+#if 0
 class MultiewMapping : public AbstractBuffer<RequestEntry, int>
 {
 public:
@@ -70,6 +73,7 @@ public:
 
 
 };
+#endif
 
 class MergerThread : public BaseCalculationThread
 {

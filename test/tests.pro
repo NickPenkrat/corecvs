@@ -23,6 +23,7 @@ SUBDIRS +=       \
 #    new_board_detector \
 #    cr2reader           \
     debayer          \
+    deproject        \
     softrender       \
     raytracerender   \
     stereo_generator \
@@ -66,6 +67,8 @@ cr2reader.depends                  -= utils
 
 debayer.file                        = debayer/debayer.pro
 debayer.depends                    -= utils
+
+deproject.file                      = deproject/deproject.pro
 
 softrender.file                     = softrender/softrender.pro
 softrender.depends                 -= utils

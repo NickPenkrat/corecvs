@@ -34,14 +34,15 @@ MergerDialog::MergerDialog()
     {
         mMainScene = QSharedPointer<FixtureScene>(new FixtureScene);
 
-        CameraFixture *body = mMainScene->createCameraFixture();
-
         JSONGetter getter("topview.json");
 
         if (!getter.hasError())
         {
-            getter.visit(*body, "scene");
+            getter.visit(*mMainScene.data(), "scene");
+            mMainScene->dumpInfo();
         } else {
+
+            CameraFixture *body = mMainScene->createCameraFixture();
             body->setLocation(Affine3DQ::Identity());
             body->name = "Car Body";
 

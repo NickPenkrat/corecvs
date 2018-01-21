@@ -14,7 +14,7 @@ TEMPLATE = app
 TARGET   = test_stereo_generator
 CONFIG  += console
 
-include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
+include(../../utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES += stereo_generator.cpp
 

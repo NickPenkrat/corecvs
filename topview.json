@@ -1,0 +1,242 @@
+{
+"scene":{
+ "relativeImageDataPath":"",
+ "coordinateSystemState":0,
+ "localToWorld":{
+  "a00":1,
+  "a01":0,
+  "a02":0,
+  "a03":0,
+  "a10":0,
+  "a11":1,
+  "a12":0,
+  "a13":0,
+  "a20":0,
+  "a21":0,
+  "a22":1,
+  "a23":0,
+  "a30":0,
+  "a31":0,
+  "a32":0,
+  "a33":1
+ },
+ "cameraprototypes.size":0,
+ "orphancameras.size":0,
+ "stations.size":1,
+ "stations[0]":{
+  "cameras.size":4,
+  "cameras[0]":{
+   "intrinsics":{
+    "projectionType":2,
+    "principalX":2211.8800000000001,
+    "principalY":1772.55,
+    "focal":1000.101684,
+    "n": [ -1.615281, -3.3950640000000001, 8.0657049999999995, -8.8021759999999993],
+    "sizeX":4000.1999999999998,
+    "sizeY":4000.1999999999998,
+    "distortedSizeX":4000.1999999999998,
+    "distortedSizeY":4000.1999999999998
+   },
+   "extrinsics":{
+    "position":{
+     "x":10,
+     "y":0,
+     "z":1
+    },
+    "orientation":{
+     "x":0.64111524370459139,
+     "y":-0.64111759865670148,
+     "z":0.29827849619980368,
+     "t":0.29827740056372148
+    },
+    "rotation":{
+     "x":-0.64111524370459139,
+     "y":0.64111759865670148,
+     "z":-0.29827849619980368,
+     "t":0.29827740056372148
+    },
+    "comment":"rotation - is Camera to World and has priority over orientation"
+   },
+   "distortion":{
+    "principalX":240,
+    "principalY":320,
+    "tangentialX":0,
+    "tangentialY":0,
+    "koeff": [ 0, 0, 0, 0, 0, 0],
+    "aspect":1,
+    "scale":1,
+    "Normalizing Focal":1,
+    "shift X":0,
+    "shift Y":0,
+    "Map Forward":false
+   },
+   "nameId":"Front",
+   "id":"59497792u64",
+   "image.size":0
+  },
+  "cameras[1]":{
+   "intrinsics":{
+    "projectionType":2,
+    "principalX":2134.9099999999999,
+    "principalY":1767.6400000000001,
+    "focal":821.78452800000002,
+    "n": [ -3.9728210000000002, -7.6155229999999996, 26.470997000000001, -43.620520999999997],
+    "sizeX":4269.8199999999997,
+    "sizeY":3535.29,
+    "distortedSizeX":4269.8199999999997,
+    "distortedSizeY":3535.29
+   },
+   "extrinsics":{
+    "position":{
+     "x":0,
+     "y":-10,
+     "z":1
+    },
+    "orientation":{
+     "x":-0.82877885777356541,
+     "y":-0.020723789080302243,
+     "z":-0.013978353575154059,
+     "t":0.55901765187248553
+    },
+    "rotation":{
+     "x":0.82877885777356541,
+     "y":0.020723789080302243,
+     "z":0.013978353575154059,
+     "t":0.55901765187248553
+    },
+    "comment":"rotation - is Camera to World and has priority over orientation"
+   },
+   "distortion":{
+    "principalX":240,
+    "principalY":320,
+    "tangentialX":0,
+    "tangentialY":0,
+    "koeff": [ 0, 0, 0, 0, 0, 0],
+    "aspect":1,
+    "scale":1,
+    "Normalizing Focal":1,
+    "shift X":0,
+    "shift Y":0,
+    "Map Forward":false
+   },
+   "nameId":"Right",
+   "id":"59579200u64",
+   "image.size":0
+  },
+  "cameras[2]":{
+   "intrinsics":{
+    "projectionType":2,
+    "principalX":2256.5900000000001,
+    "principalY":1638.3599999999999,
+    "focal":816.62288999999998,
+    "n": [ -2.9632499999999999, -17.194355000000002, 54.127234000000001, -72.134711999999993],
+    "sizeX":4513.1700000000001,
+    "sizeY":3276.7199999999998,
+    "distortedSizeX":4513.1700000000001,
+    "distortedSizeY":3276.7199999999998
+   },
+   "extrinsics":{
+    "position":{
+     "x":-30,
+     "y":0,
+     "z":1
+    },
+    "orientation":{
+     "x":0.64085549976878831,
+     "y":0.64085785376680393,
+     "z":-0.29883615555678222,
+     "t":0.29883505787230658
+    },
+    "rotation":{
+     "x":-0.64085549976878831,
+     "y":-0.64085785376680393,
+     "z":0.29883615555678222,
+     "t":0.29883505787230658
+    },
+    "comment":"rotation - is Camera to World and has priority over orientation"
+   },
+   "distortion":{
+    "principalX":240,
+    "principalY":320,
+    "tangentialX":0,
+    "tangentialY":0,
+    "koeff": [ 0, 0, 0, 0, 0, 0],
+    "aspect":1,
+    "scale":1,
+    "Normalizing Focal":1,
+    "shift X":0,
+    "shift Y":0,
+    "Map Forward":false
+   },
+   "nameId":"Rear",
+   "id":"59581872u64",
+   "image.size":0
+  },
+  "cameras[3]":{
+   "intrinsics":{
+    "projectionType":2,
+    "principalX":1954.9400000000001,
+    "principalY":1587.4400000000001,
+    "focal":814.88551199999995,
+    "n": [ -2.9330829999999999, -17.640134, 55.457175999999997, -74.279436000000004],
+    "sizeX":3909.8699999999999,
+    "sizeY":3174.8699999999999,
+    "distortedSizeX":3909.8699999999999,
+    "distortedSizeY":3174.8699999999999
+   },
+   "extrinsics":{
+    "position":{
+     "x":0,
+     "y":10,
+     "z":1
+    },
+    "orientation":{
+     "x":0.82879043443031097,
+     "y":0.020255525742797865,
+     "z":-0.013662506387530471,
+     "t":0.55902546041563272
+    },
+    "rotation":{
+     "x":-0.82879043443031097,
+     "y":-0.020255525742797865,
+     "z":0.013662506387530471,
+     "t":0.55902546041563272
+    },
+    "comment":"rotation - is Camera to World and has priority over orientation"
+   },
+   "distortion":{
+    "principalX":240,
+    "principalY":320,
+    "tangentialX":0,
+    "tangentialY":0,
+    "koeff": [ 0, 0, 0, 0, 0, 0],
+    "aspect":1,
+    "scale":1,
+    "Normalizing Focal":1,
+    "shift X":0,
+    "shift Y":0,
+    "Map Forward":false
+   },
+   "nameId":"Left",
+   "id":"59769280u64",
+   "image.size":0
+  },
+  "location":{
+   "shift":{
+    "x":0,
+    "y":0,
+    "z":0
+   },
+   "rotor":{
+    "x":0,
+    "y":0,
+    "z":0,
+    "t":1
+   }
+  },
+  "name":"CarBody"
+ },
+ "points.size":0,
+ "geometry.size":0
+}
+}
