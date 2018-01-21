@@ -42,6 +42,7 @@ public:
     enum FieldId {
         USE_OLD_BACKEND_ID,
         SCALE_FOR_CAMERAS_ID,
+        GRID_STEP_FOR_CAMERAS_ID,
         PRINTNAMES_ID,
         BILLBOARDNAMES_ID,
         PREFER_REPROJECTED_ID,
@@ -70,6 +71,12 @@ public:
      * Scale For Cameras 
      */
     double mScaleForCameras;
+
+    /** 
+     * \brief Grid Step For Cameras 
+     * Grid Step For Cameras 
+     */
+    int mGridStepForCameras;
 
     /** 
      * \brief printNames 
@@ -163,6 +170,11 @@ public:
         return mScaleForCameras;
     }
 
+    int gridStepForCameras() const
+    {
+        return mGridStepForCameras;
+    }
+
     bool printNames() const
     {
         return mPrintNames;
@@ -234,6 +246,11 @@ public:
         mScaleForCameras = scaleForCameras;
     }
 
+    void setGridStepForCameras(int gridStepForCameras)
+    {
+        mGridStepForCameras = gridStepForCameras;
+    }
+
     void setPrintNames(bool printNames)
     {
         mPrintNames = printNames;
@@ -301,6 +318,7 @@ template<class VisitorType>
     {
         visitor.visit(mUseOldBackend,             static_cast<const corecvs::BoolField *>(fields()[USE_OLD_BACKEND_ID]));
         visitor.visit(mScaleForCameras,           static_cast<const corecvs::DoubleField *>(fields()[SCALE_FOR_CAMERAS_ID]));
+        visitor.visit(mGridStepForCameras,        static_cast<const corecvs::IntField *>(fields()[GRID_STEP_FOR_CAMERAS_ID]));
         visitor.visit(mPrintNames,                static_cast<const corecvs::BoolField *>(fields()[PRINTNAMES_ID]));
         visitor.visit(mBillboardNames,            static_cast<const corecvs::BoolField *>(fields()[BILLBOARDNAMES_ID]));
         visitor.visit(mPreferReprojected,         static_cast<const corecvs::BoolField *>(fields()[PREFER_REPROJECTED_ID]));
@@ -324,6 +342,7 @@ template<class VisitorType>
     CalibrationDrawHelpersParameters(
           bool useOldBackend
         , double scaleForCameras
+        , int gridStepForCameras
         , bool printNames
         , bool billboardNames
         , bool preferReprojected
@@ -340,6 +359,7 @@ template<class VisitorType>
     {
         mUseOldBackend = useOldBackend;
         mScaleForCameras = scaleForCameras;
+        mGridStepForCameras = gridStepForCameras;
         mPrintNames = printNames;
         mBillboardNames = billboardNames;
         mPreferReprojected = preferReprojected;
@@ -358,6 +378,7 @@ template<class VisitorType>
     {
         if ( !(this->mUseOldBackend == other.mUseOldBackend)) return false;
         if ( !(this->mScaleForCameras == other.mScaleForCameras)) return false;
+        if ( !(this->mGridStepForCameras == other.mGridStepForCameras)) return false;
         if ( !(this->mPrintNames == other.mPrintNames)) return false;
         if ( !(this->mBillboardNames == other.mBillboardNames)) return false;
         if ( !(this->mPreferReprojected == other.mPreferReprojected)) return false;

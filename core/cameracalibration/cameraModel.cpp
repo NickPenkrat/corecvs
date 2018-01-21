@@ -522,18 +522,17 @@ void CameraModel::prettyPrint(std::ostream &out)
     accept(visitor);
 }
 
-CameraModel CameraModel::loadCatadioptricFromTxt(std::string &filename)
+CameraModel CameraModel::loadCatadioptricFromTxt(const std::string &filename)
 {
     std::ifstream is;
     is.open(filename, std::ifstream::in);
-    loadCatadioptricFromTxt(is);
-    is.close();
+    return loadCatadioptricFromTxt(is);
 }
 
 CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
 {
    /* \f[ s c_x c_y i n_0 n_2 ... n_i \f]*/
-   std:string cameraType;
+   string cameraType;
    double s;
    Vector2dd c;
    int imax;
@@ -553,21 +552,27 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
        n.push_back(v);
    }
 
-   cout << "Type" << cameraType << endl;
-   cout << "s" << s << endl;
-   cout << "c" << c << endl;
-   cout << "n0" << n0 << endl;
+   cout << "Type: " << cameraType << endl;
+   cout << "s: " << s << endl;
+   cout << "c: " << c << endl;
+   cout << "n0: " << n0 << endl;
+   cout << "imax: " << imax << endl;
+   for (int i = 0; i < imax-1; i++)
+   {
+       cout << "n" << i+2 << " " << n[i] << endl;
+
+   }
 
    CameraModel model;
    CatadioptricProjection projection;
    projection.setFocal(s * n0);
    projection.setPrincipalX(s * c.x());
    projection.setPrincipalY(s * c.y());
-   projection.setSizeX(projection.focal() * 2);
-   projection.setSizeY(projection.focal() * 2);
+   projection.setSizeX(projection.principalX() * 2);
+   projection.setSizeY(projection.principalY() * 2);
 
-   projection.setDistortedSizeX(projection.focal() * 2);
-   projection.setDistortedSizeY(projection.focal() * 2);
+   projection.setDistortedSizeX(projection.principalX() * 2);
+   projection.setDistortedSizeY(projection.principalY() * 2);
 
    projection.mN.clear();
 

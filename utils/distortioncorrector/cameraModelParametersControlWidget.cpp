@@ -111,7 +111,7 @@ void CameraModelParametersControlWidget::loadPressed()
         this,
         "LOAD: Choose an camera config name",
         ".",
-        "Text (*.json)"
+        "Text (*.json *.txt)"
     );
     if (!filename.isEmpty()) {
         emit loadRequest(filename);

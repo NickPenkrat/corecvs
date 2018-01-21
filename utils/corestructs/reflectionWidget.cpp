@@ -529,7 +529,8 @@ bool ReflectionWidget::setParameters(void *param) const
             }*/
             case BaseField::TYPE_DOUBLE | BaseField::TYPE_VECTOR_BIT:
             {
-                //DoubleVectorWidget *vectorWidget = static_cast<DoubleVectorWidget *>(positionToWidget[i]);
+                DoubleVectorWidget *vectorWidget = static_cast<DoubleVectorWidget *>(positionToWidget[i]);
+                vectorWidget->setValue(*obj.getField<vector<double> >(fieldId));
 
                 break;
             }
