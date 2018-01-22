@@ -102,9 +102,8 @@ RGB24Buffer *LibpngFileReader::load(string name)
     return toReturn;
 }
 
-bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
+bool LibpngFileReader::save(const string &name, const RGB24Buffer *buffer, int quality/*TODO: connect with PNG_COMPRESSION_TYPE_DEFAULT below*/)
 {
-    FILE * fp;
     png_byte ** row_pointers;
     png_structp png_ptr = nullptr;
     png_infop info_ptr = nullptr;
@@ -114,8 +113,8 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
     int depth = 8;
     png_uint_32 width = buffer->w, height = buffer->h;
 
-    fp = fopen (name.c_str(), "wb");
-    if (! fp) {
+    FILE *fp = fopen (name.c_str(), "wb");
+    if (!fp) {
         goto fopen_failed;
     }
 
@@ -130,14 +129,11 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
     }
 
     /* Set up error handling. */
-
     if (setjmp (png_jmpbuf (png_ptr))) {
         goto png_failure;
     }
 
     /* Set image attributes. */
-
-
     png_set_IHDR (png_ptr,
                   info_ptr,
                   width,
@@ -149,7 +145,6 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
                   PNG_FILTER_TYPE_DEFAULT);
 
     /* Initialize rows of PNG. */
-
     row_pointers = (png_byte **) png_malloc (png_ptr, height * sizeof (png_byte *));
     for (y = 0; y < height; ++y) {
         png_byte *row =
@@ -164,17 +159,16 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
     }
 
     /* Write the image data to "fp". */
-
-    png_init_io (png_ptr, fp);
+    png_init_io  (png_ptr, fp);
     png_set_rows (png_ptr, info_ptr, row_pointers);
-    png_write_png (png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+    png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
 
     status = 0;
 
     for (y = 0; y < height; y++) {
         png_free (png_ptr, row_pointers[y]);
     }
-    png_free (png_ptr, row_pointers);
+    png_free(png_ptr, row_pointers);
 
     png_failure:
         png_create_info_struct_failed:
@@ -201,6 +195,5 @@ corecvs::RuntimeTypeBuffer *LibpngRuntimeTypeBufferLoader::load(string name)
         }
     }
     delete tmp;
-
     return result;
 }

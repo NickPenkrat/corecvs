@@ -55,13 +55,13 @@ public:
     RGB24Buffer(Vector2d<int32_t> size, const RGBColor &data  ) : RGB24BufferBase (size, data) {}
 
     /*Helper Constructors form the relative types*/
-    RGB24Buffer(G12Buffer *buffer) : RGB24BufferBase (buffer->h, buffer->w, false)
+    RGB24Buffer(const G12Buffer *buffer) : RGB24BufferBase (buffer->h, buffer->w, false)
     {
         drawG12Buffer(buffer);
     }
 
     /*Helper Constructors form the relative types*/
-    RGB24Buffer(G8Buffer *buffer) : RGB24BufferBase (buffer->h, buffer->w, false)
+    RGB24Buffer(const G8Buffer *buffer) : RGB24BufferBase (buffer->h, buffer->w, false)
     {
         drawG8Buffer(buffer);
     }
@@ -72,8 +72,8 @@ public:
      **/
     RGB24Buffer() {}
 
-    void drawG12Buffer(G12Buffer *src, int32_t y = 0, int32_t x = 0);
-    void drawG8Buffer(G8Buffer *src, int32_t y = 0, int32_t x = 0);
+    void drawG12Buffer (const G12Buffer *src, int32_t y = 0, int32_t x = 0);
+    void drawG8Buffer  (const G8Buffer  *src, int32_t y = 0, int32_t x = 0);
     void drawFlowBuffer(FlowBuffer *src, int32_t y = 0, int32_t x = 0);
     void drawFlowBuffer1(FlowBuffer *src, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
     void drawFlowBuffer2(FlowBuffer *src, double colorShift = 0.0, double colorScaler = 20.0, int32_t y = 0, int32_t x = 0);
