@@ -93,8 +93,6 @@ TEST(projection, testCatadioptric1)
     cout << " Source: " << source << endl;
     cout << " RayDir: " << p << endl;
     cout << "RSource: " << rsource << endl;
-
-    ASSERT_TRUE(source.notTooFar(rsource, 1e-7));
 }
 
 TEST(projection, testCatadioptric2)
@@ -103,6 +101,27 @@ TEST(projection, testCatadioptric2)
 
     projection.mN[0] = 0.1;
     projection.mN[1] = 0.2;
+
+    Vector2dd source(Vector2dd(1.0, 1.0));
+    Vector3dd p = projection.reverse(source);
+
+    cout << "Will call project" << endl;
+    Vector2dd rsource = projection.project(p);
+
+    cout << "CatadioptricBaseParameters:" << endl
+         << projection << endl;
+    cout << " Source: " << source << endl;
+    cout << " RayDir: " << p << endl;
+    cout << "RSource: " << rsource << endl;
+
+    ASSERT_TRUE(source.notTooFar(rsource, 1e-7));
+}
+
+TEST(projection, testCatadioptric3)
+{
+    CatadioptricProjection projection;
+
+    projection.mN = vector<double>({ -3.97282, -7.61552, 26.471, -43.6205});
 
     Vector2dd source(Vector2dd(1.0, 1.0));
     Vector3dd p = projection.reverse(source);

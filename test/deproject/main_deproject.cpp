@@ -64,7 +64,7 @@ int main(int argc, char **argv)
     }
 
     RGB24Buffer *out = new RGB24Buffer(in->getSize());
-    PinholeCameraIntrinsics pinhole(Vector2dd(in->w, in->h), degToRad(90));
+    PinholeCameraIntrinsics pinhole(Vector2dd(in->w, in->h), degToRad(120));
 
     int count = 0;
     parallelable_for(0, out->h, [&](const BlockedRange<int>& r)

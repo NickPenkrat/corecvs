@@ -531,6 +531,9 @@ CameraModel CameraModel::loadCatadioptricFromTxt(const std::string &filename)
 
 CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
 {
+   // "omnidirectional\n"
+   // "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
+
    /* \f[ s c_x c_y i n_0 n_2 ... n_i \f]*/
    string cameraType;
    double s;
@@ -555,8 +558,9 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
    cout << "Type: " << cameraType << endl;
    cout << "s: " << s << endl;
    cout << "c: " << c << endl;
-   cout << "n0: " << n0 << endl;
    cout << "imax: " << imax << endl;
+   cout << "n0: " << n0 << endl;
+
    for (int i = 0; i < imax-1; i++)
    {
        cout << "n" << i+2 << " " << n[i] << endl;
@@ -578,7 +582,7 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
 
    for (size_t i = 0; i < n.size(); i++)
    {
-      projection.mN.push_back(n[i] / pow(n0, i + 3));
+      projection.mN.push_back(n[i] * pow(n0, i + 1));
    }
 
    model.intrinsics.reset(projection.clone());

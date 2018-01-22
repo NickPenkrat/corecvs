@@ -361,19 +361,22 @@ public:
      * \f[ (P(r) / n_0) = 1 + 0 \cdot r + {n_2 \over n_0} r^2 + {n_3 \over n_0} r^3 + \cdots + {n_i \over n_0} r^{i} \f]
      *
      * \f[ d = (u_1, v_1, P(r)) \sim (u_1 / n_0, v_1 / n_0, P(r) / n_0) \f]
-     * \f[ (u_1 / n_0, v_1 / n_0)= ((u, v)/s-(c_x,c_y)) / n_0 = (u-s*c_x, u-s*c_y) / (s * n_0) \f]
+     * \f[ (u_1 / n_0, v_1 / n_0)= ((u, v)/s-(c_x,c_y)) / n_0 = (u-s c_x, v-s c_y) / (s  n_0) \f]
      * \f[ r / n_0 = \vert| (u_1, v_1) \vert| = \vert| (u_1/n_0, v_1/n_0) \vert| \f]
      *
-     * \f[ (P(r / n_0) / n_0) = 1 + 0 \cdot {r \over n_0} + {n_2 \over n_0} {r^2 \over n_0^2} + {n_3 \over n_0} {r^3 \over n_0^3} + \cdots + {n_i \over n_0} {r^i \over n_0^i} \f]
+     * Now we have
+     * \f[ (P(r) / n_0) = 1 + 0 \cdot {r \over n_0} + {n_2 \over n_0} n_0^2 {r^2 \over n_0^2} + {n_3 \over n_0} n_0^3 {r^3 \over n_0^3} + \cdots + {n_i \over n_0} n_0^i {r^i \over n_0^i} \f]
+     * And we expect to have the following
+     * \f[ (P(r) / n_0) = (P^1(r / n_0) / n_0) = 1 + 0 \cdot r + n_2^1 r^2 + n_3^1 r^3 + \cdots + n_i^1 r^{i} \f]
      *
      *
      * So \f{eqnarray*}
      *   p_{principal} &=& (s c_x, s c_y) \\
-     *               f &=& (s  n_0)      \\
-     *            n_0  :&=& n_2 / (n_0^3)  \\
-     *            n_1  :&=& n_3 / (n_0^4)  \\
-     *               &\cdots&             \\
-     *            n_i  :&=& n_{i+2} / (n_0^{i+3})
+     *               f &=&  s  n_0      \\
+     *            n_0^1  :&=& n_2  n_0  \\
+     *            n_1^1  :&=& n_3  n_0^2  \\
+     *                   &\cdots&             \\
+     *            n_i^1  :&=& n_{i+2}  n_0^{i-1}
      * \f}
      *
      *
