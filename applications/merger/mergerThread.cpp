@@ -80,8 +80,10 @@ void MergerThread::prepareMapping()
     for (int c = 0; c < 4; c++) {
         delete_safe(mMasks[c]);
         mMasks[c] = BufferFactory::getInstance()->loadRGB24Bitmap(maskFiles[c]);
-        if (mMasks[c] != NULL)
+        if (mMasks[c] != NULL) {
+            SYNC_PRINT(("  Mask %d Loaded\n", c));
             continue;
+        }
 
         SYNC_PRINT(("  Mask %d is zero. Setting blank\n", c));
         mMasks[c] = new RGB24Buffer(mFrames.getCurrentFrame(Frames::DEFAULT_FRAME)->getSize(), RGBColor::White());
@@ -159,8 +161,9 @@ void MergerThread::prepareMapping()
 
                     Vector2dd prj = models[c].intrinsics->project(posCam);
                     mMapper->element(i, j).sourcePos[c] = prj;
-                    if (mMasks[c]->isValidCoord(prj.y(), prj.x()))
-                    mMapper->element(i, j).weight[c] = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+
+                    if (mMasks[c]->isValidCoordBl(prj.y(), prj.x()))
+                        mMapper->element(i, j).weight[c] = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
                     count++;
                 }
             }
@@ -368,7 +371,7 @@ AbstractOutputData* MergerThread::processNewData()
                 RGB24Buffer *buffer = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)c);
                 RequestEntry &entry = mMapper->element(i,j);
 
-                if (entry.weight[c] != 0)
+                if (entry.weight[c] != 0 && buffer->isValidCoordBl(entry.sourcePos[c]))
                 {
                     color += entry.weight[c] * buffer->elementBl(entry.sourcePos[c]).toDouble();
                     sum   += entry.weight[c];

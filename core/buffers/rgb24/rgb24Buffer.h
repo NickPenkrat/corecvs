@@ -304,10 +304,11 @@ public:
         RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
         RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
 
+#if 0
         CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, this->w, this->h));
-
+#endif
         /* Fixed point */
         const int FIXED_SHIFT = 11;
         uint32_t value = (1 << FIXED_SHIFT);
@@ -338,11 +339,11 @@ public:
          * rounded to 0 and cause error */
         RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
         RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
-
+#if 0
         CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, this->w, this->h));
-
+#endif
         /* Fixed point */
         uint32_t value = 255 * 16;
 
@@ -371,10 +372,11 @@ public:
         RGB24Buffer::InternalIndexType i = (RGB24Buffer::InternalIndexType)floor(y);
         RGB24Buffer::InternalIndexType j = (RGB24Buffer::InternalIndexType)floor(x);
 
+#if 0
         CORE_ASSERT_TRUE_P(this->isValidCoordBl(y, x),
                 ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                    y, x, this->w, this->h));
-
+#endif
         /* So far use slow version. Generally this sould be done with fixed point */
         double k1 = x - j;
         double k2 = y - i;
