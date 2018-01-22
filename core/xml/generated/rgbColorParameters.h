@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from parameters.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -67,6 +68,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -131,6 +134,13 @@ template<class VisitorType>
         mB = b;
     }
 
+    bool operator ==(const RgbColorParameters &other) const 
+    {
+        if ( !(this->mR == other.mR)) return false;
+        if ( !(this->mG == other.mG)) return false;
+        if ( !(this->mB == other.mB)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, RgbColorParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

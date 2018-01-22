@@ -1,4 +1,4 @@
-#include "floatJIT.h"
+#include "core/meta/floatJIT.h"
 
 namespace corecvs {
 
@@ -7,7 +7,7 @@ FloatJIT::FloatJIT()
 
 }
 
-void FloatJIT::toAsm(ASTNodeInt *node)
+void FloatJIT::toAsm(ASTNodeInt * /*node*/)
 {
 
 

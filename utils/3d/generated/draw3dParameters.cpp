@@ -105,7 +105,8 @@ int Draw3dParameters::staticInit()
           "Point Size",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field3);
     /*  */ 
@@ -153,7 +154,8 @@ int Draw3dParameters::staticInit()
           "Edge Width",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field6);
     /*  */ 
@@ -213,7 +215,8 @@ int Draw3dParameters::staticInit()
           "Font Size",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field10);
     /*  */ 
@@ -227,7 +230,8 @@ int Draw3dParameters::staticInit()
           "Font Width",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field11);
     /*  */ 
@@ -280,7 +284,8 @@ int Draw3dParameters::staticInit()
           "Texture Alpha",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field14);
     /*  */ 
@@ -294,7 +299,8 @@ int Draw3dParameters::staticInit()
           "Texture Scale",
           true,
          0,
-         2000
+         2000,
+         1
         );
     field15->widgetHint=BaseField::SPIN_BOX;
     field15->precision=2;
@@ -310,7 +316,8 @@ int Draw3dParameters::staticInit()
           "Decal Matrix Type",
           true,
          0,
-         19
+         19,
+         1
         );
     fields().push_back(field16);
     /*  */ 
@@ -336,7 +343,8 @@ int Draw3dParameters::staticInit()
           "Decal Left Alpha",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field18);
     /*  */ 
@@ -362,12 +370,61 @@ int Draw3dParameters::staticInit()
           "Decal Right Alpha",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field20);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("draw 3d Parameters")]= &reflection;
+   return 0;
+}
+int Draw3dParameters::relinkCompositeFields()
+{
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[1]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[4]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[7]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("rgb Color Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[12]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection Draw3dParameters to the subclass rgb Color Parameters can't be linked\n");
+        }
+    }
    return 0;
 }
 

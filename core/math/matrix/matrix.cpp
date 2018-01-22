@@ -6,18 +6,21 @@
  * \date Mar 24, 2010
  * \author alexander
  */
-#include "global.h"
-#include "sparseMatrix.h"
-#include "matrix.h"
-#include "matrix33.h"
+#include "core/utils/global.h"
+#include "core/math/sparseMatrix.h"
+#include "core/math/matrix/matrix.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/matrix/blasReplacement.h"
+#include "core/math/sse/sseWrapper.h"
+#include "core/tbbwrapper/tbbWrapper.h"
 
-#include "tbbWrapper.h"
-#include "sseWrapper.h"
-
-#include "cblasLapackeWrapper.h"
-#include "blasReplacement.h"
+#include "wrappers/cblasLapack/cblasLapackeWrapper.h"
 
 namespace corecvs {
+
+using std::ostream;
+using std::istream;
+
 
 /* The constructor is not in single cycle due to possible stride of the matrix */
 Matrix::Matrix(const Matrix33 &in) : MatrixBase(3, 3, false)
@@ -297,7 +300,7 @@ Vector operator *(const Matrix &M, const Vector &V)
 
 Vector operator *(const Vector &V, const Matrix &M)
 {
-    CORE_ASSERT_TRUE(M.h == V.size(), "Matrix and vector have wrong sizes");
+    CORE_ASSERT_TRUE_P(M.h == V.size(), ("Matrix and vector have wrong sizes [%dx%d] %d", M.h, M.w, V.size()));
     Vector result(M.w);
 
 #ifdef WITH_BLAS
@@ -359,7 +362,7 @@ Matrix operator *(const Matrix &M, const DiagonalMatrix &D)
     return Matrix::multiplyHomebrewMD(M, D);
 }
 
-Matrix operator *(DiagonalMatrix &D, const Matrix &M)
+Matrix operator *(const DiagonalMatrix &D, const Matrix &M)
 {
     CORE_ASSERT_TRUE(M.h == D.size(), "DiagonalMatrix and Matrix have wrong sizes");
     Matrix result(M.h, M.w);
@@ -551,6 +554,38 @@ void Matrix::svd (Matrix33 *A, Vector3dd *W, Matrix33 *V)
     *A = (Matrix33)mA;
     *W = Vector3dd(mW.a(0,0), mW.a(0,1), mW.a(0,2));
     *V = (Matrix33)mV;
+}
+
+Matrix Matrix::invPosdefSqrt(const Matrix* preTransform) const
+{
+    CORE_ASSERT_TRUE_S(h == w);
+    CORE_ASSERT_TRUE_S(!preTransform || (preTransform->h == preTransform->w && preTransform->h == h));
+#ifndef WITH_BLAS
+    Matrix U(w, w), W(1, h), V(*this);
+    DiagonalMatrix d(h);
+    Matrix::jacobi(&V, &d, &U, 0);
+    for (int i = 0; i < h; ++i)
+        W.a(0, i) = d.a(i, i);
+#else
+    Matrix A(*this);
+    //int lwork, liwork;
+    int m;
+    std::unique_ptr<int[]> isuppz(new int[2*h]);
+    Matrix W(1, h), U(h, h);
+    double vl = 0.0, vu = 0.0, abstol = -1.0;
+    int il = 1, iu = h;
+    LAPACKE_dsyevr(LAPACK_ROW_MAJOR, 'V', 'A', 'U', h, &A.a(0, 0), A.stride, vl, vu, il, iu, abstol, &m, &W.a(0,0), &U.a(0, 0), U.stride, isuppz.get());
+    CORE_ASSERT_TRUE_S(m == h);
+#endif
+    for (int i = 0; i < h; ++i)
+    {
+        auto sqrt = std::sqrt(W.a(0, i));
+        for (int j = 0; j < w; ++j)
+        {
+            U.a(j, i) /= sqrt;
+        }
+    }
+    return preTransform ? U ** preTransform : U;
 }
 
 /**
@@ -1136,7 +1171,7 @@ Matrix Matrix::row(int row)
     Matrix toReturn(1, w);
     for (int column = 0; column < w; column++)
     {
-        toReturn.a(0, column) = toReturn.a(row, column);
+        toReturn.a(0, column) = this->a(row, column);
     }
     return toReturn;
 }

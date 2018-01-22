@@ -10,10 +10,10 @@
 
 #include <sstream>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "log.h"
-#include "preciseTimer.h"
+#include "core/utils/log.h"
+#include "core/utils/preciseTimer.h"
 #include "directShowCapture.h"
 #include "mjpegDecoderLazy.h"
 #include "cameraControlParameters.h"
@@ -378,14 +378,14 @@ ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrame()
         FramePair result;
         if (mCameras[0].buffer != NULL)
         {
-            result.bufferLeft = new G12Buffer(mCameras[0].buffer);
+            result.setBufferLeft(new G12Buffer(mCameras[0].buffer));
         }
         if (mCameras[1].buffer != NULL)
         {
-            result.bufferRight = new G12Buffer(mCameras[1].buffer);
+            result.setBufferRight(new G12Buffer(mCameras[1].buffer));
         }
-        result.timeStampLeft  = mCameras[0].timestamp;
-        result.timeStampRight = mCameras[1].timestamp;
+        result.setTimeStampLeft (mCameras[0].timestamp);
+        result.setTimeStampRight(mCameras[1].timestamp);
     mProtectFrame.unlock();
     return result;
 }
@@ -396,22 +396,22 @@ ImageCaptureInterface::FramePair DirectShowCaptureInterface::getFrameRGB24()
         FramePair result;
         if (mCameras[0].buffer != NULL)
         {
-            result.bufferLeft = new G12Buffer(mCameras[0].buffer);
+            result.setBufferLeft(new G12Buffer(mCameras[0].buffer));
         }
         if (mCameras[1].buffer != NULL)
         {
-            result.bufferRight = new G12Buffer(mCameras[1].buffer);
+            result.setBufferRight(new G12Buffer(mCameras[1].buffer));
         }
         if (mCameras[0].buffer24 != NULL)
         {
-            result.rgbBufferLeft = new RGB24Buffer(mCameras[0].buffer24);
+            result.setRgbBufferLeft(new RGB24Buffer(mCameras[0].buffer24));
         }
         if (mCameras[1].buffer24 != NULL)
         {
-            result.rgbBufferRight = new RGB24Buffer(mCameras[1].buffer24);
+            result.setRgbBufferRight(new RGB24Buffer(mCameras[1].buffer24));
         }
-        result.timeStampLeft  = mCameras[0].timestamp;
-        result.timeStampRight = mCameras[1].timestamp;
+        result.setTimeStampLeft (mCameras[0].timestamp);
+        result.setTimeStampRight(mCameras[1].timestamp);
     mProtectFrame.unlock();
     return result;
 }
@@ -495,7 +495,7 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureProper
     return ImageCaptureInterface::SUCCESS;
 }
 
-ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureName(QString &value)
+ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getCaptureName(std::string &value)
 {
     if (!isCorrectDeviceHandle(0))
         return ImageCaptureInterface::FAILURE;
@@ -529,12 +529,12 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::getFormats(int *
     return ImageCaptureInterface::SUCCESS;
 }
 
-QString DirectShowCaptureInterface::getInterfaceName()
+std::string DirectShowCaptureInterface::getInterfaceName()
 {
-    return QString("dshow:") + mDevname.c_str();
+    return std::string("dshow:") + mDevname;
 }
 
-DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceName(int num, QString &name)
+DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceName(int num, string &name)
 {
     if (num < 0 || num >= 2)
     {
@@ -553,11 +553,11 @@ DirectShowCaptureInterface::CapErrorCode DirectShowCaptureInterface::getDeviceNa
     }
     if (num == 0)
     {
-        name = deviceStringPattern.cap(Device1Group);
+        name = deviceStringPattern.cap(Device1Group).toStdString();
     }
     else
     {
-        name = deviceStringPattern.cap(Device2Group);
+        name = deviceStringPattern.cap(Device2Group).toStdString();
     }
     return ImageCaptureInterface::SUCCESS;
 }

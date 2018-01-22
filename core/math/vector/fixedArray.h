@@ -12,9 +12,9 @@
 #include <memory>
 #include <initializer_list>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vectorOperations.h"
+#include "core/math/vector/vectorOperations.h"
 
 namespace corecvs {
 
@@ -39,7 +39,7 @@ public:
         copyInit(x);
     }
 
-    FixedArrayBase(const std::vector<ElementType> &x) : FixedArrayBase((int)x.size(), &x[0])
+    FixedArrayBase(const std::vector<ElementType> &x) : FixedArrayBase((int)x.size(), x.size() ? &x[0] : 0)
     {
     }
 

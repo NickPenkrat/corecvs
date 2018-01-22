@@ -52,7 +52,8 @@ int BitSelectorParameters::staticInit()
           "shift",
           true,
          -16,
-         16
+         16,
+         1
         );
     fields().push_back(field0);
     /*  */ 
@@ -250,6 +251,10 @@ int BitSelectorParameters::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Bit Selector Parameters")]= &reflection;
+   return 0;
+}
+int BitSelectorParameters::relinkCompositeFields()
+{
    return 0;
 }
 

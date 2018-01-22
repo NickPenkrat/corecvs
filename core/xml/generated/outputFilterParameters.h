@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from bufferFilters.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,7 +31,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "outputType.h"
+#include "core/xml/generated/outputType.h"
 
 /**
  * \brief Output Filter Parameters 
@@ -54,6 +55,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -92,6 +95,11 @@ template<class VisitorType>
         mOutputType = outputType;
     }
 
+    bool operator ==(const OutputFilterParameters &other) const 
+    {
+        if ( !(this->mOutputType == other.mOutputType)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, OutputFilterParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

@@ -8,10 +8,10 @@
 #include <QColorDialog>
 #include <QPainter>
 
-#include "generated/rgbColorParameters.h"
+#include "core/xml/generated/rgbColorParameters.h"
 #include "ui_rgbColorParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"
-#include "rgbColor.h"
+#include "core/buffers/rgb24/rgbColor.h"
 
 
 namespace Ui {
@@ -21,7 +21,7 @@ namespace Ui {
 class RgbColorParametersControlWidget : public ParametersControlWidgetBase
 {
     Q_OBJECT
-    //QColorDialog mColorPicker;
+    QColorDialog mColorPicker;
     QColor color;
 
 public:
@@ -75,7 +75,7 @@ public slots:
 
     void pickerClicked(QMouseEvent * /*event*/)
     {
-        /*mColorPicker.show();
+        mColorPicker.show();
 
         bool signalState = mColorPicker.blockSignals(true);
         mColorPicker.setCurrentColor(QColor(
@@ -86,7 +86,7 @@ public slots:
         mColorPicker.blockSignals(signalState);
 
         connect(&mColorPicker, SIGNAL(currentColorChanged (QColor)),
-                this, SLOT(colorSelected(QColor)), Qt::UniqueConnection);*/
+                this, SLOT(colorSelected(QColor)), Qt::UniqueConnection);
     }
 
     void colorSelected(const QColor &color)

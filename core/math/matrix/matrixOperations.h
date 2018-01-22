@@ -39,7 +39,7 @@
  * \date Aug 28, 2015
  **/
 
-#include "global.h"
+#include "core/utils/global.h"
 namespace corecvs {
 
 template<typename RealType, typename ElementType, typename ReturnType = RealType>
@@ -83,13 +83,13 @@ private:
 
 public:
 
-    friend ostream & operator <<(ostream &out, const RealType &matrix)
+    friend std::ostream & operator <<(std::ostream &out, const RealType &matrix)
     {
         //streamsize wasPrecision = out.precision(6);
-        for (int i = 0; i < _height(); i++)
+        for (int i = 0; i < matrix._height(); i++)
         {
             out << "[";
-            for (int j = 0; j < _width(); j++)
+            for (int j = 0; j < matrix._width(); j++)
             {
                 out << (j == 0 ? "" : " ");
                 //out.width(6);
@@ -101,11 +101,11 @@ public:
         return out;
     }
 
-    friend istream & operator >>(istream &in, RealType &matrix)
+    friend std::istream & operator >>(std::istream &in, RealType &matrix)
     {
-        for (int i = 0; i < _height(); i++)
+        for (int i = 0; i < matrix._height(); i++)
         {
-            for (int j = 0; j < _width(); j++)
+            for (int j = 0; j < matrix._width(); j++)
             {
                 while (true)
                 {
@@ -158,7 +158,7 @@ public:
 
     friend ReturnType operator *(const ElementType &a, const RealType &B)
     {
-        ReturnType result = _createMatrix(B._height(), B._width());
+        ReturnType result = B._createMatrix(B._height(), B._width());
         int row, column;
         for (row = 0; row < result._height(); row++)
         {
@@ -172,7 +172,7 @@ public:
 
     friend ReturnType operator *(const RealType &B, const ElementType &a)
     {
-        ReturnType result = _createMatrix(B._height(), B._width());
+        ReturnType result = B._createMatrix(B._height(), B._width());
         int row, column;
         for (row = 0; row < result._height(); row++)
         {
@@ -190,7 +190,7 @@ public:
     friend ReturnType operator +(const RealType &A, const RealType &B)
     {
         CORE_ASSERT_TRUE(A._width() == B._width() && A._height() == B._height(), "Matrices have wrong sizes");
-        ReturnType result = _createMatrix(A._height(), A._width());
+        ReturnType result = A._createMatrix(A._height(), A._width());
 
         int row, column;
         for (row = 0; row < result._height(); row++)
@@ -208,7 +208,7 @@ public:
     friend ReturnType operator -(const RealType &A, const RealType &B)
     {
         CORE_ASSERT_TRUE(A._width() == B._width() && A._height() == B._height(), "Matrices have wrong sizes");
-        ReturnType result = _createMatrix(A._height(), A._width());
+        ReturnType result = A._createMatrix(A._height(), A._width());
 
         int row, column;
         for (row = 0; row < result._height(); row++)
@@ -225,19 +225,19 @@ public:
 
     ReturnType mul(const RealType& V)
     {
-        CORE_ASSERT_TRUE(this->w == V.h, "Matrices have wrong sizes");
+        CORE_ASSERT_TRUE(this->_width() == V._height(), "Matrices have wrong sizes");
         ReturnType result = _createMatrix(_height(), V._width());
 
         int row, column, runner;
         for (row = 0; row < result._height(); row++)
             for (column = 0; column < result._width(); column++)
             {
-                ElementType sum = 0;
+                ElementType sum = ElementType(0);
                 for (runner = 0; runner < _width(); runner++)
                 {
                     sum += _atm(row, runner) * V._atm(runner, column);
                 }
-                result->atm(row, column) = sum;
+                result.atm(row, column) = sum;
             }
 
         return result;
@@ -246,13 +246,57 @@ public:
 
 };
 
+#if 0
+template<typename RealType, typename ElementType, typename ReturnType = RealType>
+class MatrixVisitOperationsBase
+{
+public:
+    /**
+     *  Static cast functions
+     **/
+    inline RealType *realThis() {
+        return static_cast<RealType *>(this);
+    }
+
+    inline const RealType *realThis() const {
+        return static_cast<const RealType *>(this);
+    }
+
+private:
+    /**
+     *  Interface related functions
+     **/
+    inline ElementType &_atm(int i, int j) {
+        return realThis()->atm(i, j);
+    }
+
+    inline const ElementType &_atm(int i, int j) const {
+        return realThis()->atm(i, j);
+    }
+
+    inline int _height() const {
+        return realThis()->height();
+    }
+
+    inline int _width() const {
+        return realThis()->width();
+    }
+
+    inline RealType _createMatrix(int h, int w) const {
+        return realThis()->createMatrix(h, w);
+    }
+public:
+    visit
 
 
+
+};
+#endif
 
 /**
  * A matrix over abstract buffer having a static size
  **/
-#include "abstractBuffer.h"
+#include "core/buffers/abstractBuffer.h"
 
 template<class Element, int H = 3, int W = 3>
 class AbsMatrixFixed : public AbstractBuffer<Element, int>, public MatrixOperationsBase<AbsMatrixFixed<Element>, Element>
@@ -270,6 +314,14 @@ public:
         return this->element(i, j);
     }
 
+    inline int height() const {
+        return this->h;
+    }
+
+    inline int width() const {
+        return this->w;
+    }
+
     static AbsMatrixFixed createMatrix(int /*h*/, int /*w*/) {return AbsMatrixFixed(); }
 
     /* Additional helper function */
@@ -279,7 +331,7 @@ public:
  *  A matrix over fixed vector having a static size
  **/
 
-#include "fixedVector.h"
+#include "core/math/vector/fixedVector.h"
 
 template<class Element, int H = 3, int W = 3>
 class FixMatrixFixed : public FixedVector<Element, H * W>, public MatrixOperationsBase<FixMatrixFixed<Element>, Element>
@@ -312,7 +364,7 @@ public:
 
 
     /* Additional helper function */
-    void fillWithArgs(const ElementType value, va_list marker)
+    inline void fillWithArgsList(const ElementType value, va_list marker)
     {
         this->atm(0, 0) = value;
         for (int i = 0; i < this->height(); i++)
@@ -325,7 +377,7 @@ public:
     {
         va_list  marker;
         va_start(marker, value);
-        fillWithArgs(value, marker);
+        fillWithArgsList(value, marker);
         va_end(marker);
     }
 

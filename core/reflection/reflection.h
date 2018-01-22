@@ -17,10 +17,10 @@
 #include <string>
 #include <memory>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-//#include "vector3d.h"
-//#include "vector2d.h"
+//#include "core/math/vector/vector3d.h"
+//#include "core/math/vector/vector2d.h"
 
 #undef min
 #undef max
@@ -115,6 +115,7 @@ public:
         TYPE_BOOL,
         TYPE_STRING,
         TYPE_ENUM,
+        TYPE_WSTRING,
 
         /* CoreTypes */
         TYPE_VECTOR2DD,
@@ -130,7 +131,10 @@ public:
         TYPE_COMPOSITE_ARRAY,
         TYPE_LAST,
 
-        TYPE_VECTOR_BIT = 0x80
+        TYPE_VECTOR_BIT = 0x80,
+        /* Suppressing warnings */
+        TYPE_DOUBLE_VECTOR = TYPE_DOUBLE | TYPE_VECTOR_BIT
+
     };
 
     /**
@@ -263,6 +267,7 @@ template<> inline BaseField::FieldType BaseField::getType<double>()             
 template<> inline BaseField::FieldType BaseField::getType<float>()                { return TYPE_FLOAT;     }
 template<> inline BaseField::FieldType BaseField::getType<bool>()                 { return TYPE_BOOL;      }
 template<> inline BaseField::FieldType BaseField::getType<std::string>()          { return TYPE_STRING;    }
+template<> inline BaseField::FieldType BaseField::getType<std::wstring>()         { return TYPE_WSTRING;   }
 
 template<> inline BaseField::FieldType BaseField::getType<vector<int> >()         { return (FieldType)(TYPE_VECTOR_BIT | TYPE_INT);       }
 template<> inline BaseField::FieldType BaseField::getType<vector<int64_t> >()     { return (FieldType)(TYPE_VECTOR_BIT | TYPE_TIMESTAMP); }
@@ -270,6 +275,7 @@ template<> inline BaseField::FieldType BaseField::getType<vector<double> >()    
 template<> inline BaseField::FieldType BaseField::getType<vector<float> >()       { return (FieldType)(TYPE_VECTOR_BIT | TYPE_FLOAT);     }
 template<> inline BaseField::FieldType BaseField::getType<vector<bool> >()        { return (FieldType)(TYPE_VECTOR_BIT | TYPE_BOOL);      }
 template<> inline BaseField::FieldType BaseField::getType<vector<std::string> >() { return (FieldType)(TYPE_VECTOR_BIT | TYPE_STRING);    }
+template<> inline BaseField::FieldType BaseField::getType<vector<std::wstring> >(){ return (FieldType)(TYPE_VECTOR_BIT | TYPE_WSTRING);   }
 
 //template<> inline BaseField::FieldType BaseField::getType<corecvs::Vector2dd>() { return TYPE_VECTOR2DD; }
 //template<> inline BaseField::FieldType BaseField::getType<corecvs::Vector3dd>() { return TYPE_VECTOR3DD; }
@@ -535,7 +541,48 @@ public:
 
     virtual ~StringField() {}
 #endif
+};
 
+
+class WStringField : public BaseField
+{
+public:
+    typedef std::wstring CPPType;
+    std::wstring     defaultValue;
+
+    WStringField (
+            int _id,
+            int _offset,
+            std::wstring _defaultValue,
+            const char *_name,
+            const char *_decription,
+            const char *_comment
+    ) :
+        BaseField(_id, getType<std::wstring>(), _name, _decription, _comment, _offset),
+        defaultValue (_defaultValue)
+    {}
+
+    WStringField (
+            int _id,
+            int _offset,
+            std::wstring _defaultValue,
+            const ReflectionNaming &_naming
+    ) :
+        BaseField(_id, getType<std::wstring>(), _naming, _offset),
+        defaultValue (_defaultValue)
+    {}
+
+#ifdef REFLECTION_WITH_VIRTUAL_SUPPORT
+    /**
+     * Make a bit-by-bit clone
+     **/
+    virtual BaseField* clone() const
+    {
+        return new WStringField(*this);
+    }
+
+    virtual ~WStringField() {}
+#endif
 };
 
 class Reflection;
@@ -638,7 +685,7 @@ public:
             const BaseField * &el = fields[i];
             if (el->id < 0) {                
                 /* Why all this spam? */
-                //SYNC_PRINT(("Reflection::~Reflection(): bad id in the reflection object: id:%d size:%d\n", el->id, (int)fields.size()));
+                //SYNC_PRINT(("Reflection::~Reflection(): bad id in the reflection object: id:%d size:%" PRISIZE_T "\n", el->id, fields.size()));
                 continue;
             }
             delete_safe(el);
@@ -651,6 +698,50 @@ public:
         embeds.clear();
 #endif
     }
+
+    static const char* printableType (BaseField::FieldType type)
+    {
+        switch(type)
+        {
+            case BaseField::TYPE_INT:
+                return "int";
+            case BaseField::TYPE_TIMESTAMP:
+                return "int64_t";
+            case BaseField::TYPE_DOUBLE:
+                return "double";
+            case BaseField::TYPE_BOOL:
+                return "bool";
+            case BaseField::TYPE_STRING:
+                return "std::string";
+            case BaseField::TYPE_WSTRING:
+                return "std::wstring";
+            default:
+                break;
+        }
+        return "na";
+    }
+
+    void print()
+    {
+        printf("%20.20s %20.20s (%s)\n", name.name, name.decription, name.comment);
+        printf("Size: %d\n", (int)objectSize);
+        printf("--------- Fields -----------\n");
+        for (size_t fieldId = 0; fieldId < fields.size(); fieldId++)
+        {
+            const BaseField *bf = fields[fieldId];
+            printf("%35.35s | % .3d | %20.20s\n" , bf->name.name, bf->offset, printableType(bf->type));
+        }
+        if (!embeds.empty())
+        {
+            printf("--------- Embeds -----------\n");
+            for (size_t embedsId = 0; embedsId < embeds.size(); embedsId++)
+            {
+                const EmbedSubclass *em = embeds[embedsId];
+                printf("%35.35s \n" , em->name.name);
+            }
+        }
+    }
+
 };
 
 
@@ -992,48 +1083,6 @@ public:
 
 };
 
-/**
- * \brief Dynamic Object is an object accessed by pointer, whose type is cleared form C++ point of view,
- * the object is compleatly managed be the reflection
- *
- **/
-class DynamicObject
-{
-public:
-    const Reflection *reflection;
-    void       *rawObject;
-
-    DynamicObject(
-        const Reflection *reflection = NULL,
-        void       *rawObject = NULL
-    ) :
-        reflection(reflection),
-        rawObject(rawObject)
-    {}
-
-    template<typename Object>
-    DynamicObject(Object *object):
-        reflection(BaseReflection<Object>::getReflection()),
-        rawObject((void *) object)
-    {}
-
-    /**
-     *   Please note due to stupid alignment issues on ARM there could be some problems
-     **/
-    template<typename Type>
-    Type *getField(int fieldId)
-    {
-        return (Type *)&(((uint8_t*)rawObject)[reflection->fields[fieldId]->offset]);
-    }
-
-    const BaseField* getFieldReflection(int fieldId)
-    {
-        return reflection->fields[fieldId];
-    }
-
-    bool simulateConstructor();
-
-};
 
 
 

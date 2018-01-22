@@ -9,16 +9,18 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+
 #include "gtest/gtest.h"
 
-#include <global.h>
-#include "rawLoader.h"
-#include "g12Buffer.h"
-#include "bmpLoader.h"
-#include "ppmLoader.h"
-#include "plyLoader.h"
-#include "objLoader.h"
-#include "gcodeLoader.h"
+#include "core/utils/global.h"
+
+#include "core/fileformats/rawLoader.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/fileformats/plyLoader.h"
+#include "core/fileformats/objLoader.h"
+#include "core/fileformats/gcodeLoader.h"
 
 using namespace corecvs;
 
@@ -27,6 +29,11 @@ TEST(FileFormats, testFileFormats)
     /** Test case 1 */
     RAWLoader *rawLoader = new RAWLoader();
     G12Buffer *raw = rawLoader->load("data/testdata/32x32_12h_test_raw.raw");
+    if (raw == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(raw != NULL, "RAW Image load failed");
     CORE_ASSERT_TRUE(raw->h == raw->w, "RAW Image sizes corrupted");
     CORE_ASSERT_TRUE(raw->verify(), "RAW Image verification failed");
@@ -168,10 +175,10 @@ TEST(FileFormats, DISABLED_testObjMaterialLoader)
     OBJLoader loader;
     ifstream file("/home/alexander/work/data/3d/source/Mesh.obj1.mtl", ifstream::in);
 
-    OBJMaterial material;
-    loader.loadMaterial(file, material, "/home/alexander/work/data/3d/source");
+    vector<OBJMaterial> materials;
+    loader.loadMaterials(file, materials, "/home/alexander/work/data/3d/source");
 
-    cout << material << endl;
+    cout << materials.size() << endl;
 }
 
 
@@ -197,9 +204,34 @@ TEST(FileFormats, testGcodeLoader)
             "G00 Z5.000000\n";
 
     GcodeLoader loader;
+    Mesh3D mesh;    
+    std::string str(input);
+    {
+        std::istringstream stream(str);
+        /*int result =*/ loader.loadGcode(stream, mesh);
+        mesh.dumpPLY("gcode-test.ply");
+    }
+
+    {
+        std::istringstream stream(str);
+        std::ostringstream ostream;
+
+        GCodeProgram program;
+
+        loader.loadGcode(stream, program);
+        loader.saveGcode(ostream, program);
+        cout << "Saving:" << endl;
+        cout << ostream.str() << endl;
+    }
+
+}
+
+TEST(FileFormats, testGcodeLoader1)
+{
+    const char input[] = "G1 X0  F3000\n";
+    GcodeLoader loader;
     Mesh3D mesh;
     std::string str(input);
     std::istringstream stream(str);
-    /*int result =*/ loader.loadGcode(stream, mesh);
-    mesh.dumpPLY("gcode-test.ply");
+    loader.loadGcode(stream, mesh);
 }

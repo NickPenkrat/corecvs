@@ -1,5 +1,5 @@
-#include "filterGraph.h"
-#include "compoundFilter.h"
+#include "core/filters/blocks/filterGraph.h"
+#include "core/filters/blocks/compoundFilter.h"
 
 namespace corecvs
 {
@@ -166,7 +166,7 @@ void FilterGraph::clearAllData()
 
 void FilterGraph::print()
 {
-    printf("Quantity of blocks: %d\n", (int)blocks.size());
+    printf("Quantity of blocks: %" PRISIZE_T "\n", blocks.size());
     vector<FilterBlock *>::iterator itBlocks;
     for (itBlocks = blocks.begin(); itBlocks != blocks.end(); ++itBlocks)
     {

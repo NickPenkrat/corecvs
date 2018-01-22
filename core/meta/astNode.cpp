@@ -3,7 +3,7 @@
 
 #include <sstream>
 
-#include "astNode.h"
+#include "core/meta/astNode.h"
 
 namespace corecvs {
 
@@ -123,29 +123,40 @@ void ASTNodeInt::codeGenCpp(int ident, ASTRenderDec &identSym)
     }
     if (op == OPERATOR_POW)
     {
-        output <<  identSym.lbr;
-        output <<  "pow(";
-        output <<  identSym.lbr;
-        left()->codeGenCpp(ident + 1, identSym);
-        output << ",";
-        right()->codeGenCpp(ident + 1, identSym);
-        output <<  identSym.lbr;
-        output << ")";
-        output << identSym.lbr;
+        if (right()->op == OPREATOR_NUM && right()->val == 0.5)
+        {
+            output <<  identSym.lbr;
+            output <<  "sqrt(";
+            output <<  identSym.lbr;
+            left()->codeGenCpp(ident + 1, identSym);
+            output << ")";
+            output <<  identSym.lbr;
+        } else if (right()->op == OPREATOR_NUM && right()->val == -0.5) {
+            output <<  identSym.lbr;
+            output <<  "(1.0 / sqrt(";
+            output <<  identSym.lbr;
+            left()->codeGenCpp(ident + 1, identSym);
+            output << "))";
+            output <<  identSym.lbr;
+        } else {
+            output <<  identSym.lbr;
+            output <<  "pow(";
+            output <<  identSym.lbr;
+            left()->codeGenCpp(ident + 1, identSym);
+            output << ",";
+            right()->codeGenCpp(ident + 1, identSym);
+            output <<  identSym.lbr;
+            output << ")";
+            output << identSym.lbr;
+        }
         return;
     }
     if (op == OPERATOR_FUNCTION)
     {
         /* packing input */
 
-        output <<  identSym.lbr;
-        printf("pow(");
-        output <<  identSym.lbr;
-        left()->codeGenCpp(ident + 1, identSym);
-        output << ",";
-        right()->codeGenCpp(ident + 1, identSym);
-        output <<  identSym.lbr;
-        output << ")";
+        output <<  identSym.lbr;        
+        output << name;
         output << identSym.lbr;
         return;
     }
@@ -427,6 +438,16 @@ ASTNodeInt *ASTNodeInt::derivative(const std::string &var)
             break;
         }
 
+        case OPERATOR_FUNCTION:
+        {
+            ASTNodeFunctionPayload *fpay = static_cast<ASTNodeFunctionPayload *>(payload);
+            if (fpay == NULL)
+            {
+                return new ASTNodeInt();
+            }
+            return fpay->derivative(var);
+        }
+
         default:
             printf(" UNSUPPORTED OPERATOR %d", op);
             return new ASTNodeInt("UDEF");
@@ -545,6 +566,11 @@ ASTNodeInt *ASTNodeInt::compute(const std::map<std::string, double> &bind)
             }
             return new ASTNodeInt(OPERATOR_POW, nleft, nright);
         }
+        case OPERATOR_FUNCTION:
+        {
+            return this;
+        }
+
         default   :
             printf("ASTNodeInt::compute(): UNSUPPORTED OP %d - %s\n", op, getName(op));
             return new ASTNodeInt("UDEF");
@@ -689,6 +715,21 @@ std::string ASTNodeFunctionWrapper::getCCode()
 ASTNodeFunctionPayload *ASTNodeFunctionWrapper::derivative(int)
 {
     return NULL;
+}
+
+ASTNodeInt *ASTNodeShortcutFunction::derivative(const std::string &varname)
+{
+    for (size_t i = 0; i < params.size(); i++)
+    {
+        if (params[i] == varname) {
+           /* return new ASTNodeInt(ASTNodeInt::OPERATOR_MUL,
+                                  new ASTNodeInt(name),
+                                  new ASTNodeInt(derivatives[i])
+                                  );*/
+            return new ASTNodeInt(derivatives[i]);
+        }
+    }
+    return new ASTNodeInt(0.0);
 }
 
 } //namespace corecvs

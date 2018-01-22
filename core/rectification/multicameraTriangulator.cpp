@@ -1,9 +1,9 @@
-#include "multicameraTriangulator.h"
-#include "twoViewOptimalTriangulation.h"
+#include "core/rectification/multicameraTriangulator.h"
+#include "core/geometry/twoViewOptimalTriangulation.h"
+#include "core/math/levenmarq.h"
+#include "core/geometry/ellipticalApproximation.h"
 
 #include <iostream>
-#include "levenmarq.h"
-#include "ellipticalApproximation.h"
 
 using std::cout;
 using std::endl;
@@ -14,7 +14,8 @@ namespace corecvs {
 Vector3dd MulticameraTriangulator::triangulate(bool *ok)
 {
     hasError = true;
-    if (P.size() != xy.size()) {
+    if (P.size() != xy.size())
+    {
         if (trace) {
             SYNC_PRINT(("MulticameraTriangulator::triangulate(): P.size != xy.size"));
         }
@@ -22,8 +23,8 @@ Vector3dd MulticameraTriangulator::triangulate(bool *ok)
         return Vector3dd(0.0);
     }
 
-
-    if (P.size() < 2) {
+    if (P.size() < 2)
+    {
         if (trace) {
             SYNC_PRINT(("MulticameraTriangulator::triangulate(): P.size() < 2"));
         }
@@ -31,7 +32,6 @@ Vector3dd MulticameraTriangulator::triangulate(bool *ok)
         if (ok != NULL) *ok = !hasError;
         return Vector3dd(0.0);
     }
-
 
     if (P.size() == 2)
         return TwoViewOptimalTriangulor(true, P[0], xy[0], P[1], xy[1]).triangulate();
@@ -48,7 +48,8 @@ Vector3dd MulticameraTriangulator::triangulate(bool *ok)
 
     Vector2d32 minid = W.getMinCoord();
     Matrix column = V.column(minid.y());
-    if (trace) {
+    if (trace)
+    {
         cout << "Matrix A:" <<  endl << A << endl;
         cout << "Matrix W:" <<  endl << W << endl;
         cout << "Matrix V:" <<  endl << V << endl;
@@ -128,6 +129,7 @@ void MulticameraTriangulator::printUnitySums(const Matrix &A)
         cout << sumsq << " ";
     }
     cout << endl;
+
     for (int i = 0; i < A.h ; i++)
     {
         double sumsq(0.0);
@@ -140,7 +142,7 @@ void MulticameraTriangulator::printUnitySums(const Matrix &A)
     cout << endl;
 }
 
-double MulticameraTriangulator::reprojErrorAlgbra(const corecvs::Vector3dd &input)
+double MulticameraTriangulator::reprojErrorAlgbra(const Vector3dd &input)
 {
     Matrix A = constructMatrix();
     Matrix column = Matrix(A.w, 1);
@@ -162,7 +164,7 @@ double MulticameraTriangulator::reprojErrorAlgbra(const corecvs::Vector3dd &inpu
     return sqrt(norm);
 }
 
-vector<Vector2dd> MulticameraTriangulator::reprojectionError(const corecvs::Vector3dd &input)
+vector<Vector2dd> MulticameraTriangulator::reprojectionError(const Vector3dd &input)
 {
     vector<Vector2dd> toReturn;
     for (unsigned i = 0; i < P.size(); i++)
@@ -172,7 +174,7 @@ vector<Vector2dd> MulticameraTriangulator::reprojectionError(const corecvs::Vect
     return toReturn;
 }
 
-/*double MulticameraTriangulator::repojError(const corecvs::Vector3dd &input)
+/*double MulticameraTriangulator::repojError(const Vector3dd &input)
 {
     Vector2dd sum  (0.0, 0.0);
     Vector2dd sumSq(0.0, 0.0);
@@ -190,7 +192,7 @@ vector<Vector2dd> MulticameraTriangulator::reprojectionError(const corecvs::Vect
     return sqrt((sumSq - (sum * sum)).sumAllElements());
 }*/
 
-double MulticameraTriangulator::reprojError(const corecvs::Vector3dd &input)
+double MulticameraTriangulator::reprojError(const Vector3dd &input)
 {
     EllipticalApproximation approx;
 
@@ -203,6 +205,18 @@ double MulticameraTriangulator::reprojError(const corecvs::Vector3dd &input)
         approx.addPoint(v);
     }
     return approx.getRadiusAround0();
+}
+
+MulticameraTriangulator MulticameraTriangulator::subset(const std::vector<bool> &mask)
+{
+    MulticameraTriangulator toReturn;
+    size_t len = std::min(P.size(), mask.size());
+    for (size_t i = 0; i < len; i++)
+    {
+        if (mask[i])
+            toReturn.addCamera(P[i], xy[i]);
+    }
+    return toReturn;
 }
 
 void MulticameraTriangulator::CostFunction::operator()(const double in[], double out[])
@@ -299,7 +313,7 @@ Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * 
     LMfit.f = &F;
     LMfit.maxIterations = 1000;
     LMfit.traceProgress = false;
-//    LMfit.trace = true;
+    LMfit.trace = false;
 
     vector<double> guess(3);
     guess[0] = initialGuess.x();
@@ -319,7 +333,7 @@ Vector3dd MulticameraTriangulator::triangulateLM(Vector3dd initialGuess, bool * 
  * For LSQ-estimator now we have an symbolically-derived hessian computation
  *
  */
-corecvs::Matrix33 MulticameraTriangulator::getCovarianceInvEstimation(const corecvs::Vector3dd &at) const
+corecvs::Matrix33 MulticameraTriangulator::getCovarianceInvEstimation(const Vector3dd &at) const
 {
     CostFunction f(const_cast<MulticameraTriangulator*>(this));
     auto H = f.getLSQHessian(&at[0]);

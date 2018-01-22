@@ -5,9 +5,9 @@
 #include <vector>
 #include <string>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 namespace corecvs {
 

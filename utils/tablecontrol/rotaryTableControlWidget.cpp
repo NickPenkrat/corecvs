@@ -1,7 +1,7 @@
 #include "rotaryTableControlWidget.h"
 #include "rotaryTableMeshModel.h"
 #include "mesh3DScene.h"
-#include "log.h"
+#include "core/utils/log.h"
 #include <QFileDialog>
 
 #include "ui_rotaryTableControlWidget.h"
@@ -78,13 +78,18 @@ RotaryTableControlWidget::~RotaryTableControlWidget()
 
 void RotaryTableControlWidget::loadCommands(QString filename)
 {
-    JSONGetter getter(filename);
-    getter.visit(positions, "commands");
+    QFile file(filename);
+    if (!file.exists())
+    {
+        qDebug() << "RotaryTableControlWidget::loadCommands(" << filename << "): no such file";
+    } else {
+        JSONGetter getter(filename);
+        getter.visit(positions, "commands");
 
-    for (auto &triple : positions) {
-        triple = triple.toRad();
+        for (auto &triple : positions) {
+            triple = triple.toRad();
+        }
     }
-
     updateTable();
 }
 

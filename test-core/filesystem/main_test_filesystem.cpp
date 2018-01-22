@@ -9,9 +9,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include <global.h>
+#include "core/utils/global.h"
 
-#include "folderScanner.h"
+#include "core/filesystem/folderScanner.h"
 
 using namespace corecvs;
 
@@ -19,6 +19,11 @@ TEST(Filesystem, scanDirCheckKnownFiles)
 {
     const string pathDir = ".";
     vector<string> childs;
+    vector<string> files = {
+          pathDir + PATH_SEPARATOR + "main.cpp"
+        , pathDir + PATH_SEPARATOR + "cvs.pro"
+        , pathDir + PATH_SEPARATOR + "cvs-open.pro"
+    };
 
     bool res = FolderScanner::scan(pathDir, childs);
     CORE_ASSERT_TRUE_S(res);
@@ -30,8 +35,7 @@ TEST(Filesystem, scanDirCheckKnownFiles)
     {
         std::cout << child << std::endl;
 
-        if (child == pathDir + PATH_SEPARATOR + "main.cpp" ||
-            child == pathDir + PATH_SEPARATOR + "cvs.pro")
+        if (contains(files, child))
             isOk = true;
     }
 

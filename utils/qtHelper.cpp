@@ -117,8 +117,8 @@ QString printSelectionModel(const QItemSelectionModel::SelectionFlags &flag)
     if (flag & QItemSelectionModel::Deselect) text += "deselected.";
     if (flag & QItemSelectionModel::Toggle  ) text += "selected or deselected depending on their current state.";
     if (flag & QItemSelectionModel::Current ) text += "The current selection will be updated.";
-    if (flag & QItemSelectionModel::Rows    ) text += "All indexes will be expanded to span rows.";
-    if (flag & QItemSelectionModel::Columns ) text += "All indexes will be expanded to span columns.";
+    if (flag & QItemSelectionModel::Rows    ) text += "All indices will be expanded to span rows.";
+    if (flag & QItemSelectionModel::Columns ) text += "All indices will be expanded to span columns.";
 
     return text;
 }
@@ -293,4 +293,94 @@ QString printQImageFormat(const QImage::Format &format)
     }
 
     return text;
+}
+
+QString printModelItemRole(int role)
+{
+    QString text;
+
+#define PAIR(X) { Qt::X, #X }
+
+    struct RoleName {
+        int role;
+        const char *name;
+    };
+
+    RoleName roles[] =
+    {
+        PAIR(DisplayRole),
+        PAIR(DecorationRole),
+        PAIR(EditRole),
+        PAIR(ToolTipRole),
+        PAIR(StatusTipRole),
+        PAIR(WhatsThisRole),
+        PAIR(SizeHintRole),
+
+        PAIR(FontRole),
+        PAIR(TextAlignmentRole),
+        PAIR(BackgroundRole),
+        PAIR(BackgroundColorRole),
+        PAIR(ForegroundRole),
+        PAIR(TextColorRole),
+        PAIR(CheckStateRole),
+        PAIR(InitialSortOrderRole),
+
+        PAIR(UserRole)
+
+    };
+#undef PAIR
+
+    for (size_t i = 0; i < CORE_COUNT_OF(roles); i++)
+    {
+        if (role == roles[i].role) {
+            text += roles[i].name;
+            text += " ";
+        }
+    }
+
+    return text;
+
+}
+
+
+const QString RecentPathKeeper::LAST_INPUT_DIRECTORY_KEY  = "lastInputDirectory";
+const QString RecentPathKeeper::LAST_OUTPUT_DIRECTORY_KEY = "lastOutputDirectory";
+const QString RecentPathKeeper::RECENT_SCENES_KEY         = "recent";
+
+void RecentPathKeeper::loadFromQSettings(const QString &fileName, const QString &_root)
+{
+    QSettings settings(fileName, QSettings::IniFormat);
+    settings.beginGroup(_root);
+    updateIn (settings.value(LAST_INPUT_DIRECTORY_KEY, ".").toString());
+    updateOut(settings.value(LAST_OUTPUT_DIRECTORY_KEY, ".").toString());
+
+    unsigned size = settings.beginReadArray(RECENT_SCENES_KEY);
+    for (unsigned j = 0; j < size; j++) {
+        settings.setArrayIndex(j);
+        lastScenes.push_back(settings.value("path", ".").toString().toStdString());
+    }
+    settings.endArray();
+    settings.endGroup();
+
+}
+
+void RecentPathKeeper::saveToQSettings(const QString &fileName, const QString &_root)
+{
+    QSettings settings(fileName, QSettings::IniFormat);
+    settings.beginGroup(_root);
+    settings.setValue(LAST_INPUT_DIRECTORY_KEY,  in);
+    settings.setValue(LAST_OUTPUT_DIRECTORY_KEY, out);
+
+    settings.beginWriteArray(RECENT_SCENES_KEY);
+    for (unsigned j = 0; j < lastScenes.size(); j++) {
+        settings.setArrayIndex(j);
+        settings.setValue("path", QString::fromStdString(lastScenes[j]));
+    }
+    settings.endArray();
+    settings.endGroup();
+}
+
+RecentPathKeeper::~RecentPathKeeper()
+{
+
 }

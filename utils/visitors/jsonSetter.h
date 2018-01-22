@@ -5,7 +5,7 @@
 #include <QtCore/QString>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 using corecvs::IntField;
 using corecvs::UInt64Field;
@@ -13,6 +13,7 @@ using corecvs::DoubleField;
 using corecvs::FloatField;
 using corecvs::BoolField;
 using corecvs::StringField;
+using corecvs::WStringField;
 using corecvs::PointerField;
 using corecvs::EnumField;
 using corecvs::DoubleVectorField;
@@ -51,7 +52,9 @@ public:
         popChild(fieldName);
     }
 
-    template <typename Type, typename std::enable_if<!(std::is_enum<Type>::value || (std::is_arithmetic<Type>::value && !(std::is_same<bool, Type>::value || std::is_same<uint64_t, Type>::value))), int>::type foo = 0>
+    template <typename Type, typename std::enable_if<
+                  !(std::is_enum<Type>::value ||
+                  (std::is_arithmetic<Type>::value && !(std::is_same<bool, Type>::value || std::is_same<uint64_t, Type>::value))), int>::type foo = 0>
     void visit(Type &field, Type /*defaultValue*/, const char *fieldName)
     {
         visit(field, fieldName);
@@ -188,6 +191,9 @@ void JSONSetter::visit<bool>(bool &boolField, bool defaultValue, const char *fie
 template <>
 void JSONSetter::visit<std::string>(std::string &stringField, std::string defaultValue, const char *fieldName);
 
+template <>
+void JSONSetter::visit<std::wstring>(std::wstring &wstringField, std::wstring defaultValue, const char *fieldName);
+
 
 /* New style visitor */
 
@@ -211,6 +217,9 @@ void JSONSetter::visit<bool, BoolField>(bool &field, const BoolField *fieldDescr
 
 template <>
 void JSONSetter::visit<std::string, StringField>(std::string &field, const StringField *fieldDescriptor);
+
+template <>
+void JSONSetter::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor);
 
 template <>
 void JSONSetter::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor);

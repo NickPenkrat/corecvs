@@ -12,13 +12,13 @@
 #include <cmath>
 #include <functional>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "abstractBuffer.h"
-#include "matrix33.h"
-#include "matrix44.h"
-#include "diagonalMatrix.h"
-#include "vector.h"
+#include "core/buffers/abstractBuffer.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/math/matrix/diagonalMatrix.h"
+#include "core/math/vector/vector.h"
 
 namespace corecvs {
 
@@ -41,14 +41,23 @@ public:
 
 
     /**
-     * This function creates a matrix with all zero elements
+     * This function creates a matrix with all zero or uninitailized elements
      *
+     * \attention
+     *          Generally using this method could create undefined behavior.
+     *          Use it only when you would immediatly fill whole matrix with elements.
+     *          Otherwise, please explicitly state that some elements are uninitialzed.
      * \param h
      *         The height of the matrix
      * \param w
      *         The width of the matrix
+     * \param fillWithZero
+     *         if true matrix would be filled with zero
+     *
      */
-    Matrix(int32_t h, int32_t w) : MatrixBase (h, w) {}
+
+    Matrix(int32_t h, int32_t w, bool fillWithZero = true) : MatrixBase (h, w, fillWithZero) {}
+
 
     Matrix(const Matrix &that) : MatrixBase (that) {}
     explicit Matrix(const Matrix *that) : MatrixBase (that) {}
@@ -100,8 +109,6 @@ public:
      *
      **/
     Matrix(int32_t h, int32_t w, double value);
-
-    Matrix(int32_t h, int32_t w, bool shouldInit) : MatrixBase(h, w, shouldInit) {}
 
     explicit Matrix(const Matrix33 &in);
     explicit Matrix(const Matrix44 &in);
@@ -168,6 +175,14 @@ public:
 
     static void svd (Matrix  *A, Matrix *W, Matrix *V);
     static void svd (Matrix  *A, DiagonalMatrix *W, Matrix *V);
+    /*
+     * Computes "square root" of symmetrical posdef matrix and applies additional
+     * transform pretransform (on the left)
+     *
+     * This routine returns A^{-1}
+     */
+
+    Matrix invPosdefSqrt(const Matrix* preTransform = nullptr) const;
 
     static void svd (Matrix33 *A, Vector3dd *W, Matrix33 *V);
     static void svdDesc (Matrix33 *A, Vector3dd *W, Matrix33 *V);
@@ -272,8 +287,8 @@ public:
         cout << *this;
     }
 
-    friend ostream & operator <<(ostream &out, const Matrix &matrix);
-    void print(ostream &out);
+    friend std::ostream & operator <<(std::ostream &out, const Matrix &matrix);
+    void print(std::ostream &out);
 
     inline bool notTooFar(const Matrix *V, double epsilon = 0.0, bool trace = false ) const
     {

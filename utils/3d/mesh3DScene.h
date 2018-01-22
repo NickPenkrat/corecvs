@@ -7,11 +7,11 @@
 
 #include <ostream>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "scene3D.h"
 #include "cloudViewDialog.h"
-#include "plyLoader.h"
+#include "core/fileformats/plyLoader.h"
 #include "generated/draw3dParameters.h"
 #include "draw3dParametersControlWidget.h"
 #include "draw3dCameraParametersControlWidget.h"
@@ -81,6 +81,19 @@ class Plane3DScene : public Scene3D {
 
 public:
     Plane3DScene() :
+        mPlaneListId(0)
+    {}
+
+    virtual void prepareMesh(CloudViewDialog *dialog);
+    virtual void drawMyself(CloudViewDialog *dialog);
+};
+
+
+class Plane3DGeodesicScene : public Scene3D {
+    GLuint mPlaneListId;
+
+public:
+    Plane3DGeodesicScene() :
         mPlaneListId(0)
     {}
 

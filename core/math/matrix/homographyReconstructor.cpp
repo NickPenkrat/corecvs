@@ -8,9 +8,9 @@
 
 #include <limits>
 
-#include "homographyReconstructor.h"
-#include "matrix.h"
-#include "line.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/math/matrix/matrix.h"
+#include "core/geometry/line.h"
 #include "../vector/vector.h"
 #include "../../kalman/classicKalman.h"
 #include "../levenmarq.h"
@@ -509,7 +509,9 @@ double HomographyReconstructor::getCostFunction(Matrix33 &H, double out[])
 
 Matrix HomographyReconstructor::getJacobian(const Matrix33 &H) const
 {
-    Matrix J(p2p.size() * 2 + p2l.size(), 8);
+    CORE_ASSERT_TRUE(((uint)(p2p.size() * 2 + p2l.size())) == (p2p.size() * 2 + p2l.size()), ("too much elements int HomographyReconstructor"));
+
+    Matrix J((uint)(p2p.size() * 2 + p2l.size()), 8);
     int argout = 0;
     for (auto& pp: p2p)
     {

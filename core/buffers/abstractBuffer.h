@@ -19,19 +19,20 @@
 #include <stdarg.h>
 #include <stdlib.h>
 
+#include <random>
 #include <string>
 #include <functional>
 #include <type_traits>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
+#include "core/math/vector/vector2d.h"
 #include "memory/memoryBlock.h"
 #include "memory/alignedMemoryBlock.h"
-#include "tbbWrapper.h"                 // BlockedRange
-#include "mathUtils.h"                  // randRanged
+#include "core/tbbwrapper/tbbWrapper.h"                 // BlockedRange
+#include "core/math/mathUtils.h"                  // randRanged
 
-#include "abstractBufferParams.h"
+#include "core/buffers/abstractBufferParams.h"
 
 namespace corecvs {
 
@@ -116,9 +117,9 @@ public:
      *
      **/
 #if defined(WITH_SSE) /*|| defined(WITH_OPENCL)*/           // WITH_OPENCL is never defined for core projects to simplify projects deps
-    static const int DATA_ALIGN_GRANULARITY = 0xF;          // alignment by 16 bytes
+    static const size_t DATA_ALIGN_GRANULARITY = 0xF;          // alignment by 16 bytes
 #else
-    static const int DATA_ALIGN_GRANULARITY = 0xF;
+    static const size_t DATA_ALIGN_GRANULARITY = 0xF;
 #endif
 
     /**
@@ -299,7 +300,7 @@ public:
     AbstractBuffer(const std::vector<std::vector<ElementType>> &vec, IndexType h, IndexType w, IndexType stride = STRIDE_AUTO)
     {
         std::vector<ElementType> el;
-        el.reserve(w * h);
+        el.reserve((size_t)w * h);
         for (IndexType i = 0; i < h; ++i)
         {
             for (IndexType j = 0; j < w; ++j)
@@ -326,6 +327,7 @@ public:
 
     /**
      * \attention YOU SHOULD NEVER USE IT FOR SERIALIZING HUGE DATA
+     * If you have such a need start casting h,w,stride etc to uint64_t
      **/
     template<typename V>
     void accept(V& visitor)
@@ -439,15 +441,27 @@ template<typename ResultType>
      *
      * A common practice in this project is for the y coordinate to come first
      **/
+#if 1
     inline ElementType &element(const IndexType y, const IndexType x)
     {
-        return data[y * this->stride + x];
+        return data[(size_t)y * this->stride + x];
     }
 
     inline const ElementType &element(const IndexType y, const IndexType x) const
     {
+        return data[(size_t)y * this->stride + x];
+    }
+#else
+    inline ElementType &element(const size_t y, const size_t x)
+    {
         return data[y * this->stride + x];
     }
+
+    inline const ElementType &element(const size_t y, const size_t x) const
+    {
+        return data[y * this->stride + x];
+    }
+#endif
 
     /**
      * The element getter
@@ -552,9 +566,9 @@ template<typename ResultType>
         return data != NULL;
     }
 
-    inline int numElements() const
+    inline size_t numElements() const
     {
-        return this->h * this->stride;
+        return (size_t)this->h * this->stride;
     }
 
     /**
@@ -633,8 +647,8 @@ template<typename ResultType>
     **/
     inline void fillWith(const AbstractBuffer &other)
     {
-        int copyH = CORE_MIN(this->h, other.h);
-        int copyW = CORE_MIN(this->w, other.w);
+        IndexType copyH = CORE_MIN(this->h, other.h);
+        IndexType copyW = CORE_MIN(this->w, other.w);
 
         /* If buffers have same horizontal geometry use fast method*/
         if (TRIVIALLY_COPY_CONSTRUCTIBLE)
@@ -644,13 +658,30 @@ template<typename ResultType>
                 memcpy(this->data, other.data, sizeof(ElementType) * copyH * this->stride);
                 return;
             }
-            for (int i = 0; i < copyH; i++)
+            for (IndexType i = 0; i < copyH; i++)
             {
                 memcpy(&this->element(i, 0), &other.element(i, 0), sizeof(ElementType) * copyW);
             }
             return;
         }
         _copy(data, other.data, copyH, copyW, this->stride, other.stride);
+    }
+
+    inline void fillWith(const AbstractBuffer &other, IndexType y, IndexType x)
+    {
+        IndexType copyH = CORE_MIN(this->h - y, other.h);
+        IndexType copyW = CORE_MIN(this->w - x, other.w);
+
+        /* If buffers have same horizontal geometry use fast method*/
+        if (TRIVIALLY_COPY_CONSTRUCTIBLE)
+        {
+            for (IndexType i = 0; i < copyH; i++)
+            {
+                memcpy(&this->element(i + y, x), &other.element(i, 0), sizeof(ElementType) * copyW);
+            }
+            return;
+        }
+        _copy(&this->element(y, x), other.data , copyH, copyW, this->stride, other.stride);
     }
 
     /**
@@ -690,10 +721,24 @@ template<typename ResultType>
     /** Fills the buffer by random values within the given range */
     void fillWithRands(ElementType valueMax /*= ElementType::max()*/, ElementType valueMin = ElementType(0))
     {
-        srand(rand());
+        std::mt19937 rng;
+        std::uniform_int_distribution<ElementType> dist(valueMax, valueMin);
+
         for (IndexType i = 0; i < this->h; i++)
             for (IndexType j = 0; j < this->w; j++)
-                this->element(i,j) = (ElementType)randRanged(valueMax, valueMin);
+                this->element(i,j) = dist(rng);
+    }
+
+    void checkerBoard(IndexType square, ElementType valueMax /*= ElementType::max()*/, ElementType valueMin = ElementType(0))
+    {
+        for (IndexType i = 0; i < this->h; i++)
+        {
+            for (IndexType j = 0; j < this->w; j++)
+            {
+                bool color = ((i / square) % 2) ^ ((j / square) % 2);
+                this->element(i,j) = color ?  valueMin : valueMax;
+            }
+        }
     }
 
     /**
@@ -767,8 +812,8 @@ template<typename ResultType>
 
         void operator()(const BlockedRange<IndexType>& r) const
         {
-            int left =  onlyValid ? kernel->x : 0;
-            int right = onlyValid ? buffer->w + kernel->x - kernel->w + 1 : buffer->w;
+            IndexType left =  onlyValid ? kernel->x : 0;
+            IndexType right = onlyValid ? buffer->w + kernel->x - kernel->w + 1 : buffer->w;
             if (!onlyValid)
             {
                 for (IndexType i = r.begin(); i != r.end(); i++)
@@ -814,8 +859,8 @@ template<typename ResultType>
         if (output->h != this->h || output->w != this->w)
             return;
 
-        int top    = onlyValid ? kernel->y : 0;
-        int bottom = onlyValid ? this->h + kernel->y - kernel->h + 1 : this->h;
+        IndexType top    = onlyValid ? kernel->y : 0;
+        IndexType bottom = onlyValid ? this->h + kernel->y - kernel->h + 1 : this->h;
         parallelable_for(top, bottom, ParallelDoConvolve<ReturnType, AbstractBuffer<ElementType, IndexType>, ConvElementType, ConvIndexType>(output, this, kernel, onlyValid), parallel);
     }
 
@@ -880,11 +925,11 @@ template<typename ResultType>
     {
         if (that.h != this->h || that.w != this->w)
             return false;
-        for (int i = 0; i < this->h; i++)
+        for (IndexType i = 0; i < this->h; i++)
         {
             const ElementType *thisElemRunner = &(this->element(i, 0));
             const ElementType *thatElemRunner = &(that.element(i, 0));
-            for (int j = 0; j < this->w; j++)
+            for (IndexType j = 0; j < this->w; j++)
             {
                 if (*thatElemRunner != *thisElemRunner)
                 {
@@ -914,11 +959,11 @@ template<typename ResultType>
         if (that.h != this->h || that.w != this->w)
             return false;
         int diffs = 0;
-        for (int i = 0; i < this->h; i++)
+        for (IndexType i = 0; i < this->h; i++)
         {
             const ElementType *thisElemRunner = &(this->element(i, 0));
             const ElementType *thatElemRunner = &(that.element(i, 0));
-            for (int j = 0; j < this->w; j++)
+            for (IndexType j = 0; j < this->w; j++)
             {
                 if (*thatElemRunner != *thisElemRunner)
                 {
@@ -1019,7 +1064,7 @@ template<typename operation>
         }
     }
 
-friend ostream & operator <<(ostream &out, const AbstractBuffer &buffer)
+friend std::ostream & operator <<(std::ostream &out, const AbstractBuffer &buffer)
     {
         // typedef AbstractBuffer::InternalIndexType IndexType;
         //
@@ -1036,7 +1081,7 @@ friend ostream & operator <<(ostream &out, const AbstractBuffer &buffer)
 
     template<typename T=ElementType, typename I=IndexType>
     typename std::enable_if<AbstractBuffer<T, I>::TRIVIALLY_COPY_CONSTRUCTIBLE, bool>::type
-    dump(ostream& s, bool binaryMode) const
+    dump(std::ostream& s, bool binaryMode) const
     {
         AbstractBufferParams<I>::dump(s, sizeof(ElementType), binaryMode);
         if (binaryMode) {
@@ -1047,7 +1092,7 @@ friend ostream & operator <<(ostream &out, const AbstractBuffer &buffer)
 
     template<typename T=ElementType, typename I=IndexType>
     typename std::enable_if<AbstractBuffer<T, I>::TRIVIALLY_COPY_CONSTRUCTIBLE, bool>::type
-    load(istream& s, bool binaryMode)
+    load(std::istream& s, bool binaryMode)
     {
         if (!AbstractBufferParams<I>::load(s, sizeof(ElementType), binaryMode))
             return false;
@@ -1175,7 +1220,7 @@ private:
                     });
             this->data = (ElementType *)memoryBlock.getAlignedStart();
 
-            CORE_ASSERT_TRUE_P(this->data, ("out of memory or invalid buffer size (%zu)", allocatedSize));
+            CORE_ASSERT_TRUE_P(this->data, ("out of memory or invalid buffer size (%" PRISIZE_T ")", allocatedSize));
             if (shouldInit || !TRIVIALLY_DEFAULT_CONSTRUCTIBLE) {
                 CORE_CLEAR_MEMORY(this->data, allocatedSize);
                 _initArray(this->data, h, w, sa);
@@ -1214,7 +1259,7 @@ private:
          *
          *  TODO : should use pointer arithmetics instead
          * */
-        int strideGuess = w;
+        IndexType strideGuess = w;
         size_t lineLen  = strideGuess * sizeof(ElementType);
         while (lineLen & DATA_ALIGN_GRANULARITY)
         {
@@ -1252,7 +1297,7 @@ private:
     static void _copy(ElementType* dst, const ElementType* src, IndexType h, IndexType w, IndexType strideDst, IndexType strideSrc)
     {
         for (IndexType i = 0; i < h; ++i)
-            _copy(dst + i * strideDst, src + i * strideSrc, w);
+            _copy(dst + (size_t)i * strideDst, src + (size_t)i * strideSrc, w);
     }
     static void _del(ElementType* ptr, IndexType h, IndexType w, IndexType stride)
     {
@@ -1268,7 +1313,7 @@ private:
         {
             for (IndexType i = 0; i < h; ++i)
                 for (IndexType j = 0; j < w; ++j)
-                    ptr[i * stride + j].~ElementType();
+                    ptr[(size_t)i * stride + j].~ElementType();
         }
     }
 
@@ -1281,7 +1326,7 @@ private:
         {
             for (IndexType i = 0; i < h; ++i)
                 for (IndexType j = 0; j < w; ++j)
-                    new (ptr + i * stride + j) ElementType();
+                    new (ptr + (size_t)i * stride + j) ElementType();
         }
         else
         {
@@ -1295,7 +1340,7 @@ private:
         {
             for (IndexType j = 0; j < w; ++j)
             {
-                new (ptr + i * stride + j) ElementType(el);
+                new (ptr + (size_t)i * stride + j) ElementType(el);
             }
         }
     }

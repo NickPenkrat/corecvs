@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from precise.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,8 +31,8 @@
 /*
  *  Additional includes for enum section.
  */
-#include "makePreciseAlgorithm.h"
-#include "preciseInterpolationType.h"
+#include "core/xml/generated/makePreciseAlgorithm.h"
+#include "core/xml/generated/preciseInterpolationType.h"
 
 /**
  * \brief Make Precise Parameters 
@@ -97,6 +98,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -213,6 +216,17 @@ template<class VisitorType>
         mKLTThreshold = kLTThreshold;
     }
 
+    bool operator ==(const MakePreciseParameters &other) const 
+    {
+        if ( !(this->mShouldMakePrecise == other.mShouldMakePrecise)) return false;
+        if ( !(this->mAlgorithm == other.mAlgorithm)) return false;
+        if ( !(this->mInterpolation == other.mInterpolation)) return false;
+        if ( !(this->mKLTIterations == other.mKLTIterations)) return false;
+        if ( !(this->mKLTRadiusH == other.mKLTRadiusH)) return false;
+        if ( !(this->mKLTRadiusW == other.mKLTRadiusW)) return false;
+        if ( !(this->mKLTThreshold == other.mKLTThreshold)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, MakePreciseParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

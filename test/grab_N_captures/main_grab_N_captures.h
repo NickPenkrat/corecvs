@@ -1,11 +1,12 @@
-#include "global.h"
+#include "core/utils/global.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/QObject>
-#include "imageCaptureInterface.h"
+#include <QSignalMapper>
+
 #include "qtFileLoader.h"
 #include "qtHelper.h"
-#include <QSignalMapper>
-#include "log.h"
+#include "imageCaptureInterfaceQt.h"
+#include "core/utils/log.h"
 #include "g12Image.h"
 
 
@@ -94,13 +95,13 @@ public slots:
         }
 
         ImageCaptureInterface::FramePair pair =  descr.input->getFrameRGB24();
-        if (pair.rgbBufferLeft == NULL) {
+        if (pair.rgbBufferLeft() == NULL) {
             L_ERROR_P("Unexpected zero buffer form camera %d", camId);
             pair.freeBuffers();
             return;
         }
 
-        mCaptureInterfaces[mCurrentCam].result = toQImage(pair.rgbBufferLeft);
+        mCaptureInterfaces[mCurrentCam].result = toQImage(pair.rgbBufferLeft());
         pair.freeBuffers();
 
         delete_safe(descr.input);

@@ -92,9 +92,18 @@ SOURCES += \
     meta/main_test_meta.cpp \
     function/main_test_function.cpp \
     deform/test_deform.cpp \
+    kde/main_test_kde.cpp \
     camerafixture/main_test_camerafixture.cpp \
     renderer/main_test_renderer.cpp \
     raytrace/main_test_raytrace.cpp \
     jit/main_test_jit.cpp \
     matrixoperations/main_test_matrixoperations.cpp \
     polygon/main_test_polygon.cpp \
+    multicamera/main_test_multicamera.cpp \
+    imagequality/main_test_imagequality.cpp \
+    json/main_test_json.cpp \
+    utils/main_test_utils.cpp \
+    quadric/main_test_quadric.cpp \
+    planefit/main_test_planefit.cpp \
+    noise/main_test_noise.cpp \
+	projection/main_test_projection.cpp \

@@ -10,10 +10,10 @@
  * \author: alexander
  */
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "fixedVector.h"
-#include "float32x8.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/avx/float32x8.h"
 
 
 namespace corecvs {
@@ -109,7 +109,7 @@ public:
 
 
     /* Formated hex helper */
-    void hexDump (ostream &out);
+    void hexDump (std::ostream &out);
 };
 
 template<int ELEMENTS>

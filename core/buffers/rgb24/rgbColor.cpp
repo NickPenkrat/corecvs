@@ -5,8 +5,8 @@
  * \date Dec 4, 2011
  * \author alexander
  */
-#include "global.h"
-#include "rgbColor.h"
+#include "core/utils/global.h"
+#include "core/buffers/rgb24/rgbColor.h"
 
 namespace corecvs {
 
@@ -37,8 +37,7 @@ int RGBColor::staticInit()
 RGBColor RGBColor::rainbow(double x)
 {
     x *= 6;
-    if (x < 0.0) x = 0.0;
-    if (x > 6.0) x = 6.0;
+    x = clamp(x, 0., 6.); 
 
     switch ((int)x)
     {

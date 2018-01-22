@@ -1,6 +1,6 @@
-#include "featureDetectorProvider.h"
+#include "core/features2d/featureDetectorProvider.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 using namespace corecvs;
 using namespace std;
@@ -18,43 +18,17 @@ FeatureDetector* FeatureDetectorProvider::getDetector(const DetectorType &type, 
     return 0;
 }
 
-std::vector<string> FeatureDetectorProvider::getCaps()
-{
-    std::vector<string> result;
-    for (std::vector<FeatureDetectorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        result.push_back((*p)->name());
-    }
-    return result;
-}
 
-void FeatureDetectorProvider::print()
+void FeatureDetector::detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints, void* pRemapCache)
 {
-    cout << "FeatureDetectorProvider has " << providers.size() << " providers" << endl;
-    for (std::vector<FeatureDetectorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        cout << "  " << (*p)->name() << endl;
-    }
-}
-
-void FeatureDetector::detect(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints)
-{
-    detectImpl(image, keyPoints, nKeypoints);
+	detectImpl(image, keyPoints, nKeypoints, pRemapCache);
 }
 
 FeatureDetectorProvider::~FeatureDetectorProvider()
 {
-    for (std::vector<FeatureDetectorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        delete *p;
-    }
-    providers.clear();
+
 }
 
-void FeatureDetectorProvider::add(FeatureDetectorProviderImpl *provider)
-{
-    providers.push_back(provider);
-}
 
 FeatureDetectorProvider& FeatureDetectorProvider::getInstance()
 {

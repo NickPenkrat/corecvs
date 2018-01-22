@@ -11,6 +11,7 @@
 !contains(CORECVS_INCLUDED, "utils.pri") {
 CORECVS_INCLUDED +=  utils.pri
 
+SUPPRESSINCLUDES=true
 include(../core/core.pri)                         # it uses TARGET and detects COREBINDIR!
 
 UTILSDIR=$$PWD
@@ -159,6 +160,25 @@ with_opencv {                                       # all this stuff was extract
     }
 }
 
+with_rapidjson {
+    RAPIDJSON_WRAPPER_DIR = $$UTILSDIR/../wrappers/rapidjson
+    include($$RAPIDJSON_WRAPPER_DIR/rapidjson.pri)
+
+    contains(DEFINES, WITH_RAPIDJSON) {
+       INCLUDEPATH += $$RAPIDJSON_WRAPPER_DIR
+    }
+}
+
+
+with_jsonmodern {
+    JSONMODERN_WRAPPER_DIR = $$UTILSDIR/../wrappers/jsonmodern
+    include($$JSONMODERN_WRAPPER_DIR/jsonmodern.pri)
+
+    contains(DEFINES, WITH_JSONMODERN) {
+       INCLUDEPATH += $$JSONMODERN_WRAPPER_DIR
+    }
+}
+
 with_siftgpu {
     SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
     DEFINES += WITH_SIFTGPU
@@ -224,6 +244,8 @@ with_synccam {
         #DEPENDPATH  += $$CYPRESS_DIR/include
     }
 }
+
+
 
 
 ###############################################

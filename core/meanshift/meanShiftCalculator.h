@@ -10,15 +10,19 @@
  * \author ylitvinov
  */
 
-#include "meanShiftWindow.h"
-#include "abstractMeanShiftKernel.h"
+#include "core/meanshift/meanShiftWindow.h"
+#include "core/meanshift/abstractMeanShiftKernel.h"
 
 #include <map>
 namespace corecvs {
 
 class MeanShiftCalculator {
 public:
-    MeanShiftCalculator(AbstractMeanShiftKernel * const kernel, unsigned minX, unsigned minY, unsigned maxX, unsigned maxY);
+    MeanShiftCalculator(
+            AbstractMeanShiftKernel * const kernel,
+            unsigned minX, unsigned minY,
+            unsigned maxX, unsigned maxY);
+
     ~MeanShiftCalculator();
 
     void calculate(unsigned numberOfWindows, unsigned overlay, unsigned minimalMovement

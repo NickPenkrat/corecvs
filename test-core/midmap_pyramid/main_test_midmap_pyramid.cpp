@@ -9,19 +9,23 @@
 #include <stdlib.h>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "g12Buffer.h"
-#include "bufferFactory.h"
-#include "bmpLoader.h"
-#include "mipmapPyramid.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/mipmapPyramid.h"
 
 using namespace corecvs;
 
 TEST(MidmapPyramid, testFunction)
 {
     G12Buffer *buffer = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-
+    if (buffer == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(buffer != NULL, "missed MidmapPyramid test data");
 
     int numLevels = 8;

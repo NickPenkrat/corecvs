@@ -3,13 +3,13 @@
 
 #include <memory>
 
-#include "patternDetector.h"
-#include "checkerboardDetectionParameters.h"
-#include "chessBoardCornerDetector.h"
-#include "chessBoardAssembler.h"
-#include "typesafeBitmaskEnums.h"
-#include "circlePatternGenerator.h"
-#include "boardAligner.h"
+#include "core/patterndetection/patternDetector.h"
+#include "core/xml/generated/checkerboardDetectionParameters.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
+#include "core/patterndetection/chessBoardAssembler.h"
+#include "core/utils/typesafeBitmaskEnums.h"
+#include "core/patterndetection/circlePatternGenerator.h"
+#include "core/patterndetection/boardAligner.h"
 
 namespace corecvs {
 
@@ -65,6 +65,9 @@ public:
 
     void drawCorners(RGB24Buffer &image, bool details = false);
 
+    bool detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
+    BoardCornersType getBestBoard();
+
 #if 0
     void dumpState();
 #endif
@@ -79,8 +82,6 @@ private:
     ChessBoardCornerDetector                detector;
     ChessBoardAssembler                     assembler;
     std::shared_ptr<CirclePatternGenerator> sharedGenerator;
-
-    bool    detectPatternCandidates(DpImage &buffer, std::vector<BoardCornersType> &boards);
 
     /* Some statistics */
     Statistics  *stats = nullptr;

@@ -19,10 +19,10 @@
 #include <list>
 #include <map>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
-#include "vector3d.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
 
 // allow of using "Fast" split algorithm which is better for huge ammount of points
 #define FAST_SPLIT
@@ -98,7 +98,7 @@ public:
     }
 
 
-    friend ostream & operator <<(ostream &out, const Point &point)
+    friend std::ostream & operator <<(std::ostream &out, const Point &point)
     {
         //out.precision(20);
         //out << "points[j++] = Point(";
@@ -197,7 +197,7 @@ public:
         return Triangulation::classify(dest, org, p2);
     }
 
-    friend ostream & operator <<(ostream &out, const Edge &edge)
+    friend std::ostream & operator <<(std::ostream &out, const Edge &edge)
     {
         out << "{" << edge.org << "=>" << edge.dest << "}";
         return out;

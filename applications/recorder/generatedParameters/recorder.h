@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from recorder.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -60,6 +61,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -111,6 +114,12 @@ template<class VisitorType>
         mFileTemplate = fileTemplate;
     }
 
+    bool operator ==(const Recorder &other) const 
+    {
+        if ( !(this->mPath == other.mPath)) return false;
+        if ( !(this->mFileTemplate == other.mFileTemplate)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, Recorder &toSave)
     {
         corecvs::PrinterVisitor printer(out);

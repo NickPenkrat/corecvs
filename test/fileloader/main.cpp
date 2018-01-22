@@ -1,7 +1,7 @@
 #include <iostream>
-#include "bufferFactory.h"
-#include "bmpLoader.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 #ifdef WITH_LIBJPEG
 #include "libjpegFileReader.h"
@@ -9,7 +9,6 @@
 #ifdef WITH_LIBPNG
 #include "libpngFileReader.h"
 #endif
-
 
 using namespace std;
 using namespace corecvs;
@@ -37,6 +36,6 @@ int main(int argc, char *argv[])
 
     BMPLoader().save("out.bmp", out);
     delete_safe(out);
+
     return 0;
 }
-

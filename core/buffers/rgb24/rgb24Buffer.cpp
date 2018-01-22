@@ -6,14 +6,16 @@
  * \date Mar 1, 2010
  * \author alexander
  */
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "rectangle.h"
-#include "rgb24Buffer.h"
-#include "hardcodeFont.h"
-#include "readers.h"
-#include "fixedVector.h"
-#include "bresenhamRasteriser.h"
+#include "core/geometry/rectangle.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/rgb24/hardcodeFont.h"
+#include "core/buffers/kernels/fastkernel/readers.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/buffers/rgb24/bresenhamRasterizer.h"
+#include "core/buffers/rgb24/wuRasterizer.h"
+
 
 #undef rad2     // it's defined at some Windows headers
 
@@ -162,6 +164,14 @@ void RGB24Buffer::drawCrosshare2 (int x, int y, RGBColor color)
     int d[16][2] = {{1,1},{2,2},{-1,-1},{-2,-2},{-1,1},{-2,2},{1,-1},{2,-2},
             {1,3},{3,1},{-1,-3},{-3,-1},{1,-3},{3,-1},{-1,3},{-3,1}};
     this->drawSprite(x, y, color, d, 16);
+}
+
+
+void RGB24Buffer::drawCrosshare2 (const Vector2dd &point, RGBColor color)
+{
+    int d[16][2] = {{1,1},{2,2},{-1,-1},{-2,-2},{-1,1},{-2,2},{1,-1},{2,-2},
+            {1,3},{3,1},{-1,-3},{-3,-1},{1,-3},{3,-1},{-1,3},{-3,1}};
+    this->drawSprite(fround(point.x()), fround(point.y()), color, d, 16);
 }
 
 /**  Draws a marker at the point having the form of
@@ -343,6 +353,16 @@ void RGB24Buffer::drawRectangle(int x, int y, int w, int h, RGBColor color, int 
 void RGB24Buffer::drawRectangle(const Rectangle<int32_t> &rect, RGBColor color, int style)
 {
     drawRectangle(rect.corner.x(), rect.corner.y(), rect.size.x(), rect.size.y(), color, style);
+}
+
+
+void RGB24Buffer::drawRectangle(const Rectangled &rect, RGBColor color, int style)
+{
+    drawRectangle(
+        fround(rect.corner.x()),
+        fround(rect.corner.y()),
+        fround(rect.size.x()),
+        fround(rect.size.y()), color, style);
 }
 
 
@@ -531,7 +551,12 @@ void RGB24Buffer::drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t 
 
 void RGB24Buffer::drawLineSimple(int x1, int y1, int x2, int y2, RGBColor color)
 {
-    BresenhamRasteriser::drawLineSimple<RGB24Buffer>(*this, x1, y1, x2, y2, color);
+    BresenhamRasterizer::drawLineSimple<RGB24Buffer>(*this, x1, y1, x2, y2, color);
+}
+
+void RGB24Buffer::drawLineSimpleFancy(int x1, int y1, int x2, int y2, RGBColor color)
+{
+    WuRasterizer::drawLine<RGB24Buffer>(*this, x1, y1, x2, y2, color);
 }
 
 // TODO: make this more pretty

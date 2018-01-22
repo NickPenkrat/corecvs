@@ -70,12 +70,17 @@ int DebayerParameters::staticInit()
           "Bayer pos",
           true,
          -1,
-         255
+         255,
+         1
         );
     fields().push_back(field1);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Debayer Parameters")]= &reflection;
+   return 0;
+}
+int DebayerParameters::relinkCompositeFields()
+{
    return 0;
 }
 

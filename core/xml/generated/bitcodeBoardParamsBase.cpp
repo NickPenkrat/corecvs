@@ -64,7 +64,8 @@ int BitcodeBoardParamsBase::staticInit()
           "Chess cells size in pixels",
           true,
          0,
-         999999
+         999999,
+         1
         );
     field1->suffixHint="px";
     fields().push_back(field1);
@@ -79,7 +80,8 @@ int BitcodeBoardParamsBase::staticInit()
           "shades of gray for black chesses",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field2);
     /*  */ 
@@ -93,7 +95,8 @@ int BitcodeBoardParamsBase::staticInit()
           "shades of gray for white chesses",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field3);
     /*  */ 
@@ -216,7 +219,8 @@ int BitcodeBoardParamsBase::staticInit()
           "X Distance from grid center to Traget Point",
           true,
          -255,
-         255
+         255,
+         1
         );
     field12->widgetHint=BaseField::SPIN_BOX;
     field12->suffixHint="cells";
@@ -233,7 +237,8 @@ int BitcodeBoardParamsBase::staticInit()
           "Y Distance from grid center to Traget Point",
           true,
          -255,
-         255
+         255,
+         1
         );
     field13->widgetHint=BaseField::SPIN_BOX;
     field13->suffixHint="cells";
@@ -242,6 +247,10 @@ int BitcodeBoardParamsBase::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Bitcode Board Params Base")]= &reflection;
+   return 0;
+}
+int BitcodeBoardParamsBase::relinkCompositeFields()
+{
    return 0;
 }
 

@@ -1,12 +1,12 @@
 HEADERS += \
     math/eulerAngles.h \
+    math/kde.h \
     math/matrix/matrix.h \
     math/matrix/matrix22.h \
     math/matrix/matrix33.h \
     math/matrix/matrix44.h \
     math/matrix/diagonalMatrix.h \
     math/matrix/blasReplacement.h \
-    math/sparseMatrix.h \
     math/matrix/homographyReconstructor.h \
     math/matrix/matrixOperations.h \
     math/vector/vectorOperations.h \
@@ -60,7 +60,9 @@ HEADERS += \
     math/matrix/similarityReconstructor.h \
     math/sse/doublexT4.h \
     math/extensiveCoding.h \
-    math/wisdom.h
+    math/wisdom.h \
+    math/em.h \
+    $$PWD/tangentSpace.h
 
 SOURCES += \
     math/matrix/matrix.cpp \
@@ -68,8 +70,6 @@ SOURCES += \
     math/matrix/matrix33.cpp \
     math/matrix/matrix44.cpp \
     math/matrix/diagonalMatrix.cpp \
-    math/sparseMatrix.cpp \
-    math/sparseMatrixCusparseDetails.cpp \
     math/matrix/homographyReconstructor.cpp \
     math/vector/vector2d.cpp \
     math/lutAlgebra.cpp \
@@ -83,7 +83,17 @@ SOURCES += \
     math/matrix/similarityReconstructor.cpp \
 #    math/matrix/matrixspeed.cpp
     math/extensiveCoding.cpp \
-    math/wisdom.cpp
+    math/kde.cpp \
+    math/wisdom.cpp \
+    math/em.cpp \
+    $$PWD/tangentSpace.cpp
+
+
+
+HEADERS +=     math/sparseMatrix.h
+
+SOURCES +=     math/sparseMatrix.cpp \
+               math/sparseMatrixCusparseDetails.cpp  \
 
 
 contains(DEFINES, "WITH_FFTW") {

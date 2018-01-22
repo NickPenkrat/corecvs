@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from bufferFilters.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -165,6 +166,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -411,6 +414,27 @@ template<class VisitorType>
         mBit15 = bit15;
     }
 
+    bool operator ==(const BitSelectorParameters &other) const 
+    {
+        if ( !(this->mShift == other.mShift)) return false;
+        if ( !(this->mBit0 == other.mBit0)) return false;
+        if ( !(this->mBit1 == other.mBit1)) return false;
+        if ( !(this->mBit2 == other.mBit2)) return false;
+        if ( !(this->mBit3 == other.mBit3)) return false;
+        if ( !(this->mBit4 == other.mBit4)) return false;
+        if ( !(this->mBit5 == other.mBit5)) return false;
+        if ( !(this->mBit6 == other.mBit6)) return false;
+        if ( !(this->mBit7 == other.mBit7)) return false;
+        if ( !(this->mBit8 == other.mBit8)) return false;
+        if ( !(this->mBit9 == other.mBit9)) return false;
+        if ( !(this->mBit10 == other.mBit10)) return false;
+        if ( !(this->mBit11 == other.mBit11)) return false;
+        if ( !(this->mBit12 == other.mBit12)) return false;
+        if ( !(this->mBit13 == other.mBit13)) return false;
+        if ( !(this->mBit14 == other.mBit14)) return false;
+        if ( !(this->mBit15 == other.mBit15)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, BitSelectorParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

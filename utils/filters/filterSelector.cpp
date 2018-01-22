@@ -2,12 +2,12 @@
 #include <qtablewidget.h>
 #include "filterSelector.h"
 
-#include "gainOffsetFilter.h"       // ../../../core/src/filters
-#include "bitSelectorFilter.h"      // ../../../core/src/filters
-#include "sobelFilter.h"            // ../../../core/src/filters
-#include "cannyFilter.h"            // ../../../core/src/filters
+#include "core/filters/gainOffsetFilter.h"       // ../../../core/src/filters
+#include "core/filters/bitSelectorFilter.h"      // ../../../core/src/filters
+#include "core/filters/sobelFilter.h"            // ../../../core/src/filters
+#include "core/filters/cannyFilter.h"            // ../../../core/src/filters
 #include "openCVFilter.h"
-#include "backgroundFilter.h"
+#include "core/filters/backgroundFilter.h"
 
 #include "ui/gainOffsetParametersControlWidget.h"
 #include "ui/bitSelectorParametersControlWidget.h"

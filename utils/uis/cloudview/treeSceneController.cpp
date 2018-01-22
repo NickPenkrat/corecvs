@@ -4,7 +4,7 @@
  * \date Mar 1, 2013
  **/
 
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 #include "treeSceneController.h"
 
@@ -14,6 +14,8 @@ using corecvs::BaseReflectionStatic;
 
 void TreeSceneController::paramtersChanged()
 {
+    // SYNC_PRINT(("TreeSceneController::paramtersChanged()\n"));
+
     if (mObject.isNull() || mParametersWidget == NULL)
         return;
 
@@ -529,7 +531,7 @@ QModelIndex  TreeSceneModel::unpackPath(QDataStream &stream) const
     return pathIter;
 }
 
-QMimeData *TreeSceneModel::mimeData(const QModelIndexList &indexes) const
+QMimeData *TreeSceneModel::mimeData(const QModelIndexList &indices) const
 {
     //qDebug() << "Packing object to mime";
     QMimeData *mimeData = new QMimeData();
@@ -537,10 +539,10 @@ QMimeData *TreeSceneModel::mimeData(const QModelIndexList &indexes) const
 
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
-    if (indexes.size() == 0)
+    if (indices.size() == 0)
         return NULL;
 
-    packPath(indexes[0], stream);
+    packPath(indices[0], stream);
     mimeData->setData(MIME_TYPE, encodedData);
     return mimeData;
 }

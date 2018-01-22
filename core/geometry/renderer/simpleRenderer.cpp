@@ -1,6 +1,6 @@
-#include "simpleRenderer.h"
-#include "mesh3d.h"
-#include "rgb24Buffer.h"
+#include "core/geometry/renderer/simpleRenderer.h"
+#include "core/geometry/mesh3d.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 namespace corecvs {
 
@@ -132,7 +132,7 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
     {
         Vector3d32 face = mesh->faces[f];
         Vector3d32 normalId = mesh->normalId[f];
-        Vector3d32 textureId = mesh->texId[f];
+        Vector4d32 textureId = mesh->texId[f];
 
         bool hasNormal = (normalId[0] != -1) && (normalId[1] != -1) && (normalId[2] != -1);
         /**/

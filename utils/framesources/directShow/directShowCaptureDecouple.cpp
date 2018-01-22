@@ -2,9 +2,9 @@
 #include <QtCore/QString>
 #include <QtCore/QDebug>
 
-#include "global.h"
-#include "mathUtils.h" // roundDivUp
-#include "preciseTimer.h"
+#include "core/utils/global.h"
+#include "core/math/mathUtils.h" // roundDivUp
+#include "core/utils/preciseTimer.h"
 #include "directShowCaptureDecouple.h"
 //#include "mjpegDecoderLazy.h"
 #include "cameraControlParameters.h"
@@ -181,8 +181,9 @@ ImageCaptureInterface::FramePair DirectShowCaptureDecoupleInterface::getFrame()
         uint8_t *ptr = cameras[0].rawBuffer;
         DecoupleYUYV::decouple(height, width, ptr, coupling, result);
 
-        result.timeStampLeft  =
-        result.timeStampRight = cameras[0].timestamp;
+        auto stamp = cameras[0].timestamp;
+        result.setTimeStampLeft(stamp);
+        result.setTimeStampRight(stamp);
     protectFrame.unlock();
     return result;
 }

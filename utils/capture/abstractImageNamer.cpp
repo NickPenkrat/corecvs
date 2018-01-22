@@ -1,1 +1,0 @@
-#include "abstractImageNamer.h"

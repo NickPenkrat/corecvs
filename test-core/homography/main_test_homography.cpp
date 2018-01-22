@@ -11,14 +11,14 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
-#include "homographyReconstructor.h"
-#include "matrix33.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/math/matrix/matrix33.h"
 
-#include "rgb24Buffer.h"
-#include "bmpLoader.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
 
 using namespace corecvs;
 

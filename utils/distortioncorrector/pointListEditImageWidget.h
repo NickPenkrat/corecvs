@@ -135,7 +135,19 @@ public:
    QToolButton               *mDeleteButton;
    QToolButton               *mAddInfoButton;
 
-   QComboBox *mDelegateStyleBox = NULL;
+   QPushButton *mDelegateStyleButton = NULL;
+
+   /* Parameters controlling observation presentation */
+
+   bool  mDecortatorAll      = false;
+   bool  mDecortatorMatched  = false;
+   bool  mDecortatorSelected = false;
+
+   bool  mMarkAll      = true;
+   bool  mMarkMatched  = false;
+   bool  mMarkSelected = false;
+
+   bool  mMarkFast     = false;
 
    PointListEditImageWidgetUnited(QWidget *parent = NULL, bool showHeader = true);
 
@@ -144,15 +156,16 @@ public:
 
    // AdvancedImageWidget interface
 public slots:
-   virtual void childRepaint(QPaintEvent *event, QWidget *who) override;
-   virtual void toolButtonReleased(QWidget *button) override;
-   virtual void childMousePressed(QMouseEvent *event) override;
-   virtual void childMouseMoved(QMouseEvent *event) override;
+   virtual void childRepaint      (QPaintEvent *event, QWidget *who) override;
+   virtual void toolButtonReleased(QWidget     *button) override;
+   virtual void childMousePressed (QMouseEvent *event ) override;
+   virtual void childMouseMoved   (QMouseEvent *event ) override;
 
    void         invalidateModel();
 
    void         selectPoint(int id);
 
+   void         delegateMenuShow();
 protected:
    int          findClosest(Vector2dd imagePoint, double limitDistance = numeric_limits<double>::max());
 

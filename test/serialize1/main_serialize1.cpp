@@ -1,21 +1,33 @@
 #include <stdio.h>
+#include <vector>
+
+#include "gtest/gtest.h"
+
+#include <QtXml/QDomDocument>
+
 #ifndef WIN32
 #include <unistd.h>
 #endif
-#include <QtXml/QDomDocument>
-#include <vector>
-
-#include "abstractPainter.h"
-#include "bmpLoader.h"
-
-#include "fixtureScene.h"
-
-#include "vector3d.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/math/vector/vector3d.h"
 #include "xmlSetter.h"
 #include "xmlGetter.h"
-
-#include "jsonGetter.h"
+#include "core/reflection/jsonPrinter.h"
 #include "jsonSetter.h"
+#include "jsonGetter.h"
+#ifdef WITH_RAPIDJSON
+    #include "rapidJSONReader.h"
+#endif
+#ifdef WITH_JSONMODERN
+    #include "jsonModernReader.h"
+#endif
+
+/*******************************
+ *    XML
+ ********************************/
 
 void testXML1()
 {
@@ -54,8 +66,9 @@ void testXML2()
 }
 
 
-/*========== Now with json ==============*/
-
+/*******************************
+ *    Now with QT json
+ ********************************/
 
 void testJSON1()
 {
@@ -80,7 +93,7 @@ void testJSON1()
 
     printf("====== Loading back some data ======\n");
 */
-    SYNC_PRINT(("Parsing %zu input:\n%s\n", CORE_COUNT_OF(input), input));
+    SYNC_PRINT(("Parsing %" PRISIZE_T " input:\n%s\n", CORE_COUNT_OF(input), input));
 
 
     QByteArray array(input, CORE_COUNT_OF(input));
@@ -109,8 +122,6 @@ void testJSON1()
 
     cout << "Result:" << result;
 }
-
-
 
 
 class TestComplexStructure : public BaseReflection<TestComplexStructure>{
@@ -177,7 +188,7 @@ void testJSON2()
     CORE_ASSERT_TRUE(testObject.testField.size() == testObject1.testField.size(), "Wrong loaded array size");
     for (size_t i = 0; i < testObject.testField.size(); i++)
     {
-        CORE_ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %zu", i));
+        CORE_ASSERT_TRUE_P(testObject1.testField[i] == testObject.testField[i], ("Error at pos %" PRISIZE_T "", i));
         cout << testObject1.testField[i] << " == " << testObject.testField[i] << std::endl;
     }
     cout << std::endl;
@@ -297,6 +308,301 @@ void testJSON_saveDistortion()
 
 }
 
+#ifdef WITH_RAPIDJSON
+/*******************************
+ *    Now with Rapid json
+ ********************************/
+
+
+void testRapidJSON1()
+{
+    cout << std::endl;
+    cout << "testRapidJSON1()" << std::endl;
+    cout << std::endl;
+
+    const char input[] =
+    "{\n"
+    "  \"vector\":{\n"
+    "     \"x\": 1,\n"
+    "     \"y\": 2,\n"
+    "     \"z\": 3\n"
+    "  }\n"
+    "}\n";
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+
+    rapidjson::Document document;
+    document.Parse(input);
+    rapidjson::Value object = document.GetObject();
+
+    cout << "Before parsing" << endl;
+    Vector3dd result(1.5,2.5,5.5);
+    cout << result << endl;
+    {
+        RapidJSONReader getter(object);
+        getter.visit(result, "vector");
+    }
+    cout << "After parsing" << endl;
+    cout << result << endl;
+
+}
+
+void testRapidJSON_saveDistortion()
+{
+    cout << std::endl;
+    cout << "testRapidJSON_saveDistortion()" << std::endl;
+    cout << std::endl;
+
+    LensDistortionModelParameters params;
+    LensDistortionModelParameters loaded;
+
+    params.setPrincipalX(400);
+    params.setPrincipalY(400);
+    params.setTangentialX(0.3);
+    params.setTangentialY(0.4);
+
+    params.setShiftX(200);
+    params.setShiftY(200);
+
+    params.setAspect(10.0);
+    params.setScale(1.1);
+    params.setKoeff({1.0, 2.0, std::numeric_limits<double>::min()});
+
+    cout << "testJSON_saveDistortion() test called" << endl;
+    cout << "Initial state" << endl;
+    cout << params << endl;
+
+    {
+        JSONSetter saver("out1.json");
+        saver.visit(params, "stage1");
+    }
+    {
+        RapidJSONReader loader("out1.json");
+        loader.visit(loaded, "stage1");
+    }
+
+    cout << "After parsing" << endl;
+    cout << loaded << endl;
+
+}
+#endif
+
+#ifdef WITH_JSONMODERN
+/*******************************
+ *    Now with json modern
+ ********************************/
+
+TEST(Serialise, testJSONModern1)
+{
+    cout << std::endl;
+    cout << "testRapidJSON1()" << std::endl;
+    cout << std::endl;
+
+    const char input[] =
+    "{\n"
+    "  \"vector\":{\n"
+    "     \"x\": 1,\n"
+    "     \"y\": 2,\n"
+    "     \"z\": 3\n"
+    "  }\n"
+    "}\n";
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+
+    nlohmann::json document = nlohmann::json::parse(input);
+    cout << "Before parsing" << endl;
+    Vector3dd result(1.5,2.5,5.5);
+    cout << result << endl;
+    {
+        JSONModernReader getter(document);
+        getter.visit(result, "vector");
+    }
+    cout << "After parsing" << endl;
+    cout << result << endl;
+
+    CORE_ASSERT_TRUE(result.notTooFar(Vector3dd(1,2,3)), "Fail to parse trivial data structure");
+}
+
+void testJSONModern_saveDistortion()
+{
+    cout << std::endl;
+    cout << "testRapidJSON_saveDistortion()" << std::endl;
+    cout << std::endl;
+
+    LensDistortionModelParameters params;
+    LensDistortionModelParameters loaded;
+
+    params.setPrincipalX(400);
+    params.setPrincipalY(400);
+    params.setTangentialX(0.3);
+    params.setTangentialY(0.4);
+
+    params.setShiftX(200);
+    params.setShiftY(200);
+
+    params.setAspect(10.0);
+    params.setScale(1.1);
+    params.setKoeff({1.0, 2.0, std::numeric_limits<double>::min()});
+
+    cout << "testJSON_saveDistortion() test called" << endl;
+    cout << "Initial state" << endl;
+    cout << params << endl;
+
+    {
+        JSONSetter saver("out1.json");
+        saver.visit(params, "stage1");
+    }
+    {
+        JSONModernReader loader("out1.json");
+        loader.visit(loaded, "stage1");
+    }
+
+    cout << "After parsing" << endl;
+    cout << loaded << endl;
+
+}
+
+void testJSONModernScene()
+{
+    FixtureScene scene;
+    std::string calibration = "/media/workarea/work/data/Measure_31_prototype-3_martishkino-bridge/bridge//bridge_25ph/scene_M31p2_bridge_25ph_v32d.json";
+    {
+        cout << "Loading :" << calibration << endl;
+        JSONModernReader getter(calibration);
+       // getter.trace = true;
+        if (!getter.hasError())
+        {
+            getter.visit(scene, "scene");
+        } else {
+            SYNC_PRINT(("Unable to parse json: Unable to parse json. See log for details"));
+        }
+    }
+    scene.dumpInfo();
+
+}
+
+
+void testJSONPrinterArrays()
+{
+    std::vector<std::vector<RgbColorParameters>> rgbArray;
+    std::vector<std::vector<RgbColorParameters>> rgbArray1;
+
+    for (int i = 0; i < 3; i++) {
+        rgbArray.push_back(std::vector<RgbColorParameters>());
+    }
+    rgbArray[0].push_back(RGBColor::Amber().toRGBParameters());
+    rgbArray[0].push_back(RGBColor::Indigo().toRGBParameters());
+    rgbArray[1].push_back(RGBColor::Yellow().toRGBParameters());
+    rgbArray[2].push_back(RGBColor::Black().toRGBParameters());
+    rgbArray[2].push_back(RGBColor::Blue().toRGBParameters());
+
+    std::ostringstream os;
+    {
+        JSONPrinter printer(&os);
+        printer.visit(rgbArray, "test");
+    }
+    std::cout << os.str() << endl;
+
+    std::istringstream is(os.str());
+    {
+        JSONModernReader reader(is);
+        reader.visit(rgbArray1, "test");
+    }
+
+    cout << rgbArray1.size();
+    std::ostringstream os1;
+    {
+        JSONPrinter printer(&os1);
+        printer.visit(rgbArray1, "test");
+    }
+    std::cout << os1.str() << endl;
+
+
+}
+#endif
+
+#ifdef WITH_JSONMODERN
+TEST(Serialise, testCalstructs)
+{
+    const char input[] =
+            "{\n"
+            "  \"extrinsics\": {\n"
+            "      \"orientation\": {\n"
+            "          \"t\": 0.9998452042040369,\n"
+            "          \"x\": 0.00665909472413579,\n"
+            "          \"y\": 0.013121745045589037,\n"
+            "          \"z\": 0.00964592632158969\n"
+            "      },\n"
+            "      \"position\": {\n"
+            "          \"x\": -0.13825168557091438,\n"
+            "          \"y\": 0.003052130148347319,\n"
+            "          \"z\": -0.003139061540835704\n"
+            "      }\n"
+            "  }\n"
+            "}\n";
+
+
+    CameraLocationData result;
+    nlohmann::json document = nlohmann::json::parse(input);
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+    {
+        JSONModernReader getter(document);
+        getter.visit(result, "extrinsics");
+    }
+
+    CORE_ASSERT_TRUE(result.orientation.notTooFar(Quaternion(0.00665909472413579, 0.013121745045589037,  0.00964592632158969, 0.9998452042040369)), "Orientation parse error");
+    CORE_ASSERT_TRUE(result.position   .notTooFar(Vector3dd(-0.13825168557091438, 0.003052130148347319, -0.003139061540835704)), "Vector parse error");
+}
+
+TEST(Serialise, testCalstructs1)
+{
+    const char input[] =
+            "{\n"
+            "  \"extrinsics\": {\n"
+            "      \"orientation\": {\n"
+            "          \"t\": 0.9998452042040369,\n"
+            "          \"x\": 0.00665909472413579,\n"
+            "          \"y\": 0.013121745045589037,\n"
+            "          \"z\": 0.00964592632158969\n"
+            "      },\n"
+            "      \"rotation\": {\n"
+            "          \"t\": 1,\n"
+            "          \"x\": 0.0,\n"
+            "          \"y\": 0.0,\n"
+            "          \"z\": 0.0\n"
+            "      },\n"
+            "      \"position\": {\n"
+            "          \"x\": -0.13825168557091438,\n"
+            "          \"y\": 0.003052130148347319,\n"
+            "          \"z\": -0.003139061540835704\n"
+            "      }\n"
+            "  }\n"
+            "}\n";
+
+
+    CameraLocationData result;
+    nlohmann::json document = nlohmann::json::parse(input);
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+    {
+        JSONModernReader getter(document);
+        getter.visit(result, "extrinsics");
+    }
+
+    CORE_ASSERT_TRUE(result.orientation.notTooFar(Quaternion(0, 0, 0, 1)), "Orientation parse error");
+    CORE_ASSERT_TRUE(result.position   .notTooFar(Vector3dd(-0.13825168557091438, 0.003052130148347319, -0.003139061540835704)), "Vector parse error");
+}
+#endif
+
+int main(int argc, char **argv)
+{
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
+
+
+#if 0
 
 int main (int /*argc*/, char ** /*argv*/)
 {
@@ -313,5 +619,22 @@ int main (int /*argc*/, char ** /*argv*/)
     /*testJSON_FixtureScene();*/
     // testJSON_StereoScene();
 
+#ifdef WITH_RAPIDJSON
+     testRapidJSON1();
+     testRapidJSON_saveDistortion();
+#endif
+
+#ifdef WITH_JSONMODERN
+     testJSONPrinterArrays();
+     return 0;
+     testJSONModernScene();
+
+
+     return 0;
+     testJSONModern1();
+     testJSONModern_saveDistortion();
+#endif
+
 	return 0;
 }
+#endif

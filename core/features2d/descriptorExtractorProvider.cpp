@@ -1,6 +1,6 @@
-#include "descriptorExtractorProvider.h"
+#include "core/features2d/descriptorExtractorProvider.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 
 DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const DescriptorType &type, const std::string &params)
@@ -16,39 +16,9 @@ DescriptorExtractor* DescriptorExtractorProvider::getDescriptorExtractor(const D
     return 0;
 }
 
-std::vector<std::string> DescriptorExtractorProvider::getCaps()
-{
-    std::vector<std::string> result;
-    for (std::vector<DescriptorExtractorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        result.push_back((*p)->name());
-    }
-    return result;
-}
-
-
-void DescriptorExtractorProvider::print()
-{
-    cout << "DescriptorExtractorProvider has " << providers.size() << " providers" << std::endl;
-    for (std::vector<DescriptorExtractorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        cout << "  " << (*p)->name() << std::endl;
-    }
-}
-
-
-void DescriptorExtractorProvider::add(DescriptorExtractorProviderImpl *provider)
-{
-    providers.push_back(provider);
-}
 
 DescriptorExtractorProvider::~DescriptorExtractorProvider()
 {
-    for (std::vector<DescriptorExtractorProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        delete *p;
-    }
-    providers.clear();
 }
 
 DescriptorExtractorProvider& DescriptorExtractorProvider::getInstance()
@@ -61,7 +31,7 @@ DescriptorExtractorProvider::DescriptorExtractorProvider()
 {
 }
 
-void DescriptorExtractor::compute(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &buffer)
+void DescriptorExtractor::compute(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &buffer, void* pRemapCache)
 {
-    computeImpl(image, keyPoints, buffer);
+	computeImpl(image, keyPoints, buffer, pRemapCache);
 }

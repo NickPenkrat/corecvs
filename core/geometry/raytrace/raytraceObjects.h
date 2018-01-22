@@ -1,9 +1,9 @@
 #ifndef RAYTRACEOBJECTS_H
 #define RAYTRACEOBJECTS_H
 
-#include "bspTree.h"
-#include "mesh3DDecorated.h"
-#include "raytrace/raytraceRenderer.h"
+#include "core/geometry/raytrace/bspTree.h"
+#include "core/geometry/mesh3DDecorated.h"
+#include "core/geometry/raytrace/raytraceRenderer.h"
 
 class RaytraceableTransform : public Raytraceable
 {
@@ -152,7 +152,7 @@ public:
     {
         double t;
         double u, v;
-        if (!intersectWithP(intersection.ray, t, u, v))
+        if (!intersectWithOrtTriangle(intersection.ray, t, u, v))
             return false;
 
         if (t > 0.000001) {

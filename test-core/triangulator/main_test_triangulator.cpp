@@ -11,12 +11,12 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "essentialMatrix.h"
-#include "vector3d.h"
-#include "triangulator.h"
-#include "cameraParameters.h"
+#include "core/rectification/essentialMatrix.h"
+#include "core/math/vector/vector3d.h"
+#include "core/rectification/triangulator.h"
+#include "core/cammodel/cameraParameters.h"
 
 
 using namespace corecvs;
@@ -33,7 +33,7 @@ TEST(Triangulator, testDepthAndDisparity)
 
     RectificationResult rectification;
     rectification.F              = EssentialMatrix();
-    rectification.leftCamera     = CameraIntrinsicsLegacy(Vector2dd(1.0, 1.0), Vector2dd(0.0, 0.0), 1.0, 1.0);
+    rectification.leftCamera     = CameraIntrinsicsLegacy(Vector2dd(1000.0, 1000.0), Vector2dd(500.0, 500.0), 1.0, 1.0);
     rectification.rightCamera    = CameraIntrinsicsLegacy(Vector2dd(1.0, 1.0), Vector2dd(0.0, 0.0), 1.0, 1.0);
     rectification.baseline       = 1.0;
     rectification.leftTransform  = Matrix33(1.0);

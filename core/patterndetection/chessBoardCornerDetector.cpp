@@ -1,12 +1,13 @@
-#include "chessBoardCornerDetector.h"
-#include "nonMaximalSuperssor.h"
-#include "mathUtils.h"
-#include "convolver/convolver.h"
-#include "vectorTraits.h"
-#include "fastKernel.h"
-#include "arithmetic.h"
-#include "matrix22.h"
-#include "calculationStats.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
+#include "core/math/mathUtils.h"
+#include "core/math/matrix/matrix22.h"
+#include "core/buffers/nonMaximalSuperssor.h"
+#include "core/buffers/convolver/convolver.h"
+#include "core/buffers/kernels/fastkernel/vectorTraits.h"
+#include "core/buffers/kernels/fastkernel/fastKernel.h"
+#include "core/buffers/kernels/arithmetic.h"
+#include "core/stats/calculationStats.h"
+#include <fstream>
 
 #include <cmath>
 #include <algorithm>
@@ -164,7 +165,7 @@ double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
                 K_sum += 2.0;
             }
 
-            double val =  w.element(vi + i - cy, ui + j - cx);
+            double val =  ((vi + i - cy >= 0 && vi + i - cy < w.h) && (ui+j-cx>=0 && ui+j-cx<w.w)) ? w.element(vi + i - cy, ui + j - cx) : 0.0;
             I_sum += val;
             I_sum_sq += val * val;
         }
@@ -181,7 +182,8 @@ double OrientedCorner::scoreGradient(DpImage &w, int r, double bandwidth)
     {
         for (int j = 0; j < kw; ++j)
         {
-            score += (K.element(i, j) - mean_k) / std_k * (w.element(vi + i - cy, ui + j - cx) - mean_w) / std_w;
+            double val =  ((vi + i - cy >= 0 && vi + i - cy < w.h) && (ui+j-cx>=0 && ui+j-cx<w.w)) ? w.element(vi + i - cy, ui + j - cx) : 0.0;
+            score += (K.element(i, j) - mean_k) / std_k * (val - mean_w) / std_w;
         }
     }
     return std::max(score / (kw * kw), 0.0);

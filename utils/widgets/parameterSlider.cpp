@@ -1,5 +1,5 @@
 #include "parameterSlider.h"
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 
 ParameterSlider::ParameterSlider(QWidget *parent)
     : ParameterEditorWidget(parent)

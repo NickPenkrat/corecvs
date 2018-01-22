@@ -13,10 +13,10 @@
 #include <emmintrin.h>
 #include <stdint.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "fixedVector.h"
-#include "intBase16x8.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/sse/intBase16x8.h"
 
 namespace corecvs {
 
@@ -111,7 +111,7 @@ public:
     friend UInt16x8 productHigherPart (const UInt16x8 &left, const UInt16x8 &right);
 
     /*Print to stream helper */
-    friend ostream & operator << (ostream &out, const UInt16x8 &vector);
+    friend std::ostream & operator << (std::ostream &out, const UInt16x8 &vector);
 };
 
 

@@ -10,10 +10,10 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "rgb24Buffer.h"
-#include "rgbColor.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/rgb24/rgbColor.h"
 
 using namespace corecvs;
 
@@ -36,6 +36,16 @@ TEST(Color, testRGB)
     CORE_ASSERT_TRUE_P(green.hue() == 120, ("Green %d %d\n", green.hue(), 120));
     CORE_ASSERT_TRUE_P(blue.hue()  == 240, ("Blue  %d %d\n", blue.hue(),  240));
     CORE_ASSERT_TRUE_P(cyan.hue()  == 180, ("Cyan  %d %d\n", cyan.hue(),  180));
+}
+
+TEST(Color, testRGBMulFloat)
+{
+    RGBColor white = RGBColor::White();
+
+    RGBColor color = white * 0.5;
+    cout << white << endl;
+    cout << color << endl;
+    ASSERT_TRUE(color.notTooFar(RGBColor::Gray(255*0.5)));
 }
 
 TEST(Color, testHSVCoversion)

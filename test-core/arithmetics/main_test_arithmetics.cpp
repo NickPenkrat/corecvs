@@ -16,11 +16,11 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "sse_trace.h"
-#include "preciseTimer.h"
-#include "sseWrapper.h"
+#include "core/utils/sse_trace.h"
+#include "core/utils/preciseTimer.h"
+#include "core/math/sse/sseWrapper.h"
 
 using namespace corecvs;
 
@@ -220,7 +220,7 @@ TEST(Arithmetics, testDivisionBy25)
 }
 
 ALIGN_STACK_SSE
-TEST(Arithmetics, profileDivisionBy25)
+TEST(Arithmetics, DISABLED_profileDivisionBy25)
 {
     const unsigned  LIMIT = 50000;
     PreciseTimer start;

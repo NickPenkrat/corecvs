@@ -66,8 +66,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>308</width>
-         <height>675</height>
+         <width>306</width>
+         <height>673</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout">
@@ -132,6 +132,21 @@
              </item>
              <item>
               <property name="text">
+               <string>Orth Top (Left)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Orth Left (Left)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Orth Front (Left)</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>Pinhole at 0</string>
               </property>
              </item>
@@ -150,9 +165,52 @@
                <string>Face Camera</string>
               </property>
              </item>
+             <item>
+              <property name="text">
+               <string>User Camera</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>User Orto Camera</string>
+              </property>
+             </item>
             </widget>
            </item>
-           <item row="0" column="1" rowspan="3">
+           <item row="3" column="0">
+            <widget class="QDoubleSpinBox" name="frustumFarBox">
+             <property name="decimals">
+              <number>2</number>
+             </property>
+             <property name="maximum">
+              <double>100000.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>2000.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="label_3">
+             <property name="text">
+              <string>Frustum Far:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <spacer name="horizontalSpacer_4">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item row="0" column="2">
             <widget class="QPushButton" name="centerButton">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
@@ -176,7 +234,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/refresh.png</normaloff>:/new/prefix1/refresh.png</iconset>
              </property>
              <property name="iconSize">
@@ -187,38 +245,31 @@
              </property>
             </widget>
            </item>
-           <item row="3" column="0">
-            <widget class="QDoubleSpinBox" name="frustumFarBox">
-             <property name="decimals">
-              <number>2</number>
-             </property>
-             <property name="maximum">
-              <double>100000.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>2000.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>Frustum Far:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <spacer name="horizontalSpacer_4">
-             <property name="orientation">
-              <enum>Qt::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
+           <item row="3" column="2" colspan="2">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QPushButton" name="rotateClockPushButton">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../../../resources/main.qrc">
+                 <normaloff>:/new/prefix1/arrow_rotate_clockwise.png</normaloff>:/new/prefix1/arrow_rotate_clockwise.png</iconset>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="rotateAntiClockPushButton">
+               <property name="text">
+                <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="../../../resources/main.qrc">
+                 <normaloff>:/new/prefix1/arrow_rotate_anticlockwise.png</normaloff>:/new/prefix1/arrow_rotate_anticlockwise.png</iconset>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -264,7 +315,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/zoom_in.png</normaloff>:/new/prefix1/zoom_in.png</iconset>
              </property>
              <property name="iconSize">
@@ -281,7 +332,7 @@
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/zoom_out.png</normaloff>:/new/prefix1/zoom_out.png</iconset>
              </property>
              <property name="iconSize">
@@ -305,27 +356,6 @@
              </property>
             </spacer>
            </item>
-           <item row="1" column="0" rowspan="3">
-            <widget class="QPushButton" name="pauseButton">
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
-               <normaloff>:/new/prefix1/pause.png</normaloff>
-               <normalon>:/new/prefix1/play.png</normalon>:/new/prefix1/pause.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-             <property name="checkable">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
            <item row="2" column="2" rowspan="2" colspan="2">
             <widget class="QPushButton" name="rightButton">
              <property name="minimumSize">
@@ -336,45 +366,16 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>16777215</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/back_alt.png</normaloff>:/new/prefix1/back_alt.png</iconset>
-             </property>
-             <property name="iconSize">
-              <size>
-               <width>24</width>
-               <height>24</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="4" rowspan="2">
-            <widget class="QPushButton" name="leftButton">
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>40</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
-               <normaloff>:/new/prefix1/forward_alt.png</normaloff>:/new/prefix1/forward_alt.png</iconset>
              </property>
              <property name="iconSize">
               <size>
@@ -391,6 +392,56 @@
              </property>
             </widget>
            </item>
+           <item row="1" column="0" rowspan="3">
+            <widget class="QPushButton" name="pauseButton">
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../resources/main.qrc">
+               <normaloff>:/new/prefix1/pause.png</normaloff>
+               <normalon>:/new/prefix1/play.png</normalon>:/new/prefix1/pause.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>24</width>
+               <height>24</height>
+              </size>
+             </property>
+             <property name="checkable">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="4" rowspan="2">
+            <widget class="QPushButton" name="leftButton">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>32</width>
+               <height>32</height>
+              </size>
+             </property>
+             <property name="text">
+              <string/>
+             </property>
+             <property name="icon">
+              <iconset resource="../../../resources/main.qrc">
+               <normaloff>:/new/prefix1/forward_alt.png</normaloff>:/new/prefix1/forward_alt.png</iconset>
+             </property>
+             <property name="iconSize">
+              <size>
+               <width>24</width>
+               <height>24</height>
+              </size>
+             </property>
+            </widget>
+           </item>
            <item row="4" column="3" colspan="2">
             <widget class="QPushButton" name="downButton">
              <property name="minimumSize">
@@ -401,15 +452,15 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>16777215</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/down_alt.png</normaloff>:/new/prefix1/down_alt.png</iconset>
              </property>
              <property name="iconSize">
@@ -430,21 +481,37 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>40</width>
-               <height>16777215</height>
+               <width>32</width>
+               <height>32</height>
               </size>
              </property>
              <property name="text">
               <string/>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/up_alt.png</normaloff>:/new/prefix1/up_alt.png</iconset>
              </property>
              <property name="iconSize">
               <size>
                <width>24</width>
                <height>24</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="9">
+            <widget class="RgbColorParametersControlWidget" name="backgroudColorWidget" native="true">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>10</width>
+               <height>40</height>
               </size>
              </property>
             </widget>
@@ -486,7 +553,7 @@
               <string>Load Mesh</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/diamond.png</normaloff>:/new/prefix1/diamond.png</iconset>
              </property>
              <property name="iconSize">
@@ -506,7 +573,7 @@
               <string>Add Frame</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/workspace.png</normaloff>:/new/prefix1/workspace.png</iconset>
              </property>
              <property name="iconSize">
@@ -550,7 +617,7 @@
               <string>Quick Export</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/install.png</normaloff>:/new/prefix1/install.png</iconset>
              </property>
              <property name="iconSize">
@@ -567,7 +634,7 @@
               <string>Export Mesh</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/install.png</normaloff>:/new/prefix1/install.png</iconset>
              </property>
              <property name="iconSize">
@@ -598,7 +665,7 @@
               <string>Stats</string>
              </property>
              <property name="icon">
-              <iconset resource="../../../../restricted/cvs/resources/resresource.qrc">
+              <iconset resource="../../../resources/main.qrc">
                <normaloff>:/new/prefix1/monitor.png</normaloff>:/new/prefix1/monitor.png</iconset>
              </property>
              <property name="iconSize">
@@ -632,9 +699,15 @@
    <extends>QTreeView</extends>
    <header>scene3dTreeView.h</header>
   </customwidget>
+  <customwidget>
+   <class>RgbColorParametersControlWidget</class>
+   <extends>QWidget</extends>
+   <header location="global">rgbColorParametersControlWidget.h</header>
+   <container>1</container>
+  </customwidget>
  </customwidgets>
  <resources>
-  <include location="../../../../restricted/cvs/resources/resresource.qrc"/>
+  <include location="../../../resources/main.qrc"/>
  </resources>
  <connections>
   <connection>

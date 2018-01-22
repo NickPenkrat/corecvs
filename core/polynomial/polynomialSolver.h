@@ -1,13 +1,13 @@
 #ifndef POLYNOMIALSOLVER_H
 #define POLYNOMIALSOLVER_H
 
-#include "global.h"
-#include "polynomial.h"
+#include "core/utils/global.h"
+
+#include "core/polynomial/polynomial.h"
 
 #define FIEDLER
 
-namespace corecvs
-{
+namespace corecvs {
 
 /*
  * Solver for polynomial equations
@@ -47,6 +47,6 @@ template<>
 size_t PolynomialSolver::solve_imp<2>(const double* coeff, double* roots, const size_t &degree);
 
 
-}
+} // namespace corecvs
 
 #endif

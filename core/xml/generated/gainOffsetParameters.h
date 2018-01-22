@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from bufferFilters.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -60,6 +61,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -111,6 +114,12 @@ template<class VisitorType>
         mOffset = offset;
     }
 
+    bool operator ==(const GainOffsetParameters &other) const 
+    {
+        if ( !(this->mGain == other.mGain)) return false;
+        if ( !(this->mOffset == other.mOffset)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, GainOffsetParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

@@ -1,14 +1,13 @@
-#pragma once
+#ifndef IMAGEKEYPOINTS_H
+#define IMAGEKEYPOINTS_H
 
 #include <vector>
 #include <iostream>
 
-#include "runtimeTypeBuffer.h"
-#include "rgbColor.h"
+#include "core/buffers/runtimeTypeBuffer.h"
+#include "core/buffers/rgb24/rgbColor.h"
 
-typedef std::string DescriptorType;
-typedef std::string DetectorType;
-typedef std::string MatcherType;
+#include "core/features2d/algoBase.h"
 
 struct KeyPointArea
 {
@@ -108,7 +107,10 @@ struct Image
 
 	size_t           id;
 	std::string      filename;
+	void*            remapCache;
 
 	Image(const size_t &id);
-	Image(const size_t &id, const std::string &filename);
+	Image(const size_t &id, const std::string &filename, void* remapCache = 0);
 };
+
+#endif // IMAGEKEYPOINTS_H

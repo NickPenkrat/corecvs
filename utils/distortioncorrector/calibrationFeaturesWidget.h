@@ -3,10 +3,10 @@
 
 #include <QWidget>
 
-#include "vector2d.h"
-#include "vector3d.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
 #include "calibrationFeaturesWidget.h"
-#include "selectableGeometryFeatures.h"
+#include "core/alignment/selectableGeometryFeatures.h"
 
 #include "advancedImageWidget.h"
 #include "observationListModel.h"

@@ -4,11 +4,11 @@
 
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "vector4d.h"
+#include "core/utils/global.h"
+#include "core/math/vector/vector4d.h"
 
-#include "calibrationCamera.h"
-#include "calibrationLocation.h"
+#include "core/cameracalibration/cameraModel.h"
+#include "core/cameracalibration/calibrationLocation.h"
 
 #include <random>
 
@@ -46,10 +46,10 @@ TEST(CalibrationStructsTest, testFundamentalProvider)
             corecvs::Vector3dd pt(unif(rng), unif(rng), unif(rng));
             if (camera1.isVisible(pt) && camera2.isVisible(pt))
             {
-                auto p1 = camera1.project(pt);
-                auto p2 = camera2.project(pt);
-                corecvs::Vector3dd L(p1[0], p1[1], 1.0);
-                corecvs::Vector3dd R(p2[0], p2[1], 1.0);
+                Vector2dd p1 = camera1.project(pt);
+                Vector2dd p2 = camera2.project(pt);
+                Vector3dd L(p1.x(), p1.y(), 1.0);
+                Vector3dd R(p2.x(), p2.y(), 1.0);
 
                 auto el = E * R;
                 auto fl = F * R;
@@ -82,8 +82,8 @@ TEST(CalibrationStructsTest, testEssentialProvider)
             CameraLocationData(
                 Vector3dd(unif(rng), unif(rng), unif(rng)),
                 Quaternion(unif(rng), unif(rng), unif(rng), unif(rng)).normalised()));
-        auto K1 = camera1.intrinsics.getKMatrix33().inv();
-        auto K2 = camera2.intrinsics.getKMatrix33().inv();
+        auto K1 = camera1.getPinhole()->getKMatrix33().inv();
+        auto K2 = camera2.getPinhole()->getKMatrix33().inv();
         auto E  = camera1.essentialTo(camera2);
         for (int j = 0; j < RNG_RETRIES; ++j)
         {
@@ -185,29 +185,80 @@ TEST(CalibrationStructsTest, testIntrinsicsStructisVisible)
 
 TEST(CalibrationStructsTest, testStructConversion)
 {
-    CameraLocationAngles angles = CameraLocationAngles::FromAngles(45, 10, 2);
-    Quaternion q  = Quaternion::FromMatrix(angles.toMatrix());
-    Quaternion q1 = angles.toQuaternion();
+    vector<EulerAngles> input;
+    input.push_back({45.0, 10.0, 2.0});
+    input.push_back({   0,   90,   0});
+
+    for (size_t testId = 0; testId < input.size(); testId++)
+    {
+        cout << "Test :" << testId << endl;
+
+        {
+            EulerAngles &test = input[testId];
+            CameraLocationAngles angles = CameraLocationAngles::FromAnglesDeg(test.alpha, test.beta, test.gamma);
+            Quaternion q  = Quaternion::FromMatrix(angles.toMatrix());
+            Quaternion q1 = angles.toQuaternion();
+
+            CameraLocationAngles anglesR = CameraLocationAngles::FromQuaternion(q);
+            Quaternion qR = Quaternion::FromMatrix(anglesR.toMatrix());
+
+            cout << "Original:" << std::endl;
+            cout << angles << std::endl;
+            cout << "Quaternion form1:" << std::endl;
+            q.printAxisAndAngle();
+
+            cout << "Quaternion form2:" << std::endl;
+            q1.printAxisAndAngle();
+            cout << "Restored:" << std::endl;
+            cout << anglesR << std::endl;
+            qR.printAxisAndAngle();
+
+            CORE_ASSERT_TRUE_P(q.notTooFar(q1, 1e-6), ("Test failed %" PRISIZE_T " \n", testId));
+            CORE_ASSERT_TRUE_P(q.notTooFar(qR, 1e-6), ("Test failed %" PRISIZE_T " \n", testId));
+        }
+    }
+}
+
+#if 0
+TEST(CalibrationStructsTest, testStructConversionWorld)
+{
+    Matrix33   m = Matrix33( 0, -1,  0,
+                             0,  0, -1,
+                             1,  0,  0
+                   );
+    Quaternion q = Quaternion::FromMatrix(m);
+    Affine3DQ  a = Affine3DQ(q);
 
 
+    cout << "Matrix: "     << m << endl;
+    cout << "Quaternion: " << q << endl;
+    cout << "Affine3DQ: "  << a << endl;
 
-    CameraLocationAngles anglesR = CameraLocationAngles::FromQuaternion(q);
-    Quaternion qR = Quaternion::FromMatrix(anglesR.toMatrix());
+    WorldLocationAngles wl = WorldLocationAngles::FromQuaternion(q);
+    cout << "WorldLocationAngles: \n" << wl << endl;
 
-    cout << "Original:" << std::endl;
-    cout << angles << std::endl;
-    cout << "Quaternion form1:" << std::endl;
-    q.printAxisAndAngle();
+    CameraLocationAngles cl = CameraLocationAngles::FromQuaternion(q);
+    cout << "CameraLocationAngles: \n" << wl << endl;
 
-    cout << "Quaternion form2:" << std::endl;
-    q1.printAxisAndAngle();
-    cout << "Restored:" << std::endl;
-    cout << anglesR << std::endl;
-    qR.printAxisAndAngle();
-
-    ASSERT_TRUE(q.notTooFar(q1, 1e-6));
-    ASSERT_TRUE(q.notTooFar(qR, 1e-6));
+}
+#endif
 
 
+TEST(CalibrationStructsTest, testFrustrumMatrix)
+{
+    CameraModel model;
+    model.intrinsics.reset(new PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(60)));
+    model.setLocation(Affine3DQ());
 
+    Matrix44 mF = model.getPinhole()->getFrustumMatrix(1.0, 1000.0);
+    cout << "Frustrum Matrix" << endl;
+    cout << mF;
+
+    {
+        Vector3dd x1(0, 0, 10);
+        cout << x1 << " -> " << mF * x1 << endl;
+    }
+
+    cout << "Frustrum Matrix old" << endl;
+    cout << Matrix44::Frustum(degToRad(60), 1.0, 1.0, 1000.0) << endl;
 }

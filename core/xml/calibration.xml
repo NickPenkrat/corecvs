@@ -1,0 +1,45 @@
+<poco version="5.0">
+  <include name="parameters.xml"/>
+
+
+  <class name="Calibration Draw Helpers Parameters">
+
+   <!--
+       bool    printNames;
+       bool    privateColor;
+       bool    largePoints;
+
+       /* */
+       bool    drawFixtureCams;
+       bool    drawObservations;
+       bool    drawRays;
+
+   -->
+
+    <field type="bool"      name="Use Old Backend"     defaultValue="true" >
+        <comment>We have two OpenGL backends to draw. Old is without shaders, new is with shaders</comment>
+    </field>
+
+    <field type="double"    name="Scale For Cameras"      defaultValue="1"  min="0.01" max="1000" step="1"/>
+    <field type="int"       name="Grid Step For Cameras"  defaultValue="15" min="2"    max="1000" step="1"/>
+
+    <field type="bool"      name="printNames"     defaultValue="false" />
+    <field type="bool"      name="billboardNames" defaultValue="true" />
+
+    <field type="bool"      name="Prefer Reprojected" defaultValue="true" />
+    <field type="bool"      name="Force Known"        defaultValue="true" />
+
+    <field type="bool"      name="privateColor"  defaultValue="false" />
+    <field type="bool"      name="largePoints"   defaultValue="false" />
+
+    <field type="bool"      name="drawFixtureCams"   defaultValue="true" />
+    <field type="bool"      name="solidCameras"      defaultValue="false" />
+    <field type="bool"      name="drawObservations"  defaultValue="false" />
+    <field type="bool"      name="drawTrueLines"     defaultValue="false" />
+
+    <field type="double"    name="Projection Ray Length" defaultValue="10"  min="0.01" max="1000" step="1"/>
+
+    <field type="bool"      name="drawRays"          defaultValue="true" />
+  </class>
+
+</poco>

@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from filterBlock.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,7 +31,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "operation.h"
+#include "core/xml/generated/operation.h"
 
 /**
  * \brief Operation Parameters 
@@ -54,6 +55,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -92,6 +95,11 @@ template<class VisitorType>
         mOperation = operation;
     }
 
+    bool operator ==(const OperationParameters &other) const 
+    {
+        if ( !(this->mOperation == other.mOperation)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, OperationParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

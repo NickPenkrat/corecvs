@@ -10,35 +10,45 @@
 #include <QtCore/QDebug>
 #include <QtGui/QImage>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "g12Image.h"
 #include "rotationPresets.h"
 #include "baseCalculationThread.h"
 #include "layers/imageResultLayer.h"
-#include "inputFilter.h"
-#include "outputFilter.h"
+#include "core/filters/inputFilter.h"
+#include "core/filters/outputFilter.h"
 
 #ifdef WITH_HARDWARE
 #include "../../hardware/platform/xparameters.h"
 #endif
 
-BaseCalculationThread::BaseCalculationThread()
+BaseCalculationThread::BaseCalculationThread(int inputNumbers)
     : AbstractCalculationThread()
     , mDistortionTransform(NULL)
-    , mActiveInputsNumber(CamerasConfigParameters::TwoCapDev)
+    , mActiveInputsNumber(inputNumbers)
     , mBaseParams(NULL)
     , mCacheUpdateNeeded(true)
 {
     qDebug() <<  "BaseCalculationThread::BaseCalculationThread() : hardware initialized";
 
+
+    mInputPretransform =  Matrix33::Identity();
+    mInputPretransformInv = Matrix33::Identity();
+
+
+
     for (int i = 0; i < Frames::MAX_INPUTS_NUMBER; i++)
     {
+        mFrameTransforms   [i] = Matrix33::Identity();
+        mFrameTransformsInv[i] = Matrix33::Identity();
+
+
         mFrameTransforms    [i] = Matrix33(1.0);
         mTransformationCache[i] = NULL;
 
-        mTransformedBuffers[i]  = NULL;
-        mFilterExecuter    [i]  = NULL;
+        mTransformedBuffers [i]  = NULL;
+        mFilterExecuter     [i]  = NULL;
 #ifdef WITH_HARDWARE
         if (i >= 2) {
             qDebug() << "We have only 2 hardware correctors!" << endl;
@@ -279,6 +289,7 @@ void BaseCalculationThread::presentationControlParametersChanged(QSharedPointer<
 
 void BaseCalculationThread::camerasParametersChanged(QSharedPointer<CamerasConfigParameters> parametersShPtr)
 {
+    SYNC_PRINT(("BaseCalculationThread::camerasParametersChanged():called\n"));
     mActiveInputsNumber = parametersShPtr->inputsN();
     mRectificationData  = parametersShPtr->rectifierData();
     mCacheUpdateNeeded  = true;
@@ -286,6 +297,9 @@ void BaseCalculationThread::camerasParametersChanged(QSharedPointer<CamerasConfi
     {
         mDistortionTransform = parametersShPtr->distortionTransform();
     }
+
+    cout << "Updated: mRectificationData.F : " << mRectificationData.F << std::endl;
+
 }
 
 
@@ -332,6 +346,10 @@ void BaseCalculationThread::recalculateCache()
     if (!mCacheUpdateNeeded || firstInput == NULL)
         return;
 
+    SYNC_PRINT(("void BaseCalculationThread::recalculateCache(): cache should be updated\n"));
+    cout << "mRectificationData.F : " << mRectificationData.F << std::endl;
+
+
     if (mBaseParams->downsample() == 0)
         mBaseParams->setDownsample(1);
 
@@ -370,10 +388,14 @@ void BaseCalculationThread::recalculateCache()
     mInputPretransform    = Matrix33::Scale2(1.0 / mDownsample) * Matrix33::ShiftProj(-x, -y) * centerBackShift * centerAction * centerShift;
     mInputPretransformInv = mInputPretransform.inv();
 
+    cout << "mInputPretransformInv:" << mInputPretransformInv << endl;
     mPretransformedRectificationData = mRectificationData.addPretransform(mInputPretransform);
 
     mFrameTransformsInv[Frames::RIGHT_FRAME] = mPretransformedRectificationData.rightTransform.inv();
     mFrameTransformsInv[Frames::LEFT_FRAME]  = mPretransformedRectificationData.leftTransform .inv();
+
+    /*--------------*/
+
 
     for (int i = 0; i < mActiveInputsNumber; i++)
     {

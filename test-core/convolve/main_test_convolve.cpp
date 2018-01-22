@@ -10,17 +10,17 @@
 #include <stdio.h>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector3d.h"
-//#include "vector2d.h"
+#include "core/math/vector/vector3d.h"
+//#include "core/math/vector/vector2d.h"
 
-#include "g12Buffer.h"
+#include "core/buffers/g12Buffer.h"
 
-#include "gaussian.h"
-#include "mipmapPyramid.h"
-#include "kltGenerator.h"
-#include "bufferFactory.h"
+#include "core/buffers/kernels/gaussian.h"
+#include "core/buffers/mipmapPyramid.h"
+#include "core/kltflow/kltGenerator.h"
+#include "core/buffers/bufferFactory.h"
 
 using namespace corecvs;
 
@@ -28,6 +28,11 @@ using namespace corecvs;
 TEST(Convolve, DISABLED_main)
 {
     G12Buffer *buffer = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (buffer == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
 
 /*    int numLevels = 4;
     AbstractMidmapPyramid<G12Buffer> *pyr = new AbstractMidmapPyramid<G12Buffer>(buffer, numLevels);

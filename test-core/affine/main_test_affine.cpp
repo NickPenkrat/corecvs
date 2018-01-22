@@ -16,14 +16,16 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector3d.h"
-#include "affine.h"
-#include "mathUtils.h"
-#include "eulerAngles.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/affine.h"
+#include "core/math/mathUtils.h"
+#include "core/math/eulerAngles.h"
 
 using namespace corecvs;
+using namespace std;
+
 
 TEST(Affine, testRotations)
 {
@@ -45,6 +47,47 @@ TEST(Affine, testRotations)
     CORE_ASSERT_TRUE_P(t2q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
     CORE_ASSERT_TRUE_P(t3q.notTooFar(r1, 1e-8), (" Y rotation returned a mistake with Clean Quaternion"));
 }
+
+TEST(Affine, DISABLED_testCoordinateMirror)
+{
+    Quaternion xr = Quaternion::RotationX(0.3);
+    Quaternion yr = Quaternion::RotationY(0.3);
+    Quaternion zr = Quaternion::RotationZ(0.3);
+
+    Quaternion tr = Quaternion::RotationZ(0.3) ^ Quaternion::RotationY(0.2) ^ Quaternion::RotationX(0.4);
+
+
+    /*Vector3dd i1a = Vector3dd(2,3,4);
+    Vector3dd i1b = i1a.yxz();
+
+    Quaternion xr1 = Quaternion::RotationX(0.3);
+    Quaternion yr1 = Quaternion::RotationX(0.3);
+    Quaternion zr1 = Quaternion::RotationX(0.3);
+
+
+    cout << "Orig" << (xr * i1a) << std::endl;
+    cout << "Orig" << (xr * i1b) << std::endl;*/
+
+    Matrix33 T = Matrix33::SwapXY();
+    cout << "Orig : " << xr << std::endl;
+    cout << "Trans: " <<  Quaternion::FromMatrix(T * xr.toMatrix() * T.inv()) << std::endl;
+
+    cout << "Orig : " << yr << std::endl;
+    cout << "Trans: " <<  Quaternion::FromMatrix(T * yr.toMatrix() * T.inv()) << std::endl;
+
+    cout << "Orig : " << zr << std::endl;
+    cout << "Trans: " <<  Quaternion::FromMatrix(T * zr.toMatrix() * T.inv()) << std::endl;
+
+    cout << "Orig : " << tr << std::endl;
+    cout << "Trans: " <<  Quaternion::FromMatrix(T * tr.toMatrix() * T.inv()) << std::endl;
+
+
+
+    //CORE_ASSERT_TRUE_P((xr * i1a).notTooFar( xr1 * i1b , 1e-8), (" Y rotation returned a mistake with Matrix Affine"));
+
+
+}
+
 
 TEST(Affine, foo)
 {

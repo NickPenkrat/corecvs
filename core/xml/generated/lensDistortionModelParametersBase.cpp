@@ -105,6 +105,7 @@ int LensDistortionModelParametersBase::staticInit()
           "koeff",
           "Polynom to describe radial correction"
         );
+    field4->precision=2;
     fields().push_back(field4);
     /*  */ 
     DoubleField* field5 = new DoubleField
@@ -179,13 +180,17 @@ int LensDistortionModelParametersBase::staticInit()
           false,
           "Map Forward",
           "Map Forward",
-          "This one is used to identify direction of map"
+          "This one is used to identify map direction, true if undistorted->distorted"
         );
     field10->widgetHint=BaseField::CHECK_BOX;
     fields().push_back(field10);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Lens Distortion Model Parameters Base")]= &reflection;
+   return 0;
+}
+int LensDistortionModelParametersBase::relinkCompositeFields()
+{
    return 0;
 }
 

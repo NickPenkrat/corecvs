@@ -1,11 +1,11 @@
 #include <QMessageBox>
 #include <QFileDialog>
-#include "abstractPainter.h"
+#include "core/buffers/rgb24/abstractPainter.h"
 #include "qtFileLoader.h"
 
 #include "lensDistortionModelParametersControlWidget.h"
 #include "ui_lensDistortionModelParametersControlWidget.h"
-#include "displacementBuffer.h"
+#include "core/buffers/displacementBuffer.h"
 #include "g12Image.h"
 
 LensDistortionModelParametersControlWidget::LensDistortionModelParametersControlWidget(QWidget *parent) :

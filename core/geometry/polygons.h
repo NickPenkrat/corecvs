@@ -15,23 +15,30 @@
 #include <algorithm>
 #include <ostream>
 
-#include "vector3d.h"
-#include "generated/axisAlignedBoxParameters.h"
-#include "line.h"
-#include "rectangle.h"
+#include "core/math/vector/vector3d.h"
+#include "core/xml/generated/axisAlignedBoxParameters.h"
+#include "core/geometry/line.h"
+#include "core/math/affine.h"
+#include "core/geometry/rectangle.h"
+#include "core/geometry/convexPolyhedron.h"
 
 namespace corecvs {
 
 using std::vector;
 
+/**
+ * This class is a mapping of 2D plane (parallelogram coordinate system) in 3D
+ **/
 class PlaneFrame {
 public:
-    Vector3dd p1;
-    Vector3dd e1;
-    Vector3dd e2;
+    Vector3dd p1; /**< Point of origin */
+    Vector3dd e1; /**< X ort of the plane */
+    Vector3dd e2; /**< Y ort of the plane. It's generally not enforced X and Y to be ortogonal in 3D */
 
-    PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2) :
-        p1(p1), e1(e1), e2(e2)
+    PlaneFrame() {}
+
+    PlaneFrame(Vector3dd p1, Vector3dd e1, Vector3dd e2)
+        : p1(p1), e1(e1), e2(e2)
     {}
 
     Vector3dd getNormal() const
@@ -39,17 +46,71 @@ public:
         return e1 ^ e2;
     }
 
-    bool intersectWithP(Ray3d &ray, double &resT, double &u, double &v)
+    Plane3d toPlane() {
+        return Plane3d::FromPointAndVectors(p1, e1, e2);
+    }
+
+    Vector3dd getPoint(double x, double y) const
+    {
+        return p1 + x * e1 + y * e2;
+    }
+
+    Vector3dd getPoint(const Vector2dd &txy) const
+    {
+        return getPoint(txy.x(), txy.y());
+    }
+
+    template <class Transformer>
+    void transform(const Transformer &M)
+    {
+        Vector3dd newP = M * p1;
+        e1 = M * (e1 + p1) - newP;
+        e2 = M * (e2 + p1) - newP;
+        p1 = newP;
+    }
+
+    template <class Transformer>
+    PlaneFrame transformed(const Transformer &M)
+    {
+        PlaneFrame toReturn;
+        toReturn.transform<Transformer> (M);
+        return toReturn;
+    }
+
+
+    Vector2dd projectTo(const Vector3dd &point)
+    {      
+        Ray3d normal = Ray3d(getNormal(), point);
+        double t, u, v;
+        if (!intersectWithRay(normal, t, u, v))
+            return Vector2dd::Zero(); /* This is impossible */
+        return Vector2dd(u, v);
+    }
+
+    /**
+       This method intersects with triangle created on two orts of PlaneFrame
+       additionally it searches for texture coordinates.
+
+       This basically solves
+          ray.p + t * ray.a = p + u * e1 + v * e2
+       for t,u,v.
+
+       This method tries to quickly exit if there is no intersection
+     **/
+    bool intersectWithOrtTriangle(Ray3d &ray, double &resT, double &u, double &v)
     {
         double EPSILON = 0.00001;
         Vector3dd p =  ray.a ^ e2;
 
-        /* This is the volume of the parallepiped built on two edges and a ray origin */
+        /** This is the volume of the parallepiped built on two edges and a ray origin **/
         double vol = e1 & p;
-        if(vol > -EPSILON && vol < EPSILON)
+
+        /** If volume is zero this means e1,e2 and ray direction is coplanar so no intersection possible */
+        if (vol > -EPSILON && vol < EPSILON)
             return false;
 
         double inv_vol = 1.0 / vol;
+
 
         Vector3dd T = ray.p - p1;
 
@@ -70,7 +131,75 @@ public:
         return true;
     }
 
+    /**
+       This method intersects with triangle created on two orts of PlaneFrame
+       additionally it searches for texture coordinates.
+
+       This basically solves
+          ray.p + t * ray.a = p + u * e1 + v * e2
+       for t,u,v.
+       <pre>
+                        (   t )        (           )
+       (ray.a e1 e2)    ( - u )     =  ( p - ray.p )
+                    3x3 ( - v ) 3x1    (           ) 3x1
+
+       </pre>
+
+    **/
+    bool intersectWithRay(Ray3d &ray, double &resT, double &u, double &v)
+    {
+        Vector3dd d = p1 - ray.p;
+        Matrix33 M = Matrix33::FromColumns(ray.a, e1, e2);
+        if (M.det() == 0.0)
+            return false;
+        M.invert();
+        Vector3dd res = M * d;
+
+        resT =  res.x();
+        u    = -res.y();
+        v    = -res.z();
+
+        return true;
+    }
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(p1, Vector3dd(0.0, 0.0, 0.0) , "p");
+        visitor.visit(e1, Vector3dd::OrtX() , "e1");
+        visitor.visit(e2, Vector3dd::OrtY() , "e2");
+    }
+
+
+    static PlaneFrame PlaneXY() {
+        return PlaneFrame(Vector3dd::Zero(), Vector3dd::OrtX(), Vector3dd::OrtY());
+    }
+
+    static PlaneFrame PlaneYZ() {
+        return PlaneFrame(Vector3dd::Zero(), Vector3dd::OrtY(), Vector3dd::OrtZ());
+    }
+
+    static PlaneFrame PlaneXZ() {
+        return PlaneFrame(Vector3dd::Zero(), Vector3dd::OrtX(), Vector3dd::OrtZ());
+    }
+
+
+    friend ostream & operator <<(ostream &out, const PlaneFrame &frame)
+    {
+        out << "(" << frame.p1 << ") " << frame.e1 << " " << frame.e2;
+        return out;
+    }
 };
+
+
+template <>
+inline void PlaneFrame::transform<Affine3DQ>(const Affine3DQ &M)
+{
+    SYNC_PRINT(("PlaneFrame::transform<Affine3DQ>\n"));
+    p1 = M * p1;
+    e1 = M.rotor * e1;
+    e2 = M.rotor * e2;
+}
 
 
 template<typename PointType>
@@ -119,7 +248,7 @@ public:
 
         PlaneFrame frame = toPlaneFrame();
         double u, v;
-        return frame.intersectWithP(ray, resT, u, v);
+        return frame.intersectWithOrtTriangle(ray, resT, u, v);
     }
 
     bool intersectWith(Ray3d &ray, Vector3dd &point)
@@ -131,6 +260,13 @@ public:
             return true;
         }
         return false;
+    }
+
+    double getArea()
+    {
+        Vector3dd f = p2() - p1();
+        Vector3dd s = p3() - p1();
+        return  0.5 * !(f ^ s);
     }
 
     /** NOTE: This could swap the normal **/
@@ -162,6 +298,8 @@ class PointPath : public vector<Vector2dd>
 public:
     PointPath(){}
 
+    PointPath(std::initializer_list<Vector2dd> list) : vector<Vector2dd>(list) {}
+
     PointPath(int len) : vector<Vector2dd>(len)
     {}
 
@@ -174,7 +312,14 @@ public:
         return out;
     }
 
-    /* This function checks if the poligon is inside the buffer. It assumes that the poligon coorinate can be rounded to upper value  */
+    bool hasVertex(const Vector2dd &point)
+    {
+        return std::find(begin(), end(), point) != end();
+    }
+
+    /* This function checks if the polygon is inside the buffer.
+       It assumes that the polygon coordinate can be rounded to upper value
+     */
     bool isInsideBuffer(const Vector2d<int> &bufferSize)
     {
         for (Vector2dd point : *this)
@@ -189,6 +334,24 @@ public:
     }
 
     Vector2dd center();
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        int pointsSize = (int)size();
+        visitor.visit(pointsSize, 0, "points.size");
+
+        resize(pointsSize);
+
+        for (size_t i = 0; i < (size_t)pointsSize; i++)
+        {
+            char buffer[100];
+            snprintf2buf(buffer, "points[%d]", i);
+            visitor.visit(operator [](i), Vector2dd::Zero(), buffer);
+        }
+
+    }
+
 };
 
 /**
@@ -199,6 +362,8 @@ class Polygon : public PointPath
 public:
     Polygon(){}
 
+    Polygon(std::initializer_list<Vector2dd> list) : PointPath(list) {}
+
     Polygon(const Vector2dd *points, int len) : PointPath(len)
     {
         for (unsigned i = 0; i < size(); i++) {
@@ -207,7 +372,7 @@ public:
     }
 
     /**
-     * This thing checks if the point is inside of the convex poligon
+     * Checks if the point is inside of the convex polygon
      *
      * \attention convex only
      **/
@@ -217,12 +382,12 @@ public:
     /**
      *  Winding number is the number of loops polygon makes around the point
      **/
-    int windingNumber( const Vector2dd &point ) const;
+    int windingNumber(const Vector2dd &point) const;
     int  isInside(const Vector2dd &point) const;
 
 
-
     bool isConvex(bool *direction = NULL) const;
+    bool hasSelfIntersection() const;
 
     Vector2dd &getPoint (int i) {
         return operator [](i);
@@ -237,9 +402,33 @@ public:
        return operator []((idx + 1) % size());
     }
 
+    int getNextIndex(int idx) const
+    {
+       return (idx + 1) % size();
+    }
+
     const Vector2dd &getNextPoint(int idx) const
     {
        return operator []((idx + 1) % size());
+    }
+
+    int getNextDifferentIndex(int idx) const
+    {
+        int idx1 = getNextIndex(idx);
+        Vector2dd next = getPoint(idx1);
+        while (next == getPoint(idx) && idx1 != idx)
+        {
+            idx1 = getNextIndex(idx1);
+            next = getPoint(idx1);
+        }
+        return idx1;
+
+    }
+
+
+    const Vector2dd &getNext2Point(int idx) const
+    {
+       return operator []((idx + 2) % size());
     }
 
     /** **/
@@ -247,6 +436,9 @@ public:
         return Ray2d::FromPoints(getPoint(i), getNextPoint(i));
     }
 
+    Segment2d getSegment(int i)  const {
+        return Segment2d(getPoint(i), getNextPoint(i));
+    }
 
     /** This method uses the index by module of size() **/
     Vector2dd &getPointM(int idx)
@@ -254,12 +446,10 @@ public:
        return operator [](idx % size());
     }
 
-
     Vector2dd getNormal(int i) const
     {
         Vector2dd r1 = getPoint(i);
         Vector2dd r2 = getNextPoint(i);
-
         return (r2 - r1).rightNormal();
     }
 
@@ -277,8 +467,16 @@ public:
 
     static Polygon Reverse(const Polygon &p);
 
+    static Polygon FromConvexPolygon(const ConvexPolygon& polygon);
+    static Polygon FromHalfplanes   (const std::vector<Line2d> &halfplanes);
 
-    Polygon transformed(const Matrix33 &transform) const {
+    static Polygon FromImageSize    (const Vector2d<int> &size);
+
+    ConvexPolygon toConvexPolygon() const;
+
+
+    Polygon transformed(const Matrix33 &transform) const
+    {
         Polygon toReturn;
         toReturn.reserve(size());
         for (Vector2dd p: *this ) {
@@ -287,7 +485,8 @@ public:
         return toReturn;
     }
 
-    void transform(const Matrix33 &transform) {
+    void transform(const Matrix33 &transform)
+    {
         for (Vector2dd &p: *this ) {
             p = transform * p;
         }
@@ -311,24 +510,43 @@ public:
         return operator [](idx).y();
     }
 
-    Ray2d edgeAsRay(int idx) {
+    Ray2d edgeAsRay(int idx)
+    {
         Vector2dd &start = getPoint(idx);
         Vector2dd &end   = getNextPoint(idx);
         return Ray2d::FromPoints(start, end);
     }
 
-    /* Valid for any type of simple poligon*/
+    /* Valid for any type of simple polygon*/
     double signedArea();
 
     double area() {
         return fabs(signedArea());
     }
 
-
     //bool clipRay(const Ray2d &ray, double &t1, double &t2);
 };
 
 
+class FlatPolygon
+{
+public:
+    PlaneFrame frame;
+    Polygon polygon;
+
+    template <class Transformer>
+    void transform(const Transformer &M)
+    {
+        frame.transform<Transformer>(M);
+    }
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(frame,   "frame");
+        visitor.visit(polygon, "polygon");
+    }
+};
 
 
 
@@ -341,7 +559,7 @@ class RGB24Buffer;
 class PolygonCombiner
 {
 public:
-    Polygon pol[2]; /* We actually don't need to copy poligon, but for sake of simplicity we reverse them to positive orientation*/
+    Polygon pol[2]; /* We actually don't need to copy polygon, but for sake of simplicity we reverse them to positive orientation*/
 
     enum VertexType {
         INSIDE,
@@ -372,36 +590,52 @@ public:
         Vector2dd pos;     /* We don't need this, just a cache*/
         VertexType flag;
         double t;
+        size_t intersection;
         size_t other;
 
-        VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t other = 0) :
+        VertexData(size_t orgId, Vector2dd pos, VertexType inside, double t, size_t intersection = 0) :
            orgId(orgId),
            pos(pos),
            flag(inside),
            t(t),
-           other(other)
+           intersection(intersection),
+           other(0)
         {}
     };
 
     typedef std::vector<VertexData> ContainerType; /* This type should better be list */
 
+    /** These are two lists for each of the polygons including there own and common vertexes **/
     ContainerType c[2];
 
+    /** These structures store the common vertexes **/
     int intersectionNumber;
-    std::vector<std::pair<int, int>> intersections;
+    std::vector<std::pair<size_t, size_t>> intersections;
 
-    /* Method that initialise internal data structures of the PoligonCombiner*/
+    /* */
+    bool trace = false;
+
+    /* Method that initialise internal data structures of the polygonCombiner*/
     void prepare(void);
 
     /* */
-    bool validateState(void);
-    void drawDebug(RGB24Buffer *buffer);
+    bool validateState(void) const;
 
-    Polygon intersection();
-    Polygon combination();
-    Polygon difference();
+    Rectangled getDebugRectangle() const;
+    void drawDebug(RGB24Buffer *buffer) const;
+    void drawDebugAutoscale(RGB24Buffer *buffer, int margin = 100) const;
 
-    PolygonCombiner(){}
+    Polygon followContour(int startIntersection, bool inner, vector<bool> *visited = NULL) const;
+
+    Polygon intersection() const;
+    vector<Polygon> intersectionAll() const; /**< Not yet implemented **/
+
+    Polygon combination() const;
+    Polygon difference() const;    /**< Not yet implemented */
+
+    PolygonCombiner()
+    {}
+
     PolygonCombiner(Polygon &p1, Polygon &p2)
     {
          pol[0] = p1;
@@ -425,10 +659,13 @@ public:
         }
         out << "]" << std::endl;
 
+        out << "Intersections:" << std::endl;
+        for (auto &pair : combiner.intersections)
+        {
+            out << pair.first << " - " << pair.second << std::endl;
+        }
         return out;
     }
-
-
 };
 
 
@@ -436,13 +673,22 @@ class ConvexHull
 {
 public:
     /**
-     * Most trivial and slow algorighm
+     * Most trivial and slow algorithms
      *
-     * This methods need a lot of additional testing
+     * These methods need a lot of additional testing
      ***/
     static Polygon GiftWrap(const std::vector<Vector2dd> &list);
+    static Polygon GrahamScan(std::vector<Vector2dd> points);
+
+    enum ConvexHullMethod {
+        GIFT_WARP,
+        GRAHAM_SCAN,
+        LAST
+    };
+
+    static Polygon ConvexHullCompute(std::vector<Vector2dd> points, ConvexHullMethod &method);
 };
 
 } //namespace corecvs
-#endif /* POLYGONS_H_ */
 
+#endif /* POLYGONS_H_ */

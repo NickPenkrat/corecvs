@@ -2,13 +2,17 @@
 #define CAMERAMODELPARAMETERSCONTROLWIDGET_H
 
 #include <QWidget>
+#include <QComboBox>
+
 #include "parametersControlWidgetBase.h"
-#include "lensDistortionModelParameters.h"
+#include "core/alignment/lensDistortionModelParameters.h"
 
-#include "calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 
-#include "quaternion.h"
-#include "vector3d.h"
+#include "core/math/quaternion.h"
+#include "core/math/vector/vector3d.h"
+
+#include "reflectionWidget.h"
 
 namespace Ui {
 class CameraModelParametersControlWidget;
@@ -42,6 +46,9 @@ public slots:
 
     void revertPressed();
 
+    void zeroPressed ();
+    void resetPressed();
+
 
     void paramsChangedInUI();
 
@@ -59,6 +66,11 @@ protected:
     Ui::CameraModelParametersControlWidget *ui;
     CameraModel backup;
 
+    /**/
+    //QComboBox *intrinsicsType = NULL;
+    ReflectionWidget *intrinsicsWidget = NULL;
+
+    void assertProjectionMatch();
 };
 
 

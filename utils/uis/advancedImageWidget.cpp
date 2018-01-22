@@ -9,13 +9,14 @@
 #include <QPainter>
 #include <QFileDialog>
 #include <QMouseEvent>
+#include <QToolTip>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "rgbColor.h"
+#include "core/buffers/rgb24/rgbColor.h"
 #include "advancedImageWidget.h"
 #include "saveFlowSettings.h"
-#include "mathUtils.h"
+#include "core/math/mathUtils.h"
 #include "qtHelper.h"
 
 AdvancedImageWidget::AdvancedImageWidget(QWidget *parent, bool showHeader)
@@ -320,11 +321,17 @@ Vector2dd AdvancedImageWidget::getVisibleImageCenter()
 
 void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWidget)
 {
+    // SYNC_PRINT(("AdvancedImageWidget::childRepaint():called\n"));
     if (mImage == NULL)
         return;
 
     QPainter p(childWidget);
+    repaintImage(p);
+    repaintTools(p);
+}
 
+void AdvancedImageWidget::repaintImage(QPainter &p)
+{
     if (mResizeCache != NULL)
     {
         p.drawImage(mOutputRect.topLeft(), *mResizeCache);
@@ -334,8 +341,11 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
         drawResized(p);
     }
 
-     p.drawRect(mOutputRect.adjusted(-1,-1, 1, 1));
+    p.drawRect(mOutputRect.adjusted(-1,-1, 1, 1));
+}
 
+void AdvancedImageWidget::repaintTools(QPainter &p)
+{
     if (mIsMouseLeftPressed && (mCurrentToolClass == ZOOM_SELECT_TOOL))
     {
         p.setPen(Qt::DashLine);
@@ -360,7 +370,7 @@ void AdvancedImageWidget::childRepaint(QPaintEvent* /*event*/, QWidget* childWid
         p.drawLine(QLine(mSelectionStart, mSelectionEnd));
       //p.drawText(mSelectionEnd, QString::number(mDistance));
     }
-} // childRepaint
+}
 
 void AdvancedImageWidget::freezeImage()
 {
@@ -723,6 +733,58 @@ void AdvancedImageWidget::changeCenterPoint(QPoint point)
     mZoomCenter = point;
     recomputeRects();
     emit notifyCenterPointChanged(mZoomCenter);
+    forceUpdate();
+}
+
+void AdvancedImageWidget::showEvent(QShowEvent *event)
+{
+    ViAreaWidget::showEvent(event);
+
+    qDebug("AdvancedImageWidget::showEvent():called");
+    QTimer::singleShot(2000, this, SLOT(showScheduledHint()));
+}
+
+void AdvancedImageWidget::hideEvent(QHideEvent *event)
+{
+    ViAreaWidget::hideEvent(event);
+
+    qDebug("AdvancedImageWidget::hideEvent():called");
+
+}
+
+void AdvancedImageWidget::showScheduledHint()
+{
+    QList<int> sizes = mUi->splitter->sizes();
+    bool showHint = (!sizes.isEmpty() && sizes[0] == 0);
+
+    if (isVisible() && showHint)  {
+        QLabel *label = new QLabel(this);
+        label->setText("Drag handle for more");
+        Qt::WindowFlags flags = label->windowFlags();
+        flags &= ~Qt::WindowTitleHint;
+        label->setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+        label->setWindowModality(Qt::NonModal);
+        qDebug() << printWindowFlags(label->windowFlags());
+
+        label->setAlignment(Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter);
+
+        QPalette palette = label->palette();
+        palette.setColor(label->backgroundRole(), Qt::black);
+        palette.setColor(label->foregroundRole(), Qt::white);
+        label->setPalette(palette);
+
+        QPoint position = mUi->splitter->mapToGlobal((mUi->splitter->geometry().topLeft() + mUi->splitter->geometry().topRight())/ 2);
+        //QPoint position = mapToGlobal(QPoint(0,0));
+        label->setGeometry(position.x(), position.y(), 200,40);
+        label->show();
+        qDebug() << "childRepaint:" << position;
+        qDebug() << geometry();
+
+        connect(this, SIGNAL(destroyed(QObject*)), label, SLOT(deleteLater()));
+
+        QTimer::singleShot(5000, label, SLOT(deleteLater()));
+    }
+
 }
 
 bool AdvancedImageWidget::isRotationLandscape()
@@ -733,7 +795,7 @@ bool AdvancedImageWidget::isRotationLandscape()
 
 
 void AdvancedImageWidget::zoomIn()
-{
+{    
     mUi->expSpinBox->stepUp();
 }
 
@@ -763,7 +825,7 @@ void AdvancedImageWidget::setKeepAspect(bool flag)
 
 void AdvancedImageWidget::setRightDrag(bool flag)
 {
-    mRightMouseButtonDrag = true;
+    mRightMouseButtonDrag = flag;
 }
 
 void AdvancedImageWidget::setCompactStyle(bool flag)
@@ -776,7 +838,9 @@ void AdvancedImageWidget::setCompactStyle(bool flag)
 void AdvancedImageWidget::forceUpdate()
 {
     emit preUpdate();
-    mUi->widget->update();
+
+    mUi->widget->show();
+    emit mUi->widget->update();
 }
 
 void AdvancedImageWidget::childResized (QResizeEvent * /*event*/)
@@ -845,7 +909,7 @@ void AdvancedImageWidget::recomputeRects()
 
     mOutputRect = output;
     mInputRect  = input;
-    delete_safe(mResizeCache), mResizeCache = NULL;
+    delete_safe(mResizeCache);
 }
 
 void AdvancedImageWidget::saveFlowImage(QImage * image)

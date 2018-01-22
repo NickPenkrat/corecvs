@@ -13,13 +13,13 @@
 #include <string>
 #include <memory>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "bufferLoader.h"
-#include "g12Buffer.h"
-#include "rgbTBuffer.h"
-#include "rgb24Buffer.h"
-#include "metamap.h"
+#include "core/fileformats/bufferLoader.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/rgb24/rgbTBuffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/metamap.h"
 
 namespace corecvs {
 
@@ -32,6 +32,7 @@ public:
     virtual bool acceptsFile(string name);
 
     virtual G12Buffer * loadG12(string name);
+    virtual G12Buffer * loadG16(string name);
 
     /**
      * Load method overload.
@@ -100,6 +101,17 @@ public:
     virtual std::string name() override { return "PPMLoaderG12"; }
 };
 
+class PPMLoaderG16 : public PPMLoaderG12        // we may use G12Buffer container as it has 2bytes/pixel indeed
+{
+public:
+    virtual G12Buffer *load(string name) override
+    {
+        return PPMLoader::loadG16(name);
+    }
+
+    virtual std::string name() override { return "PPMLoaderG16"; }
+};
+
 class PPMLoaderRGB24 : public BufferLoader<RGB24Buffer>, public PPMLoader
 {
 public:
@@ -111,6 +123,9 @@ public:
     virtual RGB24Buffer *load(string name) override
     {
         G12Buffer *buffer = PPMLoader::loadG12(name);
+        if (buffer == NULL) {
+            return NULL;
+        }
         RGB24Buffer *result = new RGB24Buffer(buffer);
         delete_safe(buffer);
         return result;

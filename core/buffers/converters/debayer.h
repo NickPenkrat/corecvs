@@ -10,14 +10,14 @@
 #ifndef DEBAYER_H
 #define DEBAYER_H
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "generated/debayerMethod.h"
+#include "core/xml/generated/debayerMethod.h"
 
-#include "g12Buffer.h"
-#include "rgbTBuffer.h"
-#include "rgb24Buffer.h"
-#include "metamap.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/rgb24/rgbTBuffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/metamap.h"
 
 namespace corecvs {
 
@@ -52,6 +52,9 @@ public:
      */
     int         toRGB48(DebayerMethod::DebayerMethod method, RGB48Buffer* out);
 
+    /** this is quick and dirty helper **/
+    int         toRGB24(DebayerMethod::DebayerMethod method, RGB24Buffer* out);
+
     /**
     * Fill bayer data from RGB48 image applying Bayerian grid to it.
     *
@@ -69,7 +72,7 @@ private:
     uint8_t     mBayerPos   = 0;
     uint16_t*   mCurve      = nullptr;
     uint16_t    mMaximum    = 0;
-    bool        mScale      = false;
+    bool        mScale      = true;
 
     G12Buffer*  mBayer;
     MetaData *  mMetadata;

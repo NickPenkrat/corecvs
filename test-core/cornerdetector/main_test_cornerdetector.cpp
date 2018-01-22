@@ -12,18 +12,18 @@
 #include <memory>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "mathUtils.h"
-#include "g12Buffer.h"
-#include "spatialGradient.h"
-#include "bufferFactory.h"
-#include "bmpLoader.h"
-#include "segmentator.h"
-#include "rgb24Buffer.h"
+#include "core/math/mathUtils.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/kernels/spatialGradient.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/segmentation/segmentator.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 
-#include "chessBoardCornerDetector.h"
+#include "core/patterndetection/chessBoardCornerDetector.h"
 
 
 using namespace corecvs;
@@ -32,6 +32,11 @@ using namespace std;
 TEST(Cornerdetector, DISABLED_testCornerDetector)
 {
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/calib-object.bmp");
+    if (input == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     SpatialGradient *grad = new SpatialGradient(input);
     G12Buffer *corners = grad->findCornerPoints(180.0);
 
@@ -61,7 +66,11 @@ TEST(Cornerdetector, DISABLED_testCornerDetector)
 TEST(Cornerdetector, DISABLED_testChessCornerDetector)
 {
     unique_ptr<RGB24Buffer> input(BufferFactory::getInstance()->loadRGB24Bitmap("data/calib-object.bmp"));
-
+    if (input.get() == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
 
     DpImage grayscale(input->getSize());
     grayscale.binaryOperationInPlace(*input, [](const double & /*a*/, const corecvs::RGBColor &b) {

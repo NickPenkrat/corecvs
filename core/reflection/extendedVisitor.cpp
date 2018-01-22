@@ -1,6 +1,7 @@
-#include "extendedVisitor.h"
-#include "reflection.h"
-#include "defaultSetter.h"
+#include "core/reflection/extendedVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/dynamicObject.h"
+#include "core/reflection/defaultSetter.h"
 
 namespace corecvs {
 
@@ -26,7 +27,7 @@ void *CreatorFabric::createObject(std::string &name)
 
     void *result = malloc(reflection->objectSize);
 
-    DynamicObject object(reflection, result);
+    DynamicObjectWrapper object(reflection, result);
     object.simulateConstructor();
 
     return result;

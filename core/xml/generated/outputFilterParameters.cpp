@@ -62,6 +62,10 @@ int OutputFilterParameters::staticInit()
     directory[std::string("Output Filter Parameters")]= &reflection;
    return 0;
 }
+int OutputFilterParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

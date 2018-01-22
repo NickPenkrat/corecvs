@@ -209,7 +209,9 @@ enums="
        preciseInterpolationType
        imageChannel
        debayerMethod
-       homographyAlgorithm"
+       homographyAlgorithm
+       gCodeColoringSheme
+        "
 
 ui_classes="
         rgbColorParameters
@@ -217,6 +219,7 @@ ui_classes="
        "
 
 full_ui_classes="
+        euclidianMoveParameters
         axisAlignedBoxParameters
         headSearchParameters
         makePreciseParameters
@@ -228,9 +231,28 @@ enums+=" lineDistortionEstimatorCost"
 enums+=" distortionResizePolicy"
 enums+=" checkerboardDetectionAlgorithm"
 enums+=" bitcodeBoardOrientation"
+enums+=" projectionType"
 
 classes+=" lensDistortionModelParametersBase"
 classes+=" homorgaphyReconstructorBlockBase"
+classes+=" sceneStereoAlignerBlockBase"
+classes+=" adderSubstractorParametersBase"
+
+classes+=" ransacParameters"
+classes+=" iterativeEstimateParameters"
+
+classes+=" projectionBaseParameters"
+classes+=" pinholeCameraIntrinsicsBaseParameters"
+classes+=" catadioptricBaseParameters"
+
+
+# We will try to use reflectionWidget
+classes+=" calibrationDrawHelpersParameters"
+classes+=" focusEstimationParameters"
+classes+=" focusEstimationResult"
+classes+=" drawGCodeParameters"
+classes+=" stereoAlignParameters"
+
 
 full_ui_classes+=" checkerboardDetectionParameters"
 full_ui_classes+=" lineDistortionEstimatorParameters"

@@ -1,7 +1,7 @@
 #ifndef DLLFUNCTION_H
 #define DLLFUNCTION_H
 
-#include "function.h"
+#include "core/function/function.h"
 
 struct SparseEntry {
    int i;

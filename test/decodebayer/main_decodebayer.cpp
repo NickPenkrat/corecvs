@@ -4,7 +4,7 @@
 //#include <unistd.h>
 
 #include "decoupleYUYV.h"
-#include "bmpLoader.h"
+#include "core/fileformats/bmpLoader.h"
 
 int main (int argc, char **argv)
 {    

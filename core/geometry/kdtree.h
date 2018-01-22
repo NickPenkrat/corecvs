@@ -7,7 +7,7 @@
 #include <iostream>
 #include <thread>
 #include <atomic>
-#include <tbbWrapper.h>
+#include "core/tbbwrapper/tbbWrapper.h"
 #ifdef WITH_TBB
 #include <tbb/parallel_sort.h>
 #endif

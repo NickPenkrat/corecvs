@@ -110,6 +110,22 @@ AboutPropsTableWidget::AboutPropsTableWidget(QWidget *parent) : QTableWidget(par
     addParameter("Libpng Support", "Off (Qt used)");
 #endif
 
+
+#ifdef WITH_RAPIDJSON
+    addParameter("RapidJSON Support", "On");
+#else
+    addParameter("RapidJSON Support", "Off (Qt used)");
+#endif
+
+#ifdef WITH_JSONMODERN
+    addParameter("JSON For modern C++ Support", "On");
+#else
+    addParameter("JSON For modern C++ Support", "Off (Qt used)");
+#endif
+
+
+
+
 #if    defined (Q_OS_WIN)
     addParameter("Target OS", "Windows");
 #elif  defined (Q_OS_MAC)

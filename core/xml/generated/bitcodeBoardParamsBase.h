@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from patternDetector.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,7 +31,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "bitcodeBoardOrientation.h"
+#include "core/xml/generated/bitcodeBoardOrientation.h"
 
 /**
  * \brief Bitcode Board Params Base 
@@ -145,6 +146,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -352,6 +355,24 @@ template<class VisitorType>
         mCenterToZeroY = centerToZeroY;
     }
 
+    bool operator ==(const BitcodeBoardParamsBase &other) const 
+    {
+        if ( !(this->mVertical == other.mVertical)) return false;
+        if ( !(this->mCellSize == other.mCellSize)) return false;
+        if ( !(this->mBlackColor == other.mBlackColor)) return false;
+        if ( !(this->mWhiteColor == other.mWhiteColor)) return false;
+        if ( !(this->mIdentSize == other.mIdentSize)) return false;
+        if ( !(this->mBoardHeight == other.mBoardHeight)) return false;
+        if ( !(this->mBoardWidth == other.mBoardWidth)) return false;
+        if ( !(this->mCodeWidth == other.mCodeWidth)) return false;
+        if ( !(this->mCodeHeight == other.mCodeHeight)) return false;
+        if ( !(this->mBitcodeIdentSize == other.mBitcodeIdentSize)) return false;
+        if ( !(this->mBitcodeConfidence == other.mBitcodeConfidence)) return false;
+        if ( !(this->mBitcodeOrientation == other.mBitcodeOrientation)) return false;
+        if ( !(this->mCenterToZeroX == other.mCenterToZeroX)) return false;
+        if ( !(this->mCenterToZeroY == other.mCenterToZeroY)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, BitcodeBoardParamsBase &toSave)
     {
         corecvs::PrinterVisitor printer(out);

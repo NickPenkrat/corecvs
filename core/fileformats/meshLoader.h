@@ -12,8 +12,8 @@
 #include <string>
 
 
-#include "global.h"
-#include "mesh3d.h"
+#include "core/utils/global.h"
+#include "core/geometry/mesh3d.h"
 
 namespace corecvs {
 
@@ -41,7 +41,8 @@ public:
 
     bool trace;
 
-    static bool endsWith(const std::string &fileName, const char *extention);
+    // Depricated
+    //static bool endsWith(const std::string &fileName, const char *extention);
 
     MeshLoader();
     bool load(Mesh3D *mesh, const std::string &fileName);

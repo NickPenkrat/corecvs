@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from distortion.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,7 +31,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "distortionResizePolicy.h"
+#include "core/xml/generated/distortionResizePolicy.h"
 
 /**
  * \brief Distortion Application Parameters 
@@ -82,6 +83,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -172,6 +175,15 @@ template<class VisitorType>
         mNewW = newW;
     }
 
+    bool operator ==(const DistortionApplicationParameters &other) const 
+    {
+        if ( !(this->mForceScale == other.mForceScale)) return false;
+        if ( !(this->mAdoptScale == other.mAdoptScale)) return false;
+        if ( !(this->mResizePolicy == other.mResizePolicy)) return false;
+        if ( !(this->mNewH == other.mNewH)) return false;
+        if ( !(this->mNewW == other.mNewW)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, DistortionApplicationParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

@@ -52,17 +52,12 @@ OTHER_FILES +=              \
     xml/distortion.xml      \
     xml/patternDetector.xml \
     xml/reconstruction.xml  \
-
+    xml/calibration.xml     \
+    xml/stereoAlign.xml     \
+    xml/projections.xml     \
 
 OTHER_FILES +=            \
+    ../tools/generator/helper-regen.sh \
     ../tools/generator/regen-core.sh \
     ../tools/generator/h_stub.sh \
     ../cvs-mainpage.h
-
-# msvc floating point model: "strict" helped to unify results on different compiler versions
-# For more info look at: https://msdn.microsoft.com/en-us/library/e7s85ffb%28v=vs.120%29.aspx
-#
-win32-msvc* {
-    QMAKE_CFLAGS   += /fp:strict
-    QMAKE_CXXFLAGS += /fp:strict
-}

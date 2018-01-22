@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from patternDetector.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -109,6 +110,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -251,6 +254,19 @@ template<class VisitorType>
         mHypothesisDimSecond = hypothesisDimSecond;
     }
 
+    bool operator ==(const ChessBoardAssemblerParamsBase &other) const 
+    {
+        if ( !(this->mSeedThreshold == other.mSeedThreshold)) return false;
+        if ( !(this->mSeedTgPenalty == other.mSeedTgPenalty)) return false;
+        if ( !(this->mConservativity == other.mConservativity)) return false;
+        if ( !(this->mCostThreshold == other.mCostThreshold)) return false;
+        if ( !(this->mMinSeedDistance == other.mMinSeedDistance)) return false;
+        if ( !(this->mHypothesisDimensions == other.mHypothesisDimensions)) return false;
+        if ( !(this->mKdtree == other.mKdtree)) return false;
+        if ( !(this->mHypothesisDimFirst == other.mHypothesisDimFirst)) return false;
+        if ( !(this->mHypothesisDimSecond == other.mHypothesisDimSecond)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, ChessBoardAssemblerParamsBase &toSave)
     {
         corecvs::PrinterVisitor printer(out);

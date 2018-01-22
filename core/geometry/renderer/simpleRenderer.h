@@ -5,10 +5,10 @@
  *  \file  simpleRenderer.h
  **/
 
-#include "geometryIterator.h"
-#include "abstractBuffer.h"
-#include "abstractPainter.h"
-#include "mesh3DDecorated.h"
+#include "core/geometry/renderer/geometryIterator.h"
+#include "core/buffers/abstractBuffer.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/geometry/mesh3DDecorated.h"
 
 
 namespace corecvs {

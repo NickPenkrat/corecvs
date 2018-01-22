@@ -23,14 +23,18 @@ SUBDIRS +=       \
 #    new_board_detector \
 #    cr2reader           \
     debayer          \
+    deproject        \
     softrender       \
     raytracerender   \
     stereo_generator \
     widgets_test \
+    widget_harness \
+#    command_harness \
     example_scene \
 
 !win32 {
     SUBDIRS += jitplayground
+    SUBDIRS += gcodeplayground
 }
 
 with_qscript {
@@ -44,13 +48,13 @@ with_opencv {
 #        matcher_basic \
 #        matcher_full \
         chessboard_detector \
-
 }
 
 grab                                = grab/grab.pro
 grab_N_captures                     = grab_N_captures/grab_N_captures.pro
 serialize1                          = serialize1/serialize1.pro
 jitplayground                       = jitplayground/jitplayground.pro
+gcodeplayground                     = gcodeplayground/gcodeplayground.pro
 example_scene                       = example_scene/example_scene.pro
 adoptcolor                          = adoptcolor/adoptcolor.pro
 avigrab                             = avigrab/avigrab.pro
@@ -64,6 +68,8 @@ cr2reader.depends                  -= utils
 debayer.file                        = debayer/debayer.pro
 debayer.depends                    -= utils
 
+deproject.file                      = deproject/deproject.pro
+
 softrender.file                     = softrender/softrender.pro
 softrender.depends                 -= utils
 
@@ -71,6 +77,8 @@ raytracerender.file                 = raytracerender/raytracerender.pro
 raytracerender.depends             -= utils
 
 widgets_test.file                   = widgets_test/widgets_test.pro
+widget_harness.file                 = widget_harness/widget_harness.pro
+command_harness.file                = command_harness/command_harness.pro
 
 new_board_detector	            = new_board_detector/new_board_detector.pro
 
@@ -84,3 +92,4 @@ chessboard_detector                 = chessboard_detector/chessboard_detector.pr
 qtScriptConsole                     = qtScriptConsole/qtScriptConsole.pro
 
 stereo_generator                    = stereo_generator/stereo_generator.pro
+

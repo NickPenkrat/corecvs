@@ -1,8 +1,8 @@
 #ifndef CONIC_H
 #define CONIC_H
 
-#include "line.h"
-#include "lineSpan.h"
+#include "core/geometry/line.h"
+#include "core/buffers/rgb24/lineSpan.h"
 
 namespace corecvs {
 
@@ -85,7 +85,7 @@ public:
 
 
 
-    friend ostream & operator <<(ostream &out, const UnifiedSphere &sphere)
+    friend std::ostream & operator <<(std::ostream &out, const UnifiedSphere &sphere)
     {
         out << "[" << sphere.c << "] (" << sphere.r << ")";
         return out;
@@ -176,6 +176,7 @@ public:
     int currentY;
     int currentDX;
 
+    /* FIX ASAP: storing the reference to object*/
     CircleSpanIterator(const Circle2d &circle) : circle(circle)
     {
         radSQ     = circle.r * circle.r;

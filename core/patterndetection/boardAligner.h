@@ -4,11 +4,11 @@
 #include <memory>
 #include <vector>
 
-#include "vector2d.h"
-#include "circlePatternGenerator.h"
-#include "selectableGeometryFeatures.h"
-#include "typesafeBitmaskEnums.h"
-#include "convolver/convolver.h"    // corecvs::DpImage
+#include "core/math/vector/vector2d.h"
+#include "core/patterndetection/circlePatternGenerator.h"
+#include "core/alignment/selectableGeometryFeatures.h"
+#include "core/utils/typesafeBitmaskEnums.h"
+#include "core/buffers/convolver/convolver.h"    // corecvs::DpImage
 
 
 using std::vector;
@@ -18,11 +18,11 @@ using corecvs::DpImage;
 
 enum class AlignmentType
 {
-    FIT_ALL,                /**< Fit all = fit 2 dimensions regardless of orientations    */
-    FIT_WIDTH,              /**< Fit width = fit width (e.g. dimension along X axis)      */
-    FIT_HEIGHT,             /**< Fit height = fit height (e.g. dimension along Y)         */
-    FIT_MARKER_ORIENTATION, /**< Keep orientaion and select position using central marker */
-    FIT_MARKERS             /**< Detect orientation                                       */
+    FIT_ALL,                /**< Fit all = fit 2 dimensions regardless of orientations     */
+    FIT_WIDTH,              /**< Fit width = fit width (e.g. dimension along X axis)       */
+    FIT_HEIGHT,             /**< Fit height = fit height (e.g. dimension along Y)          */
+    FIT_MARKER_ORIENTATION, /**< Keep orientation and select position using central marker */
+    FIT_MARKERS             /**< Detect orientation                                        */
 //    // Detect orientation and board ids
 //    FIT_MARKERS_MULTIPLE
 };
@@ -53,9 +53,9 @@ struct BoardMarkerDescription
 
 struct BoardAlignerParams
 {
-    AlignmentType type;
-    int idealWidth;
-    int idealHeight;
+    AlignmentType   type;                                   ///< type of the board orientation detection
+    int             idealWidth;                             ///< number of chessboard W-nodes (crosses), that is number of cellsW - 1
+    int             idealHeight;                            ///< number of chessboard H-nodes (crosses), that is number of cellsH - 1
     vector<BoardMarkerDescription> boardMarkers;
 
     BoardAlignerParams() {
@@ -66,7 +66,7 @@ struct BoardAlignerParams
     template<typename VisitorType>
     void accept(VisitorType &visitor)
     {
-        // default ctor: old board FIT_WIDTH_18x11_noMarkers
+        // default ctor: old board FIT_WIDTH_18x11_noMarkers of the old chessboard with 19x12 cells
         int m = corecvs::asInteger(type);
         visitor.visit(m, corecvs::asInteger(AlignmentType::FIT_WIDTH), "alignmentType");
         type = static_cast<AlignmentType>(m);

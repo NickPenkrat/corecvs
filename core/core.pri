@@ -39,10 +39,12 @@ CORE_SUBMODULES =       \
     features2d          \
     patterndetection    \
     cameracalibration   \
+    device \
     graphs              \
     polynomial          \
     camerafixture       \
-    iterative
+    iterative           \
+    stereointerface     \
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
@@ -50,6 +52,7 @@ for (MODULE, CORE_SUBMODULES) {
 
 # Some modules want to export more then one directory with includes. Add them here
 CORE_INCLUDEPATH += \
+    $$COREDIR/cameracalibration/projection \
     $$COREDIR/buffers/fixeddisp \
     $$COREDIR/buffers/flow \
     $$COREDIR/buffers/histogram \
@@ -73,8 +76,19 @@ CORE_INCLUDEPATH += \
     $$COREDIR/tinyxml \
     $$COREDIR/../wrappers/cblasLapack \		# some of core's math algorithms use it
 
+CORE_INCLUDEPATH_SUPP=$$COREDIR/..
 
-INCLUDEPATH += $$CORE_INCLUDEPATH
+with_suppressincs {
+    SUPPRESSINCLUDES=true
+}
+!equals(SUPPRESSINCLUDES, "true") {
+    INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP $$CORE_INCLUDEPATH
+} else {
+    INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP
+    message(Per-Folder includes are suppressed. Only including $$CORE_INCLUDEPATH_SUPP)
+}
+
+
 DEPENDPATH  += $$CORE_INCLUDEPATH
 
 exists($$COREDIR/../../../config.pri) {
@@ -84,9 +98,9 @@ exists($$COREDIR/../../../config.pri) {
     COREBINDIR = $$COREDIR/../bin
 }
 
-message(Corebindir is $$COREBINDIR)
+#message(Corebindir is $$COREBINDIR)
 
-contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted): !contains(TARGET, topcon_core) {
+contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted) {
     win32-msvc* {
         DEPENDPATH += $$COREDIR/xml                 # helps to able including sources by generated.pri from their dirs
     } else {
@@ -109,16 +123,19 @@ contains(TARGET, cvs_core): !contains(TARGET, cvs_core_restricted): !contains(TA
     }
     PRE_TARGETDEPS += $$COREBINDIR/$$CORE_TARGET_NAME
 
-    message(Adding core lib to the linkinglist $$LIBS and targetdeps $$PRE_TARGETDEPS)
+    #message(Adding core lib to the linkinglist $$LIBS and targetdeps $$PRE_TARGETDEPS)
 }
 
 # The filesystem module needs this
 with_unorthodox {
-    !win32  {
-        LIBS += -lstdc++fs
-    }
     DEFINES += CORE_UNSAFE_DEPS
 }
+
+
+!win32  {
+    LIBS += -lstdc++fs
+}
+
 
 } # !contains(CORECVS_INCLUDED, "core.pri")
 

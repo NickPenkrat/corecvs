@@ -13,9 +13,9 @@
 #include <limits>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "quaternion.h"
-#include "preciseTimer.h"
+#include "core/utils/global.h"
+#include "core/math/quaternion.h"
+#include "core/utils/preciseTimer.h"
 
 using namespace corecvs;
 

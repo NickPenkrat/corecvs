@@ -12,11 +12,11 @@
  */
 
 
-#include "calibrationCamera.h"
-#include "matrix44.h"
-#include "cameraParameters.h"
-#include "eulerAngles.h"
-#include "floatFlowBuffer.h"
+#include "core/cameracalibration/cameraModel.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/cammodel/cameraParameters.h"
+#include "core/math/eulerAngles.h"
+#include "core/buffers/flow/floatFlowBuffer.h"
 namespace corecvs {
 
 class FCostFunction

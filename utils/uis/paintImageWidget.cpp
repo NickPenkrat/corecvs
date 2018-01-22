@@ -1,7 +1,7 @@
 #include "paintImageWidget.h"
 #include "ui_paintImageWidget.h"
 #include "../corestructs/painterHelpers.h"
-#include "rgbColor.h"
+#include "core/buffers/rgb24/rgbColor.h"
 #include "qtHelper.h"
 
 double PaintImageWidget::SELECTION_RADIUS = 5.0;

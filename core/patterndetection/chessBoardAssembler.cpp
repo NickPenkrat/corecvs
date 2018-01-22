@@ -1,6 +1,6 @@
-#include "chessBoardAssembler.h"
-#include "boardAligner.h"
-#include "calculationStats.h"
+#include "core/patterndetection/chessBoardAssembler.h"
+#include "core/patterndetection/boardAligner.h"
+#include "core/stats/calculationStats.h"
 
 #include <unordered_set>
 #include <queue>

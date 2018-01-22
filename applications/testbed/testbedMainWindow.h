@@ -5,7 +5,7 @@
 #include <QMainWindow>
 #include "ui_testbedMainWindow.h"
 #include "advancedImageWidget.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 using corecvs::RGB24Buffer;
 using std::deque;

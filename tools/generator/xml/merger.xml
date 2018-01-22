@@ -1,0 +1,58 @@
+<poco version="5.0">
+  <include name="base.xml"/>
+  <include name="../../../core/xml/parameters.xml"/>
+
+  <enum name="Merger Undist Method" incpath="">
+    <item name="None"          id="0" comment="None"/>
+    <item name="Square Table"  id="1" comment="Square Table"/>
+    <item name="Radial Table"  id="2" comment="Radial Table"/>
+    <item name="HD Table"      id="3" comment="HD Table"/>
+    <item name="Loaded Camera" id="4" comment="Loaded Camera"/>
+  </enum>
+
+  <class name="Merger" description="Merger parameters">  
+    <field type="Merger Undist Method"      name="undistMethod"  defaultValue="3" />
+    <field type="double" name="Undist Focal"   suffix="px"  defaultValue="400" decimals="3" min="0"   max="99999" step="0.1" />
+    <field type="double" name="Sensor Width"   suffix="mm"  defaultValue="20"  decimals="3" min="0"   max="99999" step="0.1" />
+
+    <field type="int"    name="Distortion Overshoot"  suffix="px" defaultValue="0" min="0"   max="99999" step="10" />
+
+
+    <field type="bool"   name="showMask"      defaultValue="true"  />
+    <field type="bool"   name="bilinear"      defaultValue="false" />
+
+    <field type="bool"   name="Separate View" defaultValue="false" />
+    <field type="bool"   name="Draw Car"      defaultValue="true"  />
+
+
+    <field type="int"    name="frameToUndist" defaultValue="0"  min="0" max="3" />
+
+    <field type="double" name="Out Size H"      suffix="px"  defaultValue="1000" min="10"   max="99999"/>
+    <field type="double" name="Out Phy Size L"  suffix="dm"  defaultValue="200"  min="1"    max="99999"/>
+    <field type="double" name="Out Phy Size W"  suffix="dm"  defaultValue="200"  min="1"    max="99999"/>
+
+    <field type="double" name="ground Z"                   defaultValue="-20"  min="-99999" max="99999"/>
+
+    <field type="bool"   name="switch1"  defaultValue="true"  />
+    <field type="bool"   name="switch2"  defaultValue="true"  />
+    <field type="bool"   name="switch3"  defaultValue="true"  />
+    <field type="bool"   name="switch4"  defaultValue="true"  />
+
+    <!-- <field type="double" name="FOV1"             suffix="deg" defaultValue="120"  min="1"    max="360"/> -->
+    <!-- <field type="Euclidian Move Parameters" name="pos1" /> -->
+    <!-- <field type="double" name="FOV2"             suffix="deg" defaultValue="120"  min="1"    max="360"/> -->
+    <!-- <field type="Euclidian Move Parameters" name="pos2" /> -->
+    <!-- <field type="double" name="FOV3"             suffix="deg" defaultValue="120"  min="1"    max="360"/> -->
+    <!-- <field type="Euclidian Move Parameters" name="pos3" /> -->
+    <!-- <field type="double" name="FOV4"             suffix="deg" defaultValue="120"  min="1"    max="360"/> -->
+    <!-- <field type="Euclidian Move Parameters" name="pos4" /> -->
+
+  </class> 
+  
+  <parametersMapper name="Merger">
+    <field type="Base Parameters" name="Base Parameters"/>
+    <field type="Merger"          name="Merger"/>
+    <field type="Presentation Parameters"   name="Presentation Parameters"/>
+  </parametersMapper>
+</poco>
+

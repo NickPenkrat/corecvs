@@ -1,9 +1,9 @@
 #ifndef YUVCOLOR_H
 #define YUVCOLOR_H
 
-#include "fixedVector.h"
-#include "reflection.h"
-#include "rgbColor.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/reflection/reflection.h"
+#include "core/buffers/rgb24/rgbColor.h"
 
 namespace corecvs {
 

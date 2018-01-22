@@ -11,9 +11,9 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "yuv/yuv422Planes.h"
+#include "core/buffers/yuv/yuv422Planes.h"
 
 
 using namespace corecvs;

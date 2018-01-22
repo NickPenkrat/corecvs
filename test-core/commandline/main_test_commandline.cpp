@@ -11,13 +11,18 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "commandLineSetter.h"
-#include "commandLineGetter.h"
-#include "vector3d.h"
+#include "core/reflection/commandLineSetter.h"
+#include "core/reflection/commandLineGetter.h"
+#include "core/math/vector/vector3d.h"
 
 using namespace corecvs;
+
+using std::istream;
+using std::ostream;
+using std::cout;
+
 
 TEST(CommandLine, testAdditionalFunction)
 {

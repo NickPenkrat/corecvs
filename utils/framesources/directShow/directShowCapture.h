@@ -16,7 +16,7 @@
 
 #include "directShow.h"
 #include "imageCaptureInterface.h"
-#include "preciseTimer.h"
+#include "core/utils/preciseTimer.h"
 #include "../../frames.h"
 
 #include "cameraControlParameters.h"
@@ -61,14 +61,14 @@ using namespace std;
 
     virtual bool         getCurrentFormat(CameraFormat &format);
 
-    virtual CapErrorCode queryCameraParameters(CameraParameters &parameters);
-    virtual CapErrorCode setCaptureProperty(int id, int value);
-    virtual CapErrorCode getCaptureProperty(int id, int *value);
-    virtual CapErrorCode getCaptureName(QString &value);
-    virtual CapErrorCode getFormats(int *num, CameraFormat *&formats);
-    virtual QString      getInterfaceName();
-    virtual CapErrorCode getDeviceName(int num, QString &name);
-    virtual std::string  getDeviceSerial(int num = Frames::LEFT_FRAME);
+    virtual CapErrorCode queryCameraParameters(CameraParameters &parameters) override;
+    virtual CapErrorCode setCaptureProperty(int id, int value) override;
+    virtual CapErrorCode getCaptureProperty(int id, int *value) override;
+    virtual CapErrorCode getCaptureName(std::string &value)  override;
+    virtual CapErrorCode getFormats(int *num, CameraFormat *&formats) override;
+    virtual std::string  getInterfaceName()  override;
+    virtual CapErrorCode getDeviceName(int num, std::string &name)  override;
+    virtual std::string  getDeviceSerial(int num = Frames::LEFT_FRAME)  override;
 
 
     /* Callback function */

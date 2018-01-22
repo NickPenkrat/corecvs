@@ -14,17 +14,17 @@
 
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "rgb24Buffer.h"
-#include "bmpLoader.h"
-#include "abstractPainter.h"
-#include "simpleRenderer.h"
-#include "mesh3d.h"
-#include "calibrationCamera.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/geometry/renderer/simpleRenderer.h"
+#include "core/geometry/mesh3d.h"
+#include "core/cameracalibration/cameraModel.h"
 
-#include "polygonPointIterator.h"
-#include "bufferFactory.h"
+#include "core/geometry/polygonPointIterator.h"
+#include "core/buffers/bufferFactory.h"
 
 using namespace corecvs;
 
@@ -47,6 +47,19 @@ TEST(Draw, testHistogram)
 
     BMPLoader().save("hists.bmp", buffer);
     delete_safe(buffer);
+}
+
+TEST(Draw, testBitBlt)
+{
+    RGB24Buffer in (48,48, RGBColor::Yellow());
+    RGB24Buffer out(100,100, RGBColor::Green());
+
+    out.fillWith(in, 1, 1);
+    out.fillWith(in, 1, 51);
+    out.fillWith(in, 51, 1);
+    out.fillWith(in, 51, 51);
+
+    BMPLoader().save("bitBlt.bmp", &out);
 }
 
 

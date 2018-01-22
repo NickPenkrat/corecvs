@@ -52,7 +52,8 @@ int GainOffsetParameters::staticInit()
           "gain",
           true,
          -10,
-         10
+         10,
+         0.05
         );
     field0->widgetHint=BaseField::SPIN_BOX;
     field0->precision=2;
@@ -68,7 +69,8 @@ int GainOffsetParameters::staticInit()
           "offset",
           true,
          -5000,
-         5000
+         5000,
+         1
         );
     field1->widgetHint=BaseField::SPIN_BOX;
     field1->precision=2;
@@ -76,6 +78,10 @@ int GainOffsetParameters::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Gain Offset Parameters")]= &reflection;
+   return 0;
+}
+int GainOffsetParameters::relinkCompositeFields()
+{
    return 0;
 }
 

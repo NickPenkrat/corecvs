@@ -10,7 +10,7 @@
  * \author: alexander
  */
 
-#include "global.h"
+#include "core/utils/global.h"
 #include <immintrin.h>
 
 
@@ -23,7 +23,8 @@ public:
 
     static const int SIZE = 4;
 
-    Doublex4() {}
+    Doublex4() : data()
+    {}
 
     explicit Doublex4(const double value) {
         this->data = _mm256_set1_pd(value);
@@ -116,7 +117,15 @@ template<int idx>
         return 0;
     }
 
+
+
+
     /* Arithmetics operations */
+    Doublex4 operator -()
+    {
+        return Doublex4::Zero() - *this;
+    }
+
     friend Doublex4 operator +(const Doublex4 &left, const Doublex4 &right);
     friend Doublex4 operator -(const Doublex4 &left, const Doublex4 &right);
 
@@ -130,7 +139,7 @@ template<int idx>
     friend Doublex4 operator /=(Doublex4 &left, const Doublex4 &right);
 
     /*Print to stream helper */
-    friend ostream & operator << (ostream &out, const Doublex4 &vector);
+    friend std::ostream & operator << (std::ostream &out, const Doublex4 &vector);
 
 };
 

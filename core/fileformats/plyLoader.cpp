@@ -6,8 +6,8 @@
 
 #include <sstream>
 
-#include "plyLoader.h"
-#include "utils.h"
+#include "core/fileformats/plyLoader.h"
+#include "core/utils/utils.h"
 
 namespace corecvs {
 
@@ -218,7 +218,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
         return 1;
     }
 
-    bool hasColor = vertexColor && edgeColor && faceColor;
+    bool hasColor = vertexColor || edgeColor || faceColor;
     mesh.switchColor(hasColor);
 
     if (plyFormat == ASCII)
@@ -231,7 +231,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
             Vector3dd vertex;            
             work >> vertex.x() >> vertex.y() >> vertex.z();
 
-            if (hasColor) {
+            if (vertexColor) {
                 work >> mesh.currentColor;
                 LOCAL_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
             }
@@ -266,7 +266,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
                 return 1;
             }
 
-            if (hasColor) {
+            if (faceColor) {
                 work >> mesh.currentColor;
                 LOCAL_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
             }
@@ -296,7 +296,7 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
                 return 1;
             }
 
-            if (hasColor) {
+            if (edgeColor) {
                 work >> mesh.currentColor;
                 LOCAL_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
             }

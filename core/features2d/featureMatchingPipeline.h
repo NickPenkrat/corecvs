@@ -1,18 +1,16 @@
 #pragma once
 
+#include <string>
 #include <stack>
 #include <map>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "imageKeyPoints.h"
-#include "imageMatches.h"   // RawMatches
-#include "matchingPlan.h"   // MatchPlan
-#include "statusTracker.h"
-
-#ifdef WITH_TBB
-#include <tbb/tbb.h>        // tbb::spin_mutex
-#endif
+#include "core/features2d/imageKeyPoints.h"
+#include "core/features2d/imageMatches.h"   // RawMatches
+#include "core/features2d/matchingPlan.h"   // MatchPlan
+#include "core/utils/statusTracker.h"
+#include "core/tbbwrapper/tbbWrapper.h"     // tbb::spin_mutex
 
 class FeatureMatchingPipeline;
 
@@ -29,13 +27,14 @@ public:
 class KeyPointDetectionStage : public FeatureMatchingPipelineStage
 {
 public:
-    KeyPointDetectionStage(DetectorType type, int maxFeatureCount, const std::string &params = "");
+    KeyPointDetectionStage( DetectorType type, int maxFeatureCount, int downsampleFactor = 1, const std::string &params = "" );
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
     ~KeyPointDetectionStage() {}
 private:
     DetectorType detectorType;
+    int downsampleFactor;
     bool parallelable;
     int maxFeatureCount;
     std::string params;
@@ -44,14 +43,16 @@ private:
 class DescriptorExtractionStage : public FeatureMatchingPipelineStage
 {
 public:
-    DescriptorExtractionStage(DescriptorType type, const std::string &params = "");
+    DescriptorExtractionStage( DescriptorType type, int downsampleFactor = 1, const std::string &params = "", bool keypointsColor = true );
     void run(FeatureMatchingPipeline *pipeline);
     void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
     void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
     ~DescriptorExtractionStage() {}
 private:
     DescriptorType descriptorType;
+    int downsampleFactor;
     bool parallelable;
+    bool keypointsColor;
     std::string params;
 };
 
@@ -117,17 +118,17 @@ private:
     bool parallelable;
 };
 
-class EpipolarRefiner : public FeatureMatchingPipelineStage
-{
-public:
-    void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
-    void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
-    void run(FeatureMatchingPipeline *pipeline);
-    EpipolarRefiner(double distanceLimit = 100.0);
-private:
-    double distanceLimit;
-
-};
+//class EpipolarRefiner : public FeatureMatchingPipelineStage
+//{
+//public:
+//    void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
+//    void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+//    void run(FeatureMatchingPipeline *pipeline);
+//    EpipolarRefiner(double distanceLimit = 100.0);
+//private:
+//    double distanceLimit;
+//
+//};
 
 class VsfmWriterStage : public FeatureMatchingPipelineStage
 {
@@ -140,10 +141,46 @@ private:
     bool sortFeatures;
 };
 
+class DetectAndExtractStage : public FeatureMatchingPipelineStage
+{
+public:
+    DetectAndExtractStage( DetectorType detectorType, DescriptorType descriptorType, int maxFeatureCount, int downsampleFactor = 1, const std::string &params = "", bool keypointsColor = true );
+    void run( FeatureMatchingPipeline *pipeline );
+    void loadResults( FeatureMatchingPipeline *pipeline, const std::string &filename );
+    void saveResults( FeatureMatchingPipeline *pipeline, const std::string &filename ) const;
+
+private:
+    DetectorType detectorType;
+    DescriptorType descriptorType;
+    int maxFeatureCount;
+    int downsampleFactor;
+    bool parallelable;
+    bool keypointsColor;
+    std::string params;
+};
+
+class DetectExtractAndMatchStage : public FeatureMatchingPipelineStage
+{
+public:
+    DetectExtractAndMatchStage( DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType, int maxFeatureCount, int downsampleFactor = 1, size_t responsesPerPoint = 2, const std::string &params = "" );
+	void run(FeatureMatchingPipeline *pipeline);
+	void loadResults(FeatureMatchingPipeline *pipeline, const std::string &filename);
+	void saveResults(FeatureMatchingPipeline *pipeline, const std::string &filename) const;
+
+private:
+    DetectorType detectorType;
+    DescriptorType descriptorType;
+    MatcherType matcherType;
+    int maxFeatureCount;
+    int downsampleFactor;
+    size_t responsesPerPoint;
+    std::string params;
+};
+
 class FeatureMatchingPipeline
 {
 public:
-    FeatureMatchingPipeline(const std::vector<std::string> &filenames, corecvs::StatusTracker* processState = nullptr);
+	FeatureMatchingPipeline(const std::vector<std::string> &filenames, const std::vector<void*> &remapCaches, corecvs::StatusTracker* processState = nullptr);
 	~FeatureMatchingPipeline();
 
     void run();
@@ -161,7 +198,7 @@ public:
     DescriptorType      descriptorType;
 
 #ifdef WITH_TBB
-    tbb::spin_mutex mutex;
+    tbb::spin_mutex     mutex;
 #endif
 
     static void printCaps();
@@ -183,5 +220,23 @@ private:
 	FeatureMatchingPipeline(const FeatureMatchingPipeline&);
 
     corecvs::StatusTracker*         processState = nullptr;
-
 };
+
+//---------------------------------------------------------------------------
+
+void addDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline,
+    DetectorType detectorType,
+    DescriptorType descriptorType,
+    MatcherType matcherType,
+    int maxFeatureCount = 4000,
+    int downsampleFactor = 1,
+    const std::string &params = "",
+    size_t responsesPerPoint = 2);
+
+void addDetectAndExtractStage(FeatureMatchingPipeline& pipeline,
+    DetectorType detectorType,
+    DescriptorType descriptorType,
+    int maxFeatureCount = 4000,
+    int downsampleFactor = 1,
+    const std::string &params = "",
+    bool keypointsColor = true);

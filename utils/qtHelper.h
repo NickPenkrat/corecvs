@@ -17,10 +17,12 @@
 #include <QFileInfo>
 #include <QDir>
 
-#include "vector2d.h"
-#include "vector3d.h"
-#include "rectangle.h"
-#include "matrix33.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
+#include "core/geometry/rectangle.h"
+#include "core/math/matrix/matrix33.h"
+
+#include "parametersControlWidgetBase.h"
 
 using corecvs::Vector2d;
 using corecvs::Vector2d32;
@@ -94,54 +96,81 @@ QString printSelectionModel(const QItemSelectionModel::SelectionFlags &flag);
 QString printWidgetAttributes(QWidget *widget);
 
 QString printQImageFormat(const QImage::Format &format);
-
+QString printModelItemRole(int role);
 /* File management support 
  */
 namespace
 {
 
-    QString addFileExtIfNotExist(const QString& fileName, const QString& ext)
+    inline QString addFileExtIfNotExist(const QString& fileName, const QString& ext)
     {
         return fileName.endsWith(ext) ? fileName : fileName + ext;
     }
 
-    QString getDirectory(const QString& absoluteFilePath)
+    inline QString getDirectory(const QString& absoluteFilePath)
     {
         Q_ASSERT(!absoluteFilePath.isEmpty());
         QFileInfo info(absoluteFilePath);
         return info.dir().absolutePath();
     }
 
-    QString getFileName(const QString& fileName)
+    inline QString getFileName(const QString& fileName)
     {
         QFileInfo info(fileName);
         return info.fileName();
     }
 
-    QString getFileNameIfExist(const QString& fileName, const QString& relativePath)
+    inline QString getFileNameIfExist(const QString& fileName, const QString& relativePath)
     {
-        std::cout << fileName.toStdString() << std::endl;
+        //std::cout << fileName.toStdString() << std::endl;
         QFileInfo info(fileName);
-        if(info.exists())
+        if (info.exists())
             return fileName;
-        std::cout << QString(relativePath + PATH_SEPARATOR + info.fileName()).toStdString() << std::endl;
+
         QFileInfo infoNew(relativePath + PATH_SEPARATOR + info.fileName());
-        if(infoNew.exists())
+        if (infoNew.exists())
             return infoNew.absoluteFilePath();
+
+        std::cout << "couldn't locate <" << fileName.toStdString() << "> with relativePath:" << relativePath.toStdString() << std::endl;
         return "";
     }
 
-    class LastInOutDirsKeeper
-    {
-    public:
-        QString in;             // last input  dir
-        QString out;            // last output dir
-
-        void    updateIn (const QString& absoluteFilePath) { in  = getDirectory(absoluteFilePath); }
-        void    updateOut(const QString& absoluteFilePath) { out = getDirectory(absoluteFilePath); }
-    };
 
 } // namespace
 
+
+class RecentPathKeeper : public SaveableWidget
+{
+public:
+    static const QString LAST_INPUT_DIRECTORY_KEY ;
+    static const QString LAST_OUTPUT_DIRECTORY_KEY;
+    static const QString RECENT_SCENES_KEY;
+
+    static const int MAX_RECENT = 10;
+
+    QString in;             // last input  dir
+    QString out;            // last output dir
+
+    std::vector<std::string> lastScenes;
+
+    void    updateIn (const QString& absoluteFilePath) { in  = getDirectory(absoluteFilePath); }
+    void    updateOut(const QString& absoluteFilePath) { out = getDirectory(absoluteFilePath); }
+
+    void    addRecent(const std::string &recent) {
+        if (std::find(lastScenes.begin(), lastScenes.end(), recent) == lastScenes.end())
+            lastScenes.push_back(recent);
+
+        while (lastScenes.size() >= MAX_RECENT) {
+            lastScenes.erase(lastScenes.begin(), lastScenes.begin() + 1);
+        }
+    }
+
+
+    virtual void loadFromQSettings(const QString &fileName, const QString &_root) override;
+    virtual void saveToQSettings  (const QString &fileName, const QString &_root) override;
+
+    ~RecentPathKeeper();
+
+};
 
 /* EOF */

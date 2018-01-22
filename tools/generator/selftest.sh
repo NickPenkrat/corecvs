@@ -10,6 +10,7 @@ mkdir -p Generated
 COREDIR=../../core
 INCLUDES="-I${COREDIR}/reflection/ -I${COREDIR}/utils/"
 
+echo g++ -c -std=c++0x ${INCLUDES} Generated/testClass.cpp
 g++ -c -std=c++0x ${INCLUDES} Generated/testClass.cpp
 g++ -c -std=c++0x ${INCLUDES} Generated/testSubClass.cpp
 

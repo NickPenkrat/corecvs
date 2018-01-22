@@ -1,4 +1,4 @@
-#include "minresQLP.h"
+#include "core/iterative/minresQLP.h"
 
 namespace corecvs
 {

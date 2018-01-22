@@ -8,10 +8,10 @@
  */
 #include <math.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector2d.h"
-#include "matrix.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix.h"
 
 namespace corecvs {
 
@@ -295,7 +295,9 @@ public:
 
     EllipticalApproximationUnified(const EllipticalApproximationUnified &other) :
         mInfMatrix(NULL)
-      , mSum(other.mSum)
+      , mSum(other.mSum)      
+      , mAxes(other.mAxes)
+      , mValues(other.mValues)
       , mCount(other.mCount)
     {
         this->mInfMatrix = new Matrix(other.mInfMatrix);
@@ -309,8 +311,10 @@ public:
             delete_safe(this->mInfMatrix);
 
             this->mInfMatrix = new Matrix(other.mInfMatrix);
-            this->mSum = other.mSum;
-            this->mCount = other.mCount;
+            this->mSum    = other.mSum;
+            this->mCount  = other.mCount;
+            this->mAxes   = other.mAxes;
+            this->mValues = other.mValues;
         }
         return *this;
         // SYNC_PRINT(("EllipticalApproximationUnified::operator =(const EllipticalApproximationUnified &other) called\n"));
@@ -327,7 +331,7 @@ public:
      *
      *
      **/
-    void addPoint (ElementType point)
+    void addPoint (const ElementType &point)
     {
         int row, column;
         for (column = 0; column < mInfMatrix->w ; column++)
@@ -379,6 +383,8 @@ public:
             }
         }
 
+        /* Using SVD here is kind of stupid. We already have covariance matrix */
+#ifdef SVD_ATTEMPT
         Matrix W(1, mInfMatrix->w);
         Matrix V(mInfMatrix->h, mInfMatrix->w);
 
@@ -397,7 +403,25 @@ public:
             mAxes.push_back(forPush);
             mValues.push_back(W.a(0,i));
         }
+#else
+        DiagonalMatrix D(A.h);
+        Matrix V(A.h, A.w);
+        Matrix::jacobi(&A, &D, &V, NULL);
 
+        mAxes.clear();
+        mValues.clear();
+
+        for (int i = 0; i < mInfMatrix->w; i++)
+        {
+            ElementType forPush;
+            for (int k = 0; k < mInfMatrix->h; k ++) {
+                forPush.element[k] = V.a(k,i);
+            }
+
+            mAxes.push_back(forPush);
+            mValues.push_back(D.a(i));
+        }
+#endif
         for (unsigned i = 0; i < mValues.size(); i++)
         {
             int maxid = i;
@@ -406,17 +430,12 @@ public:
             {
                 if (fabs(mValues[j]) > max) {
                     max = fabs(mValues[j]);
-                    maxid = 0;
+                    maxid = j;
                 }
             }
 
-            double tmpSwap = mValues[maxid];
-            mValues[maxid] = mValues[i];
-            mValues[i] = tmpSwap;
-
-            ElementType forPush = mAxes[maxid];
-            mAxes[maxid] = mAxes[i];
-            mAxes[maxid] = forPush;
+            std::swap(mValues[maxid], mValues[i]);
+            std::swap(mAxes  [maxid], mAxes  [i]);
         }
 
         return true;
@@ -465,6 +484,30 @@ public:
         return sqrt(radius);
     }
 
+    double getRadiusForDim(size_t dim) const
+    {
+        if (isEmpty()) {
+            return 0.0;
+        }
+        ElementType mean = getMean();
+        double radius = mInfMatrix->a((int)dim, (int)dim) / mCount - (mean.at(dim) * mean.at(dim));
+        return sqrt(radius);
+    }
+
+    ElementType getRadiusPerDim() const {
+        if (isEmpty()) {
+            return ElementType(0.0);
+        }
+
+        ElementType result;
+        ElementType mean = getMean();
+        for (int i = 0; i < getDimention(); i++)
+        {
+            result[i] = sqrt(mInfMatrix->a(i,i) / mCount - (mean.at(i) * mean.at(i)));
+        }
+        return result;
+    }
+
     double getRadiusAround0() const
     {
         if (isEmpty()) {
@@ -497,7 +540,7 @@ inline int EllipticalApproximationUnified<double>::getDimention() const
 }
 
 template <>
-inline void EllipticalApproximationUnified<double>::addPoint (double point)
+inline void EllipticalApproximationUnified<double>::addPoint (const double &point)
 {
     mInfMatrix->a(0, 0) += point * point;
     mSum += point;
@@ -550,7 +593,7 @@ public:
     }
 
 
-    friend ostream & operator <<(ostream &out, const EllipticalApproximation1d &stats)
+    friend std::ostream & operator <<(std::ostream &out, const EllipticalApproximation1d &stats)
     {
         out << "Min:" << stats.getMin()  << endl;
         out << "Max:" << stats.getMax()  << endl;

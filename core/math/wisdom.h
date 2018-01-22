@@ -1,5 +1,5 @@
-#ifndef WISDOM
-#define WISDOM
+#ifndef WISDOM_H
+#define WISDOM_H
 
 #include <array>
 #include <iostream>
@@ -11,9 +11,10 @@
 #include <algorithm>
 #include <tuple>
 #include <iomanip>
+#include <functional>
 
-#include "global.h"
-#include "tbbWrapper.h"
+#include "core/utils/global.h"
+#include "core/tbbwrapper/tbbWrapper.h"
 
 namespace corecvs
 {
@@ -150,10 +151,10 @@ private:
         static AcceleratorController controller;
 #ifdef WITH_CUDA
         if (!gpuptr())
-            std::cout << "No gpu!?" << std::endl;
+            std::cout << "AcceleratorController: No gpu!?" << std::endl;
 #endif
         if (!cpuptr())
-            std::cout << "No cpu!?" << std::endl;
+            std::cout << "AcceleratorController: No cpu!?" << std::endl;
         return controller;
     }
     AcceleratorController() {}
@@ -271,6 +272,7 @@ private:
         }
         return res;
     }
+
     R singleRun(AcceleratorTypes &a, Implementation &i, int id, T& t, A... aa)
     {
         for (auto& p: registered)
@@ -281,7 +283,9 @@ private:
         CORE_ASSERT_TRUE_S(false);
         return R();
     }
-    Wisdom() {};
+
+    Wisdom() {}
+
     static const int RETRIES = 5;
     std::map<std::tuple<AcceleratorTypes, Implementation>, std::function<R(int,T&,A...)>> registered;
     std::map<typename Characterizator<T>::characteristic_type, std::map<std::tuple<AcceleratorTypes, Implementation, int>, std::vector<double>>> timings;
@@ -290,4 +294,4 @@ private:
 
 }
 
-#endif
+#endif // WISDOM_H

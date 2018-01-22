@@ -20,7 +20,7 @@ CORECVS_INCLUDED +=  config.pri
 !gen_vsproj {
     CONFIG +=   \
                 \
-        debug \
+#        debug \
 #        release \
 
 }
@@ -33,11 +33,11 @@ CONFIG +=        \
    with_native   \
    with_tbb      \
    with_openblas \      # activate all three libraries,
-   with_mkl      \      #  clarify what
-   with_fftw     \      #  to use later!
-   with_opencv   \
+#   with_mkl      \      #  clarify what
+#   with_fftw     \      #  to use later!
+#   with_opencv   \
 #   with_fastbuild \    # disable optimization for some src on linux
-#   with_unorthodox \   # allow use an experimental filesystem
+   with_unorthodox \   # allow use an experimental filesystem
    with_cusparse \     # enable CUDA SDK usage for sparse matrix operations
 
 include(config-cpu-features.pri)
@@ -80,23 +80,23 @@ win32 {
 win32 {
 #   CONFIG += with_siftgpu      # activate SiftGPU wrapper that enables using of siftgpu.dll
 
-    CONFIG += with_opencv
+#    CONFIG += with_opencv
    #CONFIG += with_hardware     # win32: is disabled for a while
    #CONFIG += with_openglext	# is disabled as it's not yet implemented
    #CONFIG += with_opencl       # delivered OpenCL.lib is compatible with msvc build tools
 } else:!odroid {
-   CONFIG += with_opencv
+ #  CONFIG += with_opencv
   #CONFIG += with_avcodec
  #  CONFIG += with_libjpeg
  #  CONFIG += with_libpng
-   CONFIG += with_openglext
+ #  CONFIG += with_openglext
 #   CONFIG += with_siftgpu      # activate SiftGPU wrapper that enables using of siftgpu.so
 
   #CONFIG += with_hardware     # enabled only for some linux PCs for debugging
   #CONFIG += with_opencl       # Linux: opened for analysis on different GPUs (only nVidia) and CPUs
 
 } else {
-   CONFIG += with_opencv       # we need to install it on Odroid
+#   CONFIG += with_opencv       # we need to install it on Odroid
    CONFIG += with_avcodec
 }
 

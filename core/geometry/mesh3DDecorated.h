@@ -1,14 +1,16 @@
 #ifndef MESH3DDECORATED_H
 #define MESH3DDECORATED_H
 
-#include "mesh3d.h"
-#include "rgb24Buffer.h"
+#include "core/geometry/mesh3d.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 namespace corecvs
 {
 
 class OBJMaterial {
 public:
+    std::string name;
+
     enum  {
         KOEF_AMBIENT,
         KOEF_DIFFUSE,
@@ -72,15 +74,16 @@ public:
 
     /* Texture Coords Channel */
     vector<Vector2dd>   textureCoords;
+
     vector<Vector3dd>   normalCoords;
 
     /* Per face ids*/
-    vector<Vector3d32>  texId;
+    vector<Vector4d32>  texId;
     vector<Vector3d32>  normalId;
 
     /* We are not sure what we expect from material.
      * We will use wavefront so far */
-    OBJMaterial material;
+    vector<OBJMaterial> materials;
 
     Mesh3DDecorated();
 
@@ -100,6 +103,25 @@ public:
     void recomputeMeanNormals();
 
     bool verify( void );
+};
+
+class MeshFilter
+{
+public:
+    static
+    void removeDuplicatedFaces(Mesh3DDecorated &mesh);
+
+    static
+    void removeUnreferencedVertices(Mesh3DDecorated &mesh);
+
+    static
+    void removeIsolatedPieces(Mesh3DDecorated &mesh,  unsigned minCountOfFaces);
+
+    static
+    void removeZeroAreaFaces(Mesh3DDecorated &mesh);
+
+   static
+    void removeDuplicatedVertices(Mesh3DDecorated &mesh);
 };
 
 } // namespace corecvs

@@ -15,15 +15,15 @@
 #include <string>
 #include <deque>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "fixedVector.h"
-#include "preciseTimer.h"
-#include "mathUtils.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/utils/preciseTimer.h"
+#include "core/math/mathUtils.h"
 
 namespace corecvs {
 
-using std::map;
+//using std::map;
 using std::string;
 using std::deque;
 
@@ -146,7 +146,7 @@ public:
     }
 
     /* New interface */
-    map<string, SingleStat> mValues;
+    std::map<string, SingleStat> mValues;
     string                  mPrefix;
     PreciseTimer            mHelperTimer;
 
@@ -200,7 +200,7 @@ public:
     {
         if (stats == NULL)
             return;
-        stats->leaveContext(stats);
+        stats->leaveContext();
     }
 
     static void startInterval(Statistics *stats)
@@ -236,14 +236,24 @@ public:
             return;
         stats->setValue(str, value);
     }
-};
 
+
+    friend std::ostream & operator <<(std::ostream &out, const Statistics &stats)
+    {
+        for(auto &stat : stats.mValues)
+        {
+            out << stat.first << " -> " << stat.second.value << "\n";
+        }
+        return out;
+    }
+
+};
 
 class BaseTimeStatisticsCollector
 {
 public:
     /** Types **/
-    typedef map<string, UnitedStat> StatsMap;
+    typedef std::map<string, UnitedStat> StatsMap;
 
     /* Class for filtering */
     class OrderFilter
@@ -276,6 +286,10 @@ public:
     vector<OrderFilter *> mOrderFilters;
 
     BaseTimeStatisticsCollector() {}
+    BaseTimeStatisticsCollector(const Statistics &stats)
+    {
+        addStatistics(stats);
+    }
 
     virtual void reset()
     {
@@ -285,7 +299,7 @@ public:
     virtual void addSingleStat(const string& name, const SingleStat &stat)
     {
         UnitedStat unitedStat;
-        map<string, UnitedStat>::iterator uit = mSumValues.find(name);
+        std::map<string, UnitedStat>::iterator uit = mSumValues.find(name);
         if (uit != mSumValues.end())
         {
            unitedStat = uit->second;
@@ -297,7 +311,7 @@ public:
     virtual void addStatistics(const Statistics &stats)
     {
         /* New style */
-        map<string, SingleStat>::const_iterator it;
+        std::map<string, SingleStat>::const_iterator it;
         for (it = stats.mValues.begin(); it != stats.mValues.end(); ++it)
         {
             string name = it->first;
@@ -308,14 +322,14 @@ public:
 
     virtual void uniteStatistics(const BaseTimeStatisticsCollector &stats)
     {
-        map<string, UnitedStat>::const_iterator uit;
+        std::map<string, UnitedStat>::const_iterator uit;
         for (uit = stats.mSumValues.begin(); uit != stats.mSumValues.end(); ++uit)
         {
             string     name  = uit->first;
             UnitedStat ustat = uit->second;
 
             UnitedStat unitedStat;
-            map<string, UnitedStat>::iterator uit2 = mSumValues.find(name);
+            std::map<string, UnitedStat>::iterator uit2 = mSumValues.find(name);
             if (uit2 != mSumValues.end())
             {
                 unitedStat = uit2->second;
@@ -416,7 +430,7 @@ template <class StreamType>
         {
             if (stat.type == SingleStat::TIME)
             {
-                printf("%-*s : %7" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
+                printf("%-*s : %8" PRIu64 " us : %7" PRIu64 " ms : %7" PRIu64 " us  \n",
                     length,
                     name.c_str(),
                     stat.mean(),
@@ -425,7 +439,7 @@ template <class StreamType>
                 return;
             }
 
-            printf("%-*s : %7" PRIu64 "\n",
+            printf("%-*s : %8" PRIu64 "\n",
                 length,
                 name.c_str(),
                 stat.mean());
@@ -443,9 +457,9 @@ template <class StreamType>
 
     class AdvancedSteamPrinter {
     public:
-        ostream &outStream;
+        std::ostream &outStream;
 
-        AdvancedSteamPrinter(ostream &stream) : outStream(stream)
+        AdvancedSteamPrinter(std::ostream &stream) : outStream(stream)
         {}
 
         void printUnitedStat(const string &name, int length, const UnitedStat &stat, int /*lineNum*/)
@@ -472,7 +486,7 @@ template <class StreamType>
         }
     };
 
-    virtual void printAdvanced(ostream &stream)
+    virtual void printAdvanced(std::ostream &stream)
     {
         stream << "=============================================================\n";
         AdvancedSteamPrinter printer(stream);

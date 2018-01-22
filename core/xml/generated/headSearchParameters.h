@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from clustering1.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -81,6 +82,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -171,6 +174,15 @@ template<class VisitorType>
         mHeadNumber = headNumber;
     }
 
+    bool operator ==(const HeadSearchParameters &other) const 
+    {
+        if ( !(this->mThresholdDistance == other.mThresholdDistance)) return false;
+        if ( !(this->mClusterDepth == other.mClusterDepth)) return false;
+        if ( !(this->mClusterMinSize == other.mClusterMinSize)) return false;
+        if ( !(this->mHeadAreaRadius == other.mHeadAreaRadius)) return false;
+        if ( !(this->mHeadNumber == other.mHeadNumber)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, HeadSearchParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

@@ -52,7 +52,8 @@ int OpenCVBMParameters::staticInit()
           "Block Size",
           true,
          5,
-         255
+         255,
+         2
         );
     fields().push_back(field0);
     /*  */ 
@@ -66,7 +67,8 @@ int OpenCVBMParameters::staticInit()
           "Disparity search",
           true,
          0,
-         1600
+         1600,
+         16
         );
     fields().push_back(field1);
     /*  */ 
@@ -80,7 +82,8 @@ int OpenCVBMParameters::staticInit()
           "preFilterCap",
           true,
          1,
-         1000
+         1000,
+         1
         );
     fields().push_back(field2);
     /*  */ 
@@ -94,7 +97,8 @@ int OpenCVBMParameters::staticInit()
           "minDisparity",
           true,
          1,
-         1000
+         1000,
+         1
         );
     fields().push_back(field3);
     /*  */ 
@@ -108,7 +112,8 @@ int OpenCVBMParameters::staticInit()
           "textureThreshold",
           true,
          0,
-         1000
+         1000,
+         1
         );
     fields().push_back(field4);
     /*  */ 
@@ -122,7 +127,8 @@ int OpenCVBMParameters::staticInit()
           "uniquenessRatio",
           true,
          0,
-         1000
+         1000,
+         1
         );
     fields().push_back(field5);
     /*  */ 
@@ -136,7 +142,8 @@ int OpenCVBMParameters::staticInit()
           "speckleWindowSize",
           true,
          0,
-         1000
+         1000,
+         1
         );
     fields().push_back(field6);
     /*  */ 
@@ -150,7 +157,8 @@ int OpenCVBMParameters::staticInit()
           "speckleRange",
           true,
          0,
-         1000
+         1000,
+         1
         );
     fields().push_back(field7);
     /*  */ 
@@ -164,12 +172,17 @@ int OpenCVBMParameters::staticInit()
           "disp12MaxDiff",
           true,
          -1,
-         1000
+         1000,
+         1
         );
     fields().push_back(field8);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("OpenCV BM Parameters")]= &reflection;
+   return 0;
+}
+int OpenCVBMParameters::relinkCompositeFields()
+{
    return 0;
 }
 

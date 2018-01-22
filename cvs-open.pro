@@ -6,8 +6,8 @@ SUBDIRS +=                   \
     core                     \
     utils                    \
     test-core                \
-#    test-core-perf           \
-#    tests_big                \
+    test-core-perf           \
+    tests_big                \
     \   
 
 
@@ -23,12 +23,12 @@ with_minitools {
     imageview                \
     \
     \
-    imageAugment             \
+#    imageAugment             \
     testbed                  \
     base_application         \
     base_application_example \
     recorder                 \
-
+    merger
 
 }
 
@@ -50,6 +50,7 @@ testbed.depends                  += core utils
 base_application.depends         += core utils
 base_application_example.depends += base_application
 recorder.depends                 += base_application
+merger.depends                   += base_application
 
 cloudview.depends                += utils
 rectifier.depends                += utils
@@ -64,6 +65,7 @@ tests_big.file                    = test/tests.pro
 base_application.file             = applications/base/baseApplication.pro
 base_application_example.file     = applications/base/baseApplicationExample.pro
 recorder.file                     = applications/recorder/recorder.pro
+merger.file                       = applications/merger/merger.pro
 testbed.file                      = applications/testbed/testbed.pro
 cloudview.file                    = applications/cloudview/cloudview.pro
 imageview.file                    = applications/imageview/imageview.pro

@@ -10,22 +10,22 @@
 
 #include <fstream>
 #include <iostream>
-#include "objLoader.h"
-#include "bufferFactory.h"
+#include "core/fileformats/objLoader.h"
+#include "core/buffers/bufferFactory.h"
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "raytrace/raytraceRenderer.h"
-#include "raytrace/raytraceObjects.h"
-#include "raytrace/sdfRenderable.h"
-#include "raytrace/materialExamples.h"
+#include "core/geometry/raytrace/raytraceRenderer.h"
+#include "core/geometry/raytrace/raytraceObjects.h"
+#include "core/geometry/raytrace/sdfRenderable.h"
+#include "core/geometry/raytrace/materialExamples.h"
 
-#include "bmpLoader.h"
-#include "meshLoader.h"
-#include "preciseTimer.h"
-#include "perlinNoise.h"
-#include "log.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/fileformats/meshLoader.h"
+#include "core/utils/preciseTimer.h"
+#include "core/geometry/raytrace/perlinNoise.h"
+#include "core/utils/log.h"
 
 using namespace std;
 using namespace corecvs;
@@ -129,15 +129,12 @@ TEST(Raytrace, DISABLED_testRaytraceBase)
     PreciseTimer timer;
     timer = PreciseTimer::currentTime();
     renderer.trace(buffer);
-    SYNC_PRINT(("Total time %lld us", timer.usecsToNow()));
+    SYNC_PRINT(("Total time %" PRIu64 " us", timer.usecsToNow()));
 
 
     BMPLoader().save("raytrace.bmp", buffer);
     delete_safe(buffer);
-
 }
-
-
 
 TEST(Raytrace, DISABLED_testRaytraceSpeedup)
 {
@@ -236,11 +233,8 @@ TEST(Raytrace, DISABLED_testRaytraceSpeedup)
         SYNC_PRINT(("Erorr"));
     }*/
 
-
     delete_safe(bufferS);
     delete_safe(bufferF);
-
-
 }
 
 class LaserPlaneLight : public RaytraceablePointLight, public Plane3d
@@ -261,7 +255,6 @@ public:
         }
         return false;
     }
-
 };
 
 TEST(Raytrace, DISABLED_testRaytraceChess)
@@ -599,7 +592,7 @@ TEST(Raytrace, testCylinder)
         Ray3d(Vector3dd(0, -1, 1), Vector3dd(0, 240, 0)),
     };
 
-    for (int i = 0; i < CORE_COUNT_OF(rays); i++)
+    for (unsigned i = 0; i < CORE_COUNT_OF(rays); i++)
     {
         rays[i] = rays[i].normalised();
         RayIntersection ray;        
@@ -613,7 +606,7 @@ TEST(Raytrace, testCylinder)
         cout << " P:" << ray.getPoint() << endl;
         //cout << " N:" << ray.normal << endl;
         } else  {
-            cout << "No Intersecution" << endl;
+            cout << "No Intersection" << endl;
         }
 
         mesh.addPoint(ray.getPoint());
@@ -713,10 +706,12 @@ TEST(Raytrace, testTransform)
         mesh.addLine(rays[i].getPoint(0), rays[i].getPoint(30));
         bool ok = object.intersect(ray);
 
-        cout << i << endl;
-        cout << " R:" << ray.ray << endl;
-        if (ok) {
-            cout << " P:" << ray.getPoint() << endl;
+        std::stringstream s;
+        s << i << endl;
+        s << " R:" << ray.ray << endl;
+        if (ok)
+        {
+            s << " P:" << ray.getPoint() << endl;
             mesh.setColor(RGBColor::Green());
             mesh.addPoint(ray.getPoint());
             ray.object->normal(ray);
@@ -724,10 +719,10 @@ TEST(Raytrace, testTransform)
             mesh.addLine(ray.getPoint(), ray.getPoint() + ray.normal * 5.0);
 
             //cout << " N:" << ray.normal << endl;
-        } else  {
-            cout << "No Intersecution" << endl;
+        } else {
+            s << "No Intersection" << endl;
         }
-
+        DOTRACE(s.str());
     }
 
     //object.toMesh(mesh);
@@ -759,8 +754,6 @@ public:
     {
         //F = this;
     }
-
-
 };
 
 TEST(Raytrace, DISABLED_testRaytraceSDF)
@@ -781,7 +774,7 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
 
     SDFRenderable object;
     object.F = [](Vector3dd v) {
-        double step = 200;
+        //double step = 200;
         Vector3dd c1 = Vector3dd(0,-30, 150.0);
         Vector3dd c2 = Vector3dd(0, 40, 150.0);
 
@@ -797,7 +790,7 @@ TEST(Raytrace, DISABLED_testRaytraceSDF)
 
     SDFRenderable object1;
     object1.F = [](Vector3dd v) {
-        double step = 200;
+        //double step = 200;
         Vector3dd c1 = Vector3dd(50,-15, 150.0);
         Vector3dd c2 = Vector3dd(50, 15, 150.0);
 

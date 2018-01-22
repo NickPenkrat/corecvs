@@ -14,14 +14,14 @@
 #include <cmath>
 #include <stdint.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 //#ifdef REFLECTION_IN_CORE
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 //#endif // REFLECTION_IN_CORE
 
-#include "fixedVector.h"
-#include "vector.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/vector/vector.h"
 
 namespace corecvs {
 
@@ -114,6 +114,13 @@ public:
     {
         return Vector2d<OtherType>((OtherType)((*this)[0]),(OtherType)((*this)[1]));
     }*/
+
+    template<typename OtherType>
+    inline Vector2d<OtherType> cast() const
+    {
+        return Vector2d<OtherType>((OtherType)((*this)[0]),(OtherType)((*this)[1]));
+    }
+
 
     inline Vector2d<ElementType> leftNormal() const
     {
@@ -227,6 +234,7 @@ template<class VisitorType>
 
 
 typedef Vector2d<double>   Vector2dd;
+typedef Vector2d<float>    Vector2df;
 typedef Vector2d<uint32_t> Vector2du32;
 typedef Vector2d<uint16_t> Vector2du16;
 

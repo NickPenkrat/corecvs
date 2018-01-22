@@ -7,7 +7,7 @@
 #endif
 #include <iostream>
 
-#include "runtimeTypeBuffer.h"
+#include "core/buffers/runtimeTypeBuffer.h"
 
 #include <GL/glew.h>        // GL_LUMINANCE, ...
 
@@ -76,12 +76,12 @@ SiftGpu::SiftGpu(double filterWidthFactor,
     }
 }
 
-void SiftGpu::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors)
+void SiftGpu::computeImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, RuntimeTypeBuffer &descriptors, void*)
 {
     (*this)(image, keyPoints, descriptors, true, true);
 }
 
-void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int)
+void SiftGpu::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int, void*)
 {
     RuntimeTypeBuffer buffer;
     (*this)(image, keyPoints,buffer);
@@ -194,6 +194,13 @@ bool SiftGpuFeatureDetectorProvider::provides(const DetectorType &type)
 {
     SWITCH_TYPE(SIFTGPU, return true;);
     return false;
+}
+
+std::vector<std::string> SiftGpuFeatureDetectorProvider::provideHints()
+{
+    std::vector<std::string> toReturn;
+    toReturn.push_back("SIFTGPU");
+    return toReturn;
 }
 
 void init_siftgpu_detector_provider()

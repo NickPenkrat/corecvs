@@ -52,12 +52,17 @@ int ThickeningParameters::staticInit()
           "Power",
           true,
          0,
-         9999
+         9999,
+         1
         );
     fields().push_back(field0);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Thickening Parameters")]= &reflection;
+   return 0;
+}
+int ThickeningParameters::relinkCompositeFields()
+{
    return 0;
 }
 

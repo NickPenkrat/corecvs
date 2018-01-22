@@ -1,4 +1,4 @@
-#include "undirectedGraph.h"
+#include "core/graphs/undirectedGraph.h"
 
 #include <algorithm>
 #include <queue>

@@ -1,9 +1,8 @@
 #ifndef CAMERA_PROTOTYPE_H
 #define CAMERA_PROTOTYPE_H
 
-#include "fixtureScenePart.h"
-#include "calibrationCamera.h"
-
+#include "core/camerafixture/fixtureScenePart.h"
+#include "core/cameracalibration/cameraModel.h"
 
 namespace corecvs {
 
@@ -43,11 +42,9 @@ public:
     /** This is an experimental block of functions  it may change. Please use with caution **/
 
     /** WHY SO SLOW? **/
-    bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projetionPtr = NULL);
-
+    //bool projectPointFromWorld(const Vector3dd &point, Vector2dd *projetionPtr = NULL);
 };
 
 }  // namespace corecvs
-
 
 #endif // CAMERA_PROTOTYPE_H

@@ -68,7 +68,8 @@ int LineDistortionEstimatorParameters::staticInit()
           "Iteration Number",
           true,
          0,
-         99999
+         99999,
+         1
         );
     fields().push_back(field1);
     /*  */ 
@@ -82,7 +83,8 @@ int LineDistortionEstimatorParameters::staticInit()
           "Polynom Degree",
           true,
          0,
-         20
+         20,
+         1
         );
     field2->prefixHint="x^";
     fields().push_back(field2);
@@ -137,6 +139,10 @@ int LineDistortionEstimatorParameters::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Line Distortion Estimator Parameters")]= &reflection;
+   return 0;
+}
+int LineDistortionEstimatorParameters::relinkCompositeFields()
+{
    return 0;
 }
 

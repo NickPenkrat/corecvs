@@ -109,7 +109,10 @@ V4L2CaptureDecoupleInterface::FramePair V4L2CaptureDecoupleInterface::getFrame()
         DecoupleYUYV::decouple(formatH, formatW, ptr, coupling, result);
 
         if (current.isFilled) {
-            result.timeStampLeft = result.timeStampRight = current.usecsTimeStamp();
+            uint64_t stamp = current.usecsTimeStamp();
+
+            result.setTimeStampLeft(stamp);
+            result.setTimeStampRight(stamp);
         }
 
         if (skippedCount == 0) {
@@ -229,9 +232,9 @@ V4L2CaptureDecoupleInterface::CapErrorCode V4L2CaptureDecoupleInterface::queryCa
     return SUCCESS;
 }
 
-QString V4L2CaptureDecoupleInterface::getInterfaceName()
+string V4L2CaptureDecoupleInterface::getInterfaceName()
 {
-    return QString("v4l2d:") + QString(devname.c_str());
+    return std::string("v4l2d:") + devname;
 }
 
 V4L2CaptureDecoupleInterface::~V4L2CaptureDecoupleInterface()

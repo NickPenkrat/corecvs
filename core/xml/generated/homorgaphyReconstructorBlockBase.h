@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from bufferFilters.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -36,7 +37,7 @@ class Matrix33;
 /*
  *  Additional includes for enum section.
  */
-#include "homographyAlgorithm.h"
+#include "core/xml/generated/homographyAlgorithm.h"
 
 /**
  * \brief HomorgaphyReconstructorBlockBase 
@@ -74,6 +75,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -138,6 +141,11 @@ template<class VisitorType>
         mAlgorithm = algorithm;
     }
 
+    bool operator ==(const HomorgaphyReconstructorBlockBase &other) const 
+    {
+        if ( !(this->mAlgorithm == other.mAlgorithm)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, HomorgaphyReconstructorBlockBase &toSave)
     {
         corecvs::PrinterVisitor printer(out);

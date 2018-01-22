@@ -17,26 +17,24 @@
 #include <stdlib.h>
 #include <limits>
 
-#ifdef WITH_TBB
-#include <tbb/parallel_for.h>
-#include <tbb/spin_mutex.h>
-#include <tbb/blocked_range.h>
-using namespace tbb;
-#endif
+#include "core/utils/global.h"
 
-#include "global.h"
-
-#include "mathUtils.h"
-#include "integralBuffer.h"
-#include "vector3d.h"
-#include "vector2d.h"
-#include "mipmapPyramid.h"
-#include "rgb24Buffer.h"
-#include "adaBoost.h"
+#include "core/tbbwrapper/tbbWrapper.h"
+#include "core/math/mathUtils.h"
+#include "core/buffers/integralBuffer.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/vector/vector2d.h"
+#include "core/buffers/mipmapPyramid.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/boosting/adaBoost.h"
 
 using std::vector;
 
 namespace corecvs {
+
+using std::ostream;
+using std::istream;
+using std::cout;
 
 /**
  *  The data that is needed for fast classification
@@ -578,10 +576,9 @@ public:
 
 class VJSimpleClassifierGenerator : public WeakHypothesisGenerator<VJSimpleClassifier>
 {
-
 public:
 #ifdef WITH_TBB
-    spin_mutex VJSimpleClassifierGeneratorMutex;
+    tbb::spin_mutex VJSimpleClassifierGeneratorMutex;
 #endif
     double minEpsilonGlobal;
     VJPattern *bestPattern;

@@ -17,9 +17,9 @@
 #include <iostream>
 
 #include "frames.h"
-#include "imageCaptureInterface.h"
+#include "imageCaptureInterfaceQt.h"
 
-#include "filterGraph.h"
+#include "core/filters/blocks/filterGraph.h"
 
 /**
  * An empty stub for the output data obtained as the result of the calculation.

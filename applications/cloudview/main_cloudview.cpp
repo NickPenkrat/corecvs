@@ -8,16 +8,17 @@
 
 #include <string>
 #include <iostream>
+#include <sceneShaded.h>
 
 #include <QtGui/QtGui>
 #include <QApplication>
 
-
-#include "global.h"
-#include "utils.h"
+#include "core/fileformats/objLoader.h"
+#include "core/utils/global.h"
+#include "core/utils/utils.h"
 #include "cloudViewDialog.h"
 #include "mesh3DScene.h"
-#include "meshLoader.h"
+#include "core/fileformats/meshLoader.h"
 #include "qtFileLoader.h"
 
 
@@ -30,20 +31,63 @@ int main(int argc, char *argv[])
 
     printf("Starting cloudView...\n");
     QApplication app(argc, argv);
-    CloudViewDialog mainWindow;
+    CloudViewDialog mainWindow(NULL, "Cloud view executable main window");
     MeshLoader loader;
 
     mainWindow.show();
 
     for (int i = 1; i < argc; i++) {
-        Mesh3DScene *mesh = new Mesh3DScene();
+        bool oldStyle = true;
+        std::string path = argv[i];
 
-        if (!loader.load(mesh, argv[i]))
+        if (corecvs::HelperUtils::startsWith(path, "n:"))
         {
-            delete_safe(mesh);
-            continue;
+            path = path.substr(strlen("n:"));
+            oldStyle = false;
         }
-        mainWindow.addSubObject(argv[i], QSharedPointer<Scene3D>((Scene3D*)mesh));
+
+        if (oldStyle)
+        {
+            Mesh3DScene *mesh = new Mesh3DScene();
+
+            if (!loader.load(mesh, path))
+            {
+                delete_safe(mesh);
+                continue;
+            }
+            mainWindow.addSubObject(QString::fromStdString(path), QSharedPointer<Scene3D>((Scene3D*)mesh));
+        } else {
+            SceneShaded *shaded = new SceneShaded();
+            Mesh3DDecorated *mesh = new Mesh3DDecorated();
+            OBJLoader objLoader;
+
+            /** Load Materials **/
+            std::string mtlFile = path.substr(0, path.length() - 4) + ".mtl";
+            std::ifstream materialFile;
+            materialFile.open(mtlFile, std::ios::in);
+            if (materialFile.good())
+            {
+                objLoader.loadMaterials(materialFile, mesh->materials, corecvs::HelperUtils::getDirectory(mtlFile));
+
+                cout << "Loaded materials: " << mesh->materials.size() << std::endl;
+            } else {
+                cout << "Unable to load material" << std::endl;
+            }
+            materialFile.close();
+
+
+
+            /** Load actual data **/
+            std::ifstream file;
+            file.open(path, std::ios::in);
+            objLoader.loadOBJ(file, *mesh);
+            file.close();
+
+            shaded->mMesh = mesh;
+            shaded->mMesh->recomputeMeanNormals();
+            shaded->prepareMesh(&mainWindow);
+            mainWindow.addSubObject(QString::fromStdString(path), QSharedPointer<Scene3D>(shaded));
+        }
     }
 
     app.exec();

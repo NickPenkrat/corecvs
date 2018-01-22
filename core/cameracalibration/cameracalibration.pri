@@ -1,17 +1,27 @@
 HEADERS += \
-        cameracalibration/calibrationCamera.h        \
-        cameracalibration/calibrationHelpers.h       \
         cameracalibration/flatPatternCalibrator.h    \
-        cameracalibration/calibrationLocation.h      \
-        cameracalibration/projectionModels.h         \
-        cameracalibration/cameraConstraints.h
+        cameracalibration/calibrationLocation.h      \       
+        cameracalibration/cameraConstraints.h        \
+        cameracalibration/calibrationDrawHelpers.h   \       
+        cameracalibration/cameraModel.h              \
+        cameracalibration/projection/projectionModels.h         \
+        cameracalibration/projection/pinholeCameraIntrinsics.h  \
+        cameracalibration/projection/equidistantProjection.h    \
+        cameracalibration/projection/catadioptricProjection.h   \
+        cameracalibration/projection/equisolidAngleProjection.h \
+    $$PWD/projection/stereographicProjection.h
 
 
 SOURCES += \
-        cameracalibration/calibrationCamera.cpp        \
-        cameracalibration/calibrationHelpers.cpp       \
         cameracalibration/calibrationLocation.cpp      \
         cameracalibration/flatPatternCalibrator.cpp    \
-        cameracalibration/projectionModels.cpp         \
-        cameracalibration/cameraConstraints.cpp
+        cameracalibration/cameraConstraints.cpp        \
+        cameracalibration/calibrationDrawHelpers.cpp   \
+        cameracalibration/cameraModel.cpp              \
+        cameracalibration/projection/projectionModels.cpp         \
+        cameracalibration/projection/pinholeCameraIntrinsics.cpp  \
+        cameracalibration/projection/equidistantProjection.cpp    \
+        cameracalibration/projection/catadioptricProjection.cpp   \
+        cameracalibration/projection/equisolidAngleProjection.cpp \
+    $$PWD/projection/stereographicProjection.cpp
 

@@ -1,6 +1,6 @@
-#include "descriptorMatcherProvider.h"
+#include "core/features2d/descriptorMatcherProvider.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 
 using namespace corecvs;
@@ -14,27 +14,17 @@ DescriptorMatcher* DescriptorMatcherProvider::getMatcher(const DescriptorType &t
             return (*p)->getDescriptorMatcher(type, matcher, params);
         }
     }
-    CORE_ASSERT_FAIL_P(("DescriptorMatcherProvider::getMatcher(%s, %s): no providers", type.c_str(), matcher.c_str()));
+
+    try
+	{
+		CORE_ASSERT_FAIL_P(("DescriptorMatcherProvider::getMatcher(%s, %s): no providers", type.c_str(), matcher.c_str()));	
+	}
+    catch (AssertException)
+	{
+	
+	}
+
     return 0;
-}
-
-std::vector<string> DescriptorMatcherProvider::getCaps()
-{
-    std::vector<string> result;
-    for (std::vector<DescriptorMatcherProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        result.push_back((*p)->name());
-    }
-    return result;
-}
-
-void DescriptorMatcherProvider::print()
-{
-    cout << "DescriptorMatcherProvider has " << providers.size() << " providers" << std::endl;
-    for (std::vector<DescriptorMatcherProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        cout << "  " << (*p)->name() << std::endl;
-    }
 }
 
 void DescriptorMatcher::knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &train, std::vector<std::vector<RawMatch> > &matches, size_t K)
@@ -44,16 +34,7 @@ void DescriptorMatcher::knnMatch(RuntimeTypeBuffer &query, RuntimeTypeBuffer &tr
 
 DescriptorMatcherProvider::~DescriptorMatcherProvider()
 {
-    for (std::vector<DescriptorMatcherProviderImpl*>::iterator p = providers.begin(); p != providers.end(); ++p)
-    {
-        delete *p;
-    }
-    providers.clear();
-}
 
-void DescriptorMatcherProvider::add(DescriptorMatcherProviderImpl *provider)
-{
-    providers.push_back(provider);
 }
 
 DescriptorMatcherProvider& DescriptorMatcherProvider::getInstance()

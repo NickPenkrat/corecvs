@@ -5,7 +5,7 @@
 #include <iostream>
 
 #include "dllFunction.h"
-#include "tbbWrapper.h"
+#include "core/tbbwrapper/tbbWrapper.h"
 
 using namespace std;
 using namespace corecvs;
@@ -15,14 +15,12 @@ DllFunction::DllFunction(const std::string &dllName) :
 {
     SYNC_PRINT(("Loading DLL...\n"));
 
-    char *error = NULL;
-
     dllHandle = dlopen (dllName.c_str(), RTLD_LAZY);
     if (!dllHandle) {
         fprintf (stderr, "%s\n", dlerror());
         exit(1);
     }
-    error = dlerror();    /* Clear any existing error */
+    /*char *error =*/ dlerror();    /* Clear any existing error */
 
     const char *testName = "test";
     void *testF = dlsym(dllHandle, testName);
@@ -62,7 +60,7 @@ DllFunction::DllFunction(const std::string &dllName) :
     outputs = outputF();
 }
 
-corecvs::SparseMatrix DllFunction::getNativeJacobian(const double *in, double delta)
+corecvs::SparseMatrix DllFunction::getNativeJacobian(const double *in, double /*delta*/)
 {
     vector<SparseEntry> scratch;
     scratch.resize(nonTrivial);

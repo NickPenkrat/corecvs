@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-#include "vector2d.h"
+#include "core/math/vector/vector2d.h"
 
 namespace corecvs {
 
@@ -43,6 +43,37 @@ public:
     void setHeight(ElementType height)
     {
         size.y() = height;
+    }
+
+    void extendToFit(Vector2d<ElementType> &point)
+    {
+        if (isEmpty()) {
+            size.x() = 0;
+            size.y() = 0;
+            corner = point;
+        } else {
+            if (point.x() < corner.x())
+                corner.x() = point.x();
+            if (point.y() < corner.y())
+                corner.y() = point.y();
+
+
+            if (point.x() > right())
+                size.x() = point.x() - corner.x();
+            if (point.y() > bottom())
+                size.y() = point.y() - corner.y();
+        };
+    }
+
+    void extend (const ElementType& value)
+    {
+        if (isEmpty())
+            return;
+
+        corner.x() -= value;
+        corner.y() -= value;
+        size.x() += 2 * value;
+        size.y() += 2 * value;
     }
 
     bool isEmpty() const
@@ -110,8 +141,13 @@ public:
         return Rectangle(corner1, corner2 - corner1);
     }
 
+    static Rectangle Empty()
+    {
+        return Rectangle(0,0,0,0);
+    }
 
-    friend ostream & operator <<(ostream &out, const Rectangle &rect)
+
+    friend std::ostream & operator <<(std::ostream &out, const Rectangle &rect)
     {
         out << rect.corner << " -> " << rect.size;
         return out;

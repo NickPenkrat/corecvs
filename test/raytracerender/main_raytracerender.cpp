@@ -14,14 +14,13 @@
 #include "qtFileLoader.h"
 
 
-#include "calibrationCamera.h"
-#include "renderer/simpleRenderer.h"
-#include "mesh3d.h"
-#include "meshLoader.h"
-#include "objLoader.h"
-#include "rgb24Buffer.h"
-#include "cameraModel.h"
-#include "bmpLoader.h"
+#include "core/cameracalibration/cameraModel.h"
+#include "core/geometry/renderer/simpleRenderer.h"
+#include "core/geometry/mesh3d.h"
+#include "core/fileformats/meshLoader.h"
+#include "core/fileformats/objLoader.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/fileformats/bmpLoader.h"
 
 extern void raytrace_scene1( void );
 extern void raytrace_scale( void );
@@ -35,6 +34,8 @@ extern void raytrace_scene_pole( void );
 
 extern void raytrace_scene_large( void );
 extern void raytrace_scene_tree(void);
+
+extern void raytrace_scene_union_and_blend(void);
 
 int main(int argc, char **argv)
 {
@@ -69,6 +70,8 @@ int main(int argc, char **argv)
                 raytrace_scene_large(); break;
         case 7:
                 raytrace_scene_tree(); break;
+        case 8:
+                raytrace_scene_union_and_blend(); break;
     }
 
 }

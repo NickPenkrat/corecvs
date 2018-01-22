@@ -107,6 +107,15 @@
         <file>arrow_rotate_clockwise.png</file>
         <file>bitboard.png</file>
         <file>question.png</file>
+        <file>inbox_upload_add.png</file>
+        <file>shape_rotate_clockwise_exec.png</file>
+        <file>shape_rotate_clockwise.png</file>
+        <file>lighthouse.png</file>
+        <file>draw_polygon.png</file>
+        <file>merge_two_tables.png</file>
+        <file>fingerprint.png</file>
+        <file>setting_tools.png</file>
+        <file>page_copy.png</file>
     </qresource>
     <qresource prefix="/new/colors">
         <file>colors/color_blue.png</file>
@@ -157,5 +166,7 @@
     <qresource prefix="/new/shaders">
         <file>shaders/_trivial.fsh</file>
         <file>shaders/_trivial.vsh</file>
+        <file>shaders/default_fast.fsh</file>
+        <file>shaders/default_fast.vsh</file>
     </qresource>
 </RCC>

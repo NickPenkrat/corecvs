@@ -1,8 +1,8 @@
 #include <random>
 
-#include "raytraceRenderer.h"
-#include "preciseTimer.h"
-#include "bmpLoader.h"
+#include "core/geometry/raytrace/raytraceRenderer.h"
+#include "core/utils/preciseTimer.h"
+#include "core/fileformats/bmpLoader.h"
 #include <random>
 
 RaytraceRenderer::RaytraceRenderer()

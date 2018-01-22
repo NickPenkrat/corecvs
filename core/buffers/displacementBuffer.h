@@ -12,17 +12,17 @@
 
 #include <stdint.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "mathUtils.h"
-#include "abstractContiniousBuffer.h"
-#include "g12Buffer.h"
-#include "vector2d.h"
-#include "matrix33.h"
-#include "tbbWrapper.h"
-#include "radialCorrection.h"
-#include "distortionCorrectTransform.h"
-#include "lensDistortionModelParameters.h"
+#include "core/math/mathUtils.h"
+#include "core/buffers/abstractContiniousBuffer.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/tbbwrapper/tbbWrapper.h"
+#include "core/alignment/radialCorrection.h"
+#include "core/alignment/distortionCorrectTransform.h"
+#include "core/alignment/lensDistortionModelParameters.h"
 #include "../math/levenmarq.h"
 
 namespace corecvs {
@@ -97,6 +97,32 @@ public:
             }
         }
     }
+
+    /**
+     * This fills current displacement buffer with the inverse of the RadialCorrection
+     *   This is a two stage algorithm that first iterates over the target area with the given step
+     *
+     * \param inv
+     *
+     * Rectangle that should be inverted. Target is [0,0] x [w,h] - to change target area (which will become source after inversion) please
+     * use TableInverseCache
+     *
+     * \param x1
+     * \param y1
+     * \param x2
+     * \param y2
+     *
+     * \param useLM Should we use second stage that makes inversion subpixel
+     *
+     *
+     **/
+    void fillWithInvertedRadialBase(
+            RadialCorrection *inverseMap,
+            double x1, double y1,
+            double x2, double y2,
+            double step = 0.5,
+            bool useLM = false
+    );
 
     static DisplacementBuffer *CacheInverse(
             RadialCorrection *inverseMap,
@@ -251,6 +277,70 @@ public:
 
 };
 
+
+class TableInverseCache : public DisplacementBuffer
+{
+public:
+    Vector2dd inputShift = Vector2dd(0.0, 0.0);
+
+    TableInverseCache(int32_t h = 0, int32_t w = 0) : DisplacementBuffer (h, w) {}
+
+    static TableInverseCache* CacheInverse(
+            int tx1, int ty1,
+            int tx2, int ty2,
+            RadialCorrection *inverseMap,
+            double x1, double y1,
+            double x2, double y2,
+            double step = 0.5,
+            bool useLM = false
+    );
+
+
+    bool isValidCoord (const int32_t y, const int32_t x) const
+    {
+        //SYNC_PRINT(("C"));
+        return DisplacementBuffer::isValidCoord(y - inputShift.y(), x - inputShift.x());
+    }
+
+    bool isValidCoord (const Vector2d32 &pointd) const
+    {
+        return isValidCoord(pointd.y(), pointd.x());
+    }
+
+    bool isValidCoordBl (const double y, const double x) const
+    {
+        return DisplacementBuffer::isValidCoordBl(y - inputShift.y(), x - inputShift.x());
+    }
+
+    bool isValidCoordBl (const Vector2dd &pointd) const
+    {
+        return isValidCoordBl(pointd.y(), pointd.x());
+    }
+
+
+    inline Vector2dd map(const int32_t y, const int32_t x) const
+    {
+        Vector2dd  pointd(x, y);
+        Vector2d32 pointi(x - inputShift.x(), y - inputShift.y());
+        if (DisplacementBuffer::isValidCoord(pointi.y(), pointi.x()))
+            return this->element(pointi) + pointd - inputShift;
+        else
+            return Vector2dd(0,0);
+    }
+
+    /*Bilinear approach should be used*/
+    inline Vector2dd map(const Vector2dd &pointd) const
+    {
+        Vector2d32 pointi(pointd.x() - inputShift.x(), pointd.y() - inputShift.y());
+        if (DisplacementBuffer::isValidCoordBl(pointi.y(), pointi.x()))
+            return this->element(pointi) + pointd - inputShift;
+        else
+            return Vector2dd(0,0);
+    }
+
+
+
+};
 
 } //namespace corecvs
 

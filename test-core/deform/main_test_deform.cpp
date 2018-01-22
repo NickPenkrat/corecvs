@@ -11,17 +11,17 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "fixedPointDisplace.h"
-#include "matrix33.h"
-#include "projectiveTransform.h"
-#include "g12Buffer.h"
-#include "bufferFactory.h"
-#include "bmpLoader.h"
-#include "rgb24Buffer.h"
-#include "radialCorrection.h"
-#include "displacementBuffer.h"
+#include "core/buffers/fixeddisp/fixedPointDisplace.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/projectiveTransform.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/alignment/radialCorrection.h"
+#include "core/buffers/displacementBuffer.h"
 
 using corecvs::Matrix33;
 using corecvs::ProjectiveTransform;
@@ -42,6 +42,11 @@ TEST(Deform, testFastDeform)
     ProjectiveTransform inverseLeft(inverseLeftMatrix);
 
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (image == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(image, "Could not open test image\n");
     CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
@@ -163,7 +168,7 @@ TEST(Deform, testRadialApplication)  // TODO: move to perf-tests!
 
 TEST(Deform, testRadialInversion)
 {
-    testRadialInversion(1);
+    testRadialInversion(3);
 }
 
 TEST(Deform, testRectangularImage)

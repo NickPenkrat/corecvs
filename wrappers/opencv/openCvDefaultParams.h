@@ -15,11 +15,18 @@ namespace
         {
             if (curr.size() == 0 && params[i] == ' ')
                 continue;
-            if (params[i] == ' ' && !curr.size())
+            if ( params[ i ] == ' ' && !curr.size() )
             {
                 fields.push_back(curr);
                 curr.resize(0);
             }
+            if ( params[ i ] == ';' )
+            {
+                fields.push_back( curr );
+                curr.resize( 0 );
+                i++;
+            }
+
             curr = curr + params[i];
         }
         if (curr.size())
@@ -201,5 +208,32 @@ struct BriskParams
     }
 };
 
+struct AkazeParams
+{
+    int descriptorType;
+    int descriptorSize;
+    int descriptorChannels;
+    float threshold;
+    int octaves;
+    int octaveLayers;
+    int diffusivity;
 
-#endif
+    AkazeParams(const std::string& params = "", int descriptorType = 5 /* MLDB */,
+                int descriptorSize = 0, int descriptorChannels = 3, float threshold = 0.001f,
+                int octaves = 4, int octaveLayers = 4, int diffusivity = 1 /* G2 */) :
+        descriptorType(descriptorType), descriptorSize(descriptorSize), descriptorChannels(descriptorChannels),
+        threshold(threshold), octaves(octaves), octaveLayers(octaveLayers), diffusivity(diffusivity)
+    {
+        auto mp = ::parse(params);
+        PARSED(descriptorType,)
+        PARSED(descriptorSize,)
+        PARSED(descriptorChannels,)
+        PARSED(threshold,)
+        PARSED(octaves,)
+        PARSED(octaveLayers,)
+        PARSED(diffusivity,)
+    }
+};
+
+
+#endif // OPENCVDEFAULTPARAMS_H

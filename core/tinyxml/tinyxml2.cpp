@@ -21,7 +21,7 @@ must not be misrepresented as being the original software.
 distribution.
 */
 
-#include "tinyxml2.h"
+#include "core/tinyxml/tinyxml2.h"
 
 #include <new>		// yes, this one new style header, is in the Android SDK.
 #   ifdef ANDROID_NDK
@@ -29,6 +29,8 @@ distribution.
 #else
 #   include <cstddef>
 #endif
+
+using namespace std;
 
 static const char LINE_FEED				= (char)0x0a;			// all line endings are normalized to LF
 static const char LF = LINE_FEED;

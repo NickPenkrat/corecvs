@@ -1,8 +1,9 @@
 #ifndef REPROJECTIONCOSTFUNCTION_H
 #define REPROJECTIONCOSTFUNCTION_H
 
-#include "function.h"
-#include "fixtureScene.h"
+#include "core/function/function.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
 
 class ReprojectionCostFunction : public FunctionArgs
 {
@@ -107,9 +108,10 @@ public:
 
                 Vector3d<DoubleType>  cameraCoords = camLocation.project(pointPosition);
 
-                Vector2d<DoubleType> fromModel = GenericPinholeCameraIntrinsics<DoubleType>(camera->intrinsics).project(cameraCoords);
+                Vector2d<DoubleType> fromModel = GenericPinholeCameraIntrinsics<DoubleType>(*camera->getPinhole()).project(cameraCoords);
 
-                Vector2d<DoubleType> fromCam(DoubleType(it->second.observation.x()), DoubleType(it->second.observation.y()));
+                Vector2dd undist = it->second.getUndist();
+                Vector2d<DoubleType> fromCam(DoubleType(undist.x()), DoubleType(undist.y()));
                 error = fromCam - fromModel;
 
                 out[outCount++] = error.x();

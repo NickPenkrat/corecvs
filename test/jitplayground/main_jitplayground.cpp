@@ -6,12 +6,13 @@
 #include <iostream>
 #include <random>
 
-#include "fixtureScene.h"
-#include "calibrationHelpers.h"
-#include "mesh3d.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
+#include "core/geometry/mesh3d.h"
 
 #include "reprojectionCostFunction.h"
-#include "astNode.h"
+#include "core/meta/astNode.h"
 
 #include "dllFunction.h"
 
@@ -40,11 +41,11 @@ FixtureScene *genTest()
     FixtureScene *scene = new FixtureScene;
 
     CameraModel model;
-    model.intrinsics.principal.x() = 320;
-    model.intrinsics.principal.y() = 240;
-    model.intrinsics.focal.x() = 589;
-    model.intrinsics.focal.y() = 589;
-    model.intrinsics.size = Vector2dd(640, 480);
+    model.getPinhole()->setPrincipalX(320);
+    model.getPinhole()->setPrincipalX(240);
+    model.getPinhole()->setFocalX(589);
+    model.getPinhole()->setFocalY(589);
+    model.getPinhole()->setSize(Vector2dd(640, 480));
 
 
     for (int idf = 0; idf < FIXTURE_NUM; idf++)
@@ -123,7 +124,7 @@ void codeGenerator(
         {
             elements[i].p->extractConstPool("c", constpool);
         }
-        SYNC_PRINT(("finished - size = %d\n", constpool.size()));
+        SYNC_PRINT(("finished - size = %" PRISIZE_T "\n", constpool.size()));
     }
 
     /*Compute hashes*/
@@ -152,7 +153,7 @@ void codeGenerator(
     std::sort(commonSubexpressions.begin(), commonSubexpressions.end(),
               [](ASTNodeInt *a, ASTNodeInt *b){return a->height < b->height;});
 
-    SYNC_PRINT(("finished - size = %d\n", commonSubexpressions.size() ));
+    SYNC_PRINT(("finished - size = %" PRISIZE_T "\n", commonSubexpressions.size() ));
 
     /** Generate **/
 
@@ -328,7 +329,7 @@ int main (void)
 
             SYNC_PRINT(("Computing derivative...\n"));
             stats.startInterval();
-            int j;
+            size_t j;
             for (j = i; j < i + reflushMem && j < aout.size(); j++)
             {
                 ASTNodeInt *toProcess = aout[j].p;
@@ -401,8 +402,8 @@ int main (void)
 
         SYNC_PRINT(("Running GCC compiler...\n"));
         PreciseTimer timer = PreciseTimer::currentTime();
-        system("gcc -march=native -shared -fPIC jit.cpp -o jit.so");
-        printf("GCC elapsed %.2lf ms\n", timer.usecsToNow() / 1000.0);
+        int result = system("gcc -march=native -shared -fPIC jit.cpp -o jit.so");
+        printf("GCC (%d) elapsed %.2lf ms\n", result, timer.usecsToNow() / 1000.0);
 
 
         /* Loading DLL*/

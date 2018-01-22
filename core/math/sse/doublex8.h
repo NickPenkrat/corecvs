@@ -10,9 +10,9 @@
  * \author: alexander
  */
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "doublex4.h"
+#include "core/math/sse/doublex4.h"
 
 
 namespace corecvs {
@@ -144,11 +144,11 @@ template<int idx>
     }
 
     /*Print to stream helper */
-    friend ostream & operator << (ostream &out, const Doublex4 &vector);
+    friend std::ostream & operator << (std::ostream &out, const Doublex4 &vector);
 
 
     /* Formated hex helper */
-    void hexDump (ostream &out);
+    void hexDump (std::ostream &out);
 };
 
 

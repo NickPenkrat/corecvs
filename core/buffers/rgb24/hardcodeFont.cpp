@@ -7,9 +7,9 @@
  * \author alexander
  */
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "hardcodeFont.h"
+#include "core/buffers/rgb24/hardcodeFont.h"
 namespace corecvs {
 
 

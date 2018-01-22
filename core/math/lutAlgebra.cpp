@@ -7,13 +7,16 @@
  * \author alexander
  */
 
-#include "lutAlgebra.h"
-#include "vector3d.h"
+#include "core/math/lutAlgebra.h"
+#include "core/math/vector/vector3d.h"
 #include <iostream>
 #include <stdlib.h>
 namespace corecvs {
 
 using std::hex;
+using std::istream;
+using std::ostream;
+using std::cout;
 
 void LUTable::generateCCode()
 {

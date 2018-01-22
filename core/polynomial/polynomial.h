@@ -1,19 +1,29 @@
 #ifndef POLYNOMIAL_H
 #define POLYNOMIAL_H
 
-#include "vector.h"
-#include "abstractBuffer.h"
-#include "matrix.h"
-
 #include <vector>
 
-namespace corecvs
-{
-/*
- * This class stores polynomials.
- * \alpha_0+\alpha_1 x + \dots + \alpha_n x^n
- * is stored as \alpha_0 \dots \alpha_n
+#include "core/utils/global.h"
+
+#include "core/math/vector/vector.h"
+#include "core/buffers/abstractBuffer.h"
+#include "core/math/matrix/matrix.h"
+
+/* Including this header to source files together with opencv dues to a compilation error like this:
+    ...\opencv\2411\sources\modules\core\include\opencv2/core/core.hpp(3211): error C2891: fixed_size: cannot take the address of a template parameter
+
+    It happens with msvc2013/2015 because of "std::enable_if..." block at this header below.
+    Now we're to be carefully to use it together with opencv stuff at the one cpp file.
+    The problem workaround is including "opencv/core.hpp" before this header.
  */
+
+namespace corecvs {
+
+/*
+    * This class stores polynomials.
+    * \alpha_0+\alpha_1 x + \dots + \alpha_n x^n
+    * is stored as \alpha_0 \dots \alpha_n
+    */
 class Polynomial : protected std::vector<double>
 {
 public:
@@ -26,7 +36,8 @@ public:
      * TODO: replace with machine-accurate evaluator (for example -- Luc Paquet Precise evaluation of a polynomial at a point given in staggered
      * correction format [Journal of Computational and Applied Mathematics 50 (1994)]
      */
-    double         operator()(const double &at   ) const;
+    double operator()(const double &at) const;
+
     double polishRoot(double x0, int N = 5) const;
 
     // TODO: This stuff should be out-of-class
@@ -58,6 +69,22 @@ public:
     {
         visitor.visit((std::vector<double>&)*this, "coeff");
     }
+
+    friend std::ostream& operator << (std::ostream &out, Polynomial &toPrint)
+    {
+        for (int i = toPrint.size()-1; i >= 0; i--)
+        {
+            if (toPrint[i] != 0.0 )
+            {
+                cout << toPrint[i];
+                if (i != 0 )
+                {
+                    cout << "x^" << i << " + ";
+                }
+            }
+        }
+        return out;
+    }
 };
 
 Polynomial operator*(const double &lhs, const Polynomial &rhs);
@@ -73,6 +100,8 @@ public:
     Polynomial& a(int y, int x) { return element(y, x); }
     Polynomial  a(int y, int x) const { return element(y, x); }
 };
+
+/* TODO: msvc2013/2015 bug: opencv/core.hpp couldn't be compiled with the block of "std::enable_if..." below +++++ */
 
 template<typename L, typename R>
 typename std::enable_if<
@@ -90,6 +119,7 @@ operator*(const L &lhs, const R &rhs)
                 ret.a(i, j) += lhs.a(i, k) * rhs.a(k, j);
     return ret;
 }
+
 template<typename L, typename R>
 typename std::enable_if<
         (std::is_same<L, PolynomialMatrix>::value && std::is_same<R, PolynomialMatrix>::value) ||
@@ -105,6 +135,7 @@ operator+(const L &lhs, const R &rhs)
             ret.a(i, j) = lhs.a(i, j) + rhs.a(i, j);
     return ret;
 }
+
 template<typename L, typename R>
 typename std::enable_if<
         (std::is_same<L, PolynomialMatrix>::value && std::is_same<R, PolynomialMatrix>::value) ||
@@ -121,11 +152,13 @@ operator-(const L &lhs, const R &rhs)
     return ret;
 }
 
-}
+/* TODO: msvc2013/2015 bug: opencv/core.hpp couldn't be compiled with the block of "std::enable_if..." below ----- */
 
+
+} // namespace corecvs
 
 
 std::ostream& operator<<(std::ostream&, const corecvs::Polynomial& p);
 
 
-#endif
+#endif // POLYNOMIAL_H

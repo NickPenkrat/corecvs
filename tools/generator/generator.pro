@@ -5,6 +5,7 @@ QT      -= gui
 CONFIG  += console
 CONFIG  -= app_bundle
 CONFIG  += debug
+CONFIG  += c++11
 
 ROOT_DIR=../../../..
 include($$ROOT_DIR/config.pri)
@@ -14,7 +15,26 @@ MOC_DIR  = $$OBJECTS_DIR
 #UI_DIR  = $$OBJECTS_DIR
 #RCC_DIR = $$OBJECTS_DIR
 
-include(../../core/core.pri)
+#include(../../core/core.pri)
+
+# CORE SUBSET
+COREDIR=../../core
+
+INCLUDEPATH += \
+    $$COREDIR/.. \
+    $$COREDIR/reflection \
+    $$COREDIR/utils   \
+
+SOURCES += $$COREDIR/utils/util.c
+SOURCES += $$COREDIR/utils/utils.cpp
+
+!win32  {
+    LIBS += -lstdc++fs
+}
+
+
+# ACTUAL GENERATOR
+
 
 SOURCES += \
     main.cpp \

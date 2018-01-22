@@ -6,9 +6,14 @@
  *
  * \date Feb 10, 2011
  */
-#include "global.h"
-#include "vector2d.h"
-#include "matrix44.h"
+#include "core/utils/global.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/matrix/matrix44.h"
+
+#include "core/cameracalibration/cameraModel.h"
+#include "core/cameracalibration/projection/pinholeCameraIntrinsics.h"
+
+
 
 namespace corecvs {
 
@@ -60,6 +65,8 @@ public:
 
     double getVFov() const;
     double getHFov() const;
+
+    PinholeCameraIntrinsics toPinholeCameraIntrinsics() const;
 
 template<class VisitorType>
     void accept(VisitorType &visitor)

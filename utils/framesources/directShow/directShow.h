@@ -7,7 +7,7 @@
 
 #include "capdll.h"
 #include "imageCaptureInterface.h"
-#include "preciseTimer.h"
+#include "core/utils/preciseTimer.h"
 #include "cameraControlParameters.h"
 
 class DirectShowCameraDescriptor

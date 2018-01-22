@@ -18,14 +18,14 @@
 #include <QAction>
 #include <QMessageBox>
 
-#include "log.h"
+#include "core/utils/log.h"
 
 #include "baseHostDialog.h"
 
 #include "g12Image.h"
 #include "graphPlotDialog.h"
 #include "textLabelWidget.h"
-#include "propertyListVisitor.h"
+#include "core/utils/visitors/propertyListVisitor.h"
 #include "foldableWidget.h"
 #include "parametersMapper/parametersMapperBase.h"
 
@@ -78,8 +78,9 @@ BaseHostDialog::BaseHostDialog(QWidget *parent)
     mUi.setupUi(this);
 }
 
-void BaseHostDialog::init(QWidget *parameterHolderWidget, QTextEdit * /*loggerWidget*/)
+void BaseHostDialog::init(bool isRGB, QWidget *parameterHolderWidget, QTextEdit * /*loggerWidget*/)
 {
+    mIsRGB = isRGB;
     mDockWidget = parameterHolderWidget;
     L_INFO << "ViMouse started" << "\n" << "Log will go here";
 
@@ -319,8 +320,9 @@ void BaseHostDialog::deinitCamera()
 /* ******************************************************************************
  *  Calculation thread
  */
-void BaseHostDialog::initCapture(QString const &init, bool isRgb)
+void BaseHostDialog::initCapture(QString const &init/*, bool isRgb*/)
 {
+    SYNC_PRINT(("BaseHostDialog::initCapture(%s, rgb=%s): called\n", init.toLatin1().constData(), mIsRGB ? "true" : "false"));
     //TODO:: if mInputString is empty, but app params not empty wizard is shown. Maybe it's bad
     if (!init.isEmpty())
     {
@@ -335,7 +337,7 @@ void BaseHostDialog::initCapture(QString const &init, bool isRgb)
 
     mInputSelectorDialog.setInputString(mInputString);
 
-    mCamera = ImageCaptureInterfaceQtFactory::fabric(mInputString.toStdString(), isRgb);
+    mCamera = ImageCaptureInterfaceQtFactory::fabric(mInputString.toStdString(), mIsRGB);
 
     if (mCamera == NULL)
     {
@@ -656,6 +658,8 @@ void BaseHostDialog::camerasParamsChanged()
 {
     qDebug("BaseHostDialog::camerasParamsChanged(): called");
     QSharedPointer<CamerasConfigParameters> parametersShPtr = QSharedPointer<CamerasConfigParameters>(getAdditionalParams());
+    cout << parametersShPtr->rectifierData().F << std::endl;
+
 
     emit camerasParametersChanged(parametersShPtr);
 }
@@ -666,7 +670,6 @@ CamerasConfigParameters * BaseHostDialog::getAdditionalParams() const
     fp->setInputsN(mUseOneCaptureDevice ? CamerasConfigParameters::OneCapDev : CamerasConfigParameters::TwoCapDev);
 
     fp->setRectifierData(mRectifierData);
-
     fp->setDistortionTransform(mDistortionTransform);
 
     return fp;
@@ -754,7 +757,7 @@ ViAreaWidget * BaseHostDialog::createAdditionalWindow(QString const &name, Windo
             break;
         case oglWindow:
 #ifdef WITH_OPENGL
-            area = new CloudViewDialog();
+            area = new CloudViewDialog(NULL, "Open GL subwindow");
 #endif
             break;
         case graphWindow:

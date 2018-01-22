@@ -110,6 +110,10 @@ int DistortionApplicationParameters::staticInit()
     directory[std::string("Distortion Application Parameters")]= &reflection;
    return 0;
 }
+int DistortionApplicationParameters::relinkCompositeFields()
+{
+   return 0;
+}
 
 SUPPRESS_OFFSET_WARNING_END
 

@@ -5,8 +5,8 @@
 #include <vector>
 #include <ostream>
 
-#include "vector2d.h"
-#include "line.h"
+#include "core/math/vector/vector2d.h"
+#include "core/geometry/line.h"
 
 
 namespace corecvs {
@@ -98,7 +98,7 @@ public:
 typedef std::vector<double> FragmentAttributes;
 
 
-inline static ostream & operator <<(ostream &out, const FragmentAttributes &vector)
+inline static std::ostream & operator <<(std::ostream &out, const FragmentAttributes &vector)
 {
     out << "[";
     for (size_t i = 0; i < vector.size(); i++)

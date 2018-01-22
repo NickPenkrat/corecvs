@@ -6,12 +6,17 @@
  * \author alexander
  */
 
-#include "essentialEstimator.h"
-#include "quaternion.h"
-#include "levenmarq.h"
-#include "gradientDescent.h"
-#include "classicKalman.h"
-#include "polynomialSolver.h"
+
+#include "core/rectification/essentialEstimator.h"
+#include "core/math/quaternion.h"
+#include "core/math/levenmarq.h"
+#include "core/math/gradientDescent.h"
+#include "core/kalman/classicKalman.h"
+#include "core/polynomial/polynomialSolver.h"
+#include "core/math/matrix/matrixOperations.h"
+#include "core/meta/packedDerivative.h"
+#include "core/meta/astNode.h"
+
 //#include "kalman.h"
 
 namespace corecvs {
@@ -373,10 +378,10 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
     const double w12 = w1 * w1, w22 = w2 * w2, w32 = w3 * w3, w42 = w4 * w4, w52 = w5 * w5, w62 = w6 * w6, w72 = w7 * w7, w82 = w8 * w8, w92 = w9 * w9;
 
     corecvs::Matrix A(10, 10);
-#include "p5pNumericPart.h"
+#include "core/rectification/p5pNumericPart.h"
 // Now we fill polynomial part of matrix
     corecvs::PolynomialMatrix B(10, 3);
-#include "p5pPolynomialPart.h"
+#include "core/rectification/p5pPolynomialPart.h"
 
     A = A.inv();
 
@@ -461,7 +466,16 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssential5point(const vector
 
 EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*> & samples, const Quaternion &rotation, const Vector3dd &translation)
 {
-    CostFunction7toN costFunction(&samples);
+    //CostFunction7toN costFunction(&samples);            //      41009
+    //CostFunction7toNPacked costFunction(&samples);      //      296492s
+    // CostFunction7toNGenerated1 costFunction(&samples); //      327208s
+    CostFunction7toNGenerated1 costFunction(&samples);    // cse  332843s
+                                                          // man1 321038
+                                                          // man2 271804
+                                                          // man3 268170
+
+
+
     NormalizeFunction normalise;
     LevenbergMarquardt LMfit;
 
@@ -470,6 +484,9 @@ EssentialMatrix EssentialEstimator::getEssentialLM(const vector<Correspondence*>
     LMfit.maxIterations = 100000;
     LMfit.startLambda = 10;
     LMfit.lambdaFactor = 20.0;
+
+    LMfit.trace = false;
+    LMfit.traceProgress = false;
 
     vector<double> input(CostFunctionBase::VECTOR_SIZE);
     /* Left camera is in the negative direction of right camera */
@@ -884,6 +901,180 @@ Matrix EssentialEstimator::CostFunction7to1::getJacobian(const double in[], doub
     return result;
 }
 
+#if 0
+template<typename ElementType>
+typename FixMatrixFixed<ElementType, 3, 3> matrixFromModel(const double in[EssentialEstimator::CostFunctionBase::VECTOR_SIZE])
+{
+    typedef FixMatrixFixed<PackedDerivative<EssentialEstimator::CostFunctionBase::VECTOR_SIZE>, 3, 3> Matrix33Diff;
+    typedef GenericQuaternion< PackedDerivative<EssentialEstimator::CostFunctionBase::VECTOR_SIZE> >   QuaternionDiff;
+    typedef Vector3d< PackedDerivative<EssentialEstimator::CostFunctionBase::VECTOR_SIZE> >   VectorDiff;
+
+    Matrix result(outputs, inputs);
+    QuaternionDiff inRot(
+            PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_X], ROTATION_Q_X),
+            PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_Y], ROTATION_Q_Y),
+            PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_Z], ROTATION_Q_Z),
+            PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_T], ROTATION_Q_T));
+
+    VectorDiff   inTrans(
+            PackedDerivative<VECTOR_SIZE>::ID(in[TRANSLATION_X], TRANSLATION_X),
+            PackedDerivative<VECTOR_SIZE>::ID(in[TRANSLATION_Y], TRANSLATION_Y),
+            PackedDerivative<VECTOR_SIZE>::ID(in[TRANSLATION_Z], TRANSLATION_Z)
+            );
+
+    Matrix33Diff matTrans;
+    matTrans.atm(0,0) =  0.0;         matTrans.atm(0,1) = -inTrans.z(); matTrans.atm(0,2) =  inTrans.y();
+    matTrans.atm(1,0) =  inTrans.z(); matTrans.atm(1,1) =          0.0; matTrans.atm(1,2) = -inTrans.x();
+    matTrans.atm(2,0) = -inTrans.y(); matTrans.atm(2,1) =  inTrans.x(); matTrans.atm(2,2) =          0.0;
+
+    Matrix33Diff matRot = inRot.toMatrixGeneric<Matrix33Diff>();
+
+    Matrix33Diff input = matTrans.mul(matRot);
+    return input;
+
+}
+
+
+template<typename ElementType>
+    void essentialDerivative(
+        const double in[EssentialEstimator::CostFunctionBase::VECTOR_SIZE],
+        ElementType out[EssentialEstimator::CostFunctionBase::VECTOR_SIZE],
+        const Correspondence &correspondance
+    )
+{
+    return;
+}
+#endif
+
+Matrix EssentialEstimator::CostFunction7toNPacked::getJacobian(const double in[], double delta)
+{
+    CORE_UNUSED(delta);
+
+    typedef FixMatrixFixed<PackedDerivative<EssentialEstimator::CostFunctionBase::VECTOR_SIZE>, 3, 3> Matrix33Diff;
+    typedef GenericQuaternion< PackedDerivative<EssentialEstimator::CostFunctionBase::VECTOR_SIZE> >   QuaternionDiff;
+    typedef Vector3d< PackedDerivative<EssentialEstimator::CostFunctionBase::VECTOR_SIZE> >   VectorDiff;
+
+    Matrix result(outputs, inputs, false);
+    QuaternionDiff inRot(
+            PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_X], ROTATION_Q_X),
+            PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_Y], ROTATION_Q_Y),
+            PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_Z], ROTATION_Q_Z),
+            PackedDerivative<VECTOR_SIZE>::ID(in[ROTATION_Q_T], ROTATION_Q_T));
+
+    VectorDiff   inTrans(
+            PackedDerivative<VECTOR_SIZE>::ID(in[TRANSLATION_X], TRANSLATION_X),
+            PackedDerivative<VECTOR_SIZE>::ID(in[TRANSLATION_Y], TRANSLATION_Y),
+            PackedDerivative<VECTOR_SIZE>::ID(in[TRANSLATION_Z], TRANSLATION_Z)
+            );
+
+    Matrix33Diff matTrans;
+    matTrans.atm(0,0) =  0.0;         matTrans.atm(0,1) = -inTrans.z(); matTrans.atm(0,2) =  inTrans.y();
+    matTrans.atm(1,0) =  inTrans.z(); matTrans.atm(1,1) =          0.0; matTrans.atm(1,2) = -inTrans.x();
+    matTrans.atm(2,0) = -inTrans.y(); matTrans.atm(2,1) =  inTrans.x(); matTrans.atm(2,2) =          0.0;
+
+    Matrix33Diff matRot = inRot.toMatrixGeneric<Matrix33Diff>();
+
+    Matrix33Diff input = matTrans.mul(matRot);
+
+
+    for (unsigned j = 0; j < samples->size(); j++)
+    {
+        /**
+         * Vector3dd line = this->mulBy2dLeft(right);
+         * Line2d epiline(line);
+         * return epiline.distanceTo(left);
+         **/
+
+        Correspondence *corr = samples->at(j);
+        Vector2dd start = corr->start;
+        Vector2dd end   = corr->end;
+
+        VectorDiff line (
+            start.x() * input.atm(0,0) + start.y() * input.atm(1,0) + input.atm(2,0),
+            start.x() * input.atm(0,1) + start.y() * input.atm(1,1) + input.atm(2,1),
+            start.x() * input.atm(0,2) + start.y() * input.atm(1,2) + input.atm(2,2)
+        );
+
+        /**
+         *  double d = pointWeight(point);
+            if (d < 0) d = -d;
+            double l = normal().l2Metric();
+            return (d / l);
+        **/
+
+
+        PackedDerivative<VECTOR_SIZE> weight = line.x() * end.x() + line.y() * end.y() + line.z();
+        PackedDerivative<VECTOR_SIZE> l = line.xy().l2Metric();
+        PackedDerivative<VECTOR_SIZE> error = weight / l;
+
+        if (error.value < 0 ) error = -error;
+
+        for (int i = 0; i < inputs; i++)
+        {
+            result.element(j,i) = error.derivative[i];
+        }
+    }
+    return result;
+}
+
+#if 1
+
+EssentialEstimator::CostFunction7toNPacked::Matrix33Diff EssentialEstimator::CostFunction7toNPacked::essentialAST()
+{
+
+    QuaternionDiff inRot(
+            ASTNode("Qx"),
+            ASTNode("Qy"),
+            ASTNode("Qz"),
+            ASTNode("Qt"));
+
+    Vector3dDiff  inTrans(
+            ASTNode("Tx"),
+            ASTNode("Ty"),
+            ASTNode("Tz")
+            );
+
+    Matrix33Diff matTrans;
+    matTrans.atm(0,0) =  ASTNode(0.0); matTrans.atm(0,1) = -inTrans.z() ; matTrans.atm(0,2) =  inTrans.y();
+    matTrans.atm(1,0) =  inTrans.z() ; matTrans.atm(1,1) =  ASTNode(0.0); matTrans.atm(1,2) = -inTrans.x();
+    matTrans.atm(2,0) = -inTrans.y() ; matTrans.atm(2,1) =  inTrans.x() ; matTrans.atm(2,2) = ASTNode(0.0);
+
+    Matrix33Diff matRot = inRot.toMatrixGeneric<Matrix33Diff>();
+    Matrix33Diff input = matTrans.mul(matRot);
+    return input;
+}
+
+ASTNodeInt *EssentialEstimator::CostFunction7toNPacked::derivative(const EssentialEstimator::CostFunction7toNPacked::Matrix33Diff &input)
+{
+    //Matrix33Diff input = essentialAST();
+
+    Vector2dDiff start(ASTNode("startx"), ASTNode("starty"));
+    Vector2dDiff end  (ASTNode("endx")  , ASTNode("endy"));
+
+    Vector3dDiff line (
+            start.x() * input.atm(0,0) + start.y() * input.atm(1,0) + input.atm(2,0),
+            start.x() * input.atm(0,1) + start.y() * input.atm(1,1) + input.atm(2,1),
+            start.x() * input.atm(0,2) + start.y() * input.atm(1,2) + input.atm(2,2)
+        );
+
+        /**
+         *  double d = pointWeight(point);
+            if (d < 0) d = -d;
+            double l = normal().l2Metric();
+            return (d / l);
+        **/
+
+
+    ASTNode weight = line.x() * end.x() + line.y() * end.y() + line.z();
+    //if (weight.value < 0 ) weight = -weight;
+
+    ASTNode l = sqrt(line.x() * line.x() + line.y() * line.y());
+    ASTNode error = weight / l;
+    return error.p;
+}
+#endif
+
+
 void EssentialEstimator::CostFunction7toN::operator()(const double in[], double out[])
 {
     EssentialMatrix matrix = getEssential(in);
@@ -891,6 +1082,14 @@ void EssentialEstimator::CostFunction7toN::operator()(const double in[], double 
     {
         out[i] = matrix.epipolarDistance(*(samples->at(i)));
     }
+#if 0
+    cout << endl;
+    for (unsigned i = 0; i < VECTOR_SIZE; i++)
+    {
+        cout << in[i] << " ";
+    }
+    cout << endl;
+#endif
 }
 
 /*Matrix EssentialEstimator::MultioutCostFunction::getJacobian(const double in[], double delta = 1e-7)
@@ -912,6 +1111,32 @@ void EssentialEstimator::NormalizeFunction::operator()(const double in[], double
 
 EssentialEstimator::~EssentialEstimator()
 {
+}
+
+void   derivative (const double in[], double out[], Correspondence *c);
+Matrix derivative (const double in[], const vector<Correspondence *> *samples);
+Matrix derivative2(const double in[], const vector<Correspondence *> *samples);
+
+Matrix EssentialEstimator::CostFunction7toNGenerated::getJacobian(const double in[], double delta)
+{
+    CORE_UNUSED(delta);
+    Matrix result(outputs, inputs);
+    for (unsigned j = 0; j < samples->size(); j++)
+    {
+        //double out[7];
+        Correspondence *corr = samples->at(j);
+        derivative(in, &result.element(j, 0), corr);
+        /*for (int i = 0; i < 7; i++)
+        {
+            result.element(j, i) = out[i];
+        }*/
+    }
+    return result;
+}
+
+Matrix EssentialEstimator::CostFunction7toNGenerated1::getJacobian(const double in[], double /*delta*/)
+{
+    return derivative2(in, samples);
 }
 
 

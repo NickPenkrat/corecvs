@@ -12,15 +12,16 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QtCore>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "fileCapture.h"
-#include "bufferFactory.h"
+#include "core/buffers/bufferFactory.h"
 
 /* File capture interface */
-FileCaptureInterface::FileCaptureInterface(string pathFmt, bool isVerbose)
+FileCaptureInterface::FileCaptureInterface(string pathFmt, bool isVerbose, bool isRGB)
     : ImageFileCaptureInterface(&pathFmt, isVerbose)
 {
+    mIsRgb = isRGB;
     cout << "Starting capture form file with pattern:" << mPathFmt << "\n";
 }
 
@@ -39,15 +40,15 @@ FileCaptureInterface::FramePair FileCaptureInterface::getFrame()
     }
 
     if (mIsRgb) {
-        result.rgbBufferLeft = BufferFactory::getInstance()->loadRGB24Bitmap(name0);
-        result.bufferLeft    = result.rgbBufferLeft->toG12Buffer();
+        result.setRgbBufferLeft ( BufferFactory::getInstance()->loadRGB24Bitmap(name0));
+        result.setBufferLeft    ( result.rgbBufferLeft()->toG12Buffer());
 
-        result.rgbBufferRight = BufferFactory::getInstance()->loadRGB24Bitmap(name1);
-        result.bufferRight    = result.rgbBufferRight->toG12Buffer();
+        result.setRgbBufferRight( BufferFactory::getInstance()->loadRGB24Bitmap(name1));
+        result.setBufferRight   ( result.rgbBufferRight()->toG12Buffer());
 
     } else {
-    result.bufferLeft = BufferFactory::getInstance()->loadG12Bitmap(name0);
-        result.bufferRight = BufferFactory::getInstance()->loadG12Bitmap(name1);
+        result.setBufferLeft (BufferFactory::getInstance()->loadG12Bitmap(name0));
+        result.setBufferRight(BufferFactory::getInstance()->loadG12Bitmap(name1));
     }
 
 
@@ -60,7 +61,7 @@ FileCaptureInterface::FramePair FileCaptureInterface::getFrame()
         result.bufferRight = BufferFactory::getInstance()->loadG12Bitmap(name1);
     }*/
 
-    if (result.bufferLeft == NULL && result.bufferRight == NULL)
+    if (result.bufferLeft() == NULL && result.bufferRight() == NULL)
     {
         result.freeBuffers();
         if (mVerbose) {
@@ -71,6 +72,7 @@ FileCaptureInterface::FramePair FileCaptureInterface::getFrame()
     }
 
     increaseImageFileCounter();
+    nextFrame();
     return result;
 }
 
@@ -81,6 +83,14 @@ ImageCaptureInterface::CapErrorCode FileCaptureInterface::initCapture()
 
 ImageCaptureInterface::CapErrorCode FileCaptureInterface::startCapture()
 {
+    return ImageCaptureInterface::SUCCESS;
+}
+
+ImageCaptureInterface::CapErrorCode FileCaptureInterface::nextFrame()
+{
+    frame_data_t frameData;
+    frameData.timestamp = mCount * 10;
+    notifyAboutNewFrame(frameData);
     return ImageCaptureInterface::SUCCESS;
 }
 

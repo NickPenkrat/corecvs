@@ -11,11 +11,11 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "mesh3d.h"
-#include "fixtureScene.h"
-#include "calibrationHelpers.h"
+#include "core/geometry/mesh3d.h"
+#include "core/camerafixture/fixtureScene.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
 
 using namespace corecvs;
 
@@ -59,7 +59,7 @@ TEST(calStructs, testCameraModel)
     Vector3dd dirInCam = model.dirToPoint(point);
 
     Vector2dd project = model.project(point);
-    Vector3dd reverse = model.intrinsics.reverse(project);
+    Vector3dd reverse = model.intrinsics->reverse(project);
 
 
     cout << "Direction         :" << dirInCam << endl;
@@ -74,7 +74,7 @@ TEST(calStructs, testCameraModel)
    // ASSERT_TRUE(rayInCam.projectOnRay(point).notTooFar(point, 1e-7));
    // ASSERT_TRUE(projection.notTooFar(projection1));
 
-    CalibrationHelpers().drawCamera(mesh, model, 2.0);
+    CalibrationDrawHelpers().drawCamera(mesh, model, 2.0);
 
     mesh.dumpPLY("cammodel.ply");
 }

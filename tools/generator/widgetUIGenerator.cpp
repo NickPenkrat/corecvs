@@ -101,7 +101,7 @@ namespace
         "    </item>\n";
 }
 
-WidgetUiGenerator::WidgetUiGenerator(const Reflection *_clazz)
+WidgetUiGenerator::WidgetUiGenerator(const ReflectionGen *_clazz)
     : BaseGenerator(_clazz)
 {
 }
@@ -162,6 +162,9 @@ void WidgetUiGenerator::generateWidgetUi()
         if (type == BaseField::TYPE_STRING)
             result += getStringWidgetProperties(field);
 
+        if (type == BaseField::TYPE_WSTRING)
+            result += getWStringWidgetProperties(field);
+
         if (type == (BaseField::TYPE_DOUBLE | BaseField::TYPE_VECTOR_BIT))
             result += getVectorBitWidgetProperties(field);
 
@@ -180,7 +183,7 @@ void WidgetUiGenerator::generateWidgetUi()
         if (type == BaseField::TYPE_COMPOSITE)
         {
             const CompositeField* cField = static_cast<const CompositeField*>(field);
-            WidgetUiGenerator generatorUI(cField->reflection);
+            WidgetUiGenerator generatorUI((const ReflectionGen *)cField->reflection);
             generatorUI.generateWidgetUi();
         }
     }
@@ -368,6 +371,21 @@ QString WidgetUiGenerator::getStringWidgetProperties(const BaseField* field)
 
     return TEXT_TEMPLATE.arg(QString::fromStdString(sfield->defaultValue));
 }
+
+QString WidgetUiGenerator::getWStringWidgetProperties(const BaseField* field)
+{
+    CORE_ASSERT_TRUE(field != nullptr, "Invalid field");
+
+    static const QString TEXT_TEMPLATE =
+        "       <property name=\"text\">\n"
+        "           <string>%1</string>\n"
+        "       </property>\n";
+
+    const WStringField* sfield = static_cast<const WStringField*>(field);
+
+    return TEXT_TEMPLATE.arg(QString::fromStdWString(sfield->defaultValue));
+}
+
 
 QString WidgetUiGenerator::getBoolWidgetProperties(const BaseField* field)
 {

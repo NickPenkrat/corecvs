@@ -67,7 +67,8 @@ int OpenCVFilterParameters::staticInit()
           "Param1",
           true,
          0,
-         10000
+         10000,
+         1
         );
     fields().push_back(field1);
     /*  */ 
@@ -81,12 +82,17 @@ int OpenCVFilterParameters::staticInit()
           "Param2",
           true,
          0,
-         10000
+         10000,
+         1
         );
     fields().push_back(field2);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("OpenCV Filter Parameters")]= &reflection;
+   return 0;
+}
+int OpenCVFilterParameters::relinkCompositeFields()
+{
    return 0;
 }
 

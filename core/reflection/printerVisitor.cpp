@@ -1,4 +1,4 @@
-#include "printerVisitor.h"
+#include "core/reflection/printerVisitor.h"
 
 namespace corecvs {
 
@@ -38,6 +38,16 @@ void PrinterVisitor::visit<string, StringField>(std::string &field, const String
 {
     if (stream == NULL) return;
     *stream << indent() << fieldDescriptor->getSimpleName() << "=" << field << endl;
+}
+
+template <>
+void PrinterVisitor::visit<wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor)
+{
+    if (stream == NULL) return;
+    /* Truncate so far */
+    std::string str( field.begin(), field.end() );
+
+    *stream << indent() << fieldDescriptor->getSimpleName() << "=" << str << endl;
 }
 
 template <>

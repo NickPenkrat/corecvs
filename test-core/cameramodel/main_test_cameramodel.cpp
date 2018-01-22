@@ -11,19 +11,24 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
-#include "g12Buffer.h"
-#include "ppmLoader.h"
-#include "mathUtils.h"
-#include "vector3d.h"
-#include "matrix44.h"
-#include "vector2d.h"
-#include "cameraParameters.h"
-#include "matrix33.h"
-#include "bufferFactory.h"
-#include "bmpLoader.h"
-#include "mathUtils.h"
-#include "abstractPainter.h"
+#include "core/utils/propertyList.h"
+#include "core/utils/visitors/propertyListVisitor.h"
+
+#include "core/utils/global.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/math/mathUtils.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/math/vector/vector2d.h"
+#include "core/cammodel/cameraParameters.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/math/mathUtils.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/geometry/mesh3d.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
 
 using corecvs::G12Buffer;
 using corecvs::PPMLoader;
@@ -38,6 +43,8 @@ using corecvs::BufferFactory;
 using corecvs::BMPLoader;
 using corecvs::fround;
 using corecvs::AbstractPainter;
+using corecvs::CalibrationDrawHelpers;
+
 
 TEST(Cameramodel, generateReality)
 {
@@ -112,6 +119,11 @@ TEST(Cameramodel, generateReality)
 
 
     G12Buffer *input = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (input == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(input != NULL, "The Cameramodel data is absent");
 
     G12Buffer *outputL = new G12Buffer(RESOLUTION_Y, RESOLUTION_X);
@@ -167,7 +179,7 @@ TEST(Cameramodel, generateReality)
     delete_safe(input);
 }
 
-#include "calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 
 using corecvs::PinholeCameraIntrinsics;
 
@@ -181,8 +193,9 @@ TEST(Cameramodel, newPinholeCameraIntrinsics)
     SYNC_PRINT(("Default input\n"));
     input.accept(printer);
 
-    input.skew = 0.01;
-    input.focal = Vector2dd(input.size.x() - 100, input.size.x() + 100);
+    input.setSkew(0.01);
+    input.setFocalX(input.sizeX() - 100);
+    input.setFocalY(input.sizeY() + 100);
     SYNC_PRINT(("With skew and focal\n"));
     input.accept(printer);
 
@@ -219,6 +232,122 @@ TEST(Cameramodel, newPinholeCameraIntrinsics)
     cout << "PinholeCameraIntrinsics::matrix "  << back1 << endl;
 
     ASSERT_TRUE(back.notTooFar(back1, 1e-4));
+}
 
+
+TEST(Cameramodel, testViewport)
+{
+    CameraModel m1;
+    const double FOCAL    =  640;
+
+    const int RESOLUTION_X = 640;
+    const int RESOLUTION_Y = 480;
+    /***/
+
+    PinholeCameraIntrinsics pinhole(Vector2dd(RESOLUTION_X, RESOLUTION_Y), Vector2dd(RESOLUTION_X, RESOLUTION_Y) / 2, FOCAL);
+
+    m1.intrinsics.reset(pinhole.clone());
+    m1.setLocation(Affine3DQ::Identity());
+
+    ConvexPolyhedron viewport = m1.getCameraViewport(10);
+    Mesh3D mesh;
+    mesh.switchColor(true);
+
+    for (double ix = -20; ix < 20; ix++ )
+        for (double iy = -20; iy < 20; iy++ )
+            for (double iz = -20; iz < 20; iz++ )
+            {
+                Vector3dd p(ix, iy, iz);
+                if (viewport.isInside(p)) {
+                    mesh.setColor( viewport.isInside(p) ? RGBColor::Red() : RGBColor::Green());
+                    mesh.addPoint(p);
+                }
+            }
+
+    mesh.dumpPLY("view_pyr.ply");
 
 }
+
+TEST(Cameramodel, testViewportProject)
+{
+    CameraModel m1;
+    CameraModel m2;
+
+#if 1
+    const double FOCAL    =  640;
+
+    const int RESOLUTION_X = 640;
+    const int RESOLUTION_Y = 480;
+    /***/
+
+    PinholeCameraIntrinsics pinhole(Vector2dd(RESOLUTION_X, RESOLUTION_Y), Vector2dd(RESOLUTION_X, RESOLUTION_Y) / 2, FOCAL);
+
+    m1.intrinsics.reset(pinhole.clone());
+    m2.intrinsics.reset(pinhole.clone());
+
+    m1.setLocation(Affine3DQ::Identity());
+    m2.setLocation(Affine3DQ::Shift(0,0,100) * Affine3DQ::RotationY(degToRad(90)));
+#endif
+#if 0
+    PinholeCameraIntrinsics pinhole(3965.4383873659367, 3965.4383873659367,  // fx, fy
+                                    2084.80540331143  , 1679.7502678975418,  // cx, cy
+                                    0,
+                                    Vector2dd(4354.294334297267 , 3183.5054940438877),
+                                    Vector2dd(4212, 3120) );
+
+    m1.intrinsics = pinhole;
+    m2.intrinsics = pinhole;
+
+    m2.setLocation(Affine3DQ::Identity());
+
+    m1.extrinsics.position    = Vector3dd(-0.26863324275046974, -0.06798521743228642, 0.9456380575382222);
+    m1.extrinsics.orientation = Quaternion(0.015185444481965392, -0.11858704841730526, -0.0012166648664927032, 0.9928267895006454);
+#endif
+
+
+    Mesh3D mesh;
+    mesh.switchColor();    
+
+    CalibrationDrawHelpers helper;
+    mesh.setColor(RGBColor::Red());
+    helper.drawCamera(mesh, m1, 5.0);
+    mesh.setColor(RGBColor::Green());
+    helper.drawCamera(mesh, m2, 5.0);
+
+    /* --------------------- */
+    {
+        Polygon pentacle = Polygon::RegularPolygon(5, pinhole.principal(), 200, 0);
+        FlatPolygon fp;
+        fp.polygon = pentacle;
+        fp.frame = m1.getVirtualScreen(5.0);
+       // mesh.addFlatPolygon(fp);
+    }
+
+
+    /* --------------------- */
+    {
+        PropertyList list;
+        PropertyListWriterVisitor listSaver(&list);
+        listSaver.visit(m1, "Camera1");
+        list.save(cout);
+    }
+    {
+        PropertyList list;
+        PropertyListWriterVisitor listSaver(&list);
+        listSaver.visit(m2, "Camera2");
+        list.save(cout);
+    }
+
+    Polygon viewport = m1.projectViewport(m2, 1.0, 1.0);
+    FlatPolygon fp;
+    fp.polygon = viewport;
+    fp.frame = m1.getVirtualScreen(5.1);
+
+    mesh.setColor(RGBColor::Yellow());
+    mesh.addFlatPolygon(fp);
+    cout << "Result viewport:" << viewport;
+
+    mesh.dumpPLY("viewport.ply");
+
+}
+

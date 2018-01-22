@@ -1,11 +1,11 @@
 #ifndef BSPTREE_H
 #define BSPTREE_H
 
-#include "line.h"
-#include "polygons.h"
-#include "axisAlignedBox.h"
-#include "raytraceRenderer.h"
-#include "conic.h"
+#include "core/geometry/line.h"
+#include "core/geometry/polygons.h"
+#include "core/geometry/axisAlignedBox.h"
+#include "core/geometry/raytrace/raytraceRenderer.h"
+#include "core/geometry/conic.h"
 
 namespace corecvs {
 

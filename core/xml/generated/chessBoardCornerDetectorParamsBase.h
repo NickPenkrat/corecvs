@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from patternDetector.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -179,6 +180,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -451,6 +454,29 @@ template<class VisitorType>
         mCornerScores = cornerScores;
     }
 
+    bool operator ==(const ChessBoardCornerDetectorParamsBase &other) const 
+    {
+        if ( !(this->mProduceDebug == other.mProduceDebug)) return false;
+        if ( !(this->mFloatSpeedup == other.mFloatSpeedup)) return false;
+        if ( !(this->mNormalizePercentile == other.mNormalizePercentile)) return false;
+        if ( !(this->mSectorSizeDeg == other.mSectorSizeDeg)) return false;
+        if ( !(this->mHistogramBins == other.mHistogramBins)) return false;
+        if ( !(this->mMinAngleDeg == other.mMinAngleDeg)) return false;
+        if ( !(this->mNeighborhood == other.mNeighborhood)) return false;
+        if ( !(this->mGradThreshold == other.mGradThreshold)) return false;
+        if ( !(this->mOrientationInlierThreshold == other.mOrientationInlierThreshold)) return false;
+        if ( !(this->mInlierDistanceThreshold == other.mInlierDistanceThreshold)) return false;
+        if ( !(this->mUpdateThreshold == other.mUpdateThreshold)) return false;
+        if ( !(this->mScoreThreshold == other.mScoreThreshold)) return false;
+        if ( !(this->mNRounds == other.mNRounds)) return false;
+        if ( !(this->mMeanshiftBandwidth == other.mMeanshiftBandwidth)) return false;
+        if ( !(this->mNmsLocality == other.mNmsLocality)) return false;
+        if ( !(this->mNmsThreshold == other.mNmsThreshold)) return false;
+        if ( !(this->mPatternRadius == other.mPatternRadius)) return false;
+        if ( !(this->mPatternStartAngleDeg == other.mPatternStartAngleDeg)) return false;
+        if ( !(this->mCornerScores == other.mCornerScores)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, ChessBoardCornerDetectorParamsBase &toSave)
     {
         corecvs::PrinterVisitor printer(out);

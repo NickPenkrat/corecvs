@@ -11,20 +11,20 @@
 #include <fstream>
 #include <iostream>
 #include "gtest/gtest.h"
-#include "homographyReconstructor.h"
-#include "astNode.h"
-#include "packedDerivative.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/meta/astNode.h"
+#include "core/meta/packedDerivative.h"
 
 #if defined (__GNUC__)
 #include <dlfcn.h>
 #endif
 
-#include "global.h"
+#include "core/utils/global.h"
 
 using namespace corecvs;
 using namespace std;
 
-void asmF(double *in, double *out)
+void asmF(double */*in*/, double * /*out*/)
 {
 #if defined (__GNUC__) && __x86_64
 
@@ -155,14 +155,12 @@ TEST(jit, DISABLED_testjit)
         typedef int  (*TestFunctor)(int);
         typedef void (*FFunctor)(double *, double *);
 
-        char *error = NULL;
-
         handle = dlopen ("jit.so", RTLD_LAZY);
         if (!handle) {
             fprintf (stderr, "%s\n", dlerror());
             exit(1);
         }
-        error = dlerror();    /* Clear any existing error */
+        /*char *error =*/ dlerror();    /* Clear any existing error */
 
         const char *testName = "test";
         void *testF = dlsym(handle, testName);
@@ -192,7 +190,7 @@ TEST(jit, DISABLED_testjit)
         {
             out[i].p->extractConstPool("c", constpool);
         }
-        SYNC_PRINT(("finished - size = %d\n", constpool.size()));
+        SYNC_PRINT(("finished - size = %d\n", (int)constpool.size()));
 
 
 #endif
@@ -204,7 +202,7 @@ TEST(jit, DISABLED_testjit)
     {
         cout << "PackedDerivative run.." << endl;
         PackedDerivative<8> in[8];
-        for (size_t i = 0; i < CORE_COUNT_OF(in); i++ )
+        for (unsigned i = 0; i < CORE_COUNT_OF(in); i++)
         {
             in[i] = PackedDerivative<8>::ID(exampleM[i], i);
         }
@@ -243,7 +241,7 @@ public:
         return "out[0] = in[0] * in[3] + in[1] * in[4] + in[2] * in[5]";
     }
 
-    virtual ASTNodeFunctionPayload *derivative(int input) override
+    virtual ASTNodeFunctionPayload *derivative(int /*input*/) override
     {
         return NULL;
     }

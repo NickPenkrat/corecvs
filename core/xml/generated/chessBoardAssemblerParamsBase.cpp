@@ -91,7 +91,8 @@ int ChessBoardAssemblerParamsBase::staticInit()
           " Maximal cost for real board",
           true,
          -999999,
-         999999
+         999999,
+         1
         );
     field3->widgetHint=BaseField::SPIN_BOX;
     field3->precision=2;
@@ -157,6 +158,10 @@ int ChessBoardAssemblerParamsBase::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Chess Board Assembler Params Base")]= &reflection;
+   return 0;
+}
+int ChessBoardAssemblerParamsBase::relinkCompositeFields()
+{
    return 0;
 }
 

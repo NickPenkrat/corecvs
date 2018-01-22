@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "sceneFeaturePoint.h"
+#include "core/camerafixture/sceneFeaturePoint.h"
 
 namespace Ui {
 class FeaturePointControlWidget;

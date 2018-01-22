@@ -13,9 +13,9 @@
 #include <QtGui/QtGui>
 #include <QApplication>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "utils.h"
+#include "core/utils/utils.h"
 #include "baseHostDialog.h"
 #include "mainWindow.h"
 

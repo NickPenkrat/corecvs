@@ -52,12 +52,17 @@ int BackgroundFilterParameters::staticInit()
           "Threshold",
           true,
          0,
-         10000
+         10000,
+         1
         );
     fields().push_back(field0);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Background Filter Parameters")]= &reflection;
+   return 0;
+}
+int BackgroundFilterParameters::relinkCompositeFields()
+{
    return 0;
 }
 

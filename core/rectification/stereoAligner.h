@@ -11,9 +11,9 @@
  */
 
 
-#include "projectiveTransform.h"
-#include "correspondenceList.h"
-#include "matrix33.h"
+#include "core/math/projectiveTransform.h"
+#include "core/rectification/correspondenceList.h"
+#include "core/math/matrix/matrix33.h"
 namespace corecvs {
 
 class StereoTransformation
@@ -43,8 +43,8 @@ public:
 
     static void getAlignmentTransformation(
         const Matrix33 &F,
-        Matrix33 *leftTransform,
-        Matrix33 *rightTransform,
+        Matrix33 *firstTransform,
+        Matrix33 *secondTransform,
         Vector3dd z = Vector3dd(0.0,1.0,0.0));
 
     static void getLateralCorrection(

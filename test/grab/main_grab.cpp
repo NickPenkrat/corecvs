@@ -8,7 +8,7 @@
 
 #include "imageCaptureInterface.h"
 //#include "V4L2Capture.h"
-#include "bmpLoader.h"
+#include "core/fileformats/bmpLoader.h"
 
 int main (int argc, char **argv)
 {

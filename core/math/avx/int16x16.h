@@ -12,9 +12,9 @@
 #include <immintrin.h>
 #include <stdint.h>
 
-#include "avxInteger.h"
-#include "global.h"
-#include "fixedVector.h"
+#include "core/math/avx/avxInteger.h"
+#include "core/utils/global.h"
+#include "core/math/vector/fixedVector.h"
 
 namespace corecvs {
 
@@ -271,7 +271,7 @@ template<int idx>
 
     /*Print to stream helper */
 
-    friend ostream & operator <<(ostream &out, const Int16x16 &vector);
+    friend std::ostream & operator <<(std::ostream &out, const Int16x16 &vector);
 
     /* Shuffle */
     template<int imm>

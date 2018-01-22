@@ -1,7 +1,7 @@
-#include "chessBoardDetector.h"
-#include "abstractPainter.h"
-#include "homographyReconstructor.h"
-#include "calculationStats.h"
+#include "core/patterndetection/chessBoardDetector.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/stats/calculationStats.h"
 
 #include <ostream>
 
@@ -110,6 +110,11 @@ bool ChessboardDetector::detectPatternCandidates(DpImage &buffer, std::vector<Bo
     Statistics::resetInterval(stats, "Assemble");
 
     return boards.size() != 0;
+}
+
+BoardCornersType ChessboardDetector::getBestBoard()
+{
+    return aligner->bestBoard;
 }
 
 bool ChessboardDetector::detectPattern(DpImage &buffer)

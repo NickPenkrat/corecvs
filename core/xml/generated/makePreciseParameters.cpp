@@ -96,7 +96,8 @@ int MakePreciseParameters::staticInit()
           "KLT iterations",
           true,
          1,
-         100
+         100,
+         1
         );
     fields().push_back(field3);
     /*  */ 
@@ -110,7 +111,8 @@ int MakePreciseParameters::staticInit()
           "KLT Radius H",
           true,
          1,
-         100
+         100,
+         1
         );
     fields().push_back(field4);
     /*  */ 
@@ -124,7 +126,8 @@ int MakePreciseParameters::staticInit()
           "KLT Radius W",
           true,
          1,
-         100
+         100,
+         1
         );
     fields().push_back(field5);
     /*  */ 
@@ -138,7 +141,8 @@ int MakePreciseParameters::staticInit()
           "KLT Threshold",
           true,
          1,
-         100
+         100,
+         1
         );
     field6->widgetHint=BaseField::SPIN_BOX;
     field6->precision=2;
@@ -146,6 +150,10 @@ int MakePreciseParameters::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Make Precise Parameters")]= &reflection;
+   return 0;
+}
+int MakePreciseParameters::relinkCompositeFields()
+{
    return 0;
 }
 

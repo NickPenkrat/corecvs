@@ -12,9 +12,9 @@
 #include <emmintrin.h>
 #include <stdint.h>
 
-#include "global.h"
-#include "fixedVector.h"
-#include "intBase8x16.h"
+#include "core/utils/global.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/sse/intBase8x16.h"
 
 namespace corecvs {
 
@@ -276,7 +276,7 @@ template<int idx>
 
     /*Print to stream helper */
 
-    friend ostream & operator << (ostream &out, const UInt8x16 &vector);
+    friend std::ostream & operator << (std::ostream &out, const UInt8x16 &vector);
 
     /*TODO: Add shuffling*/
 

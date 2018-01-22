@@ -1,4 +1,4 @@
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "siftGpuMatcherWrapper.h"
 
@@ -143,7 +143,15 @@ DescriptorMatcher* SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(const 
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return new SiftGpuMatcher;););
 
-    CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcher", type.c_str(), matcher.c_str()));
+	try
+	{
+		CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::getDescriptorMatcher(%s, %s): no matcher", type.c_str(), matcher.c_str()));
+	}
+	catch (AssertException)
+	{
+
+	}
+
     return 0;
 }
 
@@ -152,7 +160,16 @@ bool SiftGpuDescriptorMatcherProvider::provides(const DescriptorType &type, cons
     SWITCH_MATCHER_TYPE(BF,
         SWITCH_TYPE(SIFTGPU, return true;););
 
-    CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::provides(%s, %s): no provider", type.c_str(), matcher.c_str()));
+	try
+	{
+		CORE_ASSERT_FAIL_P(("SiftGpuDescriptorMatcherProvider::provides(%s, %s): no provider", type.c_str(), matcher.c_str()));
+	}
+	catch (AssertException)
+	{
+
+	}
+
+	return false; 
 }
 
 #undef SWITCH_TYPE

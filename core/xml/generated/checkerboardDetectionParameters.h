@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from patternDetector.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,8 +31,8 @@
 /*
  *  Additional includes for enum section.
  */
-#include "checkerboardDetectionAlgorithm.h"
-#include "imageChannel.h"
+#include "core/xml/generated/checkerboardDetectionAlgorithm.h"
+#include "core/xml/generated/imageChannel.h"
 
 /**
  * \brief Checkerboard Detection Parameters 
@@ -146,6 +147,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -353,6 +356,24 @@ template<class VisitorType>
         mSkipUndistortedWithNoDistortedBoard = skipUndistortedWithNoDistortedBoard;
     }
 
+    bool operator ==(const CheckerboardDetectionParameters &other) const 
+    {
+        if ( !(this->mEstimateUndistortedFromDistorted == other.mEstimateUndistortedFromDistorted)) return false;
+        if ( !(this->mUseUndistortion == other.mUseUndistortion)) return false;
+        if ( !(this->mAlgorithm == other.mAlgorithm)) return false;
+        if ( !(this->mChannel == other.mChannel)) return false;
+        if ( !(this->mCellSizeHor == other.mCellSizeHor)) return false;
+        if ( !(this->mCellSizeVert == other.mCellSizeVert)) return false;
+        if ( !(this->mCleanExisting == other.mCleanExisting)) return false;
+        if ( !(this->mPreciseDiameter == other.mPreciseDiameter)) return false;
+        if ( !(this->mIterationCount == other.mIterationCount)) return false;
+        if ( !(this->mMinAccuracy == other.mMinAccuracy)) return false;
+        if ( !(this->mPartialBoard == other.mPartialBoard)) return false;
+        if ( !(this->mFastBoardSpeedup == other.mFastBoardSpeedup)) return false;
+        if ( !(this->mDrawSGFsOnBoards == other.mDrawSGFsOnBoards)) return false;
+        if ( !(this->mSkipUndistortedWithNoDistortedBoard == other.mSkipUndistortedWithNoDistortedBoard)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, CheckerboardDetectionParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

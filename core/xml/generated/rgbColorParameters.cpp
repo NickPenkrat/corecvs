@@ -52,7 +52,8 @@ int RgbColorParameters::staticInit()
           "R",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field0);
     /*  */ 
@@ -66,7 +67,8 @@ int RgbColorParameters::staticInit()
           "G",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field1);
     /*  */ 
@@ -80,12 +82,17 @@ int RgbColorParameters::staticInit()
           "B",
           true,
          0,
-         255
+         255,
+         1
         );
     fields().push_back(field2);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("rgb Color Parameters")]= &reflection;
+   return 0;
+}
+int RgbColorParameters::relinkCompositeFields()
+{
    return 0;
 }
 

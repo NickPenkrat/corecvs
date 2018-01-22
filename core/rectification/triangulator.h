@@ -11,15 +11,15 @@
 
 #include <vector>
 
-#include "cameraParameters.h"
-#include "matrix33.h"
-#include "essentialMatrix.h"
-#include "sixDBuffer.h"
-#include "vector3d.h"
-#include "rgbColor.h"
-#include "depthBuffer.h"
-#include "cloud.h"
-#include "tbbWrapper.h"
+#include "core/cammodel/cameraParameters.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/rectification/essentialMatrix.h"
+#include "core/buffers/flow/sixDBuffer.h"
+#include "core/math/vector/vector3d.h"
+#include "core/buffers/rgb24/rgbColor.h"
+#include "core/buffers/flow/depthBuffer.h"
+#include "core/clustering3d/cloud.h"
+#include "core/tbbwrapper/tbbWrapper.h"
 
 namespace corecvs {
 using std::vector;
@@ -68,7 +68,7 @@ public:
     {}
 
     /**
-     *   This method makes current RectificationResult that was created for a perticular input image corresponded
+     *   This method makes current RectificationResult that was created for a particular input image corresponded
      *  to the transformed image. Say if you have rectified the full resolution, full frame image, and now want to
      *  tringulate a scaled subregion.
      **/
@@ -77,6 +77,9 @@ public:
         RectificationResult toReturn = *this;
         toReturn.leftTransform  = transform * this->leftTransform;
         toReturn.rightTransform = transform * this->rightTransform;
+
+        cout << "Left  Pretransform: " << this->leftTransform << std::endl;
+        cout << "Right Pretransform: " << this->rightTransform << std::endl;
         return toReturn;
     }
 

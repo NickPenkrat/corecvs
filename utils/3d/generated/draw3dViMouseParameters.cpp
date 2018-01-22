@@ -52,7 +52,8 @@ int Draw3dViMouseParameters::staticInit()
           "redDist",
           true,
          -50000,
-         50000
+         50000,
+         1
         );
     field0->widgetHint=BaseField::SPIN_BOX;
     field0->precision=2;
@@ -68,7 +69,8 @@ int Draw3dViMouseParameters::staticInit()
           "blueDist",
           true,
          -50000,
-         50000
+         50000,
+         1
         );
     field1->widgetHint=BaseField::SPIN_BOX;
     field1->precision=2;
@@ -84,7 +86,8 @@ int Draw3dViMouseParameters::staticInit()
           "flowZoom",
           true,
          0,
-         50
+         50,
+         1
         );
     field2->widgetHint=BaseField::SPIN_BOX;
     field2->precision=2;
@@ -131,6 +134,10 @@ int Draw3dViMouseParameters::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("draw 3d ViMouse Parameters")]= &reflection;
+   return 0;
+}
+int Draw3dViMouseParameters::relinkCompositeFields()
+{
    return 0;
 }
 

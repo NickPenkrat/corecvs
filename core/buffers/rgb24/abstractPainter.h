@@ -9,12 +9,12 @@
 #include <math.h>
 #include <vector>
 
-#include "global.h"
-#include "hardcodeFont.h"
-#include "hersheyVectorFont.h"
-#include "rgbColor.h"
-#include "polygons.h"
-#include "conic.h"
+#include "core/utils/global.h"
+#include "core/buffers/rgb24/hardcodeFont.h"
+#include "core/buffers/rgb24/hersheyVectorFont.h"
+#include "core/buffers/rgb24/rgbColor.h"
+#include "core/geometry/polygons.h"
+#include "core/geometry/conic.h"
 
 namespace corecvs {
 

@@ -12,9 +12,9 @@
 #include <emmintrin.h>
 #include <stdint.h>
 
-#include "global.h"
-#include "fixedVector.h"
-#include "intBase16x8.h"
+#include "core/utils/global.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/sse/intBase16x8.h"
 
 namespace corecvs {
 
@@ -151,10 +151,10 @@ public:
     }
 
     /*Print to stream helper */
-    friend ostream & operator << (ostream &out, const Int16x8 &vector);
+    friend std::ostream & operator << (std::ostream &out, const Int16x8 &vector);
 
     /* Formated hex helper */
-    void hexDump (ostream &out);
+    void hexDump (std::ostream &out);
 };
 
 FORCE_INLINE Int16x8 operator >> (const Int16x8 &left, uint32_t count) {

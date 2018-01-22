@@ -52,7 +52,8 @@ int OpenCVSGMParameters::staticInit()
           "Pre Filter Cap",
           true,
          1,
-         99
+         99,
+         1
         );
     fields().push_back(field0);
     /*  */ 
@@ -66,7 +67,8 @@ int OpenCVSGMParameters::staticInit()
           "SAD Window Size",
           true,
          1,
-         99
+         99,
+         1
         );
     fields().push_back(field1);
     /*  */ 
@@ -80,7 +82,8 @@ int OpenCVSGMParameters::staticInit()
           "P1 multiplier",
           true,
          1,
-         99
+         99,
+         1
         );
     fields().push_back(field2);
     /*  */ 
@@ -94,7 +97,8 @@ int OpenCVSGMParameters::staticInit()
           "P2 multiplier",
           true,
          1,
-         99
+         99,
+         1
         );
     fields().push_back(field3);
     /*  */ 
@@ -108,7 +112,8 @@ int OpenCVSGMParameters::staticInit()
           "Min Disparity",
           true,
          -9999,
-         99999
+         99999,
+         1
         );
     fields().push_back(field4);
     /*  */ 
@@ -122,7 +127,8 @@ int OpenCVSGMParameters::staticInit()
           "Uniqueness Ratio",
           true,
          0,
-         99
+         99,
+         1
         );
     fields().push_back(field5);
     /*  */ 
@@ -136,7 +142,8 @@ int OpenCVSGMParameters::staticInit()
           "Speckle Window Size",
           true,
          1,
-         99
+         99,
+         1
         );
     fields().push_back(field6);
     /*  */ 
@@ -150,7 +157,8 @@ int OpenCVSGMParameters::staticInit()
           "Speckle Range",
           true,
          1,
-         99
+         99,
+         1
         );
     fields().push_back(field7);
     /*  */ 
@@ -164,7 +172,8 @@ int OpenCVSGMParameters::staticInit()
           "Disp 12 Max Diff",
           true,
          -9999,
-         99999
+         99999,
+         1
         );
     fields().push_back(field8);
     /*  */ 
@@ -182,6 +191,10 @@ int OpenCVSGMParameters::staticInit()
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("OpenCV SGM Parameters")]= &reflection;
+   return 0;
+}
+int OpenCVSGMParameters::relinkCompositeFields()
+{
    return 0;
 }
 

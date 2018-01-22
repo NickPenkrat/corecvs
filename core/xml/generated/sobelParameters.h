@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from bufferFilters.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,7 +31,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "sobelMixingType.h"
+#include "core/xml/generated/sobelMixingType.h"
 
 /**
  * \brief Sobel Parameters 
@@ -68,6 +69,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -132,6 +135,13 @@ template<class VisitorType>
         mVertical = vertical;
     }
 
+    bool operator ==(const SobelParameters &other) const 
+    {
+        if ( !(this->mMixingType == other.mMixingType)) return false;
+        if ( !(this->mHorizontal == other.mHorizontal)) return false;
+        if ( !(this->mVertical == other.mVertical)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, SobelParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

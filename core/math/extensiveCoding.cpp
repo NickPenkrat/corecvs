@@ -1,5 +1,5 @@
-#include "extensiveCoding.h"
-#include "mathUtils.h"
+#include "core/math/extensiveCoding.h"
+#include "core/math/mathUtils.h"
 
 namespace corecvs {
 

@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 using std::vector;
 using std::string;
@@ -23,6 +23,11 @@ public:
 
     static bool isDir(const string &path);
 
+    static bool createDir(const string &path, bool allowRecursive = true);
+
+    static void emptyDir(const string &path);       // delete folder to create it later probably
+
+    static bool isAccessible(const string &path);
 };
 
 } // namespace corecvs

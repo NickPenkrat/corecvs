@@ -4,7 +4,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 namespace corecvs {
 

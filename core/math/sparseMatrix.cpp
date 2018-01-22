@@ -1,5 +1,5 @@
-#include "sparseMatrix.h"
-#include "cblasLapackeWrapper.h"
+#include "core/math/sparseMatrix.h"
+#include "wrappers/cblasLapack/cblasLapackeWrapper.h"
 
 #include <chrono>
 #include <thread>
@@ -8,11 +8,13 @@
 #include <tbb/tbb.h>
 #endif
 
-using namespace corecvs;
+//using namespace corecvs;
+using corecvs::SparseMatrix;
+using corecvs::Vector;
 
 #define STRONG_TRIAG
 
-void corecvs::SparseMatrix::checkCorrectness() const
+void SparseMatrix::checkCorrectness() const
 {
     CORE_ASSERT_TRUE_S(h + 1 == (int)rowPointers.size());
     CORE_ASSERT_TRUE_S(rowPointers.size());
@@ -33,41 +35,39 @@ struct Registrant
     Registrant()
     {
         std::cout << "Registering in spmvwisdom" << std::endl;
-        SPMVWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::HOMEBREW, [](int, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_homebrew(v, trans); });
+        corecvs::SPMVWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::HOMEBREW, [](int, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_homebrew(v, trans); });
 #ifdef WITH_CUSPARSE
-        SPMVWisdom::Register(AcceleratorTypes::CUDA, SparseImplementations::CUSPARSE, [](int id, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_cusparse(v, trans, id); });
+        corecvs::SPMVWisdom::Register(corecvs::AcceleratorTypes::CUDA, corecvs::SparseImplementations::CUSPARSE, [](int id, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_cusparse(v, trans, id); });
 #endif
 #ifdef WITH_MKL
-        SPMVWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::MKL,      [](int, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_mkl(v, trans); });
+        corecvs::SPMVWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::MKL,      [](int, const SparseMatrix &m, const Vector &v, bool trans) { return m.spmv_mkl(v, trans); });
 #endif
-
         std::cout << "Registering in trsvwisdom" << std::endl;
-        TRSVWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::HOMEBREW, [](int, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_homebrew(v, trans, up, N); });
+        corecvs::TRSVWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::HOMEBREW, [](int, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_homebrew(v, trans, up, N); });
 #if 1
 #ifdef WITH_CUSPARSE
-        TRSVWisdom::Register(AcceleratorTypes::CUDA, SparseImplementations::CUSPARSE, [](int dev, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_cusparse(v, trans, up, N, dev); });
+        corecvs::TRSVWisdom::Register(corecvs::AcceleratorTypes::CUDA, corecvs::SparseImplementations::CUSPARSE, [](int dev, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_cusparse(v, trans, up, N, dev); });
 #endif
 #ifdef WITH_MKL
-        TRSVWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::MKL, [](int, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_mkl(v, trans, up, N); });
+        corecvs::TRSVWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::MKL, [](int, const SparseMatrix &m, const Vector &v, const char* trans, bool up, int N) { return m.trsv_mkl(v, trans, up, N); });
 #endif
 #endif
         std::cout << "Registering in spmmwisdom" << std::endl;
-        SPMMWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::HOMEBREW, [](int, const SPMMC::inner_type& t) { return std::get<0>(t).spmm_homebrew(std::get<1>(t), std::get<2>(t), std::get<3>(t)); });
+        corecvs::SPMMWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::HOMEBREW, [](int, const corecvs::SPMMC::inner_type& t) { return std::get<0>(t).spmm_homebrew(std::get<1>(t), std::get<2>(t), std::get<3>(t)); });
 #if 1
 #ifdef WITH_CUSPARSE
-        SPMMWisdom::Register(AcceleratorTypes::CUDA,  SparseImplementations::CUSPARSE, [](int dev, const SPMMC::inner_type& t) { return std::get<0>(t).spmm_cusparse(std::get<1>(t), std::get<2>(t), std::get<3>(t), dev); });
+        corecvs::SPMMWisdom::Register(corecvs::AcceleratorTypes::CUDA, corecvs::SparseImplementations::CUSPARSE, [](int dev, const corecvs::SPMMC::inner_type& t) { return std::get<0>(t).spmm_cusparse(std::get<1>(t), std::get<2>(t), std::get<3>(t), dev); });
 #endif
 #endif
 #ifdef WITH_MKL
-        SPMMWisdom::Register(AcceleratorTypes::CPU,  SparseImplementations::MKL, [](int, const SPMMC::inner_type& t) { return std::get<0>(t).spmm_mkl(std::get<1>(t), std::get<2>(t), std::get<3>(t)); });
+        corecvs::SPMMWisdom::Register(corecvs::AcceleratorTypes::CPU, corecvs::SparseImplementations::MKL, [](int, const corecvs::SPMMC::inner_type& t) { return std::get<0>(t).spmm_mkl(std::get<1>(t), std::get<2>(t), std::get<3>(t)); });
 #endif
     }
-
 };
 
 std::unique_ptr<Registrant> reg(new Registrant);
 
-std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky(bool allow_parallel)
+std::pair<bool, SparseMatrix> SparseMatrix::incompleteCholseky(bool allow_parallel)
 {
     // Here we will consturct incomplete upper-triangular cholesky-factor for matrix
     // If we do not succeed, we'll return <false, ()> 'cause it is 2016 now,
@@ -173,12 +173,13 @@ std::pair<bool, SparseMatrix> corecvs::SparseMatrix::incompleteCholseky(bool all
     return std::make_pair(true, A);
 }
 
-corecvs::Vector corecvs::SparseMatrix::dtrsv(const Vector &rhs, bool upper, bool notrans) const
+Vector SparseMatrix::dtrsv(const Vector &rhs, bool upper, bool notrans) const
 {
 
     return upper ? notrans ? dtrsv_un(rhs) : dtrsv_ut(rhs) : notrans ? dtrsv_ln(rhs) : dtrsv_lt(rhs);
 }
-corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
+
+Vector SparseMatrix::dtrsv_ut(const Vector &rhs) const
 {
     /*
      *                         /# # # # #\
@@ -189,7 +190,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
      */
     CORE_ASSERT_TRUE_S(h == w);
     CORE_ASSERT_TRUE_S(h == rhs.size());
-    corecvs::Vector res(rhs.size());
+    Vector res(rhs.size());
 
     std::vector<int> first(h), id(h), next(h);
     for (int i = 0; i < h; ++i)
@@ -234,7 +235,8 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ut(const Vector &rhs) const
     }
     return res;
 }
-corecvs::Vector corecvs::SparseMatrix::dtrsv_lt(const Vector &rhs) const
+
+Vector SparseMatrix::dtrsv_lt(const Vector &rhs) const
 {
     /*
      *                         /#        \
@@ -245,7 +247,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_lt(const Vector &rhs) const
      */
     CORE_ASSERT_TRUE_S(h == w);
     CORE_ASSERT_TRUE_S(h == rhs.size());
-    corecvs::Vector res(rhs.size());
+    Vector res(rhs.size());
 
     std::vector<int> first(h), id(h), next(h);
     for (int i = 0; i < h; ++i)
@@ -288,7 +290,8 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_lt(const Vector &rhs) const
     }
     return res;
 }
-corecvs::Vector corecvs::SparseMatrix::dtrsv_ln(const Vector &rhs) const
+
+corecvs::Vector SparseMatrix::dtrsv_ln(const Vector &rhs) const
 {
     /*
      * /#        \ / x_1 \   / b_1 \
@@ -300,7 +303,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ln(const Vector &rhs) const
 
     CORE_ASSERT_TRUE_S(h == w);
     CORE_ASSERT_TRUE_S(h == rhs.size());
-    corecvs::Vector res(rhs.size());
+    Vector res(rhs.size());
     for (int i = 0; i < h; ++i)
     {
         double sum = rhs[i];
@@ -313,7 +316,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_ln(const Vector &rhs) const
     return res;
 }
 
-corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
+Vector SparseMatrix::dtrsv_un(const Vector &rhs) const
 {
 //    std::cout << "[UN]" << std::flush;
 
@@ -325,7 +328,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
      * \        #/ \ x_5 /   \ b_5 /
      */
 
-    corecvs::Vector res(rhs.size());
+    Vector res(rhs.size());
     CORE_ASSERT_TRUE_S(h == w);
     CORE_ASSERT_TRUE_S(h == rhs.size());
     for (int i = h - 1; i >= 0; --i)
@@ -345,7 +348,7 @@ corecvs::Vector corecvs::SparseMatrix::dtrsv_un(const Vector &rhs) const
 }
 
 
-void corecvs::SparseMatrix::spyPlot() const
+void SparseMatrix::spyPlot() const
 {
 
     for (int i = 0; i < h; ++i)
@@ -360,19 +363,19 @@ void corecvs::SparseMatrix::spyPlot() const
     std::cout << std::endl;
 }
 
-int corecvs::SparseMatrix::nnz() const
+int SparseMatrix::nnz() const
 {
 
     return (int)values.size();
 }
 
-double corecvs::SparseMatrix::fillin() const
+double SparseMatrix::fillin() const
 {
 
     return double(nnz()) / w / h;
 }
 
-corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2)
+SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int x2, int y2)
 {
 #if 0
     src.swapCoords(x1, y1, x2, y2);
@@ -417,7 +420,7 @@ corecvs::SparseMatrix::SparseMatrix(const SparseMatrix &src, int x1, int y1, int
 #endif
 }
 
-void corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2, double* output, int stride) const
+void SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2, double* output, int stride) const
 {
     swapCoords(x1, y1, x2, y2);
 
@@ -441,7 +444,7 @@ void corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2, doubl
 
 }
 
-corecvs::Matrix corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2) const
+corecvs::Matrix SparseMatrix::denseSubMatrix(int x1, int y1, int x2, int y2) const
 {
 
     swapCoords(x1, y1, x2, y2);
@@ -453,11 +456,10 @@ corecvs::Matrix corecvs::SparseMatrix::denseSubMatrix(int x1, int y1, int x2, in
 
     denseSubMatrix(x1, y1, x2, y2, &res.a(0, 0), res.stride);
 
-
     return res;
 }
 
-SparseMatrix::SparseMatrix(const Matrix &dense, double threshold) : h(dense.h), w(dense.w)
+SparseMatrix::SparseMatrix(const corecvs::Matrix &dense, double threshold) : h(dense.h), w(dense.w)
 {
     rowPointers.resize(h + 1);
     for (int i = 0; i < h; ++i)
@@ -473,15 +475,14 @@ SparseMatrix::SparseMatrix(const Matrix &dense, double threshold) : h(dense.h), 
         }
         rowPointers[i + 1] = (int)values.size();
     }
-
 }
 
-SparseMatrix::SparseMatrix(int h, int w, const std::vector<double> &values, const std::vector<int> &columns, const std::vector<int> &rowPointers) : h(h), w(w), values(values), columns(columns), rowPointers(rowPointers)
+SparseMatrix::SparseMatrix(int h, int w, const std::vector<double> &values, const std::vector<int> &columns, const std::vector<int> &rowPointers)
+    : h(h), w(w), values(values), columns(columns), rowPointers(rowPointers)
 {
     CORE_ASSERT_TRUE_S(h + 1 == (int)rowPointers.size());
     CORE_ASSERT_TRUE_S(values.size() == columns.size());
-    CORE_ASSERT_TRUE_S(*rowPointers.rbegin() == (int)values.size());
-
+    CORE_ASSERT_TRUE_P(*rowPointers.rbegin() == (int)values.size(), ("there is a problem with cusparse"));
 }
 
 SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, double> &data) : h(h), w(w)
@@ -515,7 +516,6 @@ SparseMatrix::SparseMatrix(int h, int w, const std::map<std::pair<int, int>, dou
 
 double SparseMatrix::a(int y, int x) const
 {
-
 #if 0
     int i = std::lower_bound(&columns[rowPointers[y]], &columns[rowPointers[y + 1]], x) - &columns[0];
     if (i < rowPointers[y + 1] && columns[i] == x)
@@ -530,9 +530,8 @@ double SparseMatrix::a(int y, int x) const
 #endif
 }
 
-Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx)
+corecvs::Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> &colIdx)
 {
-
     swapCoords(x1, y1, x2, y2);
     int h = y2 - y1;
 
@@ -584,9 +583,8 @@ Matrix SparseMatrix::denseRows(int x1, int y1, int x2, int y2, std::vector<int> 
     return M;
 }
 
-Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> &rowIdx)
+corecvs::Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> &rowIdx)
 {
-
     swapCoords(x1, y1, x2, y2);
 
     int w = x2 - x1;
@@ -596,8 +594,13 @@ Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> 
     e.reserve(y2-y1);
     for (int i = y1; i < y2; ++i)
     {
+#ifdef _MSC_VER
+        int* cbegin = std::lower_bound(&columns[rowPointers[i]], columns.data() + rowPointers[i + 1], x1), 
+           *   cend = std::lower_bound(&columns[rowPointers[i]], columns.data() + rowPointers[i + 1], x2);  
+#else
         int* cbegin = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x1),
            *   cend = std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], x2);
+#endif
         if (cbegin < cend)
         {
             rowIdx.push_back(i);
@@ -619,7 +622,6 @@ Matrix SparseMatrix::denseCols(int x1, int y1, int x2, int y2, std::vector<int> 
 
 void SparseMatrix::swapCoords(int &x1, int &y1, int &x2, int &y2)  const
 {
-
     x1 = std::max(0, std::min(w, x1));
     x2 = std::max(0, std::min(w, x2));
     y1 = std::max(0, std::min(h, y1));
@@ -628,7 +630,6 @@ void SparseMatrix::swapCoords(int &x1, int &y1, int &x2, int &y2)  const
         std::swap(x1, x2);
     if (y2 < y1)
         std::swap(y1, y2);
-
 }
 
 double& SparseMatrix::a(int y, int x)
@@ -661,10 +662,9 @@ double& SparseMatrix::a(int y, int x)
     return values[i];
 }
 
-SparseMatrix::operator Matrix() const
+SparseMatrix::operator corecvs::Matrix() const
 {
-    Matrix m(h, w);
-
+    corecvs::Matrix m(h, w);
 
     for (int i = 0; i < h; ++i)
     {
@@ -679,7 +679,6 @@ SparseMatrix::operator Matrix() const
 
 SparseMatrix corecvs::operator -(const SparseMatrix &a)
 {
-
     SparseMatrix b = a;
     for (auto &v: b.values)
         v = -v;
@@ -704,7 +703,6 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const double &rhs)
 
 SparseMatrix corecvs::operator /(const SparseMatrix &lhs, const double &rhs)
 {
-
     SparseMatrix res = lhs;
     for (auto &v: res.values)
         v /= rhs;
@@ -718,7 +716,6 @@ SparseMatrix corecvs::operator +(const SparseMatrix &lhs, const SparseMatrix &rh
     std::vector<double> values;
     std::vector<int> columns;
     std::vector<int> rowPointers(lhs.h + 1);
-
 
     for (int i = 0; i < lhs.h; ++i)
     {
@@ -763,18 +760,16 @@ SparseMatrix corecvs::operator +(const SparseMatrix &lhs, const SparseMatrix &rh
         rowPointers[i + 1] = (int)values.size();
     }
 
-
     return SparseMatrix(lhs.h, lhs.w, values, columns, rowPointers);
 }
 
 SparseMatrix corecvs::operator -(const SparseMatrix &lhs, const SparseMatrix &rhs)
 {
-
-
     CORE_ASSERT_TRUE_S(lhs.h == rhs.h && lhs.w == rhs.w);
     std::vector<double> values;
     std::vector<int> columns;
     std::vector<int> rowPointers(lhs.h + 1);
+
     for (int i = 0; i < lhs.h; ++i)
     {
         int lhs_l = lhs.rowPointers[i], lhs_r = lhs.rowPointers[i + 1];
@@ -817,7 +812,6 @@ SparseMatrix corecvs::operator -(const SparseMatrix &lhs, const SparseMatrix &rh
         }
         rowPointers[i + 1] = (int)values.size();
     }
-
 
     return SparseMatrix(lhs.h, lhs.w, values, columns, rowPointers);
 }
@@ -873,7 +867,11 @@ SparseMatrix SparseMatrix::spmm_homebrew(const SparseMatrix &rhs, bool transA, b
 
     for (int i = 0; i < h; ++i)
     {
+#ifdef _MSC_VER
+        std::sort(&columns[rowPointers[i]], columns.data() + rowPointers[i + 1]);
+#else
         std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1]]);
+#endif
         for (int jj = this->rowPointers[i]; jj < this->rowPointers[i + 1]; ++jj)
         {
             int j = this->columns[jj];
@@ -1198,7 +1196,8 @@ Vector SparseMatrix::trsv_cusparse(const Vector &rhs, const char* trans, bool up
 Vector corecvs::operator *(const SparseMatrix &lhs, const Vector &rhs)
 {
     if (!reg)
-        CORE_ASSERT_TRUE_S(false);
+        CORE_ASSERT_FAIL("Wrong Registrant usage");
+
     return SPMVWisdom::WiseRun(lhs, rhs, false);
 }
 
@@ -1269,7 +1268,11 @@ SparseMatrix corecvs::operator *(const SparseMatrix &lhs, const SparseMatrix &rh
 
     for (int i = 0; i < h; ++i)
     {
+#ifdef _MSC_VER
+        std::sort(&columns[rowPointers[i]], columns.data() + rowPointers[i + 1]]);
+#else
         std::sort(&columns[rowPointers[i]], &columns[rowPointers[i + 1]]);
+#endif
         for (int jj = lhs.rowPointers[i]; jj < lhs.rowPointers[i + 1]; ++jj)
         {
             int j = lhs.columns[jj];
@@ -1409,7 +1412,11 @@ SparseMatrix::SparseMatrix(const sparse_matrix_t &mklSparse)
 
 int SparseMatrix::getUBIndex(int i, int j) const
 {
+#ifdef _MSC_VER
+    return std::lower_bound(&columns[rowPointers[i]], columns.data() + rowPointers[i + 1], j) - &columns[0];
+#else
     return std::lower_bound(&columns[rowPointers[i]], &columns[rowPointers[i + 1]], j) - &columns[0];
+#endif
 }
 
 int SparseMatrix::getIndex(int i, int j) const
@@ -1526,7 +1533,9 @@ void SparseMatrix::print(std::ostream& out) const
     out << *this;
 }
 
-bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+#if !defined(_WIN32) || defined(_WIN64)
+
+bool SparseMatrix::LinSolveSchurComplementInv(const SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
 {
     /*
      * So we partition M and B into
@@ -1554,7 +1563,12 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#error NIY
+#  if defined(_MSC_VER)
+#    pragma message ("NIY")
+#  else
+#	 warning NIY
+#  endif
+    return false;
 #else
     /*
      * The same as above, but with fancy LAPACK
@@ -1620,7 +1634,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
 
     // Computing BD^{-1}
     auto startSparsePrep = std::chrono::high_resolution_clock::now();
-    corecvs::SparseMatrix A(M ,   0,  0,      Aw,      Ah),
+    SparseMatrix A(M ,   0,  0,      Aw,      Ah),
                           B(M,   Aw,  0, Aw + Bw,      Bh),
                           C(M,    0, Ah,      Cw, Ah + Ch);
     CORE_ASSERT_TRUE_S(A.h == Ah && A.w == Aw);
@@ -1631,7 +1645,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
     // Computing BD^{-1}
     //recvs::Matrix BDinv(Bh, Dw);
     auto startDinvBt = std::chrono::high_resolution_clock::now();
-    corecvs::SparseMatrix Dinv(Bw, Bw, values, columns, rowPointers);
+    SparseMatrix Dinv(Bw, Bw, values, columns, rowPointers);
     auto BDinv = B * Dinv;
     auto stopDinvBt = std::chrono::high_resolution_clock::now();
     // Computing lhs/rhs
@@ -1640,11 +1654,17 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
     corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]), rhs;
     corecvs::Matrix lhs;
 
+#ifdef WITH_TBB
     tbb::task_group g;
     g.run([&]() { rhs = a - BDinv * b; });
     g.run([&]() { lhs = (corecvs::Matrix)A - (corecvs::Matrix)(BDinv * C); });
     g.wait();
-    std::cout << "Fillin: A=" << A.fillin() << ", BDinv*C: " << (BDinv*C).fillin() << ", lhs: " << (corecvs::SparseMatrix(lhs)).fillin() << std::endl;
+#else
+    rhs = a - BDinv * b;
+    lhs = (corecvs::Matrix)A - (corecvs::Matrix)(BDinv * C);
+
+#endif
+    std::cout << "Fillin: A=" << A.fillin() << ", BDinv*C: " << (BDinv*C).fillin() << ", lhs: " << (SparseMatrix(lhs)).fillin() << std::endl;
     auto stopLhsRhs = std::chrono::high_resolution_clock::now();
 
     auto startX = std::chrono::high_resolution_clock::now();
@@ -1694,7 +1714,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementInv(const corecvs::SparseMatr
 #endif
 }
 
-bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+bool SparseMatrix::LinSolveSchurComplementNew(const SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
 {
     /*
      * So we partition M and B into
@@ -1722,7 +1742,12 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#error NIY
+#  if defined(_MSC_VER)
+#    pragma message ("NIY")
+#  else
+#	 warning NIY
+#  endif
+    return false;
 #else
     /*
      * The same as above, but with fancy LAPACK
@@ -1766,9 +1791,9 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
 
     // Computing BD^{-1}
     auto startSparsePrep = std::chrono::high_resolution_clock::now();
-    corecvs::SparseMatrix A(M ,   0,  0,      Aw,      Ah),
-                          B(M,   Aw,  0, Aw + Bw,      Bh),
-                          C(M,    0, Ah,      Cw, Ah + Ch);
+    SparseMatrix A(M ,   0,  0,      Aw,      Ah),
+                 B(M,   Aw,  0, Aw + Bw,      Bh),
+                 C(M,    0, Ah,      Cw, Ah + Ch);
     CORE_ASSERT_TRUE_S(A.h == Ah && A.w == Aw);
     CORE_ASSERT_TRUE_S(B.h == Bh && B.w == Bw);
     CORE_ASSERT_TRUE_S(C.h == Ch && C.w == Cw);
@@ -1804,7 +1829,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
         cumC[i] = i == 0 ? s : s + cumC[i - 1];
     }
     corecvs::Matrix m(1,1);
-    corecvs::SparseMatrix DinvtBt(m);
+    SparseMatrix DinvtBt(m);
     {
         int h = B.w, w = B.h;
         std::vector<int> rowPointers(h + 1), columns(nnz);
@@ -1844,7 +1869,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
                     }
                 }
             });
-        DinvtBt = corecvs::SparseMatrix(h, w, values, columns, rowPointers);
+        DinvtBt = SparseMatrix(h, w, values, columns, rowPointers);
     }
 
     auto stopDinvBt = std::chrono::high_resolution_clock::now();
@@ -1854,10 +1879,15 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
     corecvs::Vector a(Ah, &Bv[0]), b(Ch, &Bv[Ah]), rhs;
     corecvs::Matrix lhs;
 
+#ifdef WITH_TBB
     tbb::task_group g;
     g.run([&]() { rhs = a - b * DinvtBt; });
     g.run([&]() { lhs = (corecvs::Matrix)A - (corecvs::Matrix)(C.t() * DinvtBt).t(); });
     g.wait();
+#else
+    rhs = a - b * DinvtBt;
+    lhs = (corecvs::Matrix)A - (corecvs::Matrix)(C.t() * DinvtBt).t();
+#endif
     auto stopLhsRhs = std::chrono::high_resolution_clock::now();
 
     auto startX = std::chrono::high_resolution_clock::now();
@@ -1931,7 +1961,8 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementNew(const corecvs::SparseMatr
     return true;
 #endif
 }
-bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+
+bool SparseMatrix::LinSolveSchurComplementOld(const SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
 {
     /*
      * So we partition M and B into
@@ -1959,7 +1990,12 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
     auto Dw = Bw;
 
 #ifndef WITH_BLAS
-#error NIY
+#  if defined(_MSC_VER)
+#    pragma message ("NIY")
+#  else
+#	 warning NIY
+#  endif
+    return false;
 #else
     /*
      * The same as above, but with fancy LAPACK
@@ -2003,9 +2039,9 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
 
     // Computing BD^{-1}
     auto startSparsePrep = std::chrono::high_resolution_clock::now();
-    corecvs::SparseMatrix A(M ,   0,  0,      Aw,      Ah),
-                          B(M,   Aw,  0, Aw + Bw,      Bh),
-                          C(M,    0, Ah,      Cw, Ah + Ch);
+    SparseMatrix A(M ,   0,  0,      Aw,      Ah),
+                 B(M,   Aw,  0, Aw + Bw,      Bh),
+                 C(M,    0, Ah,      Cw, Ah + Ch);
     CORE_ASSERT_TRUE_S(A.h == Ah && A.w == Aw);
     CORE_ASSERT_TRUE_S(B.h == Bh && B.w == Bw);
     CORE_ASSERT_TRUE_S(C.h == Ch && C.w == Cw);
@@ -2130,7 +2166,7 @@ bool corecvs::SparseMatrix::LinSolveSchurComplementOld(const corecvs::SparseMatr
 #endif
 }
 
-bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef, bool explicitInv)
+bool SparseMatrix::LinSolveSchurComplement(const SparseMatrix &M, const corecvs::Vector &Bv, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef, bool explicitInv)
 {
     if (explicitInv)
         return LinSolveSchurComplementInv(M, Bv, diagBlocks, res, symmetric, posDef);
@@ -2138,14 +2174,16 @@ bool corecvs::SparseMatrix::LinSolveSchurComplement(const corecvs::SparseMatrix 
         return LinSolveSchurComplementNew(M, Bv, diagBlocks, res, symmetric, posDef);
 }
 
-bool        corecvs::SparseMatrix::linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
+bool SparseMatrix::linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
 {
-    return corecvs::SparseMatrix::LinSolveSchurComplement(*this, B, diagBlocks, res, symmetric, posDef);
+    return SparseMatrix::LinSolveSchurComplement(*this, B, diagBlocks, res, symmetric, posDef);
 }
 
-std::ostream& corecvs::operator<<(std::ostream& os, const SparseImplementations &si)
+#endif // #	if !defined(_WIN32) || defined(_WIN64)
+
+std::ostream& corecvs::operator<<(std::ostream& os, const corecvs::SparseImplementations &si)
 {
-    switch(si)
+    switch (si)
     {
     case HOMEBREW:
         os << "\x1b[44mhomebrew\x1b[0m";
@@ -2160,12 +2198,12 @@ std::ostream& corecvs::operator<<(std::ostream& os, const SparseImplementations 
     return os;
 }
 
-Characterizator<const SparseMatrix&>::characteristic_type Characterizator<const SparseMatrix&>::Characterize(const SparseMatrix &sm)
+corecvs::Characterizator<const SparseMatrix&>::characteristic_type corecvs::Characterizator<const SparseMatrix&>::Characterize(const SparseMatrix &sm)
 {
-        return characteristic_type({(int)(std::log(sm.h) / std::log(2)), (int)(std::log(sm.w) / std::log(2)), (int)(std::log(sm.nnz()) / std::log(2))});
+    return characteristic_type({(int)(std::log(sm.h) / std::log(2)), (int)(std::log(sm.w) / std::log(2)), (int)(std::log(sm.nnz()) / std::log(2))});
 }
 
-SPMMC::characteristic_type SPMMC::Characterize(const SPMMC::inner_type &v)
+corecvs::SPMMC::characteristic_type corecvs::SPMMC::Characterize(const corecvs::SPMMC::inner_type &v)
 {
     auto &lhs = std::get<0>(v);
     auto &rhs = std::get<1>(v);
@@ -2181,4 +2219,3 @@ SPMMC::characteristic_type SPMMC::Characterize(const SPMMC::inner_type &v)
         transA ? 1 : 0,
         transB ? 1 : 0});
 }
-

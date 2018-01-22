@@ -1,4 +1,4 @@
-#include "fixtureScenePart.h"
+#include "core/camerafixture/fixtureScenePart.h"
 
 namespace corecvs {
 

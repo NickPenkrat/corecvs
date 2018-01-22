@@ -1,8 +1,9 @@
 #ifndef FIXTURE_SCENE_PART_H
 #define FIXTURE_SCENE_PART_H
 
-#include "global.h"
-#include "atomicOps.h"
+#include "core/utils/global.h"
+#include "core/utils/atomicOps.h"
+#include "core/geometry/polygons.h"
 
 namespace corecvs {
 
@@ -57,6 +58,8 @@ public:
         atomic_dec_and_fetch(&OBJECT_COUNT);
     }
 };
+
+
 
 } // namespace corecvs
 

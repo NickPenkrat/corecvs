@@ -8,9 +8,9 @@
 #include <ostream>
 #include <QtCore/QString>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "matrix44.h"
+#include "core/math/matrix/matrix44.h"
 #include "generated/draw3dParameters.h"
 #include "parametersControlWidgetBase.h"
 
@@ -41,9 +41,10 @@ public:
     bool visible;
 
     /* This function sets common materials */
-    virtual void commonSetup(CloudViewDialog *dialog, const Draw3dParameters *parameters);
+    virtual void commonSetup   (CloudViewDialog *dialog, const Draw3dParameters *parameters);
     virtual void commonTierdown(CloudViewDialog *dialog, const Draw3dParameters *parameters);
 
+    /* Despite the fact all callers use this function to draw, */
     virtual void draw(CloudViewDialog *dialog);
 
     virtual void prepareMesh(CloudViewDialog *dialog);
@@ -51,7 +52,7 @@ public:
 
     virtual bool dump(const QString &targetFile);
 
-    virtual void setParameters(void * /*params*/){}
+    virtual void setParameters(void * /*params*/) {}
 
     /* Not the best practice.*/
     virtual ParametersControlWidgetBase *getContolWidget()

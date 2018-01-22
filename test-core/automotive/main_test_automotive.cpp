@@ -12,15 +12,15 @@
 #include <vector>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector3d.h"
-#include "matrix44.h"
-#include "cameraParameters.h"
-#include "eulerAngles.h"
-#include "FCostFunction.h"
-#include "simulation/flowSimulator.h"
-#include "mathUtils.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/cammodel/cameraParameters.h"
+#include "core/math/eulerAngles.h"
+#include "core/automotive/FCostFunction.h"
+#include "core/automotive/simulation/flowSimulator.h"
+#include "core/math/mathUtils.h"
 
 using namespace corecvs;
 

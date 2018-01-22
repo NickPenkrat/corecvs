@@ -12,13 +12,13 @@
 
 #include <vector>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "vector3d.h"
-#include "matrix44.h"
-#include "flowVector.h"
-#include "calibrationCamera.h"
-#include "eulerAngles.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/matrix/matrix44.h"
+#include "core/buffers/flow/flowVector.h"
+#include "core/cameracalibration/cameraModel.h"
+#include "core/math/eulerAngles.h"
 
 namespace corecvs {
 

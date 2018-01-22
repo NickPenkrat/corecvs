@@ -3,7 +3,7 @@
 
 #include <random>
 
-#include "voxels/voxelBuffer.h"
+#include "core/buffers/voxels/voxelBuffer.h"
 
 namespace corecvs {
 

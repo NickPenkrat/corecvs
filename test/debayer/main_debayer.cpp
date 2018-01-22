@@ -1,13 +1,15 @@
 /*
     Bayer to PPM converter
-*/
+ */
 #include <iostream>
-
-#include "ppmLoader.h"
-#include "converters/debayer.h"
-#include "commandLineSetter.h"
 #include <time.h>
-#include "converters/errorMetrics.h"
+
+#include "core/fileformats/ppmLoader.h"
+#include "core/buffers/converters/debayer.h"
+#include "core/buffers/converters/errorMetrics.h"
+#include "core/reflection/commandLineSetter.h"
+#include "core/utils/utils.h"
+//#include "qtFileLoader.h"
 
 using namespace std;
 using namespace corecvs;
@@ -16,10 +18,11 @@ void usage()
 {
     cout << "Demosaic tool"                                                                   << endl
          << "Usage:"                                                                          << endl
-         << "debayer --file=name [--method=N] [--bpos=P] [--ofile=name_debayer.ppm]"          << endl
+         << "debayer --file=name.pgm [--method=N] [--bpos=P] [--ofile=name.ppm] [--obits=-1]" << endl
+         << "       [--ifile=name_bayer8bpp.pgm --ibits=-1]"                                  << endl
          << "       [--compare --target=target --methodCmp=N]      , where:"                  << endl
          <<                                                                                      endl
-         << " --file=name specifies input Bayer file"                                         << endl
+         << " --file=name.pgm specifies input Bayer file in the PGM format"                   << endl
          <<                                                                                      endl
          << " --method=N specifies demosaic method, where N:"                                 << endl
          << " \t0\tNearest Neighbor"                                                          << endl
@@ -29,9 +32,9 @@ void usage()
          << " \t3\tFFT-based frequency filtering"                                             << endl
 #endif
          <<                                                                                      endl
-         << " --bpos=P specifies Bayer position [0-3], where P=0 - RGGB (default)"            << endl
+         << " --bpos=P specifies Bayer position [0..3], where P=0 - RGGB (default)"           << endl
          <<                                                                                      endl
-         << " --ofile=name_debayer.ppm specifies output color image filename"                 << endl
+         << " --ofile=name.ppm specifies output color image filename in the PPM format"       << endl
          << " --obits=-1  positive forces 8-bits output format and sets #bits for r-shifting" << endl
          << endl
          << " --ifile=<name_bayer8bpp.pgm> sets output filename for converted input Bayer image" << endl
@@ -51,18 +54,19 @@ void usage()
 int main(int argc, const char **argv)
 {
     CommandLineSetter s(argc, argv);
-    bool   help      = s.getBool  ("help");
-    int    method    = s.getInt   ("method", DebayerMethod::AHD);
-    string filename  = s.getOption("file");
-    bool   toBayer   = s.getBool  ("toBayer");
-    int    bpos      = s.getInt   ("bpos", -1);      // -1 - try to extract it from Bayer's meta
-    string outfile   = s.getString("ofile", filename + "_debayer.ppm");
-    int    outBits   = s.getInt   ("obits", -1);     // -1 - don't force to 8-bits with some shift
-    int    inBits    = s.getInt   ("ibits", -1);     // -1 - don't force to 8-bits with some shift
-    string filename8 = s.getString("ifile", filename + "_bayer8bpp.pgm");
-    bool   compare   = s.getBool  ("compare");
-    string target    = s.getOption("target");
-    int    methodCmp = s.getInt   ("methodCmp", Debayer::CompareMethod::PSNR);
+    bool   help       = s.getBool  ("help");
+    int    method     = s.getInt   ("method", DebayerMethod::AHD);
+    string filename   = s.getOption("file");
+    bool   toBayer    = s.getBool  ("toBayer");
+    int    bpos       = s.getInt   ("bpos", -1);      // -1 - try to extract it from Bayer's meta
+    string defFileOut = corecvs::HelperUtils::getFullPathWithNewExt(filename, ".ppm");
+    string outfile    = s.getString("ofile", defFileOut);
+    int    outBits    = s.getInt   ("obits", -1);     // -1 - don't force to 8-bits with some shift
+    int    inBits     = s.getInt   ("ibits", -1);     // -1 - don't force to 8-bits with some shift
+    string filename8  = s.getString("ifile", filename + "_bayer8bpp.pgm");
+    bool   compare    = s.getBool  ("compare");
+    string target     = s.getOption("target");
+    int    methodCmp  = s.getInt   ("methodCmp", Debayer::CompareMethod::PSNR);
 
     if (help || argc < 2)
     {
@@ -120,9 +124,19 @@ int main(int argc, const char **argv)
         d.toRGB48(DebayerMethod::DebayerMethod(method), result);
 
         if (outBits != -1)
+        {
             PPMLoader().save(outfile, result, nullptr, outBits);
-        else
+        }
+        else if (HelperUtils::endsWith(outfile, "ppm"))
+        {
             PPMLoader().save(outfile, result);
+        }
+        else
+        {
+            //QTFileLoader().save(outfile, result, 100);
+            std::cout << "Couldn't recognize output file format \"" << outfile << "\"." << std::endl;
+            return -1;
+        }
 
         if (inBits != -1) {
             PPMLoader().save(filename8, bayer, nullptr, inBits);

@@ -13,12 +13,13 @@
 #include <QApplication>
 #include <QtCore/qobjectdefs.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "utils.h"
+#include "core/utils/utils.h"
 #include "recorderDialog.h"
 #include "mainWindow.h"
 #include "configManager.h"
+#include "qtFileLoader.h"
 
 
 using namespace std;
@@ -29,6 +30,12 @@ int main(int argc, char *argv[])
     setStdTerminateHandler();
 
     Q_INIT_RESOURCE(main);
+
+
+    QTG12Loader::registerMyself();
+    QTRGB24Loader::registerMyself();
+
+
 
     QString source;
     if (argc < 2)

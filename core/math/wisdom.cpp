@@ -1,4 +1,4 @@
-#include "wisdom.h"
+#include "core/math/wisdom.h"
 
 #include <iostream>
 
@@ -58,7 +58,7 @@ CpuController::CpuController()
 CudaGpuController::CudaGpuController()
 {
     std::cout << "=== CUDA-GPU Controller initialization ===" << std::endl;
-
+	N = 0;
     cudaGetDeviceCount(&N);
     std::cout << " Found " << N << " cuda-enabled devices:" << std::endl;
     cudaGpus = std::unique_ptr<std::mutex[]> (new std::mutex[N]);

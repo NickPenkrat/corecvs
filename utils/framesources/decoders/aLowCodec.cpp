@@ -9,10 +9,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include "aLowCodec.h"
-//#include "rgb24Buffer.h"
+//#include "core/buffers/rgb24/rgb24Buffer.h"
 
 using namespace corecvs;
 

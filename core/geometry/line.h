@@ -1,8 +1,11 @@
 #ifndef LINE_H_
 #define LINE_H_
-#include "vector2d.h"
-#include "vector3d.h"
-#include "matrix44.h"
+
+#include <cmath>
+
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/matrix/matrix44.h"
 
 
 namespace corecvs {
@@ -36,7 +39,7 @@ public:
         return (a + b) / 2.0;
     }
 
-    friend ostream & operator <<(ostream &out, const Segment &ray)
+    friend std::ostream & operator <<(std::ostream &out, const Segment &ray)
     {
         out << "[" << ray.a << " - " << ray.b << "]";
         return out;
@@ -48,8 +51,20 @@ public:
  * Line segment in 2D and 3D
  *
  */
-typedef Segment<Vector2dd> Segment2d;
+//typedef Segment<Vector2dd> Segment2d;
 typedef Segment<Vector3dd> Segment3d;
+
+class Segment2d : public Segment<Vector2dd>
+{
+public:
+    Segment2d(const Vector2dd &_a, const Vector2dd &_b) :
+        Segment<Vector2dd>(_a,_b)
+    {}
+
+   static Vector2dd intersect(const Segment2d &s1, const Segment2d &s2, bool &hasIntersection);
+
+};
+
 
 
 /**
@@ -74,6 +89,13 @@ public:
         a(_a),
         p(_p)
     {}
+
+          VectorType &direction()       {return a;}
+    const VectorType &direction() const {return a;}
+
+          VectorType &origin()       {return p;}
+    const VectorType &origin() const {return p;}
+
 
     VectorType getPoint(double t) const
     {
@@ -113,6 +135,17 @@ public:
         RealType toReturn(*this);
         toReturn.normalise();
         return toReturn;
+    }
+
+    static RealType FromOriginAndDirection(const VectorType &origin, const VectorType &direction)
+    {
+        return RealType(direction, origin);
+    }
+
+
+    static RealType FromDirectionAndOrigin(const VectorType &direction, const VectorType &origin)
+    {
+        return RealType(direction, origin);
     }
 
     /**
@@ -155,8 +188,8 @@ public:
     template<typename ConvexType>
     bool clip(const ConvexType &convex, double &t1, double &t2) const
     {
-        t1 = -numeric_limits<double>::max();
-        t2 =  numeric_limits<double>::max();
+        t1 = -numeric_limits<double>::infinity();
+        t2 =  numeric_limits<double>::infinity();
 
         for (unsigned i = 0; i < convex.size();  i++) {
             VectorType r = convex.getPoint(i);
@@ -166,7 +199,15 @@ public:
 
             double numen = diff & n;
             double denum = a & n;
-            if (denum == 0.0) {
+            if (denum == 0.0) { /* We are parallel */
+                if (numen > 0) /* We are parallel and outside. Fail. Leaving. */
+                {
+                    t1 = -numeric_limits<double>::infinity();
+                    t2 =  numeric_limits<double>::infinity();
+                    return false;
+                }
+
+                /* We were on the right side. Still a chance for intersection */
                 continue;
             }
             double t = numen / denum;
@@ -184,11 +225,12 @@ public:
         return t2 > t1;
     }
 
-    friend ostream & operator <<(ostream &out, const BaseRay &ray)
+    friend std::ostream & operator <<(std::ostream &out, const BaseRay &ray)
     {
         out << ray.p << "->" << ray.a;
         return out;
     }
+
 };
 
 /**
@@ -225,15 +267,15 @@ public:
 };
 
 /**
- * Ray2d is 3D version of Ray
+ * Ray3d is 3D version of Ray
  **/
 class Ray3d : public BaseRay<Ray3d, Vector3dd>
 {
 public:
     Ray3d() {}
 
-    Ray3d(const Vector3dd &_a, const Vector3dd & _p) :
-        BaseRay<Ray3d, Vector3dd>(_a, _p)
+    Ray3d(const Vector3dd &direction, const Vector3dd & origin) :
+        BaseRay<Ray3d, Vector3dd>(direction, origin)
     {}
 
     Ray3d(const BaseRay<Ray3d, Vector3dd> &base) : BaseRay<Ray3d, Vector3dd>(base)
@@ -332,6 +374,20 @@ public:
         return Vector3dd(0.0);
     }
 
+    /**
+     *  This is a getPoint variant that respects infinitely distant points
+     **/
+    FixedVector<double, 4> getProjectivePoint(double t)
+    {
+        if (std::isinf(t)) {
+            if (t > 0) {
+                return FixedVector<double, 4>(a, 0.0);
+            } else {
+                return FixedVector<double, 4>(-a, 0.0);
+            }
+        }
+        return FixedVector<double, 4>(getPoint(t), 1.0);
+    }
 };
 
 #if 0
@@ -538,7 +594,7 @@ public:
      **/
     Line2d(const Segment2d &segment)
     {
-       (*this) = fromSegment(segment);
+       (*this) = FromSegment(segment);
     }
 
     /**
@@ -557,7 +613,7 @@ public:
        return Line2d(n, -(p & n));
     }
 
-    static Line2d fromSegment(const Segment2d &segment)
+    static Line2d FromSegment(const Segment2d &segment)
     {
         return FromRay(Ray2d(segment));
     }
@@ -567,10 +623,16 @@ public:
         return Vector2dd(element[0], element[1]);
     }
 
-    double last(void) const
+    double &last(void)
     {
         return element[2];
     }
+
+    const double &last(void) const
+    {
+        return element[2];
+    }
+
 
     /**
      *   Normalizes the normal vector without changing the line itself
@@ -736,6 +798,17 @@ public:
         Plane3d result = *this;
         result.normalise();
         return result;
+    }
+
+    Plane3d flippedNormal(void) const
+    {
+        return Plane3d(-normal(), last());
+    }
+
+    void flipNormal(void)
+    {
+        for (int i = 0; i < size() - 1; i++)
+            element[i] = - element[i];
     }
 
     Vector3dd normal(void) const
@@ -1017,6 +1090,35 @@ inline Vector2dd Ray2d::intersection(const Ray2d &ray1, const Ray2d &ray2, doubl
 
 //    SYNC_PRINT(("Ray2d::intersection(): t1=%lf t2=%lf\n", t1, t2 ));
     return ray1.getPoint(t1);
+}
+
+inline Vector2dd Segment2d::intersect(const Segment2d &s1, const Segment2d &s2, bool &hasIntersection)
+{
+    Ray2d r1(s1);
+    Ray2d r2(s2);
+
+    double t1 = 0;
+    double t2 = 0;
+
+    //cout << "Segment2d::intersect(): " << r1 << " and " << r2 << std::endl;
+
+    Vector2dd x = Ray2d::intersection(r1, r2, t1, t2);
+
+    if (t1 == std::numeric_limits<double>::infinity())
+    {
+        hasIntersection = false;
+        return Vector2dd::Zero();
+    }
+
+    if ((t1 < 0.0 || t1 > 1.0) ||
+        (t2 < 0.0 || t2 > 1.0))
+    {
+        hasIntersection = false;
+        return Vector2dd::Zero();
+    }
+
+    hasIntersection = true;
+    return x;
 }
 
 } //namespace corecvs

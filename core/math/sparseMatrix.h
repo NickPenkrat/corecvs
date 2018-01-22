@@ -7,8 +7,8 @@
 #include <memory>
 #include <atomic>
 
-#include "matrix.h"
-#include "vector.h"
+#include "core/math/matrix/matrix.h"
+#include "core/math/vector/vector.h"
 
 #ifdef WITH_MKL
 #include <mkl.h>
@@ -20,7 +20,7 @@
 #include "cuda.h"
 #endif
 
-#include "wisdom.h"
+#include "core/math/wisdom.h"
 
 namespace corecvs
 {
@@ -134,11 +134,13 @@ public:
      * Linear system solving with use of schur-complement structure (only with block-diagonal lower-right part)
      * Note that you shoul use it only when you are sure that lower (block-diagonal) part is well-conditioned
      */
+#if !defined(_WIN32) || defined(_WIN64) // requires x86 blas
     static bool LinSolveSchurComplementInv(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
     static bool LinSolveSchurComplementOld(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
     static bool LinSolveSchurComplementNew(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
-    static bool LinSolveSchurComplement(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false, bool explicitInv = false);
+	static bool LinSolveSchurComplement(const corecvs::SparseMatrix &A, const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false, bool explicitInv = false);
     bool        linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric = false, bool posDef = false);
+#endif 
 
     std::pair<bool, SparseMatrix> incompleteCholseky(bool allow_parallel = true);
 

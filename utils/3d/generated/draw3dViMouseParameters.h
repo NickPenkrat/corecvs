@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from draw3d.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -83,6 +84,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -173,6 +176,15 @@ template<class VisitorType>
         mFlowColorType = flowColorType;
     }
 
+    bool operator ==(const Draw3dViMouseParameters &other) const 
+    {
+        if ( !(this->mRedDist == other.mRedDist)) return false;
+        if ( !(this->mBlueDist == other.mBlueDist)) return false;
+        if ( !(this->mFlowZoom == other.mFlowZoom)) return false;
+        if ( !(this->mPointColorType == other.mPointColorType)) return false;
+        if ( !(this->mFlowColorType == other.mFlowColorType)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, Draw3dViMouseParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

@@ -5,7 +5,7 @@
 
 #include "paintImageWidget.h"
 #include "frames.h"
-#include "correspondenceList.h"
+#include "core/rectification/correspondenceList.h"
 
 namespace Ui {
 class PointsRectificationWidget;

@@ -1,7 +1,7 @@
 #ifndef ROTATIONPLANGENERATOR_H
 #define ROTATIONPLANGENERATOR_H
 
-#include "calibrationLocation.h"
+#include "core/cameracalibration/calibrationLocation.h"
 #include <QWidget>
 
 using namespace corecvs;

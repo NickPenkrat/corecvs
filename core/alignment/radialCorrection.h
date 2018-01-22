@@ -11,14 +11,14 @@
 #ifndef RADIALCORRECTION_H_
 #define RADIALCORRECTION_H_
 
-#include "ellipticalApproximation.h"
-#include "lensDistortionModelParameters.h"
-#include "global.h"
-#include "vector2d.h"
-#include "g12Buffer.h"
-#include "rgb24Buffer.h"
-#include "function.h"
-#include "levenmarq.h"
+#include "core/geometry/ellipticalApproximation.h"
+#include "core/alignment/lensDistortionModelParameters.h"
+#include "core/utils/global.h"
+#include "core/math/vector/vector2d.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/function/function.h"
+#include "core/math/levenmarq.h"
 
 namespace corecvs {
 
@@ -106,7 +106,12 @@ public:
     }
 
 
-    RadialCorrection invertCorrection(int h, int w, int step);
+    RadialCorrection invertCorrection   (int h, int w, int step);
+
+#if 0
+    RadialCorrection invertCorrectionLSE(int h, int w, int step);
+#endif
+
     EllipticalApproximation1d compareWith(const RadialCorrection &other, int h, int w, int steps);
 
     /* */

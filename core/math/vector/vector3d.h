@@ -12,8 +12,8 @@
 
 #include <math.h>
 
-#include "vector2d.h"
-#include "vector.h"
+#include "core/math/vector/vector2d.h"
+#include "core/math/vector/vector.h"
 
 namespace corecvs {
 
@@ -212,6 +212,13 @@ public:
         return atan2(cross, dot);
     }
 
+    /**
+     *  Optional inteface part that automates projection usage as function
+     **/
+    ElementType angleToZ() const
+    {
+        return atan2(this->xy().l2Metric(), this->z());
+    }
 
     /**
      *  Do the conversion form projective coordinates to the 2D ones
@@ -275,7 +282,7 @@ public:
     static Vector3d FromSpherical(double latitude, double longitude, double length = 1.0)
     {
 
-        return Vector3d(cos(longitude) * sin(latitude), cos(longitude) * cos(latitude), sin(longitude)) * length;
+        return Vector3d(cos(longitude) * cos(latitude), cos(longitude) * sin(latitude), sin(longitude)) * length;
     }
 
     static Vector3d toSpherical(const Vector3d &vector)

@@ -14,10 +14,10 @@
 #include <smmintrin.h>
 #include <stdint.h>
 
-#include "avxInteger.h"
-#include "global.h"
-#include "fixedVector.h"
-#include "int64x2.h"
+#include "core/math/avx/avxInteger.h"
+#include "core/utils/global.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/sse/int64x2.h"
 
 namespace corecvs {
 
@@ -200,10 +200,10 @@ public:
 #endif
 
     /* Print to stream helper */
-    friend ostream & operator << (ostream &out, const Int64x4 &vector);
+    friend std::ostream & operator << (std::ostream &out, const Int64x4 &vector);
 
     /* Formated hex helper */
-    void hexDump (ostream &out);
+    void hexDump (std::ostream &out);
 #if 1
     // Producers
     inline static Int64x4 unpackLower(const Int64x4 &left, const Int64x4 &right) {

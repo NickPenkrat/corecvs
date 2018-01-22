@@ -17,31 +17,31 @@
 #include <map>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "matrix33.h"
-#include "bufferFactory.h"
-#include "g12Buffer.h"
-#include "projectiveTransform.h"
-#include "ppmLoader.h"
-#include "bmpLoader.h"
-#include "integralBuffer.h"
-#include "derivativeBuffer.h"
-#include "g12Buffer.h"
-#include "abstractBuffer.h"
-#include "memoryBlock.h"
-#include "matrix33.h"
-#include "projectiveTransform.h"
-#include "bufferFactory.h"
-#include "rgb24Buffer.h"
-#include "rgbColor.h"
-#include "derivativeBuffer.h"
-#include "memoryBlock.h"
-#include "rgbColor.h"
-#include "abstractPainter.h"
-#include "g8Buffer.h"
-#include "booleanBuffer.h"
-#include "polynomial.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/math/projectiveTransform.h"
+#include "core/fileformats/ppmLoader.h"
+#include "core/fileformats/bmpLoader.h"
+#include "core/buffers/integralBuffer.h"
+#include "core/buffers/derivativeBuffer.h"
+#include "core/buffers/g12Buffer.h"
+#include "core/buffers/abstractBuffer.h"
+#include "core/buffers/memory/memoryBlock.h"
+#include "core/math/matrix/matrix33.h"
+#include "core/math/projectiveTransform.h"
+#include "core/buffers/bufferFactory.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/rgb24/rgbColor.h"
+#include "core/buffers/derivativeBuffer.h"
+#include "core/buffers/memory/memoryBlock.h"
+#include "core/buffers/rgb24/rgbColor.h"
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/buffers/g8Buffer.h"
+#include "core/buffers/booleanBuffer.h"
+#include "core/polynomial/polynomial.h"
 
 using namespace corecvs;
 
@@ -234,8 +234,13 @@ TEST(Buffer, testBilinearTransform)
     ProjectiveTransform inverseLeft(inverseLeftMatrix);
 
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    if (image == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
+
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
     CORE_ASSERT_TRUE(buffer1Transformed->verify(), "Result image is corrupted");
 
@@ -283,7 +288,11 @@ TEST(Buffer, testDerivative)
 TEST(Buffer, testNonMinimal)
 {
     G12Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-    CORE_ASSERT_TRUE(image, "Could not open test image\n");
+    if (image == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     CORE_ASSERT_TRUE(image->verify(), "Input image is corrupted");
 
     DerivativeBuffer *result = new DerivativeBuffer(image);
@@ -305,6 +314,11 @@ TEST(Buffer, testBufferDifference)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
     G12Buffer *input2 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0002_c0.pgm");
+    if (input1 == nullptr || input2 == nullptr)
+    {
+        cout << "Could not open test images" << endl;
+        return;
+    }
 
     G12Buffer *output1 = G12Buffer::difference(input1, input2);
     (BMPLoader()).save("difference.bmp", output1);
@@ -321,6 +335,11 @@ TEST(Buffer, testBufferDifference)
 TEST(Buffer, testBufferThreshold)
 {
     G12Buffer *input1 = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+    if (input1 == nullptr)
+    {
+        cout << "Could not open test image" << endl;
+        return;
+    }
     int level = 1500;
     G12Buffer *output = input1->binarize(level);
     (BMPLoader()).save("threshold.bmp", output);

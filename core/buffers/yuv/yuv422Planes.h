@@ -1,10 +1,10 @@
 #ifndef YUV422PLANES_H
 #define YUV422PLANES_H
 
-#include "abstractBuffer.h"
-#include "yuvColor.h"
-#include "g8Buffer.h"
-#include "rgb24Buffer.h"
+#include "core/buffers/abstractBuffer.h"
+#include "core/buffers/yuv/yuvColor.h"
+#include "core/buffers/g8Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 
 namespace corecvs {
 

@@ -1,8 +1,8 @@
 #ifndef MATERIALEXAMPLES_H
 #define MATERIALEXAMPLES_H
 
-#include "perlinNoise.h"
-#include "raytraceRenderer.h"
+#include "core/geometry/raytrace/perlinNoise.h"
+#include "core/geometry/raytrace/raytraceRenderer.h"
 
 namespace corecvs {
 
@@ -29,6 +29,19 @@ public:
     TextureMaterial()
     {}
     void getColor(RayIntersection &ray, RaytraceRenderer &renderer);
+};
+
+class RaytraceableSky2 : public RaytraceableMaterial {
+public:
+    PerlinNoise noise;
+    double skyLevel = 0.8;
+
+    TraceColor sky  = RGBColor::Cyan().toDouble();
+    TraceColor low  = RGBColor::Cyan().toDouble();
+    TraceColor high = RGBColor::White().toDouble();
+
+    virtual void getColor(RayIntersection &ray, RaytraceRenderer &renderer) override;
+
 };
 
 class RaytraceableSky1 : public RaytraceableMaterial {

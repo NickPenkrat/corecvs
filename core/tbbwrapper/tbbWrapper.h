@@ -6,22 +6,30 @@
  *
  * This class allows system to work transparently with or without TBB
  *
- *
- * \date Apr 24, 2011
- * \author alexander
- * \author ivarfolomeev
- */
-
+ **/
 #include <cstddef>
+#include <iostream>
 
 #ifdef WITH_TBB
+/*
+ * This jump around is beacause tbb indirectly includes windows.h
+   This is a fail. TBB needs to be abolished
+*/
+#define Polygon Polygon_
+#define Ellipse Ellipse_
 #include <tbb/parallel_for.h>
 #include <tbb/parallel_reduce.h>
 #include <tbb/blocked_range.h>
+#include <tbb/reader_writer_lock.h>
+#include <tbb/spin_mutex.h>
+#include <tbb/task_scheduler_init.h>
+#undef Ellipse
+#undef Polygon
+
 using namespace tbb;
 #endif
 
-#include "global.h"
+#include "core/utils/global.h"
 
 namespace corecvs {
 
@@ -219,7 +227,7 @@ V parallelable_reduce(const I& from, const I& to, const V& id, const F &f, const
 template <typename I, typename V, typename F, typename R>
 V parallelable_reduce(const I& from, const I& to, const typename BlockedRange<I>::size_type &grainsize, const V& id, const F &f, const R &r)
 {
-    return parallel_reduce(corecvs::BlockedRange<I>(from, to, grainsize), id, f, r);
+    return parallelable_reduce(corecvs::BlockedRange<I>(from, to, grainsize), id, f, r);
 }
 
 
@@ -258,6 +266,28 @@ inline std::string tbbInfo()
 #endif
     return info;
 }
+
+/** Useful class to setmaximum number of working threads for the whole TBB environment for any application on startup
+ */
+#ifdef WITH_TBB
+    class TbbSchedulerInitializer : public tbb::task_scheduler_init
+    {
+    public:
+        TbbSchedulerInitializer(const char* varName = "CALIBRATION_TEST_THREAD_LIMIT")
+            : tbb::task_scheduler_init(std::getenv(varName) ? std::stoi(std::getenv(varName)) : automatic)
+        {
+            char* var = std::getenv(varName);
+            if (var) {
+                std::cout << "Detected thread limit env.var: " << var << std::endl;
+            }
+        }
+    };
+#else
+    class TbbSchedulerInitializer {
+    public:
+        TbbSchedulerInitializer(const char* var = "") {}
+    };
+#endif
 
 } //namespace corecvs
 

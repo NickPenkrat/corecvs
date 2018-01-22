@@ -1,34 +1,34 @@
-#include "folderScanner.h"
-#include "log.h"
-#include "utils.h"
+#include "core/filesystem/folderScanner.h"
+#include "core/utils/log.h"
+#include "core/utils/utils.h"
 
 #include <iostream>
 
-#ifdef __GNUC__
-#ifdef CORE_UNSAFE_DEPS
-# include <experimental/filesystem>
-  namespace fs = std::experimental::filesystem;  
-#else
-    #include <sys/types.h>
-    #include <dirent.h>
-#endif
-#endif
-
-
-#ifdef _MSC_VER
-# include <filesystem>
-  namespace fs = std::tr2::sys;
-#endif
-
 namespace corecvs {
-
-
-#if defined(CORE_UNSAFE_DEPS) || defined (_MSC_VER)
 
 bool FolderScanner::isDir(const string &path)
 {
     fs::path p(path);
     return fs::exists(p) && fs::is_directory(p);
+}
+
+bool FolderScanner::createDir(const string &path, bool allowRecursive)
+{
+    if (isDir(path))
+        return true;
+
+    std::cout << "creating dir <" << path << ">" << std::endl;
+
+    bool res;
+    try {
+        fs::path p(path);
+        res = allowRecursive ? fs::create_directories(p) : fs::create_directory(p);
+    }
+    catch (...) {
+        L_ERROR_P("couldn't create dir <%s>", path.c_str());
+        res = false;
+    }
+    return res;
 }
 
 bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFiles)
@@ -46,7 +46,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 
         bool isDir = fs::is_directory(pathChild);
 
-        L_DDEBUG_P("%s contains\t%s\tas a %s", p.string().c_str(), pathChild.string().c_str(), (isDir ? "dir" : "file"));
+        //L_DDEBUG_P("%s contains\t%s\tas a %s", p.string().c_str(), pathChild.string().c_str(), (isDir ? "dir" : "file"));
 
         if (!(findFiles ^ isDir))
             continue;
@@ -64,7 +64,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
     return true;
 }
 
-#else
+#if defined(FILESYSTEM_WORKAROUND)
 
 bool FolderScanner::isDir(const string &path)
 {
@@ -73,6 +73,37 @@ bool FolderScanner::isDir(const string &path)
         return false;
 
     closedir(dp);
+    return true;
+}
+
+bool FolderScanner::createDir(const string &path, bool allowRecursive)
+{
+    if (isDir(path))
+        return true;
+
+    std::cout << "creating dir <" << path << ">" << std::endl;
+
+    std::system(("mkdir " + path).c_str());
+
+    if (!isDir(path))
+    {
+        if (!allowRecursive) {
+            L_ERROR_P("couldn't create dir <%s>", path.c_str());
+            return false;
+        }
+        L_INFO_P("creating subfolders of <%s>", path.c_str());
+
+        auto subfolders = HelperUtils::stringSplit(path, PATH_SEPARATOR[0]);
+        string p;
+        for (auto& subfolder : subfolders)
+        {
+            if (!p.empty()) p += PATH_SEPARATOR;
+            p += subfolder;
+
+            if (!createDir(p, false))
+                return false;
+        }
+    }
     return true;
 }
 
@@ -99,7 +130,7 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
             dir = isDir(childPath);
         }
 
-        L_DDEBUG_P("%s contains\t%s\tas a %s (d_type:0x%x)", path.c_str(), ep->d_name, (dir ? "dir" : "file"), ep->d_type);
+        //L_DDEBUG_P("%s contains\t%s\tas a %s (d_type:0x%x)", path.c_str(), ep->d_name, (dir ? "dir" : "file"), ep->d_type);
 
         if (!(findFiles ^ dir))
             continue;
@@ -113,6 +144,33 @@ bool FolderScanner::scan(const string &path, vector<string> &childs, bool findFi
 
 #endif
 
+void FolderScanner::emptyDir(const string &path)
+{
+#ifdef WIN32
+    std::system(("rd /s /q " + path).c_str());
+#else
+    int result = std::system(("rm -rf " + path).c_str());
+    CORE_UNUSED(result);
+#endif
+    L_INFO_P("The <%s> folder is deleted.", path.c_str());
+}
+
+bool FolderScanner::isAccessible(const string &path)
+{
+    auto p = path;
+    if (!STR_HAS_SLASH_AT_END(p))
+        p += PATH_SEPARATOR;
+    p += "checkFolderScanner.tmp";
+
+    std::ofstream f(p, std::ios::app);
+    if (f.is_open())
+    {
+        f.close();
+        HelperUtils::pathRemove(p);
+        return true;
+    }
+    return false;
+}
 
 } // namespace corecvs
 

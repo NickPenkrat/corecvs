@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from distortion.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,7 +31,7 @@
 /*
  *  Additional includes for enum section.
  */
-#include "lineDistortionEstimatorCost.h"
+#include "core/xml/generated/lineDistortionEstimatorCost.h"
 
 /**
  * \brief Line Distortion Estimator Parameters 
@@ -96,6 +97,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -212,6 +215,17 @@ template<class VisitorType>
         mEstimateCenter = estimateCenter;
     }
 
+    bool operator ==(const LineDistortionEstimatorParameters &other) const 
+    {
+        if ( !(this->mCostAlgorithm == other.mCostAlgorithm)) return false;
+        if ( !(this->mIterationNumber == other.mIterationNumber)) return false;
+        if ( !(this->mPolynomDegree == other.mPolynomDegree)) return false;
+        if ( !(this->mSimpleJacobian == other.mSimpleJacobian)) return false;
+        if ( !(this->mEvenPowersOnly == other.mEvenPowersOnly)) return false;
+        if ( !(this->mEstimateTangent == other.mEstimateTangent)) return false;
+        if ( !(this->mEstimateCenter == other.mEstimateCenter)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, LineDistortionEstimatorParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

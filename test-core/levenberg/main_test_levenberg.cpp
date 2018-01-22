@@ -11,19 +11,19 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "function.h"
-#include "levenmarq.h"
-#include "dogleg.h"
-#include "helperFunctions.h"
-#include "bmpLoader.h"
+#include "core/function/function.h"
+#include "core/math/levenmarq.h"
+#include "core/math/dogleg.h"
+#include "core/math/helperFunctions.h"
+#include "core/fileformats/bmpLoader.h"
 
 using namespace corecvs;
 
 class LevenbergTest : FunctionArgs {
 public:
-    LevenbergTest() : FunctionArgs(2,10) {};
+    LevenbergTest() : FunctionArgs(2,10) {}
 
     virtual void operator()(const double in[], double out[])
     {

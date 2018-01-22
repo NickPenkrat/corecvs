@@ -32,6 +32,9 @@ const char *ConfigLoader::toCString(QString const &str)
         return strdup(str.toLatin1());
 }
 
+
+
+
 /**
  *   We do this to support both
  *
@@ -75,7 +78,7 @@ ReflectionNaming ConfigLoader::getNamingFromXML(QDomElement const &classElement)
     return ReflectionNaming(toCString(className), toCString(description), toCString(comment));
 }
 
-void ConfigLoader::loadEnums(QDomDocument const &config)
+void ConfigLoader::loadEnums(QDomDocument const &config, QFileInfo const &currentFile)
 {
     Reflection *result = new ReflectionGen();
     result->name = ReflectionNaming("enums", NULL, NULL);
@@ -84,8 +87,15 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
     for (int i = 0; i < enums.length(); i++)
     {
         QDomElement enumElement = enums.at(i).toElement();
-        EnumReflection *enumReflection = new EnumReflection();
+        EnumReflectionGen *enumReflection = new EnumReflectionGen();
         enumReflection->name = getNamingFromXML(enumElement);
+
+        QString includePath = enumElement.attribute("incpath", "core/xml/generated/");
+        enumReflection->includePath = toCString(includePath);
+
+        enumReflection->sourceXml = toCString(currentFile.fileName());
+
+        qDebug() << "Enum" << enumReflection->name.name << " (" << i << "/" << enums.length() << ")";
 
         QDomNodeList items = enumElement.elementsByTagName("item");
         for (int j = 0; j < items.length(); j++)
@@ -109,7 +119,7 @@ void ConfigLoader::loadEnums(QDomDocument const &config)
 
 
 
-void ConfigLoader::loadClasses(QDomDocument const &config)
+void ConfigLoader::loadClasses(QDomDocument const &config, QFileInfo const &currentFile)
 {
     QDomNodeList classes = config.elementsByTagName("class");
     for (int i = 0; i < classes.length(); i++)
@@ -117,8 +127,14 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
         QDomElement classElement = classes.at(i).toElement();
         ReflectionGen *result = new ReflectionGen();
         result->name = getNamingFromXML(classElement);
+
         QString uibase = classElement.attribute("uibase");
         result->uiBaseClass = toCString(uibase);
+
+        QString includePath = classElement.attribute("incpath", "core/xml/generated/");
+        result->includePath = toCString(includePath);
+
+        result->sourceXml = toCString(currentFile.fileName());
 
         qDebug() << "Class" << result->name.name << " (" << i << "/" << classes.length() << ")";
 
@@ -208,8 +224,13 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                 }
                 else if (type == "string")
                 {
-                    const char *dValue = toCString(defaultValue);
+                    std::string dValue = defaultValue.toStdString();
                     field = new StringFieldGen(dValue, fieldNameing);
+                }
+                else if (type == "wstring")
+                {
+                    std::wstring dValue = defaultValue.toStdWString();
+                    field = new WStringFieldGen(dValue, fieldNameing);
                 }
                 else if (type == "Vector2dd" || type == "Vector3dd")
                 {
@@ -285,6 +306,15 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
                             , minValue.toDouble()
                             , maxValue.toDouble()
                             , stepValue.isEmpty() ? 1.0 : stepValue.toDouble());
+
+                    int decimals = 2;
+                    bool ok;
+                    int parsed = fieldElement.attribute("decimals").toInt(&ok);
+                    if (ok) {
+                        decimals = parsed;
+                    }
+                    field->precision = decimals;
+
                 }
                /* else if (type == "bool")
                 {
@@ -396,7 +426,7 @@ void ConfigLoader::loadClasses(QDomDocument const &config)
     }
 }
 
-void ConfigLoader::loadParamsMapper(QDomDocument const &config)
+void ConfigLoader::loadParamsMapper(QDomDocument const &config, const QFileInfo &currentFile)
 {
     QDomNodeList paramsMappers = config.elementsByTagName("parametersMapper");
     for (int i = 0; i < paramsMappers.length(); i++)
@@ -453,9 +483,9 @@ QMap<QString, Reflection *> *ConfigLoader::load(QString const &fileName)
     // TODO: handle includes
 
     loadIncludes(config, info);
-    loadEnums(config);
-    loadClasses(config);
-    loadParamsMapper(config);
+    loadEnums(config, info);
+    loadClasses(config, info);
+    loadParamsMapper(config, info);
 
     return &mReflections;
 

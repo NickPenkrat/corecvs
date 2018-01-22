@@ -37,8 +37,6 @@ HEADERS += \
     framesources/decoders/aLowCodec.h \
     \
     framesources/file/imageFileCaptureInterface.h \
-    framesources/file/fileCapture.h \
-    framesources/file/precCapture.h \
     framesources/file/abstractFileCapture.h \
     framesources/file/abstractFileCaptureSpinThread.h \
     \
@@ -97,7 +95,6 @@ HEADERS += \
     tablecontrol/rotaryTableControlWidget.h \
     tablecontrol/rotaryTableMeshModel.h \
     tablecontrol/rotationPlanGenerator.h \
-    capture/abstractImageNamer.h \
     capture/abstractManipulatorInterface.h \
     corestructs/cameraModel/affine3dControlWidget.h \
     corestructs/cameraModel/fixtureControlWidget.h \
@@ -109,7 +106,14 @@ HEADERS += \
     3d/sceneShaded.h \
     corestructs/reflectionWidget.h \
     3d/shadedSceneControlWidget.h \
-    scripting/coreToScript.h
+    scripting/coreToScript.h \
+    3d/billboardCaption3DScene.h \
+    3d/gCodeScene.h \
+    corestructs/cameraModel/fixtureGeometryControlWidget.h \
+    corestructs/pointerFieldWidget.h \
+    corestructs/widgetBlockHarness.h \
+    corestructs/cameraModel/fixtureGlobalParametersWidget.h \
+    framesources/imageCaptureInterfaceQt.h
 
 SOURCES += \
     frames.cpp \
@@ -121,8 +125,6 @@ SOURCES += \
     framesources/decoders/aLowCodec.cpp \
     \
     framesources/file/imageFileCaptureInterface.cpp \
-    framesources/file/fileCapture.cpp \
-    framesources/file/precCapture.cpp \
     framesources/file/abstractFileCapture.cpp \
     framesources/file/abstractFileCaptureSpinThread.cpp \
     \
@@ -179,7 +181,6 @@ SOURCES += \
     tablecontrol/rotaryTableControlWidget.cpp \
     tablecontrol/rotaryTableMeshModel.cpp \
     tablecontrol/rotationPlanGenerator.cpp \
-    capture/abstractImageNamer.cpp \
     corestructs/cameraModel/affine3dControlWidget.cpp \
     corestructs/cameraModel/fixtureControlWidget.cpp \
     widgets/observationListModel.cpp \
@@ -189,7 +190,14 @@ SOURCES += \
     uis/histogramDepthDialog.cpp \
     3d/sceneShaded.cpp \
     corestructs/reflectionWidget.cpp \
-    3d/shadedSceneControlWidget.cpp
+    3d/shadedSceneControlWidget.cpp \
+    3d/billboardCaption3DScene.cpp \
+    3d/gCodeScene.cpp \
+    corestructs/cameraModel/fixtureGeometryControlWidget.cpp \
+    corestructs/pointerFieldWidget.cpp \
+    corestructs/widgetBlockHarness.cpp \
+    corestructs/cameraModel/fixtureGlobalParametersWidget.cpp \
+    framesources/imageCaptureInterfaceQt.cpp
 
 
 FORMS += \
@@ -202,7 +210,30 @@ FORMS += \
     corestructs/cameraModel/affine3dControlWidget.ui \
     corestructs/cameraModel/fixtureControlWidget.ui \
     corestructs/cameraModel/featurePointControlWidget.ui \
-    3d/shadedSceneControlWidget.ui
+    3d/shadedSceneControlWidget.ui \
+    corestructs/cameraModel/fixtureGeometryControlWidget.ui \
+    corestructs/pointerFieldWidget.ui \
+    corestructs/cameraModel/fixtureGlobalParametersWidget.ui
+
+# =============================================================
+
+# PREC
+CONFIG += with_framesource_prec
+
+with_framesource_prec {
+HEADERS +=  framesources/file/precCapture.h
+SOURCES +=  framesources/file/precCapture.cpp
+DEFINES += WITH_FRAMESOURCE_PREC
+}
+
+# FILE
+CONFIG += with_framesource_file
+
+with_framesource_file {
+HEADERS +=  framesources/file/fileCapture.h
+SOURCES +=  framesources/file/fileCapture.cpp
+DEFINES += WITH_FRAMESOURCE_FILE
+}
 
 
 # =============================================================
@@ -438,6 +469,10 @@ RESOURCES += \
    ../resources/main.qrc
 
 unix:!macx:!win32 {
+    CONFIG += with_framesource_v4l2
+}
+
+with_framesource_v4l2 {
     message (Switching on V4L2 support)
 
     HEADERS += \
@@ -450,6 +485,7 @@ unix:!macx:!win32 {
         framesources/v4l2/V4L2Capture.cpp \
         framesources/v4l2/V4L2CaptureDecouple.cpp \
 
+    DEFINES += WITH_FRAMESOURCE_V4L2
 }
 
 
@@ -539,6 +575,28 @@ with_opencv {
     }
 }
 
+with_rapidjson {
+    RAPIDJSON_WRAPPER_DIR = $$UTILSDIR/../wrappers/rapidjson
+    include($$RAPIDJSON_WRAPPER_DIR/rapidjson.pri)
+
+    contains(DEFINES, WITH_RAPIDJSON) {
+        HEADERS +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONReader.h
+        SOURCES +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONReader.cpp
+       #HEADERS +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONWriter.h
+       #SOURCES +=  $$RAPIDJSON_WRAPPER_DIR/rapidJSONWriter.cpp
+    }
+}
+
+with_jsonmodern {
+    JSONMODERN_WRAPPER_DIR = $$UTILSDIR/../wrappers/jsonmodern
+    include($$JSONMODERN_WRAPPER_DIR/jsonmodern.pri)
+
+    contains(DEFINES, WITH_JSONMODERN) {
+         HEADERS += $$JSONMODERN_WRAPPER_DIR/jsonModernReader.h
+         SOURCES += $$JSONMODERN_WRAPPER_DIR/jsonModernReader.cpp
+    }
+}
+
 with_siftgpu {
         DEFINES += WITH_SIFTGPU
         SIFTGPU_WRAPPER_DIR = $$UTILSDIR/../wrappers/siftgpu
@@ -573,11 +631,8 @@ with_avcodec {
 }
 
 with_synccam {
-    HEADERS += \
-        framesources/syncCam/syncCamerasCaptureInterface.h \
-
-    SOURCES += \
-        framesources/syncCam/syncCamerasCaptureInterface.cpp \
+    HEADERS += framesources/syncCam/syncCamerasCaptureInterface.h
+    SOURCES += framesources/syncCam/syncCamerasCaptureInterface.cpp
 
     DEFINES += WITH_SYNCCAM
 }
@@ -588,6 +643,5 @@ with_qscript {
     HEADERS += scripting/scriptWindow.h
     FORMS   += scripting/scriptWindow.ui
 }
-
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml

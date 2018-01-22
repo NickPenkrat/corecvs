@@ -1,6 +1,6 @@
-#include "circlePatternGenerator.h"
-#include "homographyReconstructor.h"
-#include "mathUtils.h"
+#include "core/patterndetection/circlePatternGenerator.h"
+#include "core/math/matrix/homographyReconstructor.h"
+#include "core/math/mathUtils.h"
 
 using corecvs::Vector3dd;
 using corecvs::Vector2dd;

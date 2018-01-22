@@ -1,7 +1,7 @@
 #include <QDebug>
 #include "baseGenerator.h"
 
-BaseGenerator::BaseGenerator(const Reflection *_clazz)
+BaseGenerator::BaseGenerator(const ReflectionGen *_clazz)
     : clazz(_clazz)
 {
 }
@@ -52,6 +52,8 @@ QString BaseGenerator::getCppTypeForElementType(const BaseField::FieldType type)
             return "bool";
         case BaseField::TYPE_STRING:
             return "std::string";
+        case BaseField::TYPE_WSTRING:
+            return "std::wstring";
         case BaseField::TYPE_ENUM:
         {
             QString enumName = toCamelCase(QString(static_cast<const EnumField*>(field)->enumReflection->name.name), true);
@@ -108,6 +110,8 @@ QString BaseGenerator::getWidgetGetterMethodForType(BaseField::FieldType type)
             return "currentIndex()";
         case BaseField::TYPE_STRING:
             return "text().toStdString()";
+        case BaseField::TYPE_WSTRING:
+            return "text().toStdWString()";
         case BaseField::TYPE_COMPOSITE:
             return "createParameters()";
         default:
@@ -146,6 +150,8 @@ QString BaseGenerator::getWidgetSetterMethodForType(BaseField::FieldType type)
             return "setCurrentIndex";
         case BaseField::TYPE_STRING:
             return "setText";
+        case BaseField::TYPE_WSTRING:
+            return "setText";
         case BaseField::TYPE_COMPOSITE:
             return "setParameters";
         default:
@@ -168,7 +174,21 @@ QString BaseGenerator::getDefaultElementValue(const BaseField *field)
         case BaseField::TYPE_ENUM:
             return QString::number(static_cast<const EnumField *>(field)->defaultValue);
         case BaseField::TYPE_STRING:
-            return QString("\"") + QString(static_cast<const StringField *>(field)->defaultValue.c_str()) + QString("\"");
+            return QString("\"") + QString::fromStdString (static_cast<const StringField  *>(field)->defaultValue) + QString("\"");
+        case BaseField::TYPE_WSTRING:
+        {
+            QString result;
+            result += "L\"";
+            std::wstring wstr = static_cast<const WStringField *>(field)->defaultValue;
+            for (std::wstring::size_type i = 0; i < wstr.size(); i++)
+            {
+                uint32_t c = (uint32_t)wstr[i];
+                result += "\\u";
+                result += QString("%1").arg((uint)c, 4, 16, QLatin1Char('0'));
+            }
+            result += "\"";
+            return result;
+        }
         case BaseField::TYPE_POINTER:
             return "NULL";
         case BaseField::TYPE_COMPOSITE:
@@ -215,6 +235,8 @@ QString BaseGenerator::getFieldRefTypeForElementType(BaseField::FieldType type)
             return "Enum";
         case BaseField::TYPE_STRING:
            return "String";
+        case BaseField::TYPE_WSTRING:
+           return "WString";
         case BaseField::TYPE_POINTER:
             return "Pointer";
         case BaseField::TYPE_COMPOSITE:
@@ -268,6 +290,8 @@ QString BaseGenerator::getWidgetSuffixForType(BaseField::FieldType type)
             return "ComboBox";
         case BaseField::TYPE_STRING:
             return "Edit";
+        case BaseField::TYPE_WSTRING:
+            return "Edit";
         case BaseField::TYPE_COMPOSITE:
             return "ControlWidget";
         default:
@@ -300,6 +324,8 @@ QString BaseGenerator::getUiWidgetForType(BaseField::FieldType type)
         case BaseField::TYPE_ENUM:
             return "QComboBox";
         case BaseField::TYPE_STRING:
+            return "QLineEdit";
+        case BaseField::TYPE_WSTRING:
             return "QLineEdit";
         case BaseField::TYPE_COMPOSITE:
         {
@@ -342,6 +368,8 @@ QString BaseGenerator::getSignalForType(BaseField::FieldType type)
             return "UNSUPPORTED";
         }
         case BaseField::TYPE_STRING:
+            return "textChanged(QString)";
+        case BaseField::TYPE_WSTRING:
             return "textChanged(QString)";
         case BaseField::TYPE_COMPOSITE:
             return "paramsChanged()";

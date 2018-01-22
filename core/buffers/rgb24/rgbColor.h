@@ -10,12 +10,12 @@
 #include <stdint.h>
 #include <cmath>
 
-#include "fixedVector.h"
-#include "vector3d.h"
-#include "mathUtils.h"
-#include "reflection.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/vector/vector3d.h"
+#include "core/math/mathUtils.h"
+#include "core/reflection/reflection.h"
 
-#include "generated/rgbColorParameters.h"
+#include "core/xml/generated/rgbColorParameters.h"
 
 namespace corecvs {
 /**
@@ -394,19 +394,24 @@ public:
         int g =  ((298 * c - 100 * d - 208 * e + 128) >> 8);
         int b =  ((298 * c + 516 * d           + 128) >> 8);
 
-/*        int r =  ((298 * c           + 409 * e + 128) / 256);
-        int g =  ((298 * c - 100 * d - 208 * e + 128) / 256);
-        int b =  ((298 * c + 516 * d           + 128) / 256);*/
+        return RGBColor(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255));
+    }
 
+    /**
+    *  Format "Y′UV420sp (NV21) to RGB conversion (Android)" of the article at:
+    *  https://en.wikipedia.org/wiki/YUV#Y.E2.80.B2UV420p_.28and_Y.E2.80.B2V12_or_YV12.29_to_RGB888_conversion
+    *
+    **/
+    static RGBColor FromYUV420sp(uint8_t y, uint8_t u, uint8_t v)
+    {
+        int d = u - 128;
+        int e = v - 128;
 
-        if (r < 0) r = 0;
-        if (g < 0) g = 0;
-        if (b < 0) b = 0;
-        if (r > 255) r = 255;
-        if (g > 255) g = 255;
-        if (b > 255) b = 255;
+        int r = y + roundShiftUp(          1404 * e, 10);
+        int g = y - roundShiftUp( 346 * d + 715 * e, 10);
+        int b = y + roundShiftUp(1774 * d          , 10);
 
-        return RGBColor(r,g,b);
+        return RGBColor(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255));
     }
 
     static RGBColor Black()
@@ -434,6 +439,16 @@ public:
         return RGBColor(255, 255, 0);
     }
 
+    static RGBColor Goldenrod()
+    {
+        return RGBColor(218, 165, 32);
+    }
+
+    static RGBColor Khaki()
+    {
+        return RGBColor(195, 176, 145);
+    }
+
     static RGBColor Green()
     {
         return RGBColor(0, 255, 0);
@@ -452,6 +467,11 @@ public:
     static RGBColor Blue()
     {
         return RGBColor(0, 0, 255);
+    }
+
+    static RGBColor TiffanyBlue()
+    {
+        return RGBColor(129, 216, 208);
     }
 
     static RGBColor Indigo()
@@ -493,6 +513,16 @@ public:
         return RGBColor(r, g, b);
     }
 
+    /**
+     *    This function is slow. Use for debugging and fancy effects only.
+     **/
+    void blendWith(const RGBColor &second, double alpha = 0.5)
+    {
+        r() = (uint8_t)lerp<double>(r(), second.r(), alpha);
+        g() = (uint8_t)lerp<double>(g(), second.g(), alpha);
+        b() = (uint8_t)lerp<double>(b(), second.b(), alpha);
+    }
+
     static RGBColor diff(const RGBColor &first, const RGBColor &second)
     {
         int16_t r = (int16_t)first.r() - (int16_t)second.r();
@@ -500,6 +530,13 @@ public:
         int16_t b = (int16_t)first.b() - (int16_t)second.b();
 
         return RGBColor(CORE_ABS(r), CORE_ABS(g), CORE_ABS(b));
+    }
+
+    RGBColor operator *(float f)
+    {
+        return RGBColor(clamp((int)(r() * f), 0, 255),
+                        clamp((int)(g() * f), 0, 255),
+                        clamp((int)(b() * f), 0, 255));
     }
 
     /**
@@ -562,7 +599,7 @@ template<class VisitorType>
         return out;
     }
 
-    friend istream & operator >>(istream &out, RGBColor &color)
+    friend std::istream & operator >>(std::istream &out, RGBColor &color)
     {
        int v;
        out >> v;
@@ -582,6 +619,11 @@ template<class VisitorType>
     Vector3df toFloat() const
     {
         return Vector3df(r(), g(), b());
+    }
+
+    RgbColorParameters toRGBParameters() const
+    {
+        return RgbColorParameters(r(), g(), b());
     }
 
     uint32_t toRGBInt() const

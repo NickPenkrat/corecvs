@@ -1,6 +1,6 @@
 #pragma once
 #include <QWidget>
-#include "generated/bitcodeBoardParamsBase.h"
+#include "core/xml/generated/bitcodeBoardParamsBase.h"
 #include "ui_bitcodeBoardParamsBaseControlWidget.h"
 #include "parametersControlWidgetBase.h"
 

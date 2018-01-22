@@ -5,10 +5,10 @@
  **/
 #include <fstream>
 
-#include "mathUtils.h"      // M_PI
-#include "abstractPainter.h"
-#include "mesh3d.h"
-#include "plyLoader.h"
+#include "core/math/mathUtils.h"      // M_PI
+#include "core/buffers/rgb24/abstractPainter.h"
+#include "core/geometry/mesh3d.h"
+#include "core/fileformats/plyLoader.h"
 
 namespace corecvs {
 
@@ -31,6 +31,13 @@ void Mesh3D::switchColor(bool on)
 void Mesh3D::setColor(const RGBColor &color)
 {
     currentColor = color;
+}
+
+
+void Mesh3D::mulTransform(const Affine3DQ &transform)
+{
+    transformStack.push_back(currentTransform);
+    currentTransform = currentTransform * static_cast<Matrix44>(transform);
 }
 
 void Mesh3D::mulTransform(const Matrix33 &transform)
@@ -110,6 +117,14 @@ void Mesh3D::addOrts(double length, bool captions)
 
 }
 
+void Mesh3D::addPlaneFrame(const PlaneFrame &frame, double length)
+{
+    setColor(RGBColor::Red());
+    addLine(frame.p1, frame.p1 + frame.e1 * length);
+    setColor(RGBColor::Green());
+    addLine(frame.p1, frame.p1 + frame.e2 * length);
+}
+
 void Mesh3D::addAOB(const Vector3dd &c1, const Vector3dd &c2, bool addFaces)
 {
     int vectorIndex = (int)vertexes.size();
@@ -172,13 +187,13 @@ void Mesh3D::addAOB(const AxisAlignedBox3d &box, bool addFaces)
     addAOB(box.low(), box.high(), addFaces);
 }
 
-int Mesh3D::addPoint(Vector3dd point)
+int Mesh3D::addPoint(const Vector3dd &point)
 {
     addVertex(point);
     return (int)vertexes.size() - 1;
 }
 
-void Mesh3D::addLine(Vector3dd point1, Vector3dd point2)
+void Mesh3D::addLine(const Vector3dd &point1, const Vector3dd &point2)
 {
     int vectorIndex = (int)vertexes.size();
     Vector2d32 startId(vectorIndex, vectorIndex);
@@ -205,6 +220,20 @@ void Mesh3D::addTriangle(Vector3dd point1, Vector3dd point2, Vector3dd point3)
 void Mesh3D::addTriangle(const Triangle3dd &triangle)
 {
     addTriangle(triangle.p1(), triangle.p2(), triangle.p3());
+}
+
+void Mesh3D::addFlatPolygon(const FlatPolygon &polygon)
+{
+    /* Simple way */
+    for (size_t i = 0; i < polygon.polygon.size(); i++)
+    {
+        Vector2dd p1 = polygon.polygon.getPoint((int)i);
+        Vector2dd p2 = polygon.polygon.getNextPoint((int)i);
+
+        Vector3dd point1 = polygon.frame.getPoint(p1);
+        Vector3dd point2 = polygon.frame.getPoint(p2);
+        addLine(point1, point2);
+    }
 }
 
 Triangle3dd Mesh3D::getFaceAsTrinagle(size_t number)

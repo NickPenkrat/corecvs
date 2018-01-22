@@ -10,11 +10,11 @@
  */
 #include <iostream>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "abstractBuffer.h"
-#include "abstractContiniousBuffer.h"
-#include "fixedPointBlMapper.h"
+#include "core/buffers/abstractBuffer.h"
+#include "core/buffers/abstractContiniousBuffer.h"
+#include "core/buffers/fixeddisp/fixedPointBlMapper.h"
 
 namespace corecvs {
 
@@ -138,7 +138,7 @@ template<typename DeformMapType>
     void print();
     bool verify();
 
-    friend ostream & operator <<(ostream &out, const G12Buffer &buffer);
+    friend std::ostream & operator <<(std::ostream &out, const G12Buffer &buffer);
 
     virtual ~G12Buffer();
 

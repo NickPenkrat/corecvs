@@ -1,4 +1,4 @@
-#include "raytraceObjects.h"
+#include "core/geometry/raytrace/raytraceObjects.h"
 
 const double RaytraceableSphere::EPSILON = 0.000001;
 
@@ -343,7 +343,7 @@ void RaytraceableOptiMesh::normal(RayIntersection &intersection)
         }
 
         if (mMesh->hasTexCoords) {
-            Vector3d32 textureId = mMesh->texId   [intersection.payload];
+            Vector3d32 textureId = mMesh->texId   [intersection.payload].xyz();
             Vector2dd tex =
                     mMesh->textureCoords[textureId.x()] * (1 - u - v) +
                     mMesh->textureCoords[textureId.y()] * u +
@@ -689,7 +689,7 @@ void RaytraceableUnion::optimize()
     }
     opt->subdivide();
     opt->cache();
-    SYNC_PRINT(("RaytraceableUnion::optimize(): Optimized %d elements for %2.5f ms \n", (int)elements.size(), timer.usecsToNow() / 1000.0));
+    SYNC_PRINT(("RaytraceableUnion::optimize(): Optimized %" PRISIZE_T " elements for %2.5f ms \n", elements.size(), timer.usecsToNow() / 1000.0));
 }
 
 void RaytraceableCylinder::setPosition(const Affine3DQ &affine)

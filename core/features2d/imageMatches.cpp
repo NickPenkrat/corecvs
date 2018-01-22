@@ -1,11 +1,11 @@
-#include "imageMatches.h"
+#include "core/features2d/imageMatches.h"
 
-#include "global.h"
+#include "core/utils/global.h"
 
 #include <fstream>
 #include <iomanip>
 
-const uint16_t RawMatch::INVALID_MARKER = ~(uint16_t)0;
+const RawMatch::FeatureId RawMatch::INVALID_MARKER = ~((RawMatch::FeatureId)0);
 
 std::istream& operator>>(std::istream& is, RawMatch &rm)
 {

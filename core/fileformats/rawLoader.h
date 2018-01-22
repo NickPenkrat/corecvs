@@ -9,10 +9,10 @@
  */
 #include <string>
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "bufferLoader.h"
-#include "g12Buffer.h"
+#include "core/fileformats/bufferLoader.h"
+#include "core/buffers/g12Buffer.h"
 
 namespace corecvs {
 

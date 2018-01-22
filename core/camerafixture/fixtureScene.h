@@ -1,18 +1,25 @@
 #ifndef FIXTURE_SCENE_H_
 #define FIXTURE_SCENE_H_
 
-#include "fixtureScenePart.h"
-#include "fixtureCamera.h"
-#include "cameraFixture.h"
-#include "sceneFeaturePoint.h"
+#include <string>
+#include <map>
+#include <functional>
+
+#include "core/camerafixture/fixtureScenePart.h"
+#include "core/camerafixture/fixtureCamera.h"
+#include "core/camerafixture/sceneFeaturePoint.h"
+#include "core/camerafixture/cameraPrototype.h"
+
+/* In future Scene would like to control memory management for child objects */
+//#define SCENE_OWN_ALLOCATOR_DRAFT
 
 namespace corecvs {
 
 class CameraFixture;
 class StatusTracker;
 
-class FixtureSceneFactory {
-
+class FixtureSceneFactory
+{
 public:
     typedef std::function<FixtureScene *()> FixtureSceneCreateFunctor;
 
@@ -35,18 +42,90 @@ public:
     void print();
 };
 
+
+class ImageRelatedData : public FixtureScenePart
+{
+public:
+
+    ImageRelatedData(FixtureScene * owner = NULL) : FixtureScenePart(owner) {}
+
+    ImageRelatedData(const std::string &imagePath, FixtureScene * owner = NULL) :
+        FixtureScenePart(owner),
+        mImagePath(imagePath)
+    {}
+
+
+    FixtureCamera              *camera = NULL;
+
+    /**
+     *   Some Id that allows to identify the image.
+     *   If it is a path and scene has a relative path then methods such as getImage would be able to load it.
+     *
+     *   Image would be loaded if (see getImageScenePath() for details)
+     *     1. mImagePath is a valid absolute path
+     *     2. ownerScene is not null and scene holds a relative path that could be prepended
+     **/
+    std::string                 mImagePath;
+    std::string                 mRelativeImagePath;
+    std::string                 mUndistortedImagePath;
+
+    template<class VisitorType>
+    void accept(VisitorType &visitor)
+    {
+        visitor.visit(mImagePath, std::string(""), "imagePath");
+    }
+
+    /**
+     *
+     **/
+    std::string getImageScenePath() const;
+
+    /**
+     * This constructs new buffer with loaded image. On failure returns NULL
+     *
+     * This function is for compatibility mostly. Use RGB24Buffer() instead - it would provide caching
+     **/
+    RGB24Buffer* getRGB24BufferPtr();
+    RGB24Buffer *getUndistRGB24BufferPtr();
+
+    /**
+     * This function returns an pointer to the newly loaded image
+     *
+     * if detach is false - cache is created and ImageRelatedData would hold it and return for new calls.
+     * if detach is true  - you would be granted a new copy of the image or cached image.
+     *
+     **/
+    std::shared_ptr<RGB24Buffer> getImage(bool detach = false, bool forceReload = false);
+
+    /** There functions use RGB24 cache but don't cache it's result **/
+    G12Buffer* getG12BufferPtr();
+    G8Buffer * getG8BufferPtr();
+
+
+    void cleanCache();
+
+
+private:
+    std::shared_ptr<RGB24Buffer> mCache;
+
+};
+
 /**
  * Heap of Calibration related stuff
  **/
 class FixtureScene
 {
 public:
-    typedef FixtureCamera     CameraType;
-    typedef CameraPrototype   CameraPrototypeType;
-    typedef CameraFixture     FixtureType;
-    typedef SceneFeaturePoint PointType;
+    typedef FixtureCamera        CameraType;
+    typedef CameraPrototype      CameraPrototypeType;
+    typedef CameraFixture        FixtureType;
+    typedef SceneFeaturePoint    PointType;
+    typedef FixtureSceneGeometry GeometryType;
+    typedef ImageRelatedData     ImageType;
 
     FixtureScene();
+
+    FixtureScene(const FixtureScene &other) = delete;
 
     /**
      * This field encodes the "silent transform that happens when natural world corrdinate system changes to
@@ -64,23 +143,45 @@ public:
      *  This transform only happens when you use ::positionCameraInStation() method. Thoough we encourage you to do so.
      *
      **/
+    static Affine3DQ              DEFAULT_WORLD_TO_CAMERA;
     Affine3DQ                     worldFrameToCameraFrame;
 
     std::string                   nameId;
 
-    std::string                   relativeImageDataPath;
+    Matrix44                      localToWorld = Matrix44::Identity(); ///< symilarity transform
 
-    StatusTracker *               processState = nullptr;
+    enum CoordinateSystemState
+    {
+        initial = 0,                ///< initial state and "localToWorld" matrix is invalid
+        final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
+        convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
+    };
+    static inline const char *getSystemName(const CoordinateSystemState &value)
+    {
+        switch (value)
+        {
+         case initial     : return "initial";     break ;
+         case final       : return "final";       break ;
+         case convertable : return "convertable"; break ;
+         default : return "Not in range"; break ;
+        }
+        return "Not in range";
+    }
+    CoordinateSystemState         coordinateSystemState = CoordinateSystemState::initial;  
+
+    StatusTracker *               processState = nullptr;        ///< it's owned on the external side
 
     /* This is for future, when all the heap/memory will be completed */
+#ifdef SCENE_OWN_ALLOCATOR_DRAFT
     vector<FixtureScenePart *>    mOwnedObjects;
+#endif
 
     /**
      *  Creates and fills the observations with points. It optionally simulates camera by rounding the projection to nearest pixel
      *
      **/
     void projectForward(SceneFeaturePoint::PointType mask, bool round = false);
-    void triangulate   (SceneFeaturePoint * point);
+    bool triangulate   (SceneFeaturePoint * point, bool trace = false, bool checkMinimalAngle = false);
 
     /**
      * Accessors. This need to be redone to invert constness and make objects const, not the arrays
@@ -98,12 +199,22 @@ public:
     const vector<SceneFeaturePoint *>&  featurePoints() const  { return mSceneFeaturePoints; }
           vector<SceneFeaturePoint *>&  featurePoints()        { return mSceneFeaturePoints; }
 
+    const vector<FixtureSceneGeometry *>&  geometries() const  { return mGeomtery; }
+          vector<FixtureSceneGeometry *>&  geometries()        { return mGeomtery; }
+
+    const vector<ImageRelatedData *>&  images() const  { return mImages; }
+          vector<ImageRelatedData *>&  images()        { return mImages; }
+
+
+
 protected:
 
-    vector<CameraPrototype *>     mCameraPrototypes;
-    vector<CameraFixture *>       mFixtures;
-    vector<FixtureCamera *>       mOrphanCameras;
-    vector<SceneFeaturePoint *>   mSceneFeaturePoints;
+    vector<CameraPrototype *>      mCameraPrototypes;
+    vector<CameraFixture *>        mFixtures;
+    vector<FixtureCamera *>        mOrphanCameras;
+    vector<SceneFeaturePoint *>    mSceneFeaturePoints;
+    vector<FixtureSceneGeometry *> mGeomtery;
+    vector<ImageRelatedData *>     mImages;
 
 
     template<typename T>
@@ -180,29 +291,39 @@ protected:
         v.erase(std::remove(v.begin(), v.end(), t), v.end());
     }
 
+    /* Methods that actually create objects */
+    virtual CameraPrototype      *fabricateCameraPrototype();
+    virtual FixtureCamera        *fabricateCamera();
+    virtual CameraFixture        *fabricateCameraFixture();
+    virtual SceneFeaturePoint    *fabricateFeaturePoint();
+    virtual FixtureSceneGeometry *fabricateSceneGeometry();
+    virtual ImageRelatedData     *fabricateImageData();
 
-    virtual CameraPrototype    *fabricateCameraPrototype();
-    virtual FixtureCamera      *fabricateCamera();
-    virtual CameraFixture      *fabricateCameraFixture();
-    virtual SceneFeaturePoint  *fabricateFeaturePoint();
-
-
+    std::string                   relativeImageDataPath;
 public:
 
     /**
      * Manipulation with structures
      **/
-    virtual CameraPrototype    *createCameraPrototype();
-    virtual FixtureCamera      *createCamera();
-    virtual CameraFixture      *createCameraFixture();
-    virtual SceneFeaturePoint  *createFeaturePoint();
+    virtual CameraPrototype      *createCameraPrototype();
+    virtual FixtureCamera        *createCamera();
+    virtual CameraFixture        *createCameraFixture();
+    virtual SceneFeaturePoint    *createFeaturePoint();
+    virtual FixtureSceneGeometry *createSceneGeometry();
+    virtual ImageRelatedData     *createImageData();
+
+
+    virtual void destroyObject    (FixtureScenePart *condemned);
 
     /* These methods completely purge objects from scene */
     virtual void deleteCamera         (FixtureCamera *camera);
-    virtual void deleteCameraPrototype(CameraPrototype *cameraProtype);
+    virtual void deleteCameraPrototype(CameraPrototype *cameraPrototype);
     virtual void deleteCameraFixture  (CameraFixture *fixture, bool recursive = true);
     virtual void deleteFixturePair    (CameraFixture *fixture, FixtureCamera *camera);
     virtual void deleteFeaturePoint   (SceneFeaturePoint *point);
+    virtual void deleteSceneGeometry  (FixtureSceneGeometry *geometries);
+    virtual void deleteImage          (ImageRelatedData* image) ;
+
 
     virtual void clear();
 
@@ -230,8 +351,8 @@ public:
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
     /**/
-    virtual int getObeservationNumber(CameraFixture *fixture);
-    virtual int getObeservationNumber(FixtureCamera *cam);
+    virtual int getObservationNumber(CameraFixture *fixture);
+    virtual int getObservationNumber(FixtureCamera *cam);
 
 
     /* Some debugger helpers */
@@ -240,6 +361,17 @@ public:
     // Transforms the whole world using scale*(QX+T) (FixtureCamera's inside CameraFixtures are not moved)
     virtual void transform(const corecvs::Affine3DQ &transformation, const double scale = 1.0);
 
+
+    /* Call this every time you need a search path */
+    virtual std::string getImageSearchPath() const
+    {
+        return relativeImageDataPath;
+    }
+
+    void setImageSearchPath(std::string &path)
+    {
+        relativeImageDataPath = path;
+    }
 
     size_t totalObservations() const
     {
@@ -255,23 +387,50 @@ public:
     void setFixtureCount     (size_t count);
     void setOrphanCameraCount(size_t count);
     void setFeaturePointCount(size_t count);
+    void setGeometryCount    (size_t count);
 
     /* This performs full search. It should not */
-    FixtureCamera *getCameraById (FixtureScenePart::IdType id);
-    CameraFixture *getFixtureById(FixtureScenePart::IdType id);
+    FixtureCamera     *getCameraById (FixtureScenePart::IdType id);
+    CameraFixture     *getFixtureById(FixtureScenePart::IdType id);
+    SceneFeaturePoint *getPointById  (FixtureScenePart::IdType id);
 
-    SceneFeaturePoint *getPointByName(const std::string &name);
+    virtual SceneFeaturePoint *getPointByName  (const std::string &name);
+    virtual CameraFixture     *getFixtureByName(const string& name);
+    virtual FixtureCamera     *getCameraByName (const string& fixtureName, const string& name);
+
+
+    /** This method is for convenience, generally pointer itself is a best way to reference **/
+    FixtureCamera *getCameraByNumber (int fixtureNumber, int cameraNumber);
 
 
     template<class VisitorType, class SceneType = FixtureScene>
-    void accept(VisitorType &visitor, bool loadCameras = true, bool loadFixtures = true, bool loadPoints = true, bool loadPrototypes = true)
+    void accept(VisitorType &visitor,
+                bool loadCameras = true,
+                bool loadFixtures = true,
+                bool loadPoints = true,
+                bool loadPrototypes = true,
+                bool loadGeometry = true)
     {
-        visitor.visit(relativeImageDataPath, std::string(""), "relativeImageDataPath");
+        visitor.visit(relativeImageDataPath       , std::string(""),                     "relativeImageDataPath");
+        visitor.visit((int &)coordinateSystemState, (int)CoordinateSystemState::initial, "coordinateSystemState");
+        visitor.visit(localToWorld                , Matrix44::Identity(),                "localToWorld");
+
+        if (visitor.isLoader())
+        {
+            bool hasTargetCoordSystem = false;
+            visitor.visit(hasTargetCoordSystem, false, "hasTargetCoordSystem"); // for compatibility with old scenes
+            if (hasTargetCoordSystem)
+            {
+                coordinateSystemState = CoordinateSystemState::final;
+                localToWorld = Matrix44::Identity();
+            }
+        }
 
         typedef typename SceneType::CameraPrototypeType   RealPrototypeType;
         typedef typename SceneType::CameraType            RealCameraType;
         typedef typename SceneType::FixtureType           RealFixtureType;
         typedef typename SceneType::PointType             RealPointType;
+        typedef typename SceneType::GeometryType          RealGeometryType;
 
         if (loadPrototypes)
         {
@@ -336,9 +495,32 @@ public:
                 visitor.visit(*static_cast<RealPointType *>(mSceneFeaturePoints[i]), buffer);
             }
         }
+
+        if (loadGeometry)
+        {
+            int geometrySize = (int)mGeomtery.size();
+            visitor.visit(geometrySize, 0, "geometry.size");
+
+            setGeometryCount(geometrySize);
+
+            for (size_t i = 0; i < (size_t)geometrySize; i++)
+            {
+                char buffer[100];
+                snprintf2buf(buffer, "geometry[%d]", i);
+                visitor.visit(*static_cast<RealGeometryType *>(mGeomtery[i]), buffer);
+            }
+        }
+
     }
 
     virtual ~FixtureScene();
+
+   /*  We have a set of callbacks for algorithms - this is still experimental */
+        /* Some algorithms make huge changes to the scene.
+         * During this process scene may be invalid. */
+    virtual void beforeChange() {}
+    virtual void afterChange () {}
+
 };
 
 } // namespace corecvs

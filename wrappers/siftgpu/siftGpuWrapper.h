@@ -1,12 +1,12 @@
 #ifndef SIFTGPUWRAPPER_H
 #define SIFTGPUWRAPPER_H
 
-#include "global.h"
+#include "core/utils/global.h"
 
-#include "runtimeTypeBuffer.h"
-#include "imageKeyPoints.h"
-#include "descriptorExtractorProvider.h"
-#include "featureDetectorProvider.h"
+#include "core/buffers/runtimeTypeBuffer.h"
+#include "core/features2d/imageKeyPoints.h"
+#include "core/features2d/descriptorExtractorProvider.h"
+#include "core/features2d/featureDetectorProvider.h"
 
 #include "SiftGPU/src/SiftGPU/SiftGPU.h"
 
@@ -39,11 +39,11 @@ public:
     bool isParallelable() { return false; }
 
     void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint>& keypoints) const;
-
     void operator()(corecvs::RuntimeTypeBuffer &img, std::vector<KeyPoint> &keypoints, corecvs::RuntimeTypeBuffer &descriptors, bool computeDescriptors = false, bool useProvidedKeypoints = false) const;
+
 protected:
-    void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors);
-    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int);
+    void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descriptors, void*);
+    void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int, void*);
 
 	static SiftGPU::SiftKeypoint convert(const KeyPoint &k);
 	static KeyPoint convert(const SiftGPU::SiftKeypoint &k);
@@ -72,6 +72,7 @@ public:
 	FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string& params = "");
     virtual bool provides(const DetectorType &type) override;
     virtual std::string name()  override {return "SiftGpu"; }
+    virtual std::vector<std::string> provideHints();
 	~SiftGpuFeatureDetectorProvider() {}
 };
 
@@ -84,4 +85,4 @@ public:
 	~SiftGpuDescriptorExtractorProvider() {}
 };
 
-#endif
+#endif // SIFTGPUWRAPPER_H

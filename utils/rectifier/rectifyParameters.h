@@ -6,11 +6,12 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from rectify.xml
  */
 
-#include "reflection.h"
-#include "defaultSetter.h"
-#include "printerVisitor.h"
+#include "core/reflection/reflection.h"
+#include "core/reflection/defaultSetter.h"
+#include "core/reflection/printerVisitor.h"
 
 /*
  *  Embed includes.
@@ -30,13 +31,13 @@
 /*
  *  Additional includes for enum section.
  */
-#include "matchingMethodType.h"
-#include "estimationMethodType.h"
-#include "optimizationMethodType.h"
+#include "rectifier/matchingMethodType.h"
+#include "rectifier/estimationMethodType.h"
+#include "rectifier/optimizationMethodType.h"
 
 /**
- * \brief osd parameters 
- * osd parameters 
+ * \brief Rectify Parameters 
+ * Rectify Parameters 
  **/
 class RectifyParameters : public corecvs::BaseReflection<RectifyParameters>
 {
@@ -308,6 +309,8 @@ public:
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
+
+    static int relinkCompositeFields();
 
     /** Section with getters */
     const void *getPtrById(int fieldId) const
@@ -814,6 +817,47 @@ template<class VisitorType>
         mGuessShiftThreshold = guessShiftThreshold;
     }
 
+    bool operator ==(const RectifyParameters &other) const 
+    {
+        if ( !(this->mMatchingMethod == other.mMatchingMethod)) return false;
+        if ( !(this->mHessianThreshold == other.mHessianThreshold)) return false;
+        if ( !(this->mOctaves == other.mOctaves)) return false;
+        if ( !(this->mOctaveLayers == other.mOctaveLayers)) return false;
+        if ( !(this->mExtended == other.mExtended)) return false;
+        if ( !(this->mFilterMinimumLength == other.mFilterMinimumLength)) return false;
+        if ( !(this->mUseKLT == other.mUseKLT)) return false;
+        if ( !(this->mComputeEssential == other.mComputeEssential)) return false;
+        if ( !(this->mPriorFocal == other.mPriorFocal)) return false;
+        if ( !(this->mPriorFocal2 == other.mPriorFocal2)) return false;
+        if ( !(this->mBaselineLength == other.mBaselineLength)) return false;
+        if ( !(this->mFovAngle == other.mFovAngle)) return false;
+        if ( !(this->mEstimationMethod == other.mEstimationMethod)) return false;
+        if ( !(this->mNormalise == other.mNormalise)) return false;
+        if ( !(this->mRansacIterations == other.mRansacIterations)) return false;
+        if ( !(this->mRansacTestSize == other.mRansacTestSize)) return false;
+        if ( !(this->mRansacThreshold == other.mRansacThreshold)) return false;
+        if ( !(this->mBaselineX == other.mBaselineX)) return false;
+        if ( !(this->mBaselineY == other.mBaselineY)) return false;
+        if ( !(this->mBaselineZ == other.mBaselineZ)) return false;
+        if ( !(this->mIterativeMethod == other.mIterativeMethod)) return false;
+        if ( !(this->mIterativeIterations == other.mIterativeIterations)) return false;
+        if ( !(this->mIterativeInitialSigma == other.mIterativeInitialSigma)) return false;
+        if ( !(this->mIterativeFactorSigma == other.mIterativeFactorSigma)) return false;
+        if ( !(this->mManualX == other.mManualX)) return false;
+        if ( !(this->mManualY == other.mManualY)) return false;
+        if ( !(this->mManualZ == other.mManualZ)) return false;
+        if ( !(this->mManualPitch == other.mManualPitch)) return false;
+        if ( !(this->mManualYaw == other.mManualYaw)) return false;
+        if ( !(this->mManualRoll == other.mManualRoll)) return false;
+        if ( !(this->mZdirX == other.mZdirX)) return false;
+        if ( !(this->mZdirY == other.mZdirY)) return false;
+        if ( !(this->mZdirZ == other.mZdirZ)) return false;
+        if ( !(this->mAutoZ == other.mAutoZ)) return false;
+        if ( !(this->mAutoShift == other.mAutoShift)) return false;
+        if ( !(this->mPreShift == other.mPreShift)) return false;
+        if ( !(this->mGuessShiftThreshold == other.mGuessShiftThreshold)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, RectifyParameters &toSave)
     {
         corecvs::PrinterVisitor printer(out);

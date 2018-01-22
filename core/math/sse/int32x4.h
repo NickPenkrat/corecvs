@@ -13,9 +13,9 @@
 #include <smmintrin.h>
 #include <stdint.h>
 
-#include "global.h"
-#include "fixedVector.h"
-#include "int64x2.h"
+#include "core/utils/global.h"
+#include "core/math/vector/fixedVector.h"
+#include "core/math/sse/int64x2.h"
 
 namespace corecvs {
 
@@ -197,10 +197,10 @@ public:
     }
 
     /* Print to stream helper */
-    friend ostream & operator << (ostream &out, const Int32x4 &vector);
+    friend std::ostream & operator << (std::ostream &out, const Int32x4 &vector);
 
     /* Formated hex helper */
-    void hexDump (ostream &out);
+    void hexDump (std::ostream &out);
 
     // Producers
     inline static Int64x2 unpackLower(const Int32x4 &left, const Int32x4 &right) {
