@@ -25,7 +25,7 @@ const std::string JSONPrinter::NAME_DECORATOR = "\"";
 
 std::string JSONPrinter::decorateName(const BaseField *field)
 {
-    return JSONPrinter::NAME_DECORATOR + field->getSimpleName() + JSONPrinter::NAME_DECORATOR;
+    return decorateName(field->getSimpleName());
 }
 
 std::string JSONPrinter::decorateName(const char *field)
@@ -48,7 +48,7 @@ std::string JSONPrinter::escapeString(const std::string &str)
 template <>
 void JSONPrinter::visit<int,    IntField>(int &field, const IntField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  field;
 }
 
@@ -56,57 +56,56 @@ void JSONPrinter::visit<int,    IntField>(int &field, const IntField *fieldDescr
 template <>
 void JSONPrinter::visit<double, DoubleField>(double &field, const DoubleField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  field;
 }
 
 template <>
 void JSONPrinter::visit<float,  FloatField>(float &field, const FloatField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  field;
 }
 
 template <>
 void JSONPrinter::visit<uint64_t, UInt64Field>(uint64_t &field, const UInt64Field *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  NAME_DECORATOR << field << "u64" << NAME_DECORATOR;
 }
-
 
 template <>
 void JSONPrinter::visit<bool,   BoolField>(bool &field, const BoolField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  (field ? "true" : "false");
 }
 
 template <>
 void JSONPrinter::visit<string, StringField>(std::string &field, const StringField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  NAME_DECORATOR << escapeString(field) << NAME_DECORATOR;
 }
 
 template <>
 void JSONPrinter::visit<std::wstring, WStringField>(std::wstring &field, const WStringField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  NAME_DECORATOR << /*escapeString(field)*/ "Unsupported" << NAME_DECORATOR;
 }
 
 template <>
 void JSONPrinter::visit<void *, PointerField>(void * &field, const PointerField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  field;
 }
 
 template <>
 void JSONPrinter::visit<int, EnumField>(int &field, const EnumField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  field;
 }
 
@@ -116,11 +115,11 @@ void JSONPrinter::visit<int, EnumField>(int &field, const EnumField *fieldDescri
 template <>
 void JSONPrinter::visit<double, DoubleVectorField>(std::vector<double> &field, const DoubleVectorField *fieldDescriptor)
 {
-    if (stream == NULL) return;
+    if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) << FIELD_VALUE_SEPARATOR << " " << ARRAY_OPEN;
     for (size_t i = 0; i < field.size(); i++ )
     {
-        *stream << ( i == 0 ? " " : ", ") << field[i] ;
+        *stream << ( i == 0 ? " " : ", ") << field[i];
     }
     *stream << ARRAY_CLOSE;
 }
@@ -130,32 +129,30 @@ void JSONPrinter::visit<double, DoubleVectorField>(std::vector<double> &field, c
 template <>
 void JSONPrinter::visit<uint64_t>(uint64_t &intField, uint64_t /*defaultValue*/, const char *fieldName)
 {
-    if (stream == NULL) return;
-    *stream << separate() << indent() << decorateName(fieldName) <<  FIELD_VALUE_SEPARATOR <<  NAME_DECORATOR << intField << "u64" << NAME_DECORATOR;;
+    if (!stream) return;
+    *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR <<  NAME_DECORATOR << intField << "u64" << NAME_DECORATOR;
 }
 
 template <>
 void JSONPrinter::visit<bool>(bool &boolField, bool /*defaultValue*/, const char *fieldName)
 {
-    if (stream == NULL) return;
-    *stream << separate() << indent() << decorateName(fieldName) <<  FIELD_VALUE_SEPARATOR << NAME_DECORATOR << (boolField ? "true" : "false") << NAME_DECORATOR;
+    if (!stream) return;
+    *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << NAME_DECORATOR << (boolField ? "true" : "false") << NAME_DECORATOR;
 }
 
 template <>
 void JSONPrinter::visit<std::string>(std::string &stringField, std::string /*defaultValue*/, const char *fieldName)
 {
-    if (stream == NULL) return;
-    *stream << separate() << indent() << decorateName(fieldName) <<  FIELD_VALUE_SEPARATOR << NAME_DECORATOR << escapeString(stringField) << NAME_DECORATOR;
+    if (!stream) return;
+    *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << NAME_DECORATOR << escapeString(stringField) << NAME_DECORATOR;
 }
 
 template <>
 void JSONPrinter::visit<std::wstring>(std::wstring &stringField, std::wstring /*defaultValue*/, const char *fieldName)
 {
-    if (stream == NULL) return;
-    *stream << separate() << indent() << decorateName(fieldName) <<  FIELD_VALUE_SEPARATOR << NAME_DECORATOR << /*escapeString(stringField)*/ "Unsupported" << NAME_DECORATOR;
+    if (!stream) return;
+    *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << NAME_DECORATOR << /*escapeString(stringField)*/ "Unsupported" << NAME_DECORATOR;
 }
-
-
 
 
 } //namespace corecvs

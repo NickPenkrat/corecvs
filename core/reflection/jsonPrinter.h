@@ -1,8 +1,8 @@
 #ifndef JSON_PRINTER_H
 #define JSON_PRINTER_H
 
-
 #include <stdint.h>
+#include <string>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -28,13 +28,12 @@ public:
     bool isSaver () { return true;}
     bool isLoader() { return false;}
 
-
 public:
     std::ostream *stream = nullptr;
-    int indentation = 0;
-    int dIndent = 1;
+    int  indentation = 0;
+    int  dIndent = 1;
     bool isFirst = true;
-    bool isFile = false;
+    bool isFile  = false;
 
     /** This flag allows to format vectors as JSON arrays **/
     bool isNewArray = false;
@@ -93,26 +92,28 @@ public:
             delete stream;
     }
 
-    std::string indent() {
+    std::string indent() const {
         return std::string(indentation, ' ');
     }
 
     /*json prologue*/
-    void prologue() {
-        if (stream == NULL) return;
+    void prologue()
+    {
+        if (!stream) return;
         stream->imbue(std::locale("C"));
         (*stream) << std::setprecision(std::numeric_limits<double>::digits10 + 2);
         (*stream) << PROLOGUE;
     }
 
-    void epilogue() {
-        if (stream == NULL) return;
+    void epilogue()
+    {
+        if (!stream) return;
         (*stream) << LF << EPILOGUE << std::flush;
     }
 
     std::string separate()
     {
-        std::string result = (!isFirst && (stream != NULL)) ? ",\n" : "\n";
+        std::string result = !isFirst ? ",\n" : "\n";
         isFirst = false;
         return result;
     }
@@ -121,26 +122,26 @@ public:
     template <typename innerType>
     void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
     {
-        *stream << separate() << indent() << decorateName(arrayName) << FIELD_VALUE_SEPARATOR << ARRAY_OPEN;
+        if (stream) *stream << separate() << indent() << decorateName(arrayName) << FIELD_VALUE_SEPARATOR << ARRAY_OPEN;
         indentation += dIndent;
         isFirst = true;
         for (size_t i = 0; i < fields.size(); i++)
         {
-            *stream << separate() << indent() << ARRAY_OPEN;
+            if (stream) *stream << separate() << indent() << ARRAY_OPEN;
             indentation += dIndent;
             isFirst = true;
             for (size_t j = 0; j < fields[i].size(); j++)
             {
-                *stream << separate() << indent() << OBJECT_OPEN;            isFirst = true;
+                if (stream) *stream << separate() << indent() << OBJECT_OPEN;
                 isFirst = true;
                 fields[i][j].accept(*this);
-                *stream << LF << indent() << OBJECT_CLOSE;
+                if (stream) *stream << LF << indent() << OBJECT_CLOSE;
             }
             indentation -= dIndent;
-            *stream << LF << indent() << ARRAY_CLOSE;
+            if (stream) *stream << LF << indent() << ARRAY_CLOSE;
         }
         indentation -= dIndent;
-        *stream << LF << indent() << ARRAY_CLOSE;
+        if (stream) *stream << LF << indent() << ARRAY_CLOSE;
     }
 
     /**
@@ -164,15 +165,15 @@ public:
     void visit(std::vector<innerType> &field, const char* arrayName)
     {
         if (isNewArray) {
-            *stream << NAME_DECORATOR << arrayName << NAME_DECORATOR << ":[";
+            if (stream) *stream << NAME_DECORATOR << arrayName << NAME_DECORATOR << FIELD_VALUE_SEPARATOR << ARRAY_OPEN;
             for (size_t i = 0; i < field.size(); i++)
             {
                 visit<innerType>(field[i], "");
                 if (i != (field.size() - 1)) {
-                    *stream << ",";
+                    if (stream) *stream << FIELD_SEPARATOR;
                 }
             }
-            *stream << "]";
+            if (stream) *stream << ARRAY_CLOSE;
         }
         else {
             indentation += dIndent;
@@ -192,17 +193,14 @@ public:
 template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
-        if (stream != NULL) {
-            *stream << separate() << indent() << decorateName(fieldDescriptor) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
-        }
+        if (stream) *stream << separate() << indent() << decorateName(fieldDescriptor) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
+
         indentation += dIndent;
         isFirst = true;
         field.accept(*this);
         indentation -= dIndent;
 
-        if (stream != NULL) {
-            *stream << LF << indent() << OBJECT_CLOSE;
-        }
+        if (stream) *stream << LF << indent() << OBJECT_CLOSE;
     }
 
 
@@ -213,30 +211,24 @@ template <class Type>
     void visit(Type &field, const char * fieldName)
     {
         if (isNewArray) {
-            if (stream != NULL) {
-                *stream << OBJECT_OPEN;
-            }
+            if (stream) *stream << OBJECT_OPEN;
+
             indentation += dIndent;
             isFirst = true;
             field.accept(*this);
             indentation -= dIndent;
 
-            if (stream != NULL) {
-                *stream << LF << indent() << OBJECT_CLOSE;
-            }
+            if (stream) *stream << LF << indent() << OBJECT_CLOSE;
         }
         else {
-            if (stream != NULL) {
-                *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
-            }
+            if (stream) *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
+
             indentation += dIndent;
             isFirst = true;
             field.accept(*this);
             indentation -= dIndent;
 
-            if (stream != NULL) {
-                *stream << LF << indent() << OBJECT_CLOSE;
-            }
+            if (stream) *stream << LF << indent() << OBJECT_CLOSE;
         }
     }
 
@@ -255,7 +247,7 @@ template <class Type>
     template <typename type, typename std::enable_if<std::is_arithmetic<type>::value && !std::is_same<bool, type>::value, int>::type foo = 0>
     void visit(type &field, type, const char *fieldName)
     {
-        if (stream == NULL) return;
+        if (!stream) return;
         *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << field;
     }
 
