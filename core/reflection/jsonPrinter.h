@@ -36,7 +36,7 @@ public:
     bool   isFile  = false;
 
     /** This flag allows to format vectors as JSON arrays **/
-    bool isNewArray = false;
+    bool_t isNewArray = false;
 
     static const std::string LF;
 
@@ -111,11 +111,10 @@ public:
         (*stream) << LF << EPILOGUE << std::flush;
     }
 
-    cchar* separate()
+    inline cchar* separate()
     {
-        cchar* res = isFirst ? "\n" : ",\n";
-        isFirst = false;
-        return res;
+        if (!isFirst)   return ",\n";
+        isFirst = false; return "\n";
     }
 
     /* */
@@ -173,14 +172,15 @@ public:
             isFirst = false, indentation -= dIndent;
             if (stream) *stream << /*LF << indent() <<*/ ARRAY_CLOSE;   // to get less size
         }
-        else
+        else if (field.size())          // this 2-nd way is able to store only not empty arrays properly!
         {
+            innerType def;
+            if (stream) *stream << separate();
             isFirst = true, indentation += dIndent;
             for (size_t i = 0; i < field.size(); i++)
             {
-                std::ostringstream ss;
-                ss << NAME_DECORATOR << arrayName << "[" << i << "]" << NAME_DECORATOR;
-                visit<innerType>(field[i], innerType(), ss.str().c_str());
+                string s(arrayName); s += "[" + std::to_string(i) + "]";
+                visit<innerType>(field[i], def, s.c_str());
             }
             isFirst = false, indentation -= dIndent;
         }
@@ -201,43 +201,19 @@ template <typename inputType, typename reflectionType>
 template <class Type>
     void visit(Type &field, const char * fieldName)
     {
-        if (isNewArray)
+        if (stream)
         {
-            if (stream) {
-                *stream << separate() << indent();
-                if (fieldName && *fieldName)                // write name only if present
-                    *stream << decorateName(fieldName) << FIELD_VALUE_SEPARATOR;
-                *stream << OBJECT_OPEN;
-            }
-            isFirst = true, indentation += dIndent;
-            field.accept(*this);
-            indentation -= dIndent;
-
-            if (stream) *stream << LF << indent() << OBJECT_CLOSE;
-        }
-        else
-        {
-            if (stream) *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
-
-            isFirst = true, indentation += dIndent;
-            field.accept(*this);
-            indentation -= dIndent;
-
-            if (stream) *stream << LF << indent() << OBJECT_CLOSE;
+            *stream << separate() << indent();
+            if (fieldName && *fieldName)                // write name only if present
+                *stream << decorateName(fieldName) << FIELD_VALUE_SEPARATOR;
+            *stream << OBJECT_OPEN;
         }
 
-        //if (stream) {
-        //    *stream << separate() << indent() << OBJECT_OPEN;
-        //    if (fieldName && *fieldName)                // write name only if present
-        //        *stream << decorateName(fieldName) << FIELD_VALUE_SEPARATOR;
-        //    *stream << OBJECT_OPEN;
-        //}
+        isFirst = true, indentation += dIndent;
+        field.accept(*this);
+        indentation -= dIndent;
 
-        //isFirst = true, indentation += dIndent;
-        //field.accept(*this);
-        //indentation -= dIndent;
-
-        //if (stream) *stream << LF << indent() << OBJECT_CLOSE;
+        if (stream) *stream << LF << indent() << OBJECT_CLOSE;
     }
 
     /**
