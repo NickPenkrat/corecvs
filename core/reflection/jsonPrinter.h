@@ -192,7 +192,7 @@ public:
 template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
-        visit(field, decorateName(fieldDescriptor));
+        visit(field, decorateName(fieldDescriptor).c_str());
     }
 
     /**
