@@ -13,6 +13,7 @@
 #include "core/fileformats/objLoader.h"
 #include "core/buffers/rgb24/rgb24Buffer.h"
 #include "core/fileformats/bmpLoader.h"
+#include "core/utils/utils.h"
 
 #if 0
 int main(int argc, const char **argv)
@@ -102,44 +103,57 @@ int main(int argc, char **argv)
 
     if (argc != 2 && argc != 3)
     {
-        printf("Usage: softrender <obj basename>\n");
+        printf("Usage: \n"
+               "  softrender <obj basename> \n"
+               "  softrender <obj basename> <camera.json | camera.txt> \n");
+
         exit(1);
     }
 
     std::string objName;
-    std::string textureName;
 
     if (argc == 2) {
-        objName     = std::string(argv[1]) + ".obj";
-        textureName = std::string(argv[1]) + ".bmp";
-    }
-
-    if (argc == 3) {
         objName     = std::string(argv[1]);
-        textureName = std::string(argv[2]);
     }
 
-    printf("Will render <%s> with texture <%s>\n", objName.c_str(), textureName.c_str());
+    printf("Will render <%s>\n", objName.c_str());
 
-    int h = 2000;
-    int w = 2000;
+    int h = 4000;
+    int w = 4000;
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
     ClassicRenderer renderer;
     PinholeCameraIntrinsics cam(Vector2dd(w,h), 50);
     renderer.modelviewMatrix = cam.getKMatrix();
 
-    Mesh3DDecorated mesh;
-    OBJLoader loader;
-    loader.trace = true;
+    Mesh3DDecorated *mesh = new Mesh3DDecorated();
+    OBJLoader objLoader;
 
-    //prepareMesh(mesh);
-    std::ifstream file(objName, std::ifstream::in);
-    loader.loadOBJ(file, mesh);
+    /** Load Materials **/
+    std::string mtlFile = objName.substr(0, objName.length() - 4) + ".mtl";
+    std::ifstream materialFile;
+    materialFile.open(mtlFile, std::ios::in);
+    if (materialFile.good())
+    {
+        objLoader.loadMaterials(materialFile, mesh->materials, corecvs::HelperUtils::getDirectory(mtlFile));
 
-    mesh.transform(Matrix44::Shift(0, 0 , 3500) /** Matrix44::Scale(100)*/);
+        cout << "Loaded materials: " << mesh->materials.size() << std::endl;
+    } else {
+        cout << "Unable to load material from <" << mtlFile << ">" << std::endl;
+    }
+    materialFile.close();
 
-    RGB24Buffer *texture = BufferFactory::getInstance()->loadRGB24Bitmap(textureName);
+
+
+    /** Load actual data **/
+    std::ifstream file;
+    file.open(objName, std::ios::in);
+    objLoader.loadOBJ(file, *mesh);
+    file.close();
+
+    mesh->transform(Matrix44::Shift(0, 0, 100) /** Matrix44::Scale(100)*/);
+
+   // RGB24Buffer *texture; //= BufferFactory::getInstance()->loadRGB24Bitmap(textureName);
 
 /*
     int square = 64;
@@ -152,23 +166,27 @@ int main(int argc, char **argv)
             texture->element(i, j)  = (color ?  RGBColor::White() : RGBColor::Black());
         }
     }*/
-    if (!texture) {
+    /*if (!texture) {
         SYNC_PRINT(("Could not load texture"));
     } else {
         SYNC_PRINT(("Texture: [%d x %d]\n", texture->w, texture->h));
+    }*/
+
+    for(size_t t = 0; t < mesh->materials.size(); t++)
+    {
+        renderer.textures.push_back(mesh->materials[t].tex[OBJMaterial::TEX_DIFFUSE]);
     }
 
-
-    renderer.textures.push_back(texture);
-
-    mesh.dumpInfo(cout);
+    mesh->dumpInfo(cout);
     SYNC_PRINT(("Starting render...\n"));
 
-    renderer.render(&mesh, buffer);
+    renderer.render(mesh, buffer);
 
     BMPLoader().save("meshdraw.bmp", buffer);
     buffer->drawDoubleBuffer(renderer.zBuffer, RGB24Buffer::STYLE_ZBUFFER);
     BMPLoader().save("meshdraw-z.bmp", buffer);
+
+
 
     delete_safe(buffer);
     return 0;

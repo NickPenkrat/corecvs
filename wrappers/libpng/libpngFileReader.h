@@ -31,6 +31,10 @@ public:
     virtual std::vector<string> extentions() override   { return std::vector<string>({prefix1, prefix2}); }
     virtual string name() override                      { return "LibPNG"; }
     virtual bool save(string name, corecvs::RGB24Buffer *buffer);
+
+    bool savePNG(string name, corecvs::RGB24Buffer *buffer, bool alpha=false);
+
+
     virtual ~LibpngFileReader() {}
 };
 

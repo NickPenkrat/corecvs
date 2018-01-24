@@ -139,6 +139,7 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
         Vector3dd positions[3];
         Vector3dd normals  [3];
         Vector2dd texture  [3];
+        double texId = textureId[3];
 
         AttributedTriangle triang;
 
@@ -170,6 +171,7 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
                 p.attributes.push_back(texture[i].x() * invz);
                 p.attributes.push_back(texture[i].y() * invz);
             }
+            p.attributes.push_back(texId);
 
 #if 0
             cout << "P" << i << " :";
@@ -208,6 +210,7 @@ void ClassicRenderer::fragmentShader(AttributedHLineSpan &span)
             double z = 1.0 / att[0];
             Vector3dd normal = Vector3dd(att[1], att[2], att[3]).normalised();
             Vector2dd tex = Vector2dd(att[4], att[5]);
+            int texId = att[6];
             if (trueTexture) {
                 tex *= z;
             }
@@ -222,7 +225,7 @@ void ClassicRenderer::fragmentShader(AttributedHLineSpan &span)
                 RGBColor c = color;
 
                 /* Texture block*/
-                RGB24Buffer *texture = textures[0];
+                RGB24Buffer *texture = textures[texId];
                 tex = tex * Vector2dd(texture->w, texture->h);
                 if (texture->isValidCoordBl(tex)) {
                     c = texture->elementBl(tex);
