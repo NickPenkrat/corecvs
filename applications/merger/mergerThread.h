@@ -102,9 +102,12 @@ public:
 
     //FixtureScene  *mCarScene = NULL;
     QSharedPointer<FixtureScene> mCarScene;
+    QSharedPointer<FixtureScene> mCachedScene;
+
     TableInverseCache *mUndistort = NULL;
 
 
+    void cacheIntrinsics();
     void prepareMapping();
 
 

@@ -18,6 +18,14 @@
 #include "core/cameracalibration/cameraModel.h"
 #include "core/utils/global.h"
 
+
+
+#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/geometry/mesh3d.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
+#include "core/fileformats/bmpLoader.h"
+
+
 using namespace std;
 using namespace corecvs;
 
@@ -147,5 +155,51 @@ TEST(projection, testFormatLoad)
 
     CameraModel model = CameraModel::loadCatadioptricFromTxt(ss);
     cout << model;
+}
+
+
+TEST(projection, testProjectionChange)
+{
+    CatadioptricProjection slowProjection;
+
+    // RGB24Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
+
+    int h = 480;
+    int w = 640;
+
+    RGB24Buffer *image = new RGB24Buffer(h,w);
+
+    slowProjection.setSizeX(w);
+    slowProjection.setSizeY(h);
+
+    slowProjection.setPrincipalX(image->w / 2.0);
+    slowProjection.setPrincipalY(image->h / 2.0);
+
+    slowProjection.setFocal(image->w / 2.0);
+
+    CameraModel model(slowProjection.clone());
+
+    Mesh3D mesh;
+    mesh.switchColor(true);
+    mesh.setColor(RGBColor::Yellow());
+    CalibrationDrawHelpers draw;
+    draw.drawCamera(mesh, model, 5);
+    mesh.dumpPLY("catadioptric.ply");
+
+
+    Mesh3D toDraw;
+    toDraw.addIcoSphere(Vector3dd(0, 0, 100.0), 10, 2);
+
+    for (size_t i = 0; i < toDraw.vertexes.size(); i++)
+    {
+        Vector2dd prj = model.project(toDraw.vertexes[i]);
+        Vector2d<int> prji(fround(prj.x()), fround(prj.y()));
+
+        if (image->isValidCoord(prji))
+        image->element(prji) = RGBColor::Red();
+    }
+
+    BMPLoader().save("catad.bmp", image);
+
 
 }

@@ -1,5 +1,6 @@
 #include <sstream>
 #include <regex>
+#include <fstream>
 
 #include "core/fileformats/objLoader.h"
 #include "core/utils/utils.h"
@@ -321,6 +322,42 @@ int OBJLoader::saveOBJSimple(ostream &out, Mesh3D &mesh)
     }
 
     return 0;
+}
+
+int OBJLoader::saveObj(string &fileName, Mesh3DDecorated &mesh)
+{
+    vector<Vector3dd>  &vertexes = mesh.vertexes;
+    vector<Vector3d32> &faces    = mesh.faces;
+    //vector<Vector2d32> &edges    = mesh.edges;
+
+    ofstream out;
+    out.open(fileName, ios::out);
+    if (out.fail())
+    {
+        SYNC_PRINT(("MeshLoader::save(): Can't open mesh file <%s> for writing\n", fileName.c_str()));
+        return false;
+    }
+
+    for (unsigned i = 0; i < vertexes.size(); i++)
+    {
+        out << "v "
+            << vertexes[i].x() << " "
+            << vertexes[i].y() << " "
+            << vertexes[i].z() << " " << endl;
+
+    }
+
+    for (unsigned i = 0; i < faces.size(); i++)
+    {
+        out << "f "
+            << (faces[i].x() + 1) << " "
+            << (faces[i].y() + 1) << " "
+            << (faces[i].z() + 1) << " ";
+        out << std::endl;
+    }
+
+    return 0;
+
 }
 
 }

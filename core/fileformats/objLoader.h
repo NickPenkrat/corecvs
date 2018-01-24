@@ -32,6 +32,9 @@ public:
 
     int loadOBJSimple(istream &input, Mesh3D &mesh);
     int saveOBJSimple(ostream &out, Mesh3D &mesh);
+
+    /** Not yet finished **/
+    int saveObj(std::string &fileName, Mesh3DDecorated &mesh);
 };
 
 } // namespace corecvs
