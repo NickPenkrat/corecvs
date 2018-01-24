@@ -31,7 +31,8 @@ public:
      **/
     JSONSetter(QString const & filename);
 
-    JSONSetter(std::string const & filename) : JSONSetter(QString(filename.c_str())) {}
+    explicit JSONSetter(std::string const & filename) : JSONSetter(QString(filename.c_str())) {}
+    explicit JSONSetter(const char *filename) : JSONSetter(QString(filename)) {}
 
     /**
      *  Create a setter object that will store data to a given XML
