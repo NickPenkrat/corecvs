@@ -93,6 +93,7 @@ void JSONPrinter::visit<std::wstring, WStringField>(std::wstring &field, const W
 {
     if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldDescriptor) <<  FIELD_VALUE_SEPARATOR <<  NAME_DECORATOR << /*escapeString(field)*/ "Unsupported" << NAME_DECORATOR;
+    CORE_UNUSED(field);
 }
 
 template <>
@@ -152,6 +153,7 @@ void JSONPrinter::visit<std::wstring>(std::wstring &stringField, std::wstring /*
 {
     if (!stream) return;
     *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << NAME_DECORATOR << /*escapeString(stringField)*/ "Unsupported" << NAME_DECORATOR;
+    CORE_UNUSED(stringField);
 }
 
 
