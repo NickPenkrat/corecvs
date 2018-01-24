@@ -20,7 +20,7 @@ using std::cout;
 
 
 /**
-   Please note, json is finallised on destruction of the object.
+   Please note, json is finalised on destruction of the object.
 **/
 class JSONPrinter
 {
