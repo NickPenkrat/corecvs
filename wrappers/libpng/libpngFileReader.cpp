@@ -104,13 +104,18 @@ RGB24Buffer *LibpngFileReader::load(string name)
 
 bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
 {
+    return savePNG(name, buffer);
+}
+
+bool LibpngFileReader::savePNG(std::string name, RGB24Buffer *buffer, bool alpha)
+{
     FILE * fp;
     png_byte ** row_pointers;
     png_structp png_ptr = nullptr;
     png_infop info_ptr = nullptr;
     size_t x, y;
     int status = -1;
-    int pixel_size = 3;
+    int pixel_size = alpha ? 4 : 3;
     int depth = 8;
     png_uint_32 width = buffer->w, height = buffer->h;
 
@@ -143,7 +148,7 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
                   width,
                   height,
                   depth,
-                  PNG_COLOR_TYPE_RGB,
+                  alpha ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
                   PNG_INTERLACE_NONE,
                   PNG_COMPRESSION_TYPE_DEFAULT,
                   PNG_FILTER_TYPE_DEFAULT);
@@ -160,6 +165,10 @@ bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
             *row++ = pixel.r();
             *row++ = pixel.g();
             *row++ = pixel.b();
+            if (alpha ) {
+                *row++ = pixel.a();
+            }
+
         }
     }
 
