@@ -23,16 +23,6 @@ const std::string JSONPrinter::FIELD_VALUE_SEPARATOR = ":";
 const std::string JSONPrinter::NAME_DECORATOR = "\"";
 
 
-std::string JSONPrinter::decorateName(const BaseField *field)
-{
-    return decorateName(field->getSimpleName());
-}
-
-std::string JSONPrinter::decorateName(const char *field)
-{
-    return JSONPrinter::NAME_DECORATOR + field + JSONPrinter::NAME_DECORATOR;
-}
-
 std::string JSONPrinter::escapeString(const std::string &str)
 {
     return HelperUtils::escapeString(str,

@@ -30,10 +30,10 @@ public:
 
 public:
     std::ostream *stream = nullptr;
-    int  indentation = 0;
-    int  dIndent = 1;
-    bool isFirst = true;
-    bool isFile  = false;
+    int    indentation = 0;
+    int    dIndent = 1;
+    bool_t isFirst = true;
+    bool   isFile  = false;
 
     /** This flag allows to format vectors as JSON arrays **/
     bool isNewArray = false;
@@ -111,11 +111,11 @@ public:
         (*stream) << LF << EPILOGUE << std::flush;
     }
 
-    std::string separate()
+    cchar* separate()
     {
-        std::string result = !isFirst ? ",\n" : "\n";
+        cchar* res = isFirst ? "\n" : ",\n";
         isFirst = false;
-        return result;
+        return res;
     }
 
     /* */
@@ -123,13 +123,11 @@ public:
     void visit(std::vector<std::vector<innerType>> &fields, const char *arrayName)
     {
         if (stream) *stream << separate() << indent() << decorateName(arrayName) << FIELD_VALUE_SEPARATOR << ARRAY_OPEN;
-        indentation += dIndent;
-        isFirst = true;
+        isFirst = true, indentation += dIndent;
         for (size_t i = 0; i < fields.size(); i++)
         {
             if (stream) *stream << separate() << indent() << ARRAY_OPEN;
-            indentation += dIndent;
-            isFirst = true;
+            isFirst = true, indentation += dIndent;
             for (size_t j = 0; j < fields[i].size(); j++)
             {
                 if (stream) *stream << separate() << indent() << OBJECT_OPEN;
@@ -137,10 +135,10 @@ public:
                 fields[i][j].accept(*this);
                 if (stream) *stream << LF << indent() << OBJECT_CLOSE;
             }
-            indentation -= dIndent;
+            isFirst = false, indentation -= dIndent;
             if (stream) *stream << LF << indent() << ARRAY_CLOSE;
         }
-        indentation -= dIndent;
+        isFirst = false, indentation -= dIndent;
         if (stream) *stream << LF << indent() << ARRAY_CLOSE;
     }
 
@@ -150,12 +148,12 @@ public:
     template <typename inputType, typename reflectionType>
     void visit(std::vector<inputType> &fields, const reflectionType * /*fieldDescriptor*/)
     {
-        indentation += dIndent;
+        isFirst = true, indentation += dIndent;
         for (int i = 0; i < fields.size(); i++)
         {
             fields[i].accept(*this);
         }
-        indentation -= dIndent;
+        isFirst = false, indentation -= dIndent;
     }
 
     /**
@@ -164,26 +162,27 @@ public:
     template <typename innerType>
     void visit(std::vector<innerType> &field, const char* arrayName)
     {
-        if (isNewArray) {
-            if (stream) *stream << NAME_DECORATOR << arrayName << NAME_DECORATOR << FIELD_VALUE_SEPARATOR << ARRAY_OPEN;
+        if (isNewArray)
+        {
+            if (stream) *stream << separate() << indent() << decorateName(arrayName) << FIELD_VALUE_SEPARATOR << ARRAY_OPEN;
+            isFirst = true, indentation += dIndent;
             for (size_t i = 0; i < field.size(); i++)
             {
                 visit<innerType>(field[i], "");
-                if (i != (field.size() - 1)) {
-                    if (stream) *stream << FIELD_SEPARATOR;
-                }
             }
-            if (stream) *stream << ARRAY_CLOSE;
+            isFirst = false, indentation -= dIndent;
+            if (stream) *stream << /*LF << indent() <<*/ ARRAY_CLOSE;   // to get less size
         }
-        else {
-            indentation += dIndent;
+        else
+        {
+            isFirst = true, indentation += dIndent;
             for (size_t i = 0; i < field.size(); i++)
             {
                 std::ostringstream ss;
-                ss << NAME_DECORATOR << arrayName << NAME_DECORATOR << "[" << i << "]";
+                ss << NAME_DECORATOR << arrayName << "[" << i << "]" << NAME_DECORATOR;
                 visit<innerType>(field[i], innerType(), ss.str().c_str());
             }
-            indentation -= dIndent;
+            isFirst = false, indentation -= dIndent;
         }
     }
 
@@ -193,16 +192,8 @@ public:
 template <typename inputType, typename reflectionType>
     void visit(inputType &field, const reflectionType * fieldDescriptor)
     {
-        if (stream) *stream << separate() << indent() << decorateName(fieldDescriptor) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
-
-        indentation += dIndent;
-        isFirst = true;
-        field.accept(*this);
-        indentation -= dIndent;
-
-        if (stream) *stream << LF << indent() << OBJECT_CLOSE;
+        visit(field, decorateName(fieldDescriptor));
     }
-
 
     /**
      * Complex objects support with old style calls
@@ -210,26 +201,43 @@ template <typename inputType, typename reflectionType>
 template <class Type>
     void visit(Type &field, const char * fieldName)
     {
-        if (isNewArray) {
-            if (stream) *stream << OBJECT_OPEN;
-
-            indentation += dIndent;
-            isFirst = true;
+        if (isNewArray)
+        {
+            if (stream) {
+                *stream << separate() << indent();
+                if (fieldName && *fieldName)                // write name only if present
+                    *stream << decorateName(fieldName) << FIELD_VALUE_SEPARATOR;
+                *stream << OBJECT_OPEN;
+            }
+            isFirst = true, indentation += dIndent;
             field.accept(*this);
             indentation -= dIndent;
 
             if (stream) *stream << LF << indent() << OBJECT_CLOSE;
         }
-        else {
+        else
+        {
             if (stream) *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << OBJECT_OPEN;
 
-            indentation += dIndent;
-            isFirst = true;
+            isFirst = true, indentation += dIndent;
             field.accept(*this);
             indentation -= dIndent;
 
             if (stream) *stream << LF << indent() << OBJECT_CLOSE;
         }
+
+        //if (stream) {
+        //    *stream << separate() << indent() << OBJECT_OPEN;
+        //    if (fieldName && *fieldName)                // write name only if present
+        //        *stream << decorateName(fieldName) << FIELD_VALUE_SEPARATOR;
+        //    *stream << OBJECT_OPEN;
+        //}
+
+        //isFirst = true, indentation += dIndent;
+        //field.accept(*this);
+        //indentation -= dIndent;
+
+        //if (stream) *stream << LF << indent() << OBJECT_CLOSE;
     }
 
     /**
@@ -266,8 +274,8 @@ template <class Type>
 private:
 
     static std::string escapeString(const std::string &str);
-    static std::string decorateName(const BaseField *field);
-    static std::string decorateName(const char *field);
+    static std::string decorateName(const BaseField *field) { return decorateName(field->getSimpleName()); }
+    static std::string decorateName(const char *field)      { return NAME_DECORATOR + field + NAME_DECORATOR; }
 };
 
 
