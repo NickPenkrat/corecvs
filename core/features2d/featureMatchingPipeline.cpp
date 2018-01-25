@@ -28,7 +28,7 @@ FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> 
 	bool useCache = remapCaches.size() == filenames.size();
     for (size_t i = 0; i < filenames.size(); ++i)
     {
-		images.push_back(Image(i, filenames[i], useCache ? remapCaches[i] : 0));
+		images.emplace_back(Image(i, filenames[i], useCache ? remapCaches[i] : 0));
     }
 }
 
@@ -1474,12 +1474,13 @@ void FeatureMatchingPipeline::tic(size_t thread_id, bool level)
     {
         if (tics.size() == 0)
         {
-            std::string s('-', 108); s += "\n"; std::cerr << s;
+            std::string s(108, '-'); s += "\n"; std::cerr << s;
         }
         tic_data data;
         data.thread_tics[thread_id] = clock();
         tics.push(data);
-    } else {
+    }
+    else {
         tics.top().thread_tics[thread_id] = clock();
     }
 }
@@ -1500,9 +1501,10 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 
         if (tics.size() == 0)
         {
-            std::string s('-', 108); s += "\n"; std::cerr << s;
+            std::string s(108, '-'); s += "\n"; std::cerr << s;
         }
-    } else {
+    }
+    else {
         tic_data& tic = tics.top();
         size_t tict = tic.thread_tics[thread_id];
         size_t ns = (toc - tict)  / (CLOCKS_PER_SEC / 1000);
