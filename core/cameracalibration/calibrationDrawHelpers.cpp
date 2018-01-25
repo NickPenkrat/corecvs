@@ -109,7 +109,6 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
         mesh.setColor(color);
     } else {
         int step = gridStepForCameras();
-
         Vector3dd center = cam.extrinsics.camToWorld(Vector3dd::Zero());
 
         AbstractBuffer<Vector3dd> poses (step , step );
@@ -128,35 +127,58 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
         mesh.addLine(center, poses.element(step -1,      0));
         mesh.addLine(center, poses.element(step -1, step -1));
 
-        for (int i = 0; i < step  - 1 ; i++)
+        if (!solidCameras())
         {
+            for (int i = 0; i < step  - 1 ; i++)
+            {
+                for (int j = 0; j <  step  - 1; j++)
+                {
+                    RGBColor color = mesh.currentColor;
+                    bool cornerMark = (i < step / 2  && j < step / 2);
+
+                    if (cornerMark) {
+                        mesh.setColor(RGBColor::Yellow());
+                    }
+
+                    mesh.addLine(poses.element(i,j), poses.element(i    ,j + 1));
+                    mesh.addLine(poses.element(i,j), poses.element(i + 1,j    ));
+
+                    if (cornerMark) {
+                        mesh.setColor(color);
+                    }
+
+                }
+            }
+
+            for (int i = 0; i < step  - 1 ; i++)
+            {
+                 mesh.addLine(poses.element(i,step  - 1), poses.element(i + 1, step  - 1));
+            }
+
             for (int j = 0; j <  step  - 1; j++)
             {
-                RGBColor color = mesh.currentColor;
-                bool cornerMark = (i < step / 2  && j < step / 2);
-
-                if (cornerMark) {
-                    mesh.setColor(RGBColor::Yellow());
-                }
-
-                mesh.addLine(poses.element(i,j), poses.element(i    ,j + 1));
-                mesh.addLine(poses.element(i,j), poses.element(i + 1,j    ));
-
-                if (cornerMark) {
-                    mesh.setColor(color);
-                }
-
+                mesh.addLine(poses.element(step  - 1, j), poses.element(step  - 1, j + 1));
             }
-        }
+        } else {
+            for (int i = 0; i < step  - 1 ; i++)
+            {
+                for (int j = 0; j <  step  - 1; j++)
+                {
+                    RGBColor color = mesh.currentColor;
+                    bool cornerMark = (i < step / 2  && j < step / 2);
 
-        for (int i = 0; i < step  - 1 ; i++)
-        {
-             mesh.addLine(poses.element(i,step  - 1), poses.element(i + 1, step  - 1));
-        }
+                    if (cornerMark) {
+                        mesh.setColor(RGBColor::Yellow());
+                    }
 
-        for (int j = 0; j <  step  - 1; j++)
-        {
-            mesh.addLine(poses.element(step  - 1, j), poses.element(step  - 1, j + 1));
+                    mesh.addTriangle(poses.element(i,j), poses.element(i    ,j + 1), poses.element(i + 1,j + 1));
+
+                    if (cornerMark) {
+                        mesh.setColor(color);
+                    }
+
+                }
+            }
         }
 
         RGBColor color = mesh.currentColor;
@@ -182,6 +204,79 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
     //Vector3dd ppv = qc * (invK.mulBy2dRight(cam.intrinsics.principal) * scale) + cc;
 
     //mesh.addLine(ppv, qc * (invK * center) + cc);
+}
+
+void CalibrationDrawHelpers::drawCameraEx (Mesh3DDecorated &mesh, const CameraModel &cam, double scale, int id)
+{
+    int step = gridStepForCameras();
+    Vector3dd center = cam.extrinsics.camToWorld(Vector3dd::Zero());
+
+    AbstractBuffer<Vector3dd> poses (step , step );
+    AbstractBuffer<Vector2dd> tex   (step , step );
+
+    for (int i = 0; i < step ; i++)
+    {
+        for (int j = 0; j < step ; j++)
+        {
+            Vector2dd texuv = Vector2dd(j,i) / (step  - 1);
+            Vector2dd pos = cam.intrinsics->size() * texuv;
+            Vector3dd dir = cam.extrinsics.camToWorld(cam.intrinsics->reverse(pos) * scale);
+            poses.element(i,j) = dir;
+            tex  .element(i,j) = texuv;
+        }
+    }
+
+    mesh.currentTexture = id;
+    mesh.addLine(center, poses.element(     0,      0));
+    mesh.addLine(center, poses.element(     0, step -1));
+    mesh.addLine(center, poses.element(step -1,      0));
+    mesh.addLine(center, poses.element(step -1, step -1));
+
+    for (int i = 0; i < step  - 1 ; i++)
+    {
+        for (int j = 0; j <  step  - 1; j++)
+        {
+            RGBColor color = mesh.currentColor;
+            bool cornerMark = (i < step / 2  && j < step / 2);
+
+            if (cornerMark) {
+                mesh.setColor(RGBColor::Yellow());
+            }
+
+
+            mesh.addTriangleT(poses.element(i    , j    ), Vector2dd(tex.element(i    , j   )),
+                              poses.element(i    , j + 1), Vector2dd(tex.element(i    , j + 1)),
+                              poses.element(i + 1, j + 1), Vector2dd(tex.element(i + 1, j + 1)));
+
+            mesh.addTriangleT(poses.element(i + 1, j    ), Vector2dd(tex.element(i + 1, j   )),
+                              poses.element(i    , j    ), Vector2dd(tex.element(i    , j   )),
+                              poses.element(i + 1, j + 1), Vector2dd(tex.element(i + 1, j + 1)));
+
+            if (cornerMark) {
+                mesh.setColor(color);
+            }
+
+        }
+    }
+
+
+    RGBColor color = mesh.currentColor;
+    mesh.setColor(RGBColor::Blue());
+    Vector2dd pos = cam.intrinsics->principal();
+    Vector3dd dir = cam.extrinsics.camToWorld(cam.intrinsics->reverse(pos) * scale * 2);
+    mesh.addLine(center, dir);
+    mesh.setColor(color);
+
+
+
+    if (printNames())
+    {
+        AbstractPainter<Mesh3D> p(&mesh);
+            mesh.mulTransform(Matrix44::Shift(cam.extrinsics.position));
+            mesh.setColor(RGBColor::Blue());
+        p.drawFormatVector(0.0, 0.0, 0, scale / 50.0, "Cam: %s", cam.nameId.c_str());
+        mesh.popTransform();
+    }
 }
 
 void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)

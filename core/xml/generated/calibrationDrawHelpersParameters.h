@@ -33,8 +33,8 @@
  */
 
 /**
- * \brief Calibration Draw Helpers Parameters 
- * We have two OpenGL backends to draw. Old is without shaders, new is with shaders 
+ * \brief EXPERIMENTAL 
+ * EXPERIMENTAL We have two OpenGL backends to draw. Old is without shaders, new is with shaders 
  **/
 class CalibrationDrawHelpersParameters : public corecvs::BaseReflection<CalibrationDrawHelpersParameters>
 {
@@ -43,6 +43,7 @@ public:
         USE_OLD_BACKEND_ID,
         SCALE_FOR_CAMERAS_ID,
         GRID_STEP_FOR_CAMERAS_ID,
+        USE_TEXTURES_FOR_CAMERAS_ID,
         PRINTNAMES_ID,
         BILLBOARDNAMES_ID,
         PREFER_REPROJECTED_ID,
@@ -61,8 +62,8 @@ public:
     /** Section with variables */
 
     /** 
-     * \brief Use Old Backend 
-     * We have two OpenGL backends to draw. Old is without shaders, new is with shaders 
+     * \brief EXPERIMENTAL 
+     * EXPERIMENTAL We have two OpenGL backends to draw. Old is without shaders, new is with shaders 
      */
     bool mUseOldBackend;
 
@@ -77,6 +78,12 @@ public:
      * Grid Step For Cameras 
      */
     int mGridStepForCameras;
+
+    /** 
+     * \brief EXPERIMENTAL 
+     * EXPERIMENTAL 
+     */
+    bool mUseTexturesForCameras;
 
     /** 
      * \brief printNames 
@@ -175,6 +182,11 @@ public:
         return mGridStepForCameras;
     }
 
+    bool useTexturesForCameras() const
+    {
+        return mUseTexturesForCameras;
+    }
+
     bool printNames() const
     {
         return mPrintNames;
@@ -251,6 +263,11 @@ public:
         mGridStepForCameras = gridStepForCameras;
     }
 
+    void setUseTexturesForCameras(bool useTexturesForCameras)
+    {
+        mUseTexturesForCameras = useTexturesForCameras;
+    }
+
     void setPrintNames(bool printNames)
     {
         mPrintNames = printNames;
@@ -319,6 +336,7 @@ template<class VisitorType>
         visitor.visit(mUseOldBackend,             static_cast<const corecvs::BoolField *>(fields()[USE_OLD_BACKEND_ID]));
         visitor.visit(mScaleForCameras,           static_cast<const corecvs::DoubleField *>(fields()[SCALE_FOR_CAMERAS_ID]));
         visitor.visit(mGridStepForCameras,        static_cast<const corecvs::IntField *>(fields()[GRID_STEP_FOR_CAMERAS_ID]));
+        visitor.visit(mUseTexturesForCameras,     static_cast<const corecvs::BoolField *>(fields()[USE_TEXTURES_FOR_CAMERAS_ID]));
         visitor.visit(mPrintNames,                static_cast<const corecvs::BoolField *>(fields()[PRINTNAMES_ID]));
         visitor.visit(mBillboardNames,            static_cast<const corecvs::BoolField *>(fields()[BILLBOARDNAMES_ID]));
         visitor.visit(mPreferReprojected,         static_cast<const corecvs::BoolField *>(fields()[PREFER_REPROJECTED_ID]));
@@ -343,6 +361,7 @@ template<class VisitorType>
           bool useOldBackend
         , double scaleForCameras
         , int gridStepForCameras
+        , bool useTexturesForCameras
         , bool printNames
         , bool billboardNames
         , bool preferReprojected
@@ -360,6 +379,7 @@ template<class VisitorType>
         mUseOldBackend = useOldBackend;
         mScaleForCameras = scaleForCameras;
         mGridStepForCameras = gridStepForCameras;
+        mUseTexturesForCameras = useTexturesForCameras;
         mPrintNames = printNames;
         mBillboardNames = billboardNames;
         mPreferReprojected = preferReprojected;
@@ -379,6 +399,7 @@ template<class VisitorType>
         if ( !(this->mUseOldBackend == other.mUseOldBackend)) return false;
         if ( !(this->mScaleForCameras == other.mScaleForCameras)) return false;
         if ( !(this->mGridStepForCameras == other.mGridStepForCameras)) return false;
+        if ( !(this->mUseTexturesForCameras == other.mUseTexturesForCameras)) return false;
         if ( !(this->mPrintNames == other.mPrintNames)) return false;
         if ( !(this->mBillboardNames == other.mBillboardNames)) return false;
         if ( !(this->mPreferReprojected == other.mPreferReprojected)) return false;

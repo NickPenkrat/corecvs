@@ -24,6 +24,7 @@ CalibrationDrawHelpersParametersControlWidget::CalibrationDrawHelpersParametersC
     QObject::connect(mUi->useOldBackendCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->scaleForCamerasSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->gridStepForCamerasSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->useTexturesForCamerasCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->printNamesCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->billboardNamesCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->preferReprojectedCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
@@ -74,6 +75,7 @@ CalibrationDrawHelpersParameters *CalibrationDrawHelpersParametersControlWidget:
           mUi->useOldBackendCheckBox->isChecked()
         , mUi->scaleForCamerasSpinBox->value()
         , mUi->gridStepForCamerasSpinBox->value()
+        , mUi->useTexturesForCamerasCheckBox->isChecked()
         , mUi->printNamesCheckBox->isChecked()
         , mUi->billboardNamesCheckBox->isChecked()
         , mUi->preferReprojectedCheckBox->isChecked()
@@ -96,6 +98,7 @@ void CalibrationDrawHelpersParametersControlWidget::setParameters(const Calibrat
     mUi->useOldBackendCheckBox->setChecked(input.useOldBackend());
     mUi->scaleForCamerasSpinBox->setValue(input.scaleForCameras());
     mUi->gridStepForCamerasSpinBox->setValue(input.gridStepForCameras());
+    mUi->useTexturesForCamerasCheckBox->setChecked(input.useTexturesForCameras());
     mUi->printNamesCheckBox->setChecked(input.printNames());
     mUi->billboardNamesCheckBox->setChecked(input.billboardNames());
     mUi->preferReprojectedCheckBox->setChecked(input.preferReprojected());

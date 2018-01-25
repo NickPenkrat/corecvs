@@ -24,6 +24,8 @@
 #include "core/geometry/mesh3d.h"
 #include "core/cameracalibration/calibrationDrawHelpers.h"
 #include "core/fileformats/bmpLoader.h"
+#include "core/fileformats/objLoader.h"
+#include "core/buffers/bufferFactory.h"
 
 
 using namespace std;
@@ -160,14 +162,13 @@ TEST(projection, testFormatLoad)
 
 TEST(projection, testProjectionChange)
 {
-    CatadioptricProjection slowProjection;
 
-    // RGB24Buffer *image = BufferFactory::getInstance()->loadG12Bitmap("data/pair/image0001_c0.pgm");
-
+#if 0
     int h = 480;
     int w = 640;
 
-    RGB24Buffer *image = new RGB24Buffer(h,w);
+    // RGB24Buffer *image = new RGB24Buffer(h,w);
+    RGB24Buffer *image = BufferFactory::getInstance()->loadRGB24Bitmap("data/pair/image0001_c0.pgm");
 
     slowProjection.setSizeX(w);
     slowProjection.setSizeY(h);
@@ -178,26 +179,109 @@ TEST(projection, testProjectionChange)
     slowProjection.setFocal(image->w / 2.0);
 
     CameraModel model(slowProjection.clone());
+#else
+    std::string input =
+    "omnidirectional\n"
+    "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
+    std::istringstream ss(input);
 
-    Mesh3D mesh;
-    mesh.switchColor(true);
+    CameraModel model = CameraModel::loadCatadioptricFromTxt(ss);
+    CatadioptricProjection slowProjection = * static_cast<CatadioptricProjection *>(model.intrinsics.get());
+
+    RGB24Buffer *image = new RGB24Buffer(slowProjection.sizeY(), slowProjection.sizeX());
+    image->checkerBoard(50, RGBColor::White());
+#endif
+
+    Mesh3DDecorated mesh;
+    mesh.switchColor(true);    
+    mesh.switchTextures(true);
     mesh.setColor(RGBColor::Yellow());
     CalibrationDrawHelpers draw;
-    draw.drawCamera(mesh, model, 5);
-    mesh.dumpPLY("catadioptric.ply");
-
 
     Mesh3D toDraw;
-    toDraw.addIcoSphere(Vector3dd(0, 0, 100.0), 10, 2);
+    toDraw.addIcoSphere(Vector3dd(0, 0, 100.0), 70, 2);
 
     for (size_t i = 0; i < toDraw.vertexes.size(); i++)
     {
         Vector2dd prj = model.project(toDraw.vertexes[i]);
         Vector2d<int> prji(fround(prj.x()), fround(prj.y()));
 
-        if (image->isValidCoord(prji))
-        image->element(prji) = RGBColor::Red();
+        if (image->isValidCoord(prji)) {
+            image->element(prji) = RGBColor::Red();
+        }
     }
+
+
+    draw.drawCameraEx(mesh, model, 5, 0);
+    mesh.dumpPLY("catadioptric.ply");
+    mesh.materials.push_back(OBJMaterial());
+    mesh.materials.front().name = "image1";
+    mesh.materials.front().tex[OBJMaterial::KOEF_AMBIENT] = new RGB24Buffer(image);
+
+
+    OBJLoader loader;
+    loader.saveMaterials("catadioptric.mtl", mesh.materials, "");
+    loader.saveObj("catadioptric", mesh);
+
+
+    EquidistantProjection target;
+    target.setPrincipalX(slowProjection.principalX());
+    target.setPrincipalY(slowProjection.principalY());
+    target.setDistortedSizeX(slowProjection.distortedSizeX());
+    target.setDistortedSizeY(slowProjection.distortedSizeY());
+    target.setSizeX(slowProjection.sizeX());
+    target.setSizeY(slowProjection.sizeY());
+
+    cout << "Start Focal: " << slowProjection.focal() << endl;
+
+    double minF = 0;
+    for (double f = slowProjection.focal() / 4.0; f < slowProjection.focal()*2; f*=1.1 )
+    {
+        target.setFocal(f);
+
+        double err = 0.0;
+        for (int i = 0; i < image->h; i++)
+        {
+            for (int j = 0; j < image->w; j++)
+            {
+                Vector2dd pixel(i, j);
+                Vector3dd dir = slowProjection.reverse(pixel);
+
+                Vector2dd map = target.project(dir);
+
+                double newErr = (map - pixel).l2Metric();
+                if (err > newErr) {
+                    err = newErr;
+                    minF = f;
+                }
+            }
+        }
+
+        cout << "F is: " << f << " Max Diff is: " << err << "px" << endl;
+    }
+
+    /* From the remap buffer */
+
+    target.setFocal(minF);
+
+    FixedPointDisplace *displacement = new FixedPointDisplace(image->h, image->w);
+
+    for (int i = 0; i < image->h; i++)
+    {
+        for (int j = 0; j < image->w; j++)
+        {
+            Vector2dd pixel(i, j);
+            Vector3dd dir = slowProjection.reverse(pixel);
+
+            Vector2dd map = target.project(dir);
+            /* We need to imvent something */
+
+            if (displacement->isValidCoord(map.y(), map.x())) {
+                displacement->element(map.y(), map.x()) = BilinearMapPoint(i, j);
+            }
+        }
+    }
+
 
     BMPLoader().save("catad.bmp", image);
 

@@ -47,6 +47,7 @@ public:
         return element(y, x);
     }
 
+
 };
 
 } // namespace corecvs

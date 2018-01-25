@@ -35,7 +35,7 @@ int CalibrationDrawHelpersParameters::staticInit()
     ReflectionNaming &nameing = naming();
     nameing = ReflectionNaming(
         "Calibration Draw Helpers Parameters",
-        "Calibration Draw Helpers Parameters",
+        "EXPERIMENTAL",
         ""
     );
 
@@ -48,8 +48,8 @@ int CalibrationDrawHelpersParameters::staticInit()
           offsetof(CalibrationDrawHelpersParameters, mUseOldBackend),
           true,
           "Use Old Backend",
-          "Use Old Backend",
-          "We have two OpenGL backends to draw. Old is without shaders, new is with shaders"
+          "EXPERIMENTAL",
+          "EXPERIMENTAL We have two OpenGL backends to draw. Old is without shaders, new is with shaders"
         );
     field0->widgetHint=BaseField::CHECK_BOX;
     fields().push_back(field0);
@@ -88,6 +88,18 @@ int CalibrationDrawHelpersParameters::staticInit()
     /*  */ 
     BoolField* field3 = new BoolField
         (
+          CalibrationDrawHelpersParameters::USE_TEXTURES_FOR_CAMERAS_ID,
+          offsetof(CalibrationDrawHelpersParameters, mUseTexturesForCameras),
+          true,
+          "Use textures for cameras",
+          "EXPERIMENTAL",
+          "EXPERIMENTAL"
+        );
+    field3->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
+        (
           CalibrationDrawHelpersParameters::PRINTNAMES_ID,
           offsetof(CalibrationDrawHelpersParameters, mPrintNames),
           false,
@@ -95,10 +107,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "printNames",
           "printNames"
         );
-    field3->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field3);
+    field4->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field4);
     /*  */ 
-    BoolField* field4 = new BoolField
+    BoolField* field5 = new BoolField
         (
           CalibrationDrawHelpersParameters::BILLBOARDNAMES_ID,
           offsetof(CalibrationDrawHelpersParameters, mBillboardNames),
@@ -107,10 +119,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "billboardNames",
           "billboardNames"
         );
-    field4->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field4);
+    field5->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field5);
     /*  */ 
-    BoolField* field5 = new BoolField
+    BoolField* field6 = new BoolField
         (
           CalibrationDrawHelpersParameters::PREFER_REPROJECTED_ID,
           offsetof(CalibrationDrawHelpersParameters, mPreferReprojected),
@@ -119,10 +131,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "Prefer Reprojected",
           "Prefer Reprojected"
         );
-    field5->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field5);
+    field6->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field6);
     /*  */ 
-    BoolField* field6 = new BoolField
+    BoolField* field7 = new BoolField
         (
           CalibrationDrawHelpersParameters::FORCE_KNOWN_ID,
           offsetof(CalibrationDrawHelpersParameters, mForceKnown),
@@ -131,10 +143,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "Force Known",
           "Force Known"
         );
-    field6->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field6);
+    field7->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field7);
     /*  */ 
-    BoolField* field7 = new BoolField
+    BoolField* field8 = new BoolField
         (
           CalibrationDrawHelpersParameters::PRIVATECOLOR_ID,
           offsetof(CalibrationDrawHelpersParameters, mPrivateColor),
@@ -143,10 +155,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "privateColor",
           "privateColor"
         );
-    field7->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field7);
+    field8->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field8);
     /*  */ 
-    BoolField* field8 = new BoolField
+    BoolField* field9 = new BoolField
         (
           CalibrationDrawHelpersParameters::LARGEPOINTS_ID,
           offsetof(CalibrationDrawHelpersParameters, mLargePoints),
@@ -155,10 +167,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "largePoints",
           "largePoints"
         );
-    field8->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field8);
+    field9->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field9);
     /*  */ 
-    BoolField* field9 = new BoolField
+    BoolField* field10 = new BoolField
         (
           CalibrationDrawHelpersParameters::DRAWFIXTURECAMS_ID,
           offsetof(CalibrationDrawHelpersParameters, mDrawFixtureCams),
@@ -167,10 +179,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "drawFixtureCams",
           "drawFixtureCams"
         );
-    field9->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field9);
+    field10->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field10);
     /*  */ 
-    BoolField* field10 = new BoolField
+    BoolField* field11 = new BoolField
         (
           CalibrationDrawHelpersParameters::SOLIDCAMERAS_ID,
           offsetof(CalibrationDrawHelpersParameters, mSolidCameras),
@@ -179,10 +191,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "solidCameras",
           "solidCameras"
         );
-    field10->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field10);
+    field11->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field11);
     /*  */ 
-    BoolField* field11 = new BoolField
+    BoolField* field12 = new BoolField
         (
           CalibrationDrawHelpersParameters::DRAWOBSERVATIONS_ID,
           offsetof(CalibrationDrawHelpersParameters, mDrawObservations),
@@ -191,10 +203,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "drawObservations",
           "drawObservations"
         );
-    field11->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field11);
+    field12->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field12);
     /*  */ 
-    BoolField* field12 = new BoolField
+    BoolField* field13 = new BoolField
         (
           CalibrationDrawHelpersParameters::DRAWTRUELINES_ID,
           offsetof(CalibrationDrawHelpersParameters, mDrawTrueLines),
@@ -203,10 +215,10 @@ int CalibrationDrawHelpersParameters::staticInit()
           "drawTrueLines",
           "drawTrueLines"
         );
-    field12->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field12);
+    field13->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field13);
     /*  */ 
-    DoubleField* field13 = new DoubleField
+    DoubleField* field14 = new DoubleField
         (
           CalibrationDrawHelpersParameters::PROJECTION_RAY_LENGTH_ID,
           offsetof(CalibrationDrawHelpersParameters, mProjectionRayLength),
@@ -219,11 +231,11 @@ int CalibrationDrawHelpersParameters::staticInit()
          1000,
          1
         );
-    field13->widgetHint=BaseField::SPIN_BOX;
-    field13->precision=2;
-    fields().push_back(field13);
+    field14->widgetHint=BaseField::SPIN_BOX;
+    field14->precision=2;
+    fields().push_back(field14);
     /*  */ 
-    BoolField* field14 = new BoolField
+    BoolField* field15 = new BoolField
         (
           CalibrationDrawHelpersParameters::DRAWRAYS_ID,
           offsetof(CalibrationDrawHelpersParameters, mDrawRays),
@@ -232,8 +244,8 @@ int CalibrationDrawHelpersParameters::staticInit()
           "drawRays",
           "drawRays"
         );
-    field14->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field14);
+    field15->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field15);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Calibration Draw Helpers Parameters")]= &reflection;

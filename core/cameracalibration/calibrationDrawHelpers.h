@@ -3,6 +3,9 @@
 #include "core/buffers/rgb24/rgbColor.h"
 #include "core/xml/generated/calibrationDrawHelpersParameters.h"
 
+#include "core/geometry/mesh3d.h"
+#include "core/geometry/mesh3DDecorated.h"
+
 namespace corecvs {
 
 class Mesh3D;
@@ -50,7 +53,8 @@ public:
 
     void setParameters(const CalibrationDrawHelpersParameters &params);
 
-    void drawCamera (Mesh3D &mesh, const CameraModel &cam, double scale);
+    void drawCamera   (Mesh3D          &mesh, const CameraModel &cam, double scale);
+    void drawCameraEx (Mesh3DDecorated &mesh, const CameraModel &cam, double scale, int id);
 
     void drawPly    (Mesh3D &mesh, const ObservationList &list);
     void drawPly    (Mesh3D &mesh, const CameraFixture &ps   , double scale);

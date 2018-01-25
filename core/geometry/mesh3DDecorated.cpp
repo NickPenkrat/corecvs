@@ -50,6 +50,25 @@ void Mesh3DDecorated::addAOB(const Vector3dd &c1, const Vector3dd &c2, bool addF
 
 }
 
+void Mesh3DDecorated::addTriangleT(const Vector3dd &p1, const Vector2dd &t1, const Vector3dd &p2, const Vector2dd &t2, const Vector3dd &p3, const Vector2dd &t3)
+{
+    addTriangle(p1, p2, p3);
+    if (hasTexCoords)
+    {
+        size_t texStart = textureCoords.size();
+        textureCoords.push_back(t1);
+        textureCoords.push_back(t2);
+        textureCoords.push_back(t3);
+
+        texId.push_back(Vector4d32(texStart, texStart + 1, texStart + 2, currentTexture));
+    }
+    if (hasNormals)
+    {
+        size_t normals = normalCoords.size() - 1;
+        normalId.push_back(Vector3d32(normals, normals, normals));
+    }
+}
+
 void Mesh3DDecorated::transform(const Matrix44 &matrix)
 {
     Mesh3D::transform(matrix);

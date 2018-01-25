@@ -17,11 +17,18 @@
    -->
 
     <field type="bool"      name="Use Old Backend"     defaultValue="true" >
-        <comment>We have two OpenGL backends to draw. Old is without shaders, new is with shaders</comment>
+        <description>EXPERIMENTAL</description>
+        <comment>EXPERIMENTAL We have two OpenGL backends to draw. Old is without shaders, new is with shaders</comment>
     </field>
 
     <field type="double"    name="Scale For Cameras"      defaultValue="1"  min="0.01" max="1000" step="1"/>
     <field type="int"       name="Grid Step For Cameras"  defaultValue="15" min="2"    max="1000" step="1"/>
+
+    <field type="bool"      name="Use textures for cameras"     defaultValue="true" >
+        <description>EXPERIMENTAL</description>
+        <comment>EXPERIMENTAL</comment>
+    </field>
+
 
     <field type="bool"      name="printNames"     defaultValue="false" />
     <field type="bool"      name="billboardNames" defaultValue="true" />
