@@ -5,13 +5,6 @@
  * \date Mar 14, 2010
  * \author alexander
  */
-#include <iostream>
-#include <string>
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "core/utils/global.h"
-
 #include "imageCaptureInterface.h"
 #include "cameraControlParameters.h"
 
@@ -19,6 +12,13 @@
 # include "V4L2Capture.h"
 # include "V4L2CaptureDecouple.h"
 #endif
+
+#include <iostream>
+#include <stdio.h>
+//#include <stdlib.h>
+
+using std::string;
+using std::vector;
 
 char const *CaptureStatistics::names[] =
 {
@@ -30,9 +30,6 @@ char const *CaptureStatistics::names[] =
 };
 
 STATIC_ASSERT(CORE_COUNT_OF(CaptureStatistics::names) == CaptureStatistics::MAX_ID, wrong_comment_num_capture_stats)
-
-
-
 
 void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 {
@@ -49,24 +46,23 @@ void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
 ImageCaptureInterface::ImageCaptureInterface()
    : mIsRgb(false)
 {
-
     imageInterfaceReceiver = NULL;
     SYNC_PRINT(("ImageCaptureInterface::ImageCaptureInterface(): called\n"));
 }
 
 ImageCaptureInterface::~ImageCaptureInterface()
-{
-    return;
-}
+{}
 
 void ImageCaptureInterface::getAllCameras(vector<string> &cameras)
 {
+    CORE_UNUSED(cameras);
+
 #ifdef Q_OS_WIN
 # ifdef WITH_DIRECTSHOW
     vector<string> dshowcams;
     DirectShowCaptureInterface::getAllCameras(dshowcams);
     for (const string& cam : dshowcams) {
-        cameras.push_back(std::string("dshow:" + cam));
+        cameras.push_back(string("dshow:" + cam));
     }
 # endif
 #endif
@@ -75,14 +71,14 @@ void ImageCaptureInterface::getAllCameras(vector<string> &cameras)
     vector<string> v4lcams;
     V4L2CaptureInterface::getAllCameras(v4lcams);
     for (string cam: v4lcams) {
-        cameras.push_back(std::string("v4l2:" + cam));
+        cameras.push_back(string("v4l2:" + cam));
     }
 #endif
 #ifdef WITH_UEYE
     vector<string> ueyecams;
     UEyeCaptureInterface::getAllCameras(ueyecams);
     for (string cam: ueyecams) {
-        cameras.push_back(std::string("ueye:" + cam));
+        cameras.push_back(string("ueye:" + cam));
     }
 #endif
 }
@@ -97,7 +93,7 @@ ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getCaptureProperty(in
     return FAILURE;
 }
 
-ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getCaptureName(std::string & /*value*/)
+ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getCaptureName(string & /*value*/)
 {
     return FAILURE;
 }
@@ -112,17 +108,17 @@ bool ImageCaptureInterface::getCurrentFormat(ImageCaptureInterface::CameraFormat
     return false;
 }
 
-std::string ImageCaptureInterface::getInterfaceName()
+string ImageCaptureInterface::getInterfaceName()
 {
     return "";
 }
 
-ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getDeviceName(int /*num*/, std::string & /*name*/)
+ImageCaptureInterface::CapErrorCode ImageCaptureInterface::getDeviceName(int /*num*/, string & /*name*/)
 {
     return FAILURE;
 }
 
-std::string ImageCaptureInterface::getDeviceSerial(int /*num*/)
+string ImageCaptureInterface::getDeviceSerial(int /*num*/)
 {
     return "";
 }
