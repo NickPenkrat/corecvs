@@ -45,6 +45,7 @@ CORE_SUBMODULES =       \
     camerafixture       \
     iterative           \
     stereointerface     \
+    placer              \
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}

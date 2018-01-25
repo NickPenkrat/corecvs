@@ -79,7 +79,7 @@ MergerDialog::MergerDialog()
 MergerDialog::~MergerDialog()
 {
     {
-        JSONSetter saver("topview.json");
+        JSONSetter saver("topview.json");        
         saver.visit(*mMainScene.data(), "scene");
     }
 

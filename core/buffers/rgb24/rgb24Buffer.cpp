@@ -761,6 +761,36 @@ void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
     }
 
 }
+
+void RGB24Buffer::drawDoubleVecBuffer(const AbstractBuffer<Vector2dd> &in)
+{
+    int mh = CORE_MIN(h, in.h);
+    int mw = CORE_MIN(w, in.w);
+
+    Vector2dd min = Vector2dd(std::numeric_limits<double>::max   ());
+    Vector2dd max = Vector2dd(std::numeric_limits<double>::lowest());
+
+    for (int i = 0; i < mh; i++)
+    {
+        for (int j = 0; j < mw; j++)
+        {
+            min = min.perElementMin(in.element(i,j));
+            max = min.perElementMax(in.element(i,j));
+        }
+    }
+
+    cout << "RGB24Buffer::drawDoubleVecBuffer(): " << min << " " << max << endl;
+
+    for (int i = 0; i < mh; i++)
+    {
+        for (int j = 0; j < mw; j++)
+        {
+            Vector3dd c = Vector3dd((in.element(i,j) - min) / (max - min)  * 255.0, 0.0);
+            element(i, j) = RGBColor::FromDouble(c);
+        }
+    }
+
+}
 void RGB24Buffer::fillWithYUYV(uint8_t *data)
 {
     fillWithYUVFormat(data, false);

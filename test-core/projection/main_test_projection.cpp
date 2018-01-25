@@ -192,6 +192,14 @@ TEST(projection, testProjectionChange)
     image->checkerBoard(50, RGBColor::White());
 #endif
 
+    cout << "Input model:" << endl;
+    cout << "=============================" << endl;
+    cout << model << endl;
+    cout << "=============================" << endl;
+    cout << "Input image:" << endl;
+    cout << image->getSize() << endl;
+    cout << "=============================" << endl;
+
     Mesh3DDecorated mesh;
     mesh.switchColor(true);    
     mesh.switchTextures(true);
@@ -223,7 +231,7 @@ TEST(projection, testProjectionChange)
     loader.saveMaterials("catadioptric.mtl", mesh.materials, "");
     loader.saveObj("catadioptric", mesh);
 
-
+    /** Ok  Equidistant **/
     EquidistantProjection target;
     target.setPrincipalX(slowProjection.principalX());
     target.setPrincipalY(slowProjection.principalY());
@@ -232,9 +240,12 @@ TEST(projection, testProjectionChange)
     target.setSizeX(slowProjection.sizeX());
     target.setSizeY(slowProjection.sizeY());
 
+    cout << "EquidistantProjection" << endl;
     cout << "Start Focal: " << slowProjection.focal() << endl;
 
     double minF = 0;
+    double minFerr = std::numeric_limits<double>::max();
+
     for (double f = slowProjection.focal() / 4.0; f < slowProjection.focal()*2; f*=1.1 )
     {
         target.setFocal(f);
@@ -250,40 +261,145 @@ TEST(projection, testProjectionChange)
                 Vector2dd map = target.project(dir);
 
                 double newErr = (map - pixel).l2Metric();
-                if (err > newErr) {
+                if (err < newErr) {
                     err = newErr;
-                    minF = f;
                 }
             }
+        }
+        if (err < minFerr) {
+            minFerr = err;
+            minF = f;
         }
 
         cout << "F is: " << f << " Max Diff is: " << err << "px" << endl;
     }
 
+#if 0
+    /** Ok Equisolid **/
+    EquisolidAngleProjection target1;
+    target1.setPrincipalX(slowProjection.principalX());
+    target1.setPrincipalY(slowProjection.principalY());
+    target1.setDistortedSizeX(slowProjection.distortedSizeX());
+    target1.setDistortedSizeY(slowProjection.distortedSizeY());
+    target1.setSizeX(slowProjection.sizeX());
+    target1.setSizeY(slowProjection.sizeY());
+
+    cout << "EquisolidAngleProjection" << endl;
+    cout << "Start Focal: " << slowProjection.focal() << endl;
+
+    double minF1 = 0;
+    double minFerr1 = std::numeric_limits<double>::max();
+
+    for (double f = slowProjection.focal() / 4.0; f < slowProjection.focal()*2; f*=1.1 )
+    {
+        target1.setFocal(f);
+
+        double err = 0.0;
+        for (int i = 0; i < image->h; i++)
+        {
+            for (int j = 0; j < image->w; j++)
+            {
+                Vector2dd pixel(i, j);
+                Vector3dd dir = slowProjection.reverse(pixel);
+
+                Vector2dd map = target1.project(dir);
+
+                double newErr = (map - pixel).l2Metric();
+                if (err < newErr) {
+                    err = newErr;
+                }
+            }
+        }
+        if (err < minFerr) {
+            minFerr1 = err;
+            minF1 = f;
+        }
+
+
+        cout << "F is: " << f << " Max Diff is: " << err << "px" << endl;
+    }
+
+    /** Stereographic **/
+    StereographicProjection target2;
+    target2.setPrincipalX(slowProjection.principalX());
+    target2.setPrincipalY(slowProjection.principalY());
+    target2.setDistortedSizeX(slowProjection.distortedSizeX());
+    target2.setDistortedSizeY(slowProjection.distortedSizeY());
+    target2.setSizeX(slowProjection.sizeX());
+    target2.setSizeY(slowProjection.sizeY());
+
+    cout << "Stereographic" << endl;
+    cout << "Start Focal: " << slowProjection.focal() << endl;
+
+    double minF2 = 0;
+    double minFerr2 = std::numeric_limits<double>::max();
+
+    for (double f = slowProjection.focal() / 16.0; f < slowProjection.focal()*2; f*=1.1 )
+    {
+        target2.setFocal(f);
+
+        double err = 0.0;
+        for (int i = 0; i < image->h; i++)
+        {
+            for (int j = 0; j < image->w; j++)
+            {
+                Vector2dd pixel(i, j);
+                Vector3dd dir = slowProjection.reverse(pixel);
+
+                Vector2dd map = target2.project(dir);
+
+                double newErr = (map - pixel).l2Metric();
+                if (err < newErr) {
+                    err = newErr;
+                }
+            }
+        }
+        if (err < minFerr) {
+            minFerr2 = err;
+            minF2 = f;
+        }
+
+
+        cout << "F is: " << f << " Max Diff is: " << err << "px" << endl;
+    }
+#endif
+
     /* From the remap buffer */
 
     target.setFocal(minF);
+    cout << "Using focal:" << minF << endl;
 
-    FixedPointDisplace *displacement = new FixedPointDisplace(image->h, image->w);
+    AbstractBuffer<Vector2dd> *displacement = new AbstractBuffer<Vector2dd>(image->h, image->w);
 
+    /**
+     *
+     *    2D    ->          catadioptric           -> 3D
+     *    2D    <-  remap  <-  2D  <- equiditstant -> 3D
+     *
+     *
+     **/
     for (int i = 0; i < image->h; i++)
     {
         for (int j = 0; j < image->w; j++)
         {
-            Vector2dd pixel(i, j);
-            Vector3dd dir = slowProjection.reverse(pixel);
+            Vector2dd pixel(j, i); /* This is a remap pixel */
 
-            Vector2dd map = target.project(dir);
+            Vector3dd dir = target.reverse(pixel);
+            Vector2dd map = slowProjection.project(dir);
+
             /* We need to imvent something */
 
-            if (displacement->isValidCoord(map.y(), map.x())) {
-                displacement->element(map.y(), map.x()) = BilinearMapPoint(i, j);
+            if (displacement->isValidCoord(i, j)) {
+                displacement->element(i, j) = Vector2dd(map.x(), map.y());
             }
         }
     }
 
+    RGB24Buffer *disp = new RGB24Buffer(displacement->getSize());
+    disp->drawDoubleVecBuffer(displacement);
 
     BMPLoader().save("catad.bmp", image);
+    BMPLoader().save("catad-disp.bmp", disp);
 
 
 }

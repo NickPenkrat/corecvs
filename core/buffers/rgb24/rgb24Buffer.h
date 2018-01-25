@@ -193,10 +193,11 @@ public:
         STYLE_RAINBOW,
         STYLE_GRAY,
         STYLE_LOG,
-        STYLE_ZBUFFER
+        STYLE_ZBUFFER   /**< ignores std::numeric_limits<double>::max() values, not to affect palette */
     };
 
-    void drawDoubleBuffer(const AbstractBuffer<double> &in, int style = STYLE_RAINBOW);
+    void drawDoubleBuffer   (const AbstractBuffer<double>    &in, int style = STYLE_RAINBOW);
+    void drawDoubleVecBuffer(const AbstractBuffer<Vector2dd> &in);
 
     void fillWithYUYV(uint8_t *data);
     void fillWithUYVU(uint8_t *data);
