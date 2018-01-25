@@ -8,14 +8,22 @@
 #include "imageCaptureInterface.h"
 #include "cameraControlParameters.h"
 
+#ifdef WITH_DIRECTSHOW
+# include "directShowCapture.h"
+# include "directShowCaptureDecouple.h"
+#endif
+
 #ifdef WITH_FRAMESOURCE_V4L2
 # include "V4L2Capture.h"
 # include "V4L2CaptureDecouple.h"
 #endif
 
+#ifdef WITH_UEYE
+# include "uEyeCapture.h"
+#endif
+
 #include <iostream>
 #include <stdio.h>
-//#include <stdlib.h>
 
 using std::string;
 using std::vector;
@@ -57,14 +65,12 @@ void ImageCaptureInterface::getAllCameras(vector<string> &cameras)
 {
     CORE_UNUSED(cameras);
 
-#ifdef Q_OS_WIN
-# ifdef WITH_DIRECTSHOW
+#ifdef WITH_DIRECTSHOW
     vector<string> dshowcams;
     DirectShowCaptureInterface::getAllCameras(dshowcams);
     for (const string& cam : dshowcams) {
         cameras.push_back(string("dshow:" + cam));
     }
-# endif
 #endif
 
 #ifdef WITH_FRAMESOURCE_V4L2
