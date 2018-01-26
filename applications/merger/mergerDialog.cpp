@@ -16,12 +16,16 @@
 #include <QMessageBox>
 #include <foldableWidget.h>
 
+
 #include "parametersMapper/parametersMapperMerger.h"
 
 #include "sceneShaded.h"
 #include "mesh3DScene.h"
 
 #include <core/camerafixture/cameraFixture.h>
+
+// FIXME
+#include "ui_cameraModelParametersControlWidget.h"
 
 
 MergerDialog::MergerDialog()
@@ -106,6 +110,11 @@ void MergerDialog::initParameterWidgets()
     for (int i = 0; i < 4; i++)
     {
         mCams[i] = new CameraModelParametersControlWidget();
+        mCams[i]->ui->distortionFrame->hide();
+        mCams[i]->ui->projectionFrame->hide();
+        mCams[i]->ui->projectionTypeFrame->hide();
+
+
         FoldableWidget *wc = new FoldableWidget(this, QString("cam %1").arg(carBody->cameras[i]->nameId.c_str()), mCams[i]);
         dockWidget()->layout()->addWidget(wc);
 
@@ -175,6 +184,8 @@ void MergerDialog::createCalculator()
 
     emit newCarScene(mMainScene);
 
+    connect(mMergerControlWidget, SIGNAL(saveRemap(QString)),
+      static_cast<MergerThread*>(mCalculator), SLOT(saveRemap(QString)));
 
     mapper->paramsChanged();
 

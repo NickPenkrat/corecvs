@@ -25,8 +25,8 @@
 #include "legacy/spherical_lut.h"
 #include "core/cammodel/sphericalCorrectionLUT.h"
 
-#include "core/xml/generated/euclidianMoveParameters.h"
-
+// TEST
+// #include "viFlowStatisticsDescriptor.h"
 
 using namespace corecvs;
 
@@ -103,6 +103,8 @@ void MergerThread::cacheIntrinsics()
         delete_safe(mRemapCached.displacement[c]);
         mRemapCached.displacement[c] = new AbstractBuffer<Vector2dd>(slowProjection.sizeY(), slowProjection.sizeX());
 
+
+        PreciseTimer timer = PreciseTimer::currentTime();
         /**
          *
          *    2D    ->          catadioptric           -> 3D
@@ -136,20 +138,15 @@ void MergerThread::cacheIntrinsics()
             }
         });
         SYNC_PRINT(("\n"));
+        int inversions = slowProjection.sizeY() *  slowProjection.sizeX();
+        uint64_t time = timer.nsecsToNow();
+        SYNC_PRINT(("%d inversions done in %d ms (%lf ns per inversion)\n", inversions, time / 1000000, (double)time / inversions));
+
 
         mRemapCached.simplified[c] = target;
         mRemapCached.cached[c].copyModelFrom(slowModel);
     }
 }
-
-Affine3DQ getTransform (const EuclidianMoveParameters &input)
-{
-    return    Affine3DQ::Shift(input.x(),input.y(), input.z())
-            * Affine3DQ::RotationZ(degToRad(input.gamma()))
-            * Affine3DQ::RotationY(degToRad(input.beta()))
-            * Affine3DQ::RotationX(degToRad(input.alpha()));
-}
-
 
 /**
     This method processes changes when parameters have changed.
@@ -537,21 +534,6 @@ AbstractOutputData* MergerThread::processNewData()
     return outputData;
 }
 
-
-bool MergerThread::isUnderLine(Vector2dd point, Vector2dd point1, Vector2dd point2)
-{
-    double y = point.y();
-    if (point2.x() != point1.x())
-    {
-        double k = ((point2.y() - point1.y()) / (point2.x() - point1.x()));
-        double b = point1.y() - k * point1.x();
-        double value_y = k * point.x() + b;
-        if (y < value_y)
-            return true;
-    }
-    return false;
-}
-
 void MergerThread::mergerControlParametersChanged(QSharedPointer<Merger> mergerParameters)
 {
     if (!mergerParameters)
@@ -579,4 +561,162 @@ void MergerThread::sceneParametersChanged(QSharedPointer<FixtureScene> mCarScene
     mCarScene->dumpInfo();
     this->mCarScene = mCarScene;
     recomputeMergerState = true;
+}
+
+
+vector<cv::Mat> MergerThread::calculateRemap()
+{
+  qDebug("MergerThread::calculateRemap(): called for %d inputs", mActiveInputsNumber);
+
+  bool have_params = !(mMergerParameters.isNull());
+  bool two_frames = have_params && (CamerasConfigParameters::TwoCapDev == mActiveInputsNumber); // FIXME: additional params needed here
+
+                                                                                                // We are missing data, so pause calculation
+  if ((!mFrames.getCurrentFrame(Frames::LEFT_FRAME)) ||
+    ((!mFrames.getCurrentFrame(Frames::RIGHT_FRAME)) && (CamerasConfigParameters::TwoCapDev == mActiveInputsNumber)))
+  {
+    emit errorMessage("Capture error.");
+    pauseCalculation();
+  }
+
+  recalculateCache();
+  prepareMapping();
+
+  /* Scene */
+  CameraFixture *fixture = mCarScene->fixtures().front();
+  FixtureCamera *cams[] = { fixture->cameras[0], fixture->cameras[1], fixture->cameras[2], fixture->cameras[3] };
+
+  double groundZ = mMergerParameters->groundZ();
+  PlaneFrame frame;
+  double l = mMergerParameters->outPhySizeL();
+  double w = mMergerParameters->outPhySizeW();
+  frame.p1 = Vector3dd(l / 2, -w / 2, groundZ);
+  frame.e1 = Vector3dd(-l, 0, 0);
+  frame.e2 = Vector3dd(0, w, 0);
+
+  CameraModel models[4];
+  for (int c = 0; c < 4; c++)
+  {
+    models[c] = cams[c]->getWorldCameraModel();
+  }
+
+  /* Unwrap */
+  RGB24Buffer *input = mFrames.getCurrentRgbFrame((Frames::FrameSourceId)mMergerParameters->frameToUndist());
+  Vector2dd center(input->w / 2.0, input->h / 2.0);
+
+  vector<Vector2dd> lut;
+  for (unsigned i = 0; i < LUT_LEN; i++) {
+    lut.push_back(Vector2dd(UnwarpToWarpLUT[i][0], UnwarpToWarpLUT[i][1]));
+  }
+  RadiusCorrectionLUTSq radiusLUTSq(&lut);
+  SphericalCorrectionLUTSq correctorSq(center, &radiusLUTSq);
+
+  RadiusCorrectionLUT radiusLUT = RadiusCorrectionLUT::FromSquareToSquare(lut);
+  SphericalCorrectionLUT corrector(center, &radiusLUT);
+
+  vector<Vector2dd> luthd;
+  for (unsigned i = 0; i < LUT_LEN_HD; i++) {
+    luthd.push_back(Vector2dd(AngleToShiftLUT_HD[i][0], AngleToShiftLUT_HD[i][1]));
+  }
+
+  double mmToPixel = (double)input->w / mMergerParameters->sensorWidth();
+  RadiusCorrectionLUT radiusLUTHd = RadiusCorrectionLUT::FromAngleAndProjection(luthd, mmToPixel, mMergerParameters->undistFocal());
+  SphericalCorrectionLUT correctorHD(center, &radiusLUTHd);
+
+#if 0
+  for (unsigned i = 0; i < radiusLUTHd.LUT.size(); i++) {
+    cout << "Table for HD " << i << " - " << radiusLUTHd.LUT[i] << endl;
+  }
+#endif
+
+
+  //outputData->unwarpOutput = input->doReverseDeformationBl<RGB24Buffer, SphericalCorrectionLUT>(&corrector, input->h, input->w);
+
+  //precalculations
+  //car simulation
+  //{
+  //Get x
+  int height = mMergerParameters->outSizeH();
+  int width = mMergerParameters->outSizeH() / mMergerParameters->outPhySizeW() * mMergerParameters->outPhySizeL();
+
+
+  //}
+  vector<cv::Mat> result;
+  for (int c = 0; c < 8; c++)
+  {
+    cv::Mat mat = cv::Mat(height, width, CV_32FC1);
+    mat.setTo(cv::Scalar(-1.0));
+    result.push_back(mat);
+  }
+  parallelable_for(0, mMapper->h, [&](const BlockedRange<int>& r)
+  {
+      for(int i = r.begin(); i < r.end(); i++)
+      {
+          for (int j = 0; j < mMapper->w; j++)
+          {
+              Vector2dd p = Vector2dd( (double)j / mMapper->w, (double)i / mMapper->h);
+              Vector3dd pos = mFrame.getPoint(p);
+
+              for (int c = 0; c < 4; c++)
+              {
+                  Vector2dd prj = mRemapCached.simplified[c].project(posCam);
+                  if (!mRemapCached.displacement[c]->isValidCoord(prj.y(), prj.x()))
+                      continue;
+                  prj = mRemapCached.displacement[c]->element(prj.y(), prj.x());
+
+                  mMapper->element(i, j).sourcePos[c] = prj;
+
+                  if (mMasks[c]->isValidCoordBl(prj.y(), prj.x()))
+                      mMapper->element(i, j).weight[c] = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
+                  count++;
+              }
+          }
+          done++;
+          if (done % 100 == 0)
+              SYNC_PRINT(("#"));
+      }
+  });
+
+
+
+
+
+  return result;
+}
+
+
+
+void MergerThread::saveRemap(QString directory)
+{
+
+  QString d = directory;
+  vector<cv::Mat> maps = calculateRemap();
+
+  for (int c = 0; c < 4; c++)
+  {
+    QString filename = directory;
+    switch (c)
+    {
+      // front
+      case 0:
+        filename += "/front.yml";
+        break;
+      case 1:
+        filename += "/right.yml";
+        break;
+      case 2:
+        filename += "/rear.yml";
+        break;
+      case 3:
+        filename += "/left.yml";
+        break;
+    }
+    cv::FileStorage fs(filename.toStdString(), cv::FileStorage::WRITE);
+    if (fs.isOpened())
+    {
+      fs << "XMAP" << maps[c * 2];
+      fs << "YMAP" << maps[c * 2 + 1];
+      fs.release();
+    }
+  }
 }

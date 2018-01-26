@@ -28,6 +28,12 @@
 
 #include "generatedParameters/merger.h"
 
+#ifdef WITH_OPENCV
+# include "opencv2/imgproc/imgproc.hpp"
+# include "opencv2/highgui/highgui.hpp"
+# include "opencv2/core/core_c.h"
+#endif
+
 
 using namespace corecvs;
 
@@ -130,7 +136,7 @@ public slots:
     void mergerControlParametersChanged(QSharedPointer<Merger> params);
     void baseControlParametersChanged(QSharedPointer<BaseParameters> params);
     void camerasParametersChanged(QSharedPointer<CamerasConfigParameters> parameters);
-
+    void saveRemap(QString directory);
 
 signals:
     void errorMessage(QString string);
@@ -139,6 +145,10 @@ protected:
     virtual AbstractOutputData *processNewData();
 
 private: 
+#ifdef WITH_OPENCV
+    vector<cv::Mat> calculateRemap();
+#endif
+
     PreciseTimer mIdleTimer;
 
     /* Might be misleading, but PPMLoader handles saving as well */
@@ -151,7 +161,7 @@ private:
 
 
     bool isUnderLine(Vector2dd point, Vector2dd point1, Vector2dd point2);
-
+    //FixtureScene *scene = NULL;
 
 };
 

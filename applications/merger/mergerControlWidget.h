@@ -2,6 +2,8 @@
 #pragma once
 #include <QWidget>
 #include <QLineEdit>
+#include <QFileDialog>
+
 #include "generatedParameters/merger.h"
 #include "ui_mergerControlWidget.h"
 #include "parametersControlWidgetBase.h"
@@ -39,14 +41,31 @@ public slots:
         // emit paramsChanged();
     }
 
+    void doSaveRemap();
+
 signals:
     void valueChanged();
     void paramsChanged();
+    void saveRemap(QString directory);
 
 private:
     Ui::MergerControlWidget *mUi;
     bool autoInit;
     QString rootPath;
 };
+
+
+inline void MergerControlWidget::doSaveRemap()
+{
+    QString directoryName = QFileDialog::getExistingDirectory(
+                this,
+                "ChooseКак a folder",
+                ".");
+    if (directoryName.isNull() || directoryName.isEmpty())
+    {
+        return;
+    }
+    emit saveRemap(directoryName);
+}
 
 
