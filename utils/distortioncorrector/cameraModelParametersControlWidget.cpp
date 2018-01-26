@@ -189,6 +189,7 @@ void CameraModelParametersControlWidget::getParameters(CameraModel& params) cons
     ui->extrinsicWorldWidget->getParameters(location);
     params.setLocation(location);
 
+#if 0
     PinholeCameraIntrinsics *pinhole = params.getPinhole();
 
     if (pinhole != NULL) {
@@ -207,6 +208,7 @@ void CameraModelParametersControlWidget::getParameters(CameraModel& params) cons
         pinhole->setSkew(ui->spinBoxSkew->value());
     } else {
     }
+#endif
 
     ProjectionType::ProjectionType curId = (ProjectionType::ProjectionType) ui->projectionTypeComboBox->currentIndex();
     if (params.intrinsics->projection != curId)
@@ -246,6 +248,7 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
     ui->extrinsicWorldWidget->setParameters(input.getAffine());
     ui->extrinsicCamWidget->setParameters(FixtureScene::DEFAULT_WORLD_TO_CAMERA * input.getAffine());
 
+#if 0
     PinholeCameraIntrinsics *pinhole = input.getPinhole();
 
     if (pinhole != NULL)
@@ -268,6 +271,7 @@ void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
                     .arg(pinhole->sizeX())         .arg(pinhole->sizeY())
                     .arg(pinhole->distortedSizeX()).arg(pinhole->distortedSizeY()));*/
     }
+#endif
 
     /**/
     ui->projectionTypeComboBox->setCurrentIndex(input.intrinsics->projection);

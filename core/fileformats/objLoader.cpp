@@ -329,7 +329,7 @@ int OBJLoader::saveOBJSimple(ostream &out, Mesh3D &mesh)
 
 
 
-int OBJLoader::saveMaterials(const string &fileName, vector<OBJMaterial> &materials, const string &path)
+int OBJLoader::saveMaterials(const string &fileName, vector<OBJMaterial> &materials, const string &/*path*/)
 {
     ofstream out;
     out.open(fileName, ios::out);

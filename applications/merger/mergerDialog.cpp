@@ -40,6 +40,8 @@ MergerDialog::MergerDialog()
         {
             getter.visit(*mMainScene.data(), "scene");
             mMainScene->dumpInfo();
+            SYNC_PRINT(("MergerDialog::MergerDialog(): koefs %d\n", mMainScene->fixtures()[0]->cameras[0]->distortion.mKoeff.size()));
+
         } else {
 
             CameraFixture *body = mMainScene->createCameraFixture();
@@ -79,8 +81,10 @@ MergerDialog::MergerDialog()
 MergerDialog::~MergerDialog()
 {
     {
+        SYNC_PRINT(("MergerDialog::~MergerDialog(): koefs %d\n", mMainScene->fixtures()[0]->cameras[0]->distortion.mKoeff.size()));
         JSONSetter saver("topview.json");        
         saver.visit(*mMainScene.data(), "scene");
+        SYNC_PRINT(("MergerDialog::~MergerDialog(): koefs %d\n", mMainScene->fixtures()[0]->cameras[0]->distortion.mKoeff.size()));
     }
 
     terminateCalculator();
@@ -104,12 +108,10 @@ void MergerDialog::initParameterWidgets()
         mCams[i] = new CameraModelParametersControlWidget();
         FoldableWidget *wc = new FoldableWidget(this, QString("cam %1").arg(carBody->cameras[i]->nameId.c_str()), mCams[i]);
         dockWidget()->layout()->addWidget(wc);
-        mSaveableWidgets.push_back(mCams[i]);
+
+        //mSaveableWidgets.push_back(mCams[i]);
 
         mCams[i]->setParameters(*carBody->cameras[i]);
-
-
-
         QObject::connect(mCams[i], SIGNAL(paramsChanged()), this, SLOT(virtualCamsChanged()));
 
     }

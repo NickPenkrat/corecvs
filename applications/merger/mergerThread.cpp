@@ -49,6 +49,99 @@ MergerThread::~MergerThread()
     delete_safe(mUndistort);
 }
 
+void MergerThread::cacheIntrinsics()
+{
+    SYNC_PRINT(("MergerThread::cacheIntrinsics()\n"));
+    for (int c=0; c < 4; c++)
+    {
+        CameraModel slowModel = mCarScene->fixtures()[0]->cameras[c]->getWorldCameraModel();
+        if (slowModel.getCatadioptric() == NULL )
+        {
+             SYNC_PRINT(("Cam %d doesn't have catadioptric projection %d\n", c, slowModel.intrinsics->projection));
+             continue;
+        }
+
+        bool same = true;
+        if      (  mRemapCached.cached[c].getCatadioptric() == NULL) {
+            same = false;
+            SYNC_PRINT(("Cache not catadioptric\n"));
+        } else if (!(mRemapCached.cached[c].distortion == slowModel.distortion)) {
+            //same = false;
+            SYNC_PRINT(("Distortion differ\n"));
+        }
+        else if (!(*slowModel.getCatadioptric() == *mRemapCached.cached[c].getCatadioptric()))
+        {
+            //same = false;
+            SYNC_PRINT(("Catadioptric model parameters differ\n"));
+        }
+
+        if (mRemapCached.cached[c].getCatadioptric() != 0)
+        {
+            cout << "Cached" <<  *mRemapCached.cached[c].getCatadioptric() << std::endl;
+            cout << "New"    <<  *slowModel.getCatadioptric() << std::endl;
+        }
+
+        if (same)
+        {
+            SYNC_PRINT(("Cam %d cache is valid\n", c));
+            continue;
+        }
+
+        SYNC_PRINT(("Cam %d recalculating\n", c));
+
+
+        CatadioptricProjection slowProjection = *static_cast<CatadioptricProjection *>(slowModel.intrinsics.get());
+
+        EquidistantProjection target;
+        target.setPrincipalX(slowProjection.principalX());
+        target.setPrincipalY(slowProjection.principalY());
+        target.setDistortedSizeX(slowProjection.distortedSizeX());
+        target.setDistortedSizeY(slowProjection.distortedSizeY());
+        target.setSizeX(slowProjection.sizeX());
+        target.setSizeY(slowProjection.sizeY());
+
+        delete_safe(mRemapCached.displacement[c]);
+        mRemapCached.displacement[c] = new AbstractBuffer<Vector2dd>(slowProjection.sizeY(), slowProjection.sizeX());
+
+        /**
+         *
+         *    2D    ->          catadioptric           -> 3D
+         *    2D    <-  remap  <-  2D  <- equiditstant -> 3D
+         *
+         *
+         **/
+        int count = 0;
+        parallelable_for(0, (int)slowProjection.sizeY(), [&](const BlockedRange<int>& r)
+        {
+            for(int i = r.begin(); i < r.end(); i++)
+            {
+                for (int j = 0; j < slowProjection.sizeX(); j++)
+                {
+                    Vector2dd pixel(j, i); /* This is a remap pixel */
+
+                    Vector3dd dir = target.reverse(pixel);
+                    Vector2dd map = slowProjection.project(dir);
+
+                    /* We need to invent something */
+
+                    if (mRemapCached.displacement[c]->isValidCoord(i, j)) {
+                        mRemapCached.displacement[c]->element(i, j) = Vector2dd(map.x(), map.y());
+                    }
+                }
+                count++;
+                if ((count % 100) == 0)
+                {
+                    SYNC_PRINT(("...%lf%%", 100.0 * count / slowProjection.sizeY()));
+                }
+            }
+        });
+        SYNC_PRINT(("\n"));
+
+        mRemapCached.simplified[c] = target;
+        mRemapCached.cached[c].copyModelFrom(slowModel);
+    }
+}
+
 Affine3DQ getTransform (const EuclidianMoveParameters &input)
 {
     return    Affine3DQ::Shift(input.x(),input.y(), input.z())
@@ -73,6 +166,8 @@ void MergerThread::prepareMapping()
     if (mCarScene.isNull())
         return;
 
+    cacheIntrinsics();
+
     /* Loading masks */
     const char *maskFiles[] = {"front-mask.bmp", "right-mask.bmp", "back-mask.bmp", "left-mask.bmp"};
 
@@ -92,40 +187,14 @@ void MergerThread::prepareMapping()
     /** Undistortion would be load only once **/
     SYNC_PRINT(("MergerThread::prepareMapping(): caching undistortion\n"));
 
-    /*
-    if (mUndistort == NULL)
-    {
-        LensDistortionModelParameters disortion;
-        JSONGetter loader("lens.json");
-        if (!loader.hasError()) {
-            loader.visit(disortion, "intrinsic");
-        }
-        cout << disortion << endl;
-
-        RadialCorrection corr(disortion);
-        delete_safe(mUndistort);
-             int overshoot = mMergerParameters->distortionOvershoot();
-
-        G12Buffer *fstBuf = mFrames.getCurrentFrame(Frames::LEFT_FRAME);
-
-        mUndistort = TableInverseCache::CacheInverse(
-                      -overshoot, -overshoot,
-                      fstBuf->w + overshoot, fstBuf->h + overshoot,
-                      &corr,
-                      0.0, 0.0,
-                      (double)fstBuf->w, (double)fstBuf->h,
-                      0.1, false);
-    }
-    */
-
     /* We would fill mapper with caching data*/
     double groundZ = mMergerParameters->groundZ();
 
     double l = mMergerParameters->outPhySizeL();
     double w = mMergerParameters->outPhySizeW();
-    mFrame.p1 = Vector3dd( l/2, -w/2, groundZ);
-    mFrame.e1 = Vector3dd(  -l,    0,   0    );
-    mFrame.e2 = Vector3dd(   0,    w,   0    );
+    mFrame.p1 = Vector3dd( l/2,  w/2, groundZ);
+    mFrame.e2 = Vector3dd(  -w,    0,   0    );
+    mFrame.e1 = Vector3dd(   0,   -l,   0    );
 
     CameraModel models[4];
     for (int c = 0; c < 4; c++)
@@ -156,10 +225,16 @@ void MergerThread::prepareMapping()
                 for (int c = 0; c < 4; c++)
                 {
                     Vector3dd posCam = models[c].extrinsics.worldToCam(pos);
+#if 0
                     if (!models[c].intrinsics->isVisible(posCam))
                         continue;
-
                     Vector2dd prj = models[c].intrinsics->project(posCam);
+#else
+                    Vector2dd prj = mRemapCached.simplified[c].project(posCam);
+                    if (!mRemapCached.displacement[c]->isValidCoord(prj.y(), prj.x()))
+                        continue;
+                    prj = mRemapCached.displacement[c]->element(prj.y(), prj.x());
+#endif
                     mMapper->element(i, j).sourcePos[c] = prj;
 
                     if (mMasks[c]->isValidCoordBl(prj.y(), prj.x()))

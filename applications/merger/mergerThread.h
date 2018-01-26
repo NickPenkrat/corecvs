@@ -53,6 +53,15 @@ public:
 
 };
 
+struct IntrisicsRemapCache
+{
+    AbstractBuffer<Vector2dd> *displacement[4] = {NULL, NULL, NULL, NULL};
+    EquidistantProjection simplified[4];
+
+    CameraModel cached[4];
+
+};
+
 struct RequestEntry {
     RequestEntry() {
         for (int k = 0; k < 4; k++)
@@ -94,6 +103,7 @@ public:
 
     /* Cached data */
     bool recomputeMergerState = true;
+    IntrisicsRemapCache mRemapCached;
     MultiewMapping *mMapper = NULL;
     PlaneFrame mFrame;
 

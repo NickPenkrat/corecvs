@@ -486,8 +486,14 @@ public:
             std::string comment("rotation - is Camera to World and has priority over orientation");
             visitor.visit(comment, std::string()  , "comment");
         }
+    }
 
-
+    /* This checks for exact equality.We better create something like hash() instead */
+    bool operator ==(const CameraLocationData &other) const
+    {
+        if (position    != other.position   ) return false;
+        if (orientation != other.orientation) return false;
+        return true;
     }
 
     /* Pretty print */

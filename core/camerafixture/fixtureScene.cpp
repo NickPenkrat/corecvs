@@ -728,7 +728,7 @@ void FixtureScene::dumpInfo(ostream &out, bool brief)
         for (size_t j = 0; j < mOrphanCameras.size(); j++)
         {
             FixtureCamera *cam = mOrphanCameras[j];
-            out << "     " << "Camera <" << cam->nameId << "> "  << endl;
+            out << "     " << "Camera <" << cam->nameId << "> " << endl;
         }
     out << "Fixtures: " << mFixtures.size() << endl;
     if (!brief)

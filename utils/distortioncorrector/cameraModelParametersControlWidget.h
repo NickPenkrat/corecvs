@@ -61,9 +61,11 @@ signals:
     void saveRequest(QString filename);
 
 
-protected:
+public: /*For more flexibility*/
 
     Ui::CameraModelParametersControlWidget *ui;
+
+protected:
     CameraModel backup;
 
     /**/

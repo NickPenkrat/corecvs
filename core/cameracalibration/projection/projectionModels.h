@@ -98,6 +98,11 @@ public:
         return projection == ProjectionType::PINHOLE;
     }
 
+    bool isCatadioptric() const
+    {
+        return projection == ProjectionType::CATADIOPTRIC;
+    }
+
 };
 
 

@@ -118,6 +118,15 @@ public:
         return *this;
     }
 
+    /*
+    bool operator ==(const CameraModel &other)
+    {
+        if (!(distortion == other.distortion)) return false;
+        if (!(extrinsics == other.extrinsics)) return false;
+
+        return true;
+    }*/
+
 
 
     template <bool full=false>
@@ -341,6 +350,13 @@ public:
     {
         if (intrinsics->isPinhole()) {
             return static_cast<PinholeCameraIntrinsics *>(intrinsics.get());
+        }
+        return NULL;
+    }
+    CatadioptricProjection *getCatadioptric() const
+    {
+        if (intrinsics->isCatadioptric()) {
+            return static_cast<CatadioptricProjection *>(intrinsics.get());
         }
         return NULL;
     }
