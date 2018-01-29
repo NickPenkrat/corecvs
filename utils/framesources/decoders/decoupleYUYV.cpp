@@ -284,9 +284,7 @@ void DecoupleYUYV::decoupleAnaglythUnrolled(unsigned formatH, unsigned formatW, 
             ptr2 += 4;
         }
     }
-
 }
-
 
 void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, ImageCouplingType coupling, ImageCaptureInterface::FramePair &result)
 {

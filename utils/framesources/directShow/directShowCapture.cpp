@@ -194,9 +194,8 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
             continue;
         }
 
-        if(mAutoFormat)
+        if (mAutoFormat)
         {
-
             int format = selectCameraFormat(mFormats[i].height, mFormats[i].width);
             int bpp = format == DirectShowCameraDescriptor::UNCOMPRESSED_RGB ? PREFFERED_RGB_BPP : AUTUSELECT_FORMAT_FEATURE;
             init(devname, mFormats[i].height, mFormats[i].width, mFormats[i].fps, mIsRgb, bpp, format);
@@ -600,9 +599,7 @@ void DirectShowCaptureInterface::getAllCameras(vector<string> &cameras)
     DirectShowCapDll_devicesNumber(&num);
     for (int i = 0; i < num; i++)
     {
-        std::ostringstream s;
-        s << i;
-        cameras.push_back(s.str());
+        cameras.push_back(std::to_string(i));
     }
 }
 

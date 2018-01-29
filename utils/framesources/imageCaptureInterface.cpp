@@ -76,14 +76,14 @@ void ImageCaptureInterface::getAllCameras(vector<string> &cameras)
 #ifdef WITH_FRAMESOURCE_V4L2
     vector<string> v4lcams;
     V4L2CaptureInterface::getAllCameras(v4lcams);
-    for (string cam: v4lcams) {
+    for ((const string& cam: v4lcams) {
         cameras.push_back(string("v4l2:" + cam));
     }
 #endif
 #ifdef WITH_UEYE
     vector<string> ueyecams;
     UEyeCaptureInterface::getAllCameras(ueyecams);
-    for (string cam: ueyecams) {
+    for ((const string& cam: ueyecams) {
         cameras.push_back(string("ueye:" + cam));
     }
 #endif

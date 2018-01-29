@@ -1,4 +1,6 @@
-#pragma once
+#ifndef IMAGECAPTUREINTERFACE_H
+#define IMAGECAPTUREINTERFACE_H
+
 /**
  * \file ImageCaptureInterface.h
  * \brief Add Comment Here
@@ -138,12 +140,10 @@ public:
         void setRgbBufferRight(RGB24Buffer *buf)  {  buffers[RIGHT_FRAME ].rgbBuffer = buf;}
 
 
-        uint64_t     timeStampLeft()  { return buffers[LEFT_FRAME  ].timeStamp;}
-        uint64_t     timeStampRight() { return buffers[RIGHT_FRAME ].timeStamp;}
+        uint64_t     timeStampLeft()  const     { return buffers[LEFT_FRAME  ].timeStamp; }
+        uint64_t     timeStampRight() const     { return buffers[RIGHT_FRAME ].timeStamp; }
         void setTimeStampLeft (uint64_t stamp)  { buffers[LEFT_FRAME ].timeStamp = stamp; }
         void setTimeStampRight(uint64_t stamp)  { buffers[RIGHT_FRAME].timeStamp = stamp; }
-
-
 
 
         FramePair(G12Buffer   *_bufferLeft     = NULL
@@ -151,9 +151,9 @@ public:
                 , RGB24Buffer *_rgbBufferLeft  = NULL
                 , RGB24Buffer *_rgbBufferRight = NULL)            
         {
+            CORE_CLEAR_STRUCT(buffers);
             buffers[LEFT_FRAME ].g12Buffer = _bufferLeft ;
             buffers[RIGHT_FRAME].g12Buffer = _bufferRight;
-
             buffers[LEFT_FRAME ].rgbBuffer = _rgbBufferLeft ;
             buffers[RIGHT_FRAME].rgbBuffer = _rgbBufferRight;
         }
@@ -163,7 +163,7 @@ public:
             freeBuffers();
             for (int i = 0; i < MAX_INPUTS_NUMBER; i++)
             {
-                buffers[i].g12Buffer  = new G12Buffer(height, width, shouldInit);
+                buffers[i].g12Buffer = new G12Buffer(height, width, shouldInit);
             }
             return hasBoth();
         }
@@ -190,7 +190,6 @@ public:
             result.setTimeStampRight(buffers[RIGHT_FRAME].timeStamp);
             return result;
         }
-
 
         bool        hasBoth() const         { return buffers[LEFT_FRAME].g12Buffer != NULL && buffers[RIGHT_FRAME].g12Buffer != NULL; }
 
@@ -263,7 +262,7 @@ public:
     /**
      * Return the interface device string
      **/
-    virtual std::string      getInterfaceName();
+    virtual std::string  getInterfaceName();
     /**
      * Return some id of one of the stereo-/multi- camera sub-device
      **/
@@ -303,3 +302,5 @@ protected:
     virtual void notifyAboutNewFrame(frame_data_t frameData);
 
 };
+
+#endif // IMAGECAPTUREINTERFACE_H

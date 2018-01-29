@@ -603,7 +603,7 @@ RGB24Buffer *PPMLoaderRGB24::load(string name)
     if (buffer->w == 3840 && buffer->h == 2748   // PGM with these params is the Bayer image
         && !meta["bits"].empty() && meta["bits"][0] == 12)
     {
-        L_INFO_P("name:%s detected Bayer %dx%dx12", name.c_str(), buffer->w, buffer->h);
+        L_INFO_P("name:<%s> detected Bayer %dx%dx12", name.c_str(), buffer->w, buffer->h);
 
         auto params = Debayer::Parameters::BestDefaultsByExt(prefix1);
         params.setNumBitsOut(meta["bits"][0]);
