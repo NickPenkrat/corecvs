@@ -7,19 +7,19 @@
 
 using namespace cvs;
 
-static std::string changeExtension(const std::string &imgName, const std::string &desiredExt)
-{
-	std::string res(imgName);
-
-	int dotPos = (int)res.size() - 1;
-	for (; dotPos >= 0 && res[dotPos] != '.'; --dotPos);
-	CORE_ASSERT_TRUE_S(dotPos >= 0);
-
-	res.resize(dotPos + 1 + desiredExt.size());
-
-	std::copy(desiredExt.begin(), desiredExt.end(), res.begin() + dotPos + 1);
-	return res;
-}
+//static std::string changeExtension(const std::string &imgName, const std::string &desiredExt)
+//{
+//	std::string res(imgName);
+//
+//	int dotPos = (int)res.size() - 1;
+//	for (; dotPos >= 0 && res[dotPos] != '.'; --dotPos);
+//	CORE_ASSERT_TRUE_S(dotPos >= 0);
+//
+//	res.resize(dotPos + 1 + desiredExt.size());
+//
+//	std::copy(desiredExt.begin(), desiredExt.end(), res.begin() + dotPos + 1);
+//	return res;
+//}
 
 static std::string getFilename(const std::string &imgName)
 {

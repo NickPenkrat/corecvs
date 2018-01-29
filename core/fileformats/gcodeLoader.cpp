@@ -410,19 +410,20 @@ void GCodeInterpreter::executeProgram(const GCodeProgram &program)
                 state->extruderRealtive = true;
                 break;
             case 104:
-                    if (c.hasParameter('s')) {
-                        state->extruderTemperature = c.getParameter('s');
-                        if (traceProcess) {
-                            cout << "Setting extruder temperature " << state->extruderTemperature << endl;
-                        }
+                if (c.hasParameter('s')) {
+                    state->extruderTemperature = c.getParameter('s');
+                    if (traceProcess) {
+                        cout << "Setting extruder temperature " << state->extruderTemperature << endl;
                     }
+                }
                 break;
             case 140:
-                    if (c.hasParameter('s'))
-                        state->bedTemperature = c.getParameter('s');
-                        if (traceProcess) {
-                            cout << "Setting bed temperature " << state->extruderTemperature << endl;
-                        }
+                if (c.hasParameter('s')) {
+                    state->bedTemperature = c.getParameter('s');
+                    if (traceProcess) {
+                        cout << "Setting bed temperature " << state->bedTemperature << endl;
+                    }
+                }
                 break;
             default:
                 break;
