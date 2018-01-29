@@ -24,15 +24,15 @@ public:
     bool isSaver () { return true ;}
     bool isLoader() { return false;}
 
-
 public:
-
-
 
     /**
      *  Create a setter object that will store data to a file with a specified name.
      **/
     JSONSetter(QString const & filename);
+
+    explicit JSONSetter(std::string const & filename) : JSONSetter(QString(filename.c_str())) {}
+    explicit JSONSetter(const char *filename) : JSONSetter(QString(filename)) {}
 
     /**
      *  Create a setter object that will store data to a given XML

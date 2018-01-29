@@ -14,15 +14,16 @@ SUBDIRS +=       \
 #   grab         \
     grab_N_captures \
     serialize1   \
-    fileloader \
+#    fileloader \  # it can what rawconverter is able to do as well!
 #   adoptcolor   \
 #    avigrab     \
 #    decodebayer \
 #    genvectorui  \
 #    aLowCodec \
 #    new_board_detector \
+#
 #    cr2reader           \
-    debayer          \
+#    debayer          \
     softrender       \
     raytracerender   \
     stereo_generator \

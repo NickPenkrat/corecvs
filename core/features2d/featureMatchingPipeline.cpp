@@ -8,6 +8,7 @@
 #include "core/features2d/vsfmIo.h"
 #include "core/buffers/bufferFactory.h"
 #include "core/utils/utils.h"
+#include "core/utils/log.h"
 
 #include <fstream>
 #include <iomanip>
@@ -27,15 +28,15 @@ FeatureMatchingPipeline::FeatureMatchingPipeline(const std::vector<std::string> 
 	bool useCache = remapCaches.size() == filenames.size();
     for (size_t i = 0; i < filenames.size(); ++i)
     {
-		images.push_back(Image(i, filenames[i], useCache ? remapCaches[i] : 0));
+		images.emplace_back(Image(i, filenames[i], useCache ? remapCaches[i] : 0));
     }
 }
 
 FeatureMatchingPipeline::~FeatureMatchingPipeline()
 {
-    for (std::vector<FeatureMatchingPipelineStage*>::iterator ps = pipeline.begin(); ps != pipeline.end(); ++ps)
+    for (FeatureMatchingPipelineStage* ps : pipeline)
     {
-        delete *ps;
+        delete ps;
     }
     pipeline.clear();
 }
@@ -528,20 +529,20 @@ public:
 			if (matcher)
 				matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
-            for (std::vector<std::vector<RawMatch> >::iterator v = ml.begin(); v != ml.end(); ++v)
+            for (auto const& v : ml)
             {
                 std::array<RawMatch, 2> mk;
-                for (size_t i = 0; i < v->size(); ++i)
+                for (size_t i = 0; i < v.size(); ++i)
                 {
-                    mk[i] = (*v)[i];
+                    mk[i] = v[i];
                 }
-                rawMatches.matches[s].push_back(mk);
+                rawMatches.matches[s].emplace_back(mk);
             }
 
             // It's time to replace indicies
-            for (std::deque<std::array<RawMatch, 2> >::iterator v = rawMatches.matches[s].begin(); v != rawMatches.matches[s].end(); ++v)
+            for (auto& v : rawMatches.matches[s])
             {
-                for (std::array<RawMatch, 2>::iterator m = v->begin(); m != v->end() && m->isValid(); ++m)
+                for (auto m = v.begin(); m != v.end() && m->isValid(); ++m)
                 {
                     m->featureQ = query.queryFeatures[m->featureQ];
                     m->featureT = query.trainFeatures[m->featureT];
@@ -617,13 +618,13 @@ class ParallelMatcherRefiner
     MatcherType matcherType;
     size_t responsesPerPoint;
     double scaleThreshold;
-    bool thresholdDistance;
+    bool_t thresholdDistance;
     std::vector<int> *first_ptr, *next_ptr, *idx_ptr;
 
 public:
     void operator() (const corecvs::BlockedRange<size_t>& r) const
     {
-        DescriptorMatcher* matcher = DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType);
+        std::unique_ptr<DescriptorMatcher> matcher(DescriptorMatcherProvider::getInstance().getMatcher(descriptorType, matcherType));
         size_t id = r.begin();
         MatchPlan &matchPlan = pipeline->matchPlan;
         RawMatches &rawMatches = pipeline->rawMatches;
@@ -668,7 +669,6 @@ public:
                 MatchPlanEntry &query = matchPlan.plan[s];
 
                 CORE_ASSERT_TRUE_S(Is < N && Js < N);
-
 #if 0
                 corecvs::RuntimeTypeBuffer qb(images[Is].descriptors.mat);
                 corecvs::RuntimeTypeBuffer tb(images[Js].descriptors.mat);
@@ -700,24 +700,22 @@ public:
 				if (matcher)
 					matcher->knnMatch(qb, tb, ml, responsesPerPoint);
 
-                SYNC_PRINT(("Matcher implementation returned %" PRISIZE_T " matches\n", ml.size()));
+                L_DDEBUG_P("Matcher implementation returned %u matches", (unsigned)ml.size());
 
-                for (std::vector<std::vector<RawMatch> >::iterator it = ml.begin(); it != ml.end(); ++it)
+                for (auto const &v : ml)
                 {
-                    std::vector<RawMatch>& v = *it;
                     std::array<RawMatch, 2> mk;
                     for (size_t i = 0; i < v.size() && i < 2 && v[i].isValid(); ++i)
                     {
                         mk[i] = v[i];
                     }
-                    rawMatches.matches[s].push_back(mk);
+                    rawMatches.matches[s].emplace_back(mk);
                 }
 
                 // It's time to replace indicies
-                for (std::deque<std::array<RawMatch, 2>>::iterator it = rawMatches.matches[s].begin(); it != rawMatches.matches[s].end(); ++it)
+                for (auto &v : rawMatches.matches[s])
                 {
-                    std::array<RawMatch, 2> &v = *it;
-                    for (std::array<RawMatch, 2>::iterator m = v.begin(); m != v.end() && m->isValid(); ++m)
+                    for (auto m = v.begin(); m != v.end() && m->isValid(); ++m)
                     {
                         m->featureQ = query.queryFeatures[m->featureQ];
                         m->featureT = query.trainFeatures[m->featureT];
@@ -766,10 +764,8 @@ public:
             {
                 for (size_t j = 0; j < ratioInliers[i].size(); ++j)
                 {
-                    double ratio = thresholdDistance ?
-                          accumulator[i][j][0].distance / 256.0
-                        : accumulator[i][j][0].distance / accumulator[i][j][1].distance;
-                    if ((ratio) < scaleThreshold)
+                    double ratio = accumulator[i][j][0].distance / (thresholdDistance ? 256.0 : accumulator[i][j][1].distance);
+                    if (ratio < scaleThreshold)
                     {
                         ratioInliers[i][j] = accumulator[i][j][0];
                         ratioInliers[i][j].best2ndBest = ratio;
@@ -788,8 +784,8 @@ public:
                     final_matches.push_back(Match((uint16_t)I, (uint16_t)J, rm.featureQ, rm.featureT, rm.distance, rm.best2ndBest));
             }
 
-			size_t idx = J*(J - 1) / 2 + I;
-			refinedMatches.matchSets[idx] = (RefinedMatchSet(I, J, final_matches));
+			size_t idx = J * (J - 1) / 2 + I;
+			refinedMatches.matchSets[idx] = RefinedMatchSet(I, J, final_matches);
 			ss1  << "\t" << refinedMatches.matchSets[idx].matches.size() << " matches, ";
             cnt++;
             if (cnt % 16 == 0)
@@ -805,7 +801,6 @@ public:
         {
             pipeline->toc(ss1.str(), ss2.str(), S, cnt, id, false); cnt = 0;
         }
-        delete matcher;
     }
 
     ParallelMatcherRefiner(FeatureMatchingPipeline* pipeline, DescriptorType descriptorType, MatcherType matcherType, size_t responsesPerPoint
@@ -1454,17 +1449,17 @@ void VsfmWriterStage::saveResults(FeatureMatchingPipeline *pipeline, const std::
 
         ofs << set.matches.size() << std::endl;
 
-        for (std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m)
+        for (auto& m : set.matches)
         {
-            CORE_ASSERT_TRUE_S(m->imgA == set.imgA);
-            ofs << reordering_rev[m->imgA][m->featureA] << " ";
+            CORE_ASSERT_TRUE_S(m.imgA == set.imgA);
+            ofs << reordering_rev[m.imgA][m.featureA] << " ";
         }
         ofs << std::endl;
 
-        for (std::deque<Match>::iterator m = set.matches.begin(); m != set.matches.end(); ++m)
+        for (auto& m : set.matches)
         {
-            CORE_ASSERT_TRUE_S(m->imgB == set.imgB);
-            ofs << reordering_rev[m->imgB][m->featureB] << " ";
+            CORE_ASSERT_TRUE_S(m.imgB == set.imgB);
+            ofs << reordering_rev[m.imgB][m.featureB] << " ";
         }
         ofs << std::endl;
     }
@@ -1479,16 +1474,13 @@ void FeatureMatchingPipeline::tic(size_t thread_id, bool level)
     {
         if (tics.size() == 0)
         {
-            for (size_t i = 0; i < 108; ++i)
-            {
-                std::cerr << "-";
-            }
-            std::cerr << std::endl;
+            std::string s(108, '-'); s += "\n"; std::cerr << s;
         }
         tic_data data;
         data.thread_tics[thread_id] = clock();
         tics.push(data);
-    } else {
+    }
+    else {
         tics.top().thread_tics[thread_id] = clock();
     }
 }
@@ -1509,11 +1501,10 @@ void FeatureMatchingPipeline::toc(const std::string &name, const std::string &ev
 
         if (tics.size() == 0)
         {
-            for (size_t i = 0; i < 108;++i)
-                std::cerr << "-";
-            std::cerr << std::endl;
+            std::string s(108, '-'); s += "\n"; std::cerr << s;
         }
-    } else {
+    }
+    else {
         tic_data& tic = tics.top();
         size_t tict = tic.thread_tics[thread_id];
         size_t ns = (toc - tict)  / (CLOCKS_PER_SEC / 1000);

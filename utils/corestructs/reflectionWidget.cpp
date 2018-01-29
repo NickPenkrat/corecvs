@@ -595,12 +595,9 @@ void ReflectionWidget::saveCalled()
     {
         DynamicObject obj(reflection);
         getParameters(obj.rawObject);
-        std::ofstream file;
-        file.open(filename.toStdString(), std::ofstream::out);
-        JSONPrinter setter(file);
+        JSONPrinter setter(filename.toStdString());
         setter.visit(obj, "params");
     }
-
 }
 
 void ReflectionWidget::resetCalled()
@@ -609,4 +606,3 @@ void ReflectionWidget::resetCalled()
     DynamicObject obj(reflection);
     setParameters(obj.rawObject);
 }
-
