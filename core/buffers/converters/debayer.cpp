@@ -25,11 +25,14 @@ Debayer::Parameters& Debayer::Parameters::BestDefaultsByExt(const string& ext)
         bestDefsMap["pgm"] = pgm;
     }
 
-    if (!bestDefsMap.count(ext))
+    string s(ext);
+    if (s[0] == '.') s = s.substr(1);       // remove dot if present
+
+    if (!bestDefsMap.count(s))
     {
-        bestDefsMap[ext] = Debayer::Parameters();
+        bestDefsMap[s] = Debayer::Parameters();
     }
-    return bestDefsMap[ext];
+    return bestDefsMap[s];
 }
 
 corecvs::RGB48Buffer *Debayer::DemosaicRgb48(corecvs::G12Buffer* bayer, const Debayer::Parameters &params, MetaData &meta)
