@@ -112,6 +112,10 @@ public:
 #endif
     }
 
+    /**
+     * Step to next line in iterator
+     * if hasValue() returned false result of call to this function is undefined
+     **/
     void step()
     {
         currentY++;
@@ -123,6 +127,25 @@ public:
         {
             a1[i] += da1[i];
             a2[i] += da2[i];
+        }
+    }
+
+    /**
+     * Step to line Y in iterator
+     * if hasValue() returned false or Y <= currentY result of call to this function is undefined
+     **/
+    void stepTo(int Y)
+    {
+        int stepY = (Y - currentY);
+        currentY = Y;
+        x1 += dx1 * stepY;
+        x2 += dx2 * stepY;
+
+        int attributes = (int)a11.size();
+        for (int i = 0; i < attributes; i++)
+        {
+            a1[i] += da1[i] * stepY;
+            a2[i] += da2[i] * stepY;
         }
     }
 
@@ -318,21 +341,37 @@ public:
         part.initAttributes();
 
     }
-
+private:
+    void initLowerPart()
+    {
+        TrapezoidSpanIterator newPart = TrapezoidSpanIterator(sortedt.p2().y(), sortedt.p3().y(), part.x21, part.x22, sortedt.p3().x(), sortedt.p3().x());
+        newPart.a11 = part.a21;
+        newPart.a12 = part.a22;
+        newPart.a21 = sortedt.p3().attributes;
+        newPart.a22 = newPart.a21;
+        part = newPart;
+        part.initAttributes();
+    }
+public:
     void step()
     {
         if (!part.hasValue())
         {
-            TrapezoidSpanIterator newPart = TrapezoidSpanIterator(sortedt.p2().y(), sortedt.p3().y(), part.x21, part.x22, sortedt.p3().x(), sortedt.p3().x());
-            newPart.a11 = part.a21;
-            newPart.a12 = part.a22;
-            newPart.a21 = sortedt.p3().attributes;
-            newPart.a22 = newPart.a21;
-            part = newPart;
-            part.initAttributes();
+            initLowerPart();
             return;
         }
         part.step();
+    }
+
+    void stepTo(int Y)
+    {
+        if (Y >= sortedt.p2().y())
+        {
+            initLowerPart();
+            part.stepTo(Y);
+            return;
+        }
+        part.stepTo(Y);
     }
 
     bool hasValue() {

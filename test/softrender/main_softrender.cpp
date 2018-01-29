@@ -5,6 +5,12 @@
 #include <QtCore>
 #include "qtFileLoader.h"
 
+#ifdef WITH_LIBJPEG
+#include "libjpegFileReader.h"
+#endif
+#ifdef WITH_LIBPNG
+#include "libpngFileReader.h"
+#endif
 
 #include "core/cameracalibration/cameraModel.h"
 #include "core/geometry/renderer/simpleRenderer.h"
@@ -99,7 +105,19 @@ void prepareMesh(Mesh3DDecorated &mesh, RGB24Buffer * /*texture*/)
 int main(int argc, char **argv)
 {
     QApplication a(argc, argv);
+
+#ifdef WITH_LIBJPEG
+    LibjpegFileReader::registerMyself();
+    SYNC_PRINT(("Libjpeg support on\n"));
+#endif
+#ifdef WITH_LIBPNG
+    LibpngFileReader::registerMyself();
+    SYNC_PRINT(("Libpng support on\n"));
+#endif
     QTRGB24Loader::registerMyself();
+
+    BufferFactory::getInstance()->printCaps();
+
 
     if (argc != 2 && argc != 3 && argc != 4)
     {

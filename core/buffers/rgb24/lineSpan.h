@@ -44,6 +44,10 @@ public:
         x1++;
     }
 
+    void stepTo(int X) {
+        x1 = X;
+    }
+
     bool hasValue() {
         return (x1 <= x2);
     }
@@ -129,6 +133,14 @@ public:
             catt[i] += datt[i];
         }
         HLineSpanInt::step();
+    }
+
+    void stepTo(int X) {
+        int stepX = X - x1;
+        for (size_t i = 0; i < catt.size(); i++) {
+            catt[i] += datt[i] * stepX;
+        }
+        HLineSpanInt::stepTo(X);
     }
 
     bool hasValue() {

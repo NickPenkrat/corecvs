@@ -189,6 +189,14 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
         }
 
         AttributedTriangleSpanIterator it(triang);
+        // Triangle is above viewport
+        if (it.sortedt.p3().y() < 0)
+            continue;
+
+        // Skip lines untill the first that fits in the buffer
+        if (it.sortedt.p1().y() < 0 && it.hasValue())
+            it.stepTo(0);
+
         while (it.hasValue())
         {
             AttributedHLineSpan span = it.getAttrSpan();
@@ -202,6 +210,9 @@ void ClassicRenderer::render(Mesh3DDecorated *mesh, RGB24Buffer *buffer)
 
 void ClassicRenderer::fragmentShader(AttributedHLineSpan &span)
 {
+    if (span.hasValue() && span.x() < 0)
+        span.stepTo(0);
+
     while (span.hasValue())
     {
         if (cBuffer->isValidCoord(span.pos()) )
@@ -225,12 +236,19 @@ void ClassicRenderer::fragmentShader(AttributedHLineSpan &span)
                 RGBColor c = color;
 
                 /* Texture block*/
-                RGB24Buffer *texture = textures[texId];
-                tex = tex * Vector2dd(texture->w, texture->h);
-                if (texture->isValidCoordBl(tex)) {
-                    c = texture->elementBl(tex);
+                if (texId < textures.size() && textures[texId] != NULL)
+                {
+
+                    RGB24Buffer *texture = textures[texId];
+
+                    tex = tex * Vector2dd(texture->w, texture->h);
+                    if (texture->isValidCoordBl(tex)) {
+                        c = texture->elementBl(tex);
+                    } else {
+                        SYNC_PRINT(("Tex miss %lf %lf\n", tex.x(), tex.y()));
+                    }
                 } else {
-                    SYNC_PRINT(("Tex miss %lf %lf\n", tex.x(), tex.y()));
+                    SYNC_PRINT(("Tex is NULL or non-existent %d\n", texId));
                 }
 
 
