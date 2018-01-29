@@ -1,13 +1,7 @@
 <poco version="5.0">
+  <include name="basemock.xml"/>
 
   <enum name="ProjectionType">
-
-    <!--    PINHOLE = 0,
-        EQUIDISTANT,
-        CATADIOPTRIC,
-        STEREOGRAPHIC,
-        EQUISOLID, -->
-
     <item name="PINHOLE"       id="0" />
     <item name="EQUIDISTANT"   id="1" />
     <item name="CATADIOPTRIC"  id="2" />
@@ -53,19 +47,25 @@
 
    -->
   <class name="Pinhole Camera Intrinsics Base Parameters" description="Pinhole Camera Intrinsics Base Parameters">
-    <field type="double"    name="focalX"         defaultValue="820.427" min="0"      max="99999.0" step="1"/>
-    <field type="double"    name="focalY"         defaultValue="820.427" min="0"      max="99999.0" step="1"/>
+    <field type="double"    name="fx" description="focalX"         defaultValue="820.427" min="0"      max="99999.0" step="1"/>
+    <field type="double"    name="fy" description="focalY"         defaultValue="820.427" min="0"      max="99999.0" step="1"/>
 
-    <field type="double"    name="principalX"  suffix="px"   defaultValue="1296" max="99999.0" comment="The center of projection \f$x_c\f$" />
-    <field type="double"    name="principalY"  suffix="px"   defaultValue="972"  max="99999.0" comment="The center of projection \f$y_c\f$"/>
+    <field type="double"    name="cx" description="principalX"  suffix="px"   defaultValue="1296" max="99999.0" comment="The center of projection \f$x_c\f$" />
+    <field type="double"    name="cy" description="principalY"  suffix="px"   defaultValue="972"  max="99999.0" comment="The center of projection \f$y_c\f$"/>
 
     <field type="double"    name="skew"        decimals="5"  defaultValue="0.0" min="-99999.0"  max="99999.0" step="0.001"/>
 
+    <field type="Vector 2d Parameters"    name="size"           comment="Model image resolution" />
+    <field type="Vector 2d Parameters"    name="distortedSize"  comment="Source image resolution" />
+
+
+    <!--
     <field type="double"    name="sizeX"   suffix="px"   defaultValue="2592" max="99999.0" comment="Model image resolution X" />
     <field type="double"    name="sizeY"   suffix="px"   defaultValue="1944" max="99999.0" comment="Model image resolution Y"/>
 
     <field type="double"    name="distortedSizeX" defaultValue="2592" max="99999.0" comment="Source image resolution X" />
     <field type="double"    name="distortedSizeY" defaultValue="1944" max="99999.0" comment="Source image resolution Y"/>
+    -->
   </class>
 
 

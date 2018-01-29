@@ -71,7 +71,7 @@ Vector2dd FlowBuffer::getMeanDifference()
         {
             if (!this->isElementKnown(i,j))
                 continue;
-            mean += Vector2dd(this->element(i,j));
+            mean += Vector2dd(this->element(i,j).x(), this->element(i,j).y());
             num++;
         }
     return (num != 0) ? mean / double(num) : mean;

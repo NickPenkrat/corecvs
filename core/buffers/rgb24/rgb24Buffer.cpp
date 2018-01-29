@@ -208,7 +208,7 @@ void RGB24Buffer::drawFlowBuffer(FlowBuffer *src, int32_t y, int32_t x)
             FlowElement vec = src->element(i,j);
 
 #ifdef ASSERTS
-            Vector2d32 res(vec);
+            Vector2d32 res(vec.x(), vec.y());
             res += Vector2d32(j, i);
             if (!this->isValidCoord(res))
             {

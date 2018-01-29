@@ -140,13 +140,13 @@ Matrix44 PinholeCameraIntrinsics::getFrustumMatrix(double zNear, double zFar) co
     double zDepth  = zNear - zFar;
 
     Matrix44 KF =  Matrix44 (
-        focalX(),   skew()  ,          0.0            ,    /*principal.x()*/ 0,
-           0.0   ,-focalY() ,          0.0            ,    /*principal.y()*/ 0,
+          fx(),   skew()  ,          0.0            ,    /*principal.x()*/ 0,
+           0.0   ,  -fy() ,          0.0            ,    /*principal.y()*/ 0,
            0.0   ,    0.0   , -(zFar + zNear) / zDepth, 2 * zFar * zNear / zDepth,
            0.0   ,    0.0   ,          1.0            ,        0.0
     );
 
-    Matrix44 D = /*Matrix44::Shift(0.5, 0.5, 0.0) **/ Matrix44::Diagonal(2.0 / sizeX(), 2.0 / sizeY(), 1.0, 1.0);
+    Matrix44 D = /*Matrix44::Shift(0.5, 0.5, 0.0) **/ Matrix44::Diagonal(2.0 / size().x(), 2.0 / size().y(), 1.0, 1.0);
 
     cout << "K Matrix:" << endl;
     cout <<  KF;
@@ -160,6 +160,92 @@ Matrix44 PinholeCameraIntrinsics::getFrustumMatrix(double zNear, double zFar) co
     cout <<  toReturn;
 
     return  toReturn;
+}
+
+PinholeCameraIntrinsics::PinholeCameraIntrinsics(const Vector2dd &resolution, double hfov) :
+    CameraProjection(ProjectionType::PINHOLE)
+{
+    mCx = resolution.x() / 2.0;
+    mCy = resolution.y() / 2.0;
+
+    mSkew = 0.0;
+
+    mSize = resolution;
+
+    double ratio = tan(hfov / 2.0);
+    double f = (size().x() / 2.0) / ratio;
+
+    mFx = f;
+    mFy = f;
+}
+
+
+/**
+ *  We will denote it by matrix \f$K\f$.
+ *
+ *  \f[K =  \pmatrix{
+ *       f_x  &   s  & I_x & 0 \cr
+ *        0   &  f_y & I_y & 0 \cr
+ *        0   &   0  & 1   & 0 \cr
+ *        0   &   0  & 0   & 1  }
+ * \f]
+ *
+ *
+ * This matrix transform the 3D points form camera coordinate system to
+ * image coordinate system
+ **/
+Matrix44 PinholeCameraIntrinsics::getKMatrix() const
+{
+    return Matrix44 (getKMatrix33());
+}
+
+/**
+ *  Returns inverse of K matrix.
+ *  For K matrix read CameraIntrinsics::getKMatrix()
+ **/
+Matrix44 PinholeCameraIntrinsics::getInvKMatrix() const
+{
+    return Matrix44( getInvKMatrix33());
+}
+
+Matrix33 PinholeCameraIntrinsics::getKMatrix33() const
+{
+    return Matrix33 (
+           fx() ,  skew()   ,     cx(),
+           0.0   ,    fy()  ,     cy(),
+           0.0   ,    0.0   ,     1.0
+    );
+}
+
+/**
+ *
+ * \f[ K^{-1} = \pmatrix{
+ *      \frac{1}{f_x} & {- s} \over {f_x f_y} & {{{c_y s} \over {f_y}} - {c_x}} \over {f_x} \cr
+ *            0       &   {1} \over {f_y}      &          {- c_y} \over {f_y}             \cr
+ *            0       &         0              &                   1                     }
+ * \f]
+ *
+ **/
+
+Matrix33 PinholeCameraIntrinsics::getInvKMatrix33() const
+{
+    Vector2dd invF = Vector2dd(1.0, 1.0) / focal();
+
+    return Matrix33 (
+       invF.x() , - skew() * invF.x() * invF.y() ,   ( cy() * skew() * invF.y() - cx()) * invF.x(),
+          0.0   ,           invF.y()            ,                               - cy()  * invF.y(),
+          0.0   ,             0.0               ,                      1.0
+    );
+}
+
+double PinholeCameraIntrinsics::getVFov() const
+{
+    return atan((size().y() / 2.0) / fy()) * 2.0;
+}
+
+double PinholeCameraIntrinsics::getHFov() const
+{
+    return atan((size().x() / 2.0) / fx()) * 2.0;
 }
 
 

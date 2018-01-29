@@ -1,0 +1,13 @@
+<poco version="5.0">
+  <class name="Vector 3d Parameters">
+    <field type="double" name="X"  defaultValue="0" decimals="6" min="-50000" max="50000"/>
+    <field type="double" name="Y"  defaultValue="0" decimals="6" min="-50000" max="50000"/>
+    <field type="double" name="Z"  defaultValue="0" decimals="6" min="-50000" max="50000"/>
+  </class>
+
+
+  <class name="Vector 2d Parameters">
+    <field type="double" name="X"  defaultValue="0" decimals="6" min="-50000" max="50000"/>
+    <field type="double" name="Y"  defaultValue="0" decimals="6" min="-50000" max="50000"/>
+  </class>
+</poco>

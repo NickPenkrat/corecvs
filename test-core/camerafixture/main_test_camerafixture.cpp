@@ -142,11 +142,11 @@ FixtureScene *createTestScene()
         model.extrinsics = CameraLocationData(position);
 
         PinholeCameraIntrinsics *pinhole = new PinholeCameraIntrinsics();
-        pinhole->setPrincipalX(100);
-        pinhole->setPrincipalY(100);
+        pinhole->setCx(100);
+        pinhole->setCy(100);
 
-        pinhole->setFocalX(100);
-        pinhole->setFocalY(100);
+        pinhole->setFx(100);
+        pinhole->setFy(100);
 
         pinhole->setSize(Vector2dd(200, 200));
 

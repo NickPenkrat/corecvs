@@ -44,10 +44,10 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
 
     DoubleField* field0 = new DoubleField
         (
-          PinholeCameraIntrinsicsBaseParameters::FOCALX_ID,
-          offsetof(PinholeCameraIntrinsicsBaseParameters, mFocalX),
+          PinholeCameraIntrinsicsBaseParameters::FX_ID,
+          offsetof(PinholeCameraIntrinsicsBaseParameters, mFx),
           820.427,
-          "focalX",
+          "fx",
           "focalX",
           "focalX",
           true,
@@ -61,10 +61,10 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
     /*  */ 
     DoubleField* field1 = new DoubleField
         (
-          PinholeCameraIntrinsicsBaseParameters::FOCALY_ID,
-          offsetof(PinholeCameraIntrinsicsBaseParameters, mFocalY),
+          PinholeCameraIntrinsicsBaseParameters::FY_ID,
+          offsetof(PinholeCameraIntrinsicsBaseParameters, mFy),
           820.427,
-          "focalY",
+          "fy",
           "focalY",
           "focalY",
           true,
@@ -78,10 +78,10 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
     /*  */ 
     DoubleField* field2 = new DoubleField
         (
-          PinholeCameraIntrinsicsBaseParameters::PRINCIPALX_ID,
-          offsetof(PinholeCameraIntrinsicsBaseParameters, mPrincipalX),
+          PinholeCameraIntrinsicsBaseParameters::CX_ID,
+          offsetof(PinholeCameraIntrinsicsBaseParameters, mCx),
           1296,
-          "principalX",
+          "cx",
           "principalX",
           "The center of projection \f$x_c\f$",
           true,
@@ -96,10 +96,10 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
     /*  */ 
     DoubleField* field3 = new DoubleField
         (
-          PinholeCameraIntrinsicsBaseParameters::PRINCIPALY_ID,
-          offsetof(PinholeCameraIntrinsicsBaseParameters, mPrincipalY),
+          PinholeCameraIntrinsicsBaseParameters::CY_ID,
+          offsetof(PinholeCameraIntrinsicsBaseParameters, mCy),
           972,
-          "principalY",
+          "cy",
           "principalY",
           "The center of projection \f$y_c\f$",
           true,
@@ -129,75 +129,49 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
     field4->precision=5;
     fields().push_back(field4);
     /*  */ 
-    DoubleField* field5 = new DoubleField
+    CompositeField* field5 = new CompositeField
         (
-          PinholeCameraIntrinsicsBaseParameters::SIZEX_ID,
-          offsetof(PinholeCameraIntrinsicsBaseParameters, mSizeX),
-          2592,
-          "sizeX",
-          "sizeX",
-          "Model image resolution X",
-          true,
-         0,
-         99999,
-         1
+          PinholeCameraIntrinsicsBaseParameters::SIZE_ID,
+          offsetof(PinholeCameraIntrinsicsBaseParameters, mSize),
+          "size",
+          "Vector2dParameters",
+          "size",
+          "Model image resolution",
+           NULL
         );
-    field5->widgetHint=BaseField::SPIN_BOX;
-    field5->suffixHint="px";
-    field5->precision=2;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("Vector 2d Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field5->reflection = it->second;
+        } else {
+             printf("Reflection PinholeCameraIntrinsicsBaseParameters to the subclass Vector 2d Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field5);
     /*  */ 
-    DoubleField* field6 = new DoubleField
+    CompositeField* field6 = new CompositeField
         (
-          PinholeCameraIntrinsicsBaseParameters::SIZEY_ID,
-          offsetof(PinholeCameraIntrinsicsBaseParameters, mSizeY),
-          1944,
-          "sizeY",
-          "sizeY",
-          "Model image resolution Y",
-          true,
-         0,
-         99999,
-         1
+          PinholeCameraIntrinsicsBaseParameters::DISTORTEDSIZE_ID,
+          offsetof(PinholeCameraIntrinsicsBaseParameters, mDistortedSize),
+          "distortedSize",
+          "Vector2dParameters",
+          "distortedSize",
+          "Source image resolution",
+           NULL
         );
-    field6->widgetHint=BaseField::SPIN_BOX;
-    field6->suffixHint="px";
-    field6->precision=2;
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("Vector 2d Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             field6->reflection = it->second;
+        } else {
+             printf("Reflection PinholeCameraIntrinsicsBaseParameters to the subclass Vector 2d Parameters can't be linked\n");
+        }
+    }
     fields().push_back(field6);
-    /*  */ 
-    DoubleField* field7 = new DoubleField
-        (
-          PinholeCameraIntrinsicsBaseParameters::DISTORTEDSIZEX_ID,
-          offsetof(PinholeCameraIntrinsicsBaseParameters, mDistortedSizeX),
-          2592,
-          "distortedSizeX",
-          "distortedSizeX",
-          "Source image resolution X",
-          true,
-         0,
-         99999,
-         1
-        );
-    field7->widgetHint=BaseField::SPIN_BOX;
-    field7->precision=2;
-    fields().push_back(field7);
-    /*  */ 
-    DoubleField* field8 = new DoubleField
-        (
-          PinholeCameraIntrinsicsBaseParameters::DISTORTEDSIZEY_ID,
-          offsetof(PinholeCameraIntrinsicsBaseParameters, mDistortedSizeY),
-          1944,
-          "distortedSizeY",
-          "distortedSizeY",
-          "Source image resolution Y",
-          true,
-         0,
-         99999,
-         1
-        );
-    field8->widgetHint=BaseField::SPIN_BOX;
-    field8->precision=2;
-    fields().push_back(field8);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Pinhole Camera Intrinsics Base Parameters")]= &reflection;
@@ -205,6 +179,28 @@ int PinholeCameraIntrinsicsBaseParameters::staticInit()
 }
 int PinholeCameraIntrinsicsBaseParameters::relinkCompositeFields()
 {
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("Vector 2d Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[5]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection PinholeCameraIntrinsicsBaseParameters to the subclass Vector 2d Parameters can't be linked\n");
+        }
+    }
+    {
+        ReflectionDirectory* directory = ReflectionDirectoryHolder::getReflectionDirectory();
+        std::string name("Vector 2d Parameters");
+        ReflectionDirectory::iterator it = directory->find(name);
+        if(it != directory->end()) {
+             const CompositeField* field = static_cast<const CompositeField*>(getReflection()->fields[6]);
+             const_cast<CompositeField*>(field)->reflection = it->second;
+        } else {
+             printf("Reflection PinholeCameraIntrinsicsBaseParameters to the subclass Vector 2d Parameters can't be linked\n");
+        }
+    }
    return 0;
 }
 

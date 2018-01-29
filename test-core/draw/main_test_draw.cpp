@@ -511,6 +511,14 @@ TEST(Draw, testSpanRenderTriangle)
 
 }
 
+#if 0
+TEST(Draw, testSpanDrawTriangleSpeed)
+{
+    //AttributedTriangle a[CORE_COUNT_OF(t)];
+    //AttributedTriangleSpanIterator it(a[i]);
+}
+#endif
+
 TEST(Draw, polygonDraw)
 {
     int h = 300;

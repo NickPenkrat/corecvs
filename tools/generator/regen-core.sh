@@ -233,6 +233,9 @@ enums+=" checkerboardDetectionAlgorithm"
 enums+=" bitcodeBoardOrientation"
 enums+=" projectionType"
 
+classes+=" vector2dParameters"
+classes+=" vector3dParameters"
+
 classes+=" lensDistortionModelParametersBase"
 classes+=" homorgaphyReconstructorBlockBase"
 classes+=" sceneStereoAlignerBlockBase"

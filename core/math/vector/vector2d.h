@@ -23,6 +23,9 @@
 #include "core/math/vector/fixedVector.h"
 #include "core/math/vector/vector.h"
 
+// This is discussable if there should be such a dependancy
+#include "core/xml/generated/vector2dParameters.h"
+
 namespace corecvs {
 
 using std::sqrt;
@@ -230,6 +233,21 @@ template<class VisitorType>
         visitor.visit(x(), static_cast<const ReflectionType *>(reflection.fields[FIELD_X]));
         visitor.visit(y(), static_cast<const ReflectionType *>(reflection.fields[FIELD_Y]));
     }
+
+#ifdef VECTOR_2D_PARAMETERS_H_
+    explicit Vector2d(const Vector2dParameters &v)
+    {
+        x() = v.x();
+        y() = v.y();
+    }
+
+    operator Vector2dParameters() const
+    {
+        return Vector2dParameters(x(), y());
+    }
+
+#endif
+
 };
 
 

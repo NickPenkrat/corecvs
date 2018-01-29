@@ -349,7 +349,7 @@ public:
 
 
             /* If we hit outside the second image we should give up*/
-            if (!calculationContext.second->isValidCoord(Vector2d32(prediction)))
+            if (!calculationContext.second->isValidCoord(Vector2d32(prediction.x(), prediction.y())))
                 return false;
 
             //Vector2dd low  = point - Vector2dd(windowSize);

@@ -566,14 +566,14 @@ void corecvs::FlatPatternCalibrator::enforceParams()
     FORCE(ZERO_SKEW, mSkew, 0.0);
     LOCK(LOCK_SKEW, mSkew);
 
-    double f = (intrinsics.focalX() + intrinsics.focalY()) / 2.0;
-    FORCE(EQUAL_FOCAL, mFocalX, f);
-    FORCE(EQUAL_FOCAL, mFocalY, f);
-    LOCK(LOCK_FOCAL, mFocalX);
-    LOCK(LOCK_FOCAL, mFocalY);
+    double f = (intrinsics.fx() + intrinsics.fy()) / 2.0;
+    FORCE(EQUAL_FOCAL, mFx, f);
+    FORCE(EQUAL_FOCAL, mFy, f);
+    LOCK(LOCK_FOCAL, mFx);
+    LOCK(LOCK_FOCAL, mFy);
 
-    LOCK(LOCK_PRINCIPAL, mPrincipalX);
-    LOCK(LOCK_PRINCIPAL, mPrincipalY);
+    LOCK(LOCK_PRINCIPAL, mCx);
+    LOCK(LOCK_PRINCIPAL, mCy);
 #undef FORCE
 #undef LOCK
 }
@@ -633,13 +633,13 @@ void corecvs::FlatPatternCalibrator::readParams(const double in[])
     IFNOT(LOCK_FOCAL,
             double f;
             GET_PARAM(f);
-            intrinsics.mFocalX = f;
-            intrinsics.mFocalY = f;
+            intrinsics.mFx = f;
+            intrinsics.mFy = f;
 
-            IFNOT_GET_PARAM(EQUAL_FOCAL, intrinsics.mFocalY));
+            IFNOT_GET_PARAM(EQUAL_FOCAL, intrinsics.mFy));
     IFNOT(LOCK_PRINCIPAL,
-            GET_PARAM(intrinsics.mPrincipalX);
-            GET_PARAM(intrinsics.mPrincipalY));
+            GET_PARAM(intrinsics.mCx);
+            GET_PARAM(intrinsics.mCy));
     IFNOT(LOCK_SKEW,
             IFNOT_GET_PARAM(ZERO_SKEW, intrinsics.mSkew));
 
@@ -702,11 +702,11 @@ void corecvs::FlatPatternCalibrator::writeParams(double out[])
 {
     int argout = 0;
     IFNOT(LOCK_FOCAL,
-            SET_PARAM(intrinsics.mFocalX);
-            IFNOT_SET_PARAM(EQUAL_FOCAL, intrinsics.mFocalY));
+            SET_PARAM(intrinsics.mFx);
+            IFNOT_SET_PARAM(EQUAL_FOCAL, intrinsics.mFy));
     IFNOT(LOCK_PRINCIPAL,
-            SET_PARAM(intrinsics.mPrincipalX);
-            SET_PARAM(intrinsics.mPrincipalY));
+            SET_PARAM(intrinsics.mCx);
+            SET_PARAM(intrinsics.mCy));
     IFNOT(LOCK_SKEW,
             IFNOT_SET_PARAM(ZERO_SKEW, intrinsics.mSkew));
 

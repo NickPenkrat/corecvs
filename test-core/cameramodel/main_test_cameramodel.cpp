@@ -194,8 +194,8 @@ TEST(Cameramodel, newPinholeCameraIntrinsics)
     input.accept(printer);
 
     input.setSkew(0.01);
-    input.setFocalX(input.sizeX() - 100);
-    input.setFocalY(input.sizeY() + 100);
+    input.setFx(input.size().x() - 100);
+    input.setFy(input.size().y() + 100);
     SYNC_PRINT(("With skew and focal\n"));
     input.accept(printer);
 

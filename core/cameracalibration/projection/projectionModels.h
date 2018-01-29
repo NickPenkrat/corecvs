@@ -73,6 +73,8 @@ public:
     double  w() const  { return size().x(); }
     double  h() const  { return size().y(); }
 
+    double   getAspect() const          { return size().x() / size().y(); }
+
     Vector2dd reprojectionError(const Vector3dd &p, const Vector2dd &pp) const
     {
         return project(p) - pp;

@@ -19,6 +19,7 @@
 /*
  *  Additional includes for Composite Types.
  */
+#include "core/xml/generated/vector2dParameters.h"
 
 // using namespace corecvs;
 
@@ -40,15 +41,13 @@ class PinholeCameraIntrinsicsBaseParameters : public corecvs::BaseReflection<Pin
 {
 public:
     enum FieldId {
-        FOCALX_ID,
-        FOCALY_ID,
-        PRINCIPALX_ID,
-        PRINCIPALY_ID,
+        FX_ID,
+        FY_ID,
+        CX_ID,
+        CY_ID,
         SKEW_ID,
-        SIZEX_ID,
-        SIZEY_ID,
-        DISTORTEDSIZEX_ID,
-        DISTORTEDSIZEY_ID,
+        SIZE_ID,
+        DISTORTEDSIZE_ID,
         PINHOLE_CAMERA_INTRINSICS_BASE_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -58,25 +57,25 @@ public:
      * \brief focalX 
      * focalX 
      */
-    double mFocalX;
+    double mFx;
 
     /** 
      * \brief focalY 
      * focalY 
      */
-    double mFocalY;
+    double mFy;
 
     /** 
      * \brief principalX 
      * The center of projection \f$x_c\f$ 
      */
-    double mPrincipalX;
+    double mCx;
 
     /** 
      * \brief principalY 
      * The center of projection \f$y_c\f$ 
      */
-    double mPrincipalY;
+    double mCy;
 
     /** 
      * \brief skew 
@@ -85,28 +84,16 @@ public:
     double mSkew;
 
     /** 
-     * \brief sizeX 
-     * Model image resolution X 
+     * \brief size 
+     * Model image resolution 
      */
-    double mSizeX;
+    Vector2dParameters mSize;
 
     /** 
-     * \brief sizeY 
-     * Model image resolution Y 
+     * \brief distortedSize 
+     * Source image resolution 
      */
-    double mSizeY;
-
-    /** 
-     * \brief distortedSizeX 
-     * Source image resolution X 
-     */
-    double mDistortedSizeX;
-
-    /** 
-     * \brief distortedSizeY 
-     * Source image resolution Y 
-     */
-    double mDistortedSizeY;
+    Vector2dParameters mDistortedSize;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -118,24 +105,24 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    double focalX() const
+    double fx() const
     {
-        return mFocalX;
+        return mFx;
     }
 
-    double focalY() const
+    double fy() const
     {
-        return mFocalY;
+        return mFy;
     }
 
-    double principalX() const
+    double cx() const
     {
-        return mPrincipalX;
+        return mCx;
     }
 
-    double principalY() const
+    double cy() const
     {
-        return mPrincipalY;
+        return mCy;
     }
 
     double skew() const
@@ -143,45 +130,35 @@ public:
         return mSkew;
     }
 
-    double sizeX() const
+    Vector2dParameters size() const
     {
-        return mSizeX;
+        return mSize;
     }
 
-    double sizeY() const
+    Vector2dParameters distortedSize() const
     {
-        return mSizeY;
-    }
-
-    double distortedSizeX() const
-    {
-        return mDistortedSizeX;
-    }
-
-    double distortedSizeY() const
-    {
-        return mDistortedSizeY;
+        return mDistortedSize;
     }
 
     /* Section with setters */
-    void setFocalX(double focalX)
+    void setFx(double fx)
     {
-        mFocalX = focalX;
+        mFx = fx;
     }
 
-    void setFocalY(double focalY)
+    void setFy(double fy)
     {
-        mFocalY = focalY;
+        mFy = fy;
     }
 
-    void setPrincipalX(double principalX)
+    void setCx(double cx)
     {
-        mPrincipalX = principalX;
+        mCx = cx;
     }
 
-    void setPrincipalY(double principalY)
+    void setCy(double cy)
     {
-        mPrincipalY = principalY;
+        mCy = cy;
     }
 
     void setSkew(double skew)
@@ -189,24 +166,14 @@ public:
         mSkew = skew;
     }
 
-    void setSizeX(double sizeX)
+    void setSize(Vector2dParameters const &size)
     {
-        mSizeX = sizeX;
+        mSize = size;
     }
 
-    void setSizeY(double sizeY)
+    void setDistortedSize(Vector2dParameters const &distortedSize)
     {
-        mSizeY = sizeY;
-    }
-
-    void setDistortedSizeX(double distortedSizeX)
-    {
-        mDistortedSizeX = distortedSizeX;
-    }
-
-    void setDistortedSizeY(double distortedSizeY)
-    {
-        mDistortedSizeY = distortedSizeY;
+        mDistortedSize = distortedSize;
     }
 
     /* Section with embedded classes */
@@ -214,15 +181,13 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mFocalX,                    static_cast<const corecvs::DoubleField *>(fields()[FOCALX_ID]));
-        visitor.visit(mFocalY,                    static_cast<const corecvs::DoubleField *>(fields()[FOCALY_ID]));
-        visitor.visit(mPrincipalX,                static_cast<const corecvs::DoubleField *>(fields()[PRINCIPALX_ID]));
-        visitor.visit(mPrincipalY,                static_cast<const corecvs::DoubleField *>(fields()[PRINCIPALY_ID]));
+        visitor.visit(mFx,                        static_cast<const corecvs::DoubleField *>(fields()[FX_ID]));
+        visitor.visit(mFy,                        static_cast<const corecvs::DoubleField *>(fields()[FY_ID]));
+        visitor.visit(mCx,                        static_cast<const corecvs::DoubleField *>(fields()[CX_ID]));
+        visitor.visit(mCy,                        static_cast<const corecvs::DoubleField *>(fields()[CY_ID]));
         visitor.visit(mSkew,                      static_cast<const corecvs::DoubleField *>(fields()[SKEW_ID]));
-        visitor.visit(mSizeX,                     static_cast<const corecvs::DoubleField *>(fields()[SIZEX_ID]));
-        visitor.visit(mSizeY,                     static_cast<const corecvs::DoubleField *>(fields()[SIZEY_ID]));
-        visitor.visit(mDistortedSizeX,            static_cast<const corecvs::DoubleField *>(fields()[DISTORTEDSIZEX_ID]));
-        visitor.visit(mDistortedSizeY,            static_cast<const corecvs::DoubleField *>(fields()[DISTORTEDSIZEY_ID]));
+        visitor.visit(mSize,                      static_cast<const corecvs::CompositeField *>(fields()[SIZE_ID]));
+        visitor.visit(mDistortedSize,             static_cast<const corecvs::CompositeField *>(fields()[DISTORTEDSIZE_ID]));
     }
 
     PinholeCameraIntrinsicsBaseParameters()
@@ -232,39 +197,33 @@ template<class VisitorType>
     }
 
     PinholeCameraIntrinsicsBaseParameters(
-          double focalX
-        , double focalY
-        , double principalX
-        , double principalY
+          double fx
+        , double fy
+        , double cx
+        , double cy
         , double skew
-        , double sizeX
-        , double sizeY
-        , double distortedSizeX
-        , double distortedSizeY
+        , Vector2dParameters size
+        , Vector2dParameters distortedSize
     )
     {
-        mFocalX = focalX;
-        mFocalY = focalY;
-        mPrincipalX = principalX;
-        mPrincipalY = principalY;
+        mFx = fx;
+        mFy = fy;
+        mCx = cx;
+        mCy = cy;
         mSkew = skew;
-        mSizeX = sizeX;
-        mSizeY = sizeY;
-        mDistortedSizeX = distortedSizeX;
-        mDistortedSizeY = distortedSizeY;
+        mSize = size;
+        mDistortedSize = distortedSize;
     }
 
     bool operator ==(const PinholeCameraIntrinsicsBaseParameters &other) const 
     {
-        if ( !(this->mFocalX == other.mFocalX)) return false;
-        if ( !(this->mFocalY == other.mFocalY)) return false;
-        if ( !(this->mPrincipalX == other.mPrincipalX)) return false;
-        if ( !(this->mPrincipalY == other.mPrincipalY)) return false;
+        if ( !(this->mFx == other.mFx)) return false;
+        if ( !(this->mFy == other.mFy)) return false;
+        if ( !(this->mCx == other.mCx)) return false;
+        if ( !(this->mCy == other.mCy)) return false;
         if ( !(this->mSkew == other.mSkew)) return false;
-        if ( !(this->mSizeX == other.mSizeX)) return false;
-        if ( !(this->mSizeY == other.mSizeY)) return false;
-        if ( !(this->mDistortedSizeX == other.mDistortedSizeX)) return false;
-        if ( !(this->mDistortedSizeY == other.mDistortedSizeY)) return false;
+        if ( !(this->mSize == other.mSize)) return false;
+        if ( !(this->mDistortedSize == other.mDistortedSize)) return false;
         return true;
     }
     friend std::ostream& operator << (std::ostream &out, PinholeCameraIntrinsicsBaseParameters &toSave)

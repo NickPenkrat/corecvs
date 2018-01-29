@@ -12,11 +12,6 @@
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
-#include "euclidianMoveParametersControlWidget.h"
-#include "euclidianMoveParametersControlWidget.h"
-#include "euclidianMoveParametersControlWidget.h"
-#include "euclidianMoveParametersControlWidget.h"
-
 
 MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QString _rootPath)
     : ParametersControlWidgetBase(parent)
@@ -43,7 +38,6 @@ MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QStrin
     QObject::connect(mUi->switch2CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->switch3CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->switch4CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->saveRemapButton, SIGNAL(clicked()), this, SLOT(doSaveRemap()));
 }
 
 MergerControlWidget::~MergerControlWidget()
@@ -130,5 +124,3 @@ void MergerControlWidget::setParametersVirtual(void *input)
     Merger *inputCasted = static_cast<Merger *>(input);
     setParameters(*inputCasted);
 }
-
-
