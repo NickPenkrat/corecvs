@@ -641,41 +641,51 @@ vector<cv::Mat> MergerThread::calculateRemap()
 
 
   //}
+
   vector<cv::Mat> result;
+
+  if (mMapper == NULL) {
+      SYNC_PRINT(("You should step input to form remap cache\n"));
+      return result;
+  }
+
   for (int c = 0; c < 8; c++)
   {
-    cv::Mat mat = cv::Mat(height, width, CV_32FC1);
+    cv::Mat mat = cv::Mat(mMapper->h, mMapper->w, CV_32FC1);
     mat.setTo(cv::Scalar(-1.0));
     result.push_back(mat);
   }
-  parallelable_for(0, mMapper->h, [&](const BlockedRange<int>& r)
+
+  int done = 0;
+  for(int i = 0; i < mMapper->h; i++)
   {
-      for(int i = r.begin(); i < r.end(); i++)
+      for (int j = 0; j < mMapper->w; j++)
       {
-          for (int j = 0; j < mMapper->w; j++)
+          Vector2dd p = Vector2dd( (double)j / mMapper->w, (double)i / mMapper->h);
+          Vector3dd pos = mFrame.getPoint(p);
+
+          for (int c = 0; c < 4; c++)
           {
-              Vector2dd p = Vector2dd( (double)j / mMapper->w, (double)i / mMapper->h);
-              Vector3dd pos = mFrame.getPoint(p);
+              Vector3dd posCam = models[c].extrinsics.worldToCam(pos);
 
-              for (int c = 0; c < 4; c++)
+              Vector2dd prj = mRemapCached.simplified[c].project(posCam);
+              if (!mRemapCached.displacement[c]->isValidCoord(prj.y(), prj.x()))
+                  continue;
+              prj = mRemapCached.displacement[c]->element(prj.y(), prj.x());
+
+              if (mMasks[c]->isValidCoordBl(prj.y(), prj.x()))
               {
-                  Vector2dd prj = mRemapCached.simplified[c].project(posCam);
-                  if (!mRemapCached.displacement[c]->isValidCoord(prj.y(), prj.x()))
-                      continue;
-                  prj = mRemapCached.displacement[c]->element(prj.y(), prj.x());
-
-                  mMapper->element(i, j).sourcePos[c] = prj;
-
-                  if (mMasks[c]->isValidCoordBl(prj.y(), prj.x()))
-                      mMapper->element(i, j).weight[c] = mMasks[c]->element(prj.y(), prj.x()).r() / 255.0;
-                  count++;
+                 result[2 * c    ].at<int>(i, j) = prj.x();
+                 result[2 * c + 1].at<int>(i, j) = prj.y();
               }
           }
-          done++;
-          if (done % 100 == 0)
-              SYNC_PRINT(("#"));
-      }
-  });
+       }
+       done++;
+       if (done % 100 == 0) {
+           SYNC_PRINT(("#"));
+       }
+   }
+
 
 
 
