@@ -11,18 +11,22 @@
 
 /* GCC 4.6 needs this to compile*/
 #include <cstddef>
-#include <opencv2/highgui/highgui.hpp>  // CvCapture
+#include <string>
+
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
-#include <string>
+
+#include "core/utils/global.h"
 
 #include "imageCaptureInterface.h"
 
-#define CAP_ANY         0
-#define CAP_VFW       200
-#define CAP_DS        700
+#define CAP_ANY       (uint)  0
+#define CAP_VFW       (uint)200
+#define CAP_DS        (uint)700
 
 #define CAP_DEFAULT_DELAY 35
+
+struct CvCapture;
 
 #ifdef interface            // msvc could define it as a "struct" at its header, but it's not a c++ keyword!
 #undef interface
