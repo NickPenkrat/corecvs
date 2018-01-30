@@ -67,7 +67,7 @@ double kde::pdf(std::vector<double>& data)
         double a = 1.0;
         for (size_t currentVariable = 0; currentVariable < dataMatrix.size(); currentVariable++)
         {
-            a *= gaussPDF(data[currentVariable], dataMatrix[currentVariable][i], bandwidthMap[currentVariable]);
+            a *= gaussPDF(data[currentVariable], dataMatrix[currentVariable][i], bandwidthMap[(int)currentVariable]);
         }
         d += a;
     }
@@ -94,7 +94,7 @@ void kde::addData(std::vector<double>& x)
 {
     if (!dataMatrix.size())
     {
-        for (size_t i = 0; i < x.size(); i++)
+        for (int i = 0; i < (int)x.size(); i++)
         {
             std::vector<double> tmp;
             tmp.push_back(x[i]);
@@ -115,14 +115,14 @@ void kde::addData(std::vector<double>& x)
         }
         else
         {
-            for (size_t i = 0; i < x.size(); i++)
+            for (int i = 0; i < (int)x.size(); i++)
             {
                 dataMatrix[i].push_back(x[i]);
-                sumXMap[i] += x[i];
+                sumXMap [i] += x[i];
                 sumX2Map[i] += x[i] * x[i];
                 countMap[i]++;
-                minMap[i] = x[i] < minMap[i] ? x[i] : minMap[i];
-                maxMap[i] = x[i] > maxMap[i] ? x[i] : maxMap[i];
+                minMap  [i] = std::min(x[i], minMap[i]);
+                maxMap  [i] = std::max(x[i], maxMap[i]);
                 bandwidthMap[i] = -1.0;
             }
         }

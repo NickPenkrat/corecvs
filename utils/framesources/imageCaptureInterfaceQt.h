@@ -64,6 +64,10 @@ public:
         : WrapperType(input, isRGB)
     {}
 
+    ImageCaptureInterfaceWrapper(const std::string &input, unsigned int mode)
+        : WrapperType(input, mode)
+    {}
+
     ImageCaptureInterfaceWrapper(const std::string &input, bool isVerbose, bool isRGB)
         : WrapperType(input, isVerbose, isRGB)
     {}
