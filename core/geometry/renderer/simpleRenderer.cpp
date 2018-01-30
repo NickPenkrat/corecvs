@@ -236,12 +236,19 @@ void ClassicRenderer::fragmentShader(AttributedHLineSpan &span)
                 RGBColor c = color;
 
                 /* Texture block*/
-                RGB24Buffer *texture = textures[texId];
-                tex = tex * Vector2dd(texture->w, texture->h);
-                if (texture->isValidCoordBl(tex)) {
-                    c = texture->elementBl(tex);
+                if (texId < textures.size() && textures[texId] != NULL)
+                {
+
+                    RGB24Buffer *texture = textures[texId];
+
+                    tex = tex * Vector2dd(texture->w, texture->h);
+                    if (texture->isValidCoordBl(tex)) {
+                        c = texture->elementBl(tex);
+                    } else {
+                        SYNC_PRINT(("Tex miss %lf %lf\n", tex.x(), tex.y()));
+                    }
                 } else {
-                    SYNC_PRINT(("Tex miss %lf %lf\n", tex.x(), tex.y()));
+                    SYNC_PRINT(("Tex is NULL or non-existent %d\n", texId));
                 }
 
 

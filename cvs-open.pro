@@ -28,7 +28,7 @@ with_minitools {
     base_application         \
     base_application_example \
     recorder                 \
-    merger
+#    merger
 
 }
 
