@@ -28,7 +28,6 @@ RgbColorParametersControlWidget::RgbColorParametersControlWidget(QWidget *parent
 
 RgbColorParametersControlWidget::~RgbColorParametersControlWidget()
 {
-
     delete mUi;
 }
 

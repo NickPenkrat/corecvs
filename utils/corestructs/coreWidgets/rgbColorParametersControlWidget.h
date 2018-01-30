@@ -2,16 +2,15 @@
 /**
     rgbColorParametersControlWidget.h
 **/
-
-
 #include <QWidget>
 #include <QColorDialog>
 #include <QPainter>
 
+#include "core/buffers/rgb24/rgbColor.h"
 #include "core/xml/generated/rgbColorParameters.h"
+
 #include "ui_rgbColorParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"
-#include "core/buffers/rgb24/rgbColor.h"
 
 
 namespace Ui {
@@ -72,7 +71,9 @@ public slots:
     {
         //mUi->selectorPushButton->setS;
     }
-#if 0
+
+#ifdef WIN32    //EM: said that it crashes on her linux //TODO: clarify the reason!
+
     void pickerClicked(QMouseEvent * /*event*/)
     {
         mColorPicker.show();
@@ -110,7 +111,7 @@ public slots:
 
         painter.fillRect(who->rect(),color);
     }
-#endif
+#endif // WIN32
 
 signals:
     void valueChanged();
