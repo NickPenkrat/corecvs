@@ -600,14 +600,17 @@ RGB24Buffer *PPMLoaderRGB24::load(string name)
     if (!buffer)
         return nullptr;
 
-    if (buffer->w == 3840 && buffer->h == 2748   // PGM with these params is the Bayer image
-        && !meta["bits"].empty() && meta["bits"][0] == 12)
+    if (!meta["bits"].empty() && meta["bits"][0] == 12)     // PGM has 12 bits
     {
-        L_INFO_P("name:<%s> detected Bayer %dx%dx12", name.c_str(), buffer->w, buffer->h);
+        if (buffer->getSize() == Vector2d32(3840, 2748) ||
+            buffer->getSize() == Vector2d32(480, 340))      // PGM with these params is the Bayer image
+        {
+            L_INFO_P("name:<%s> detected Bayer %dx%dx12", name.c_str(), buffer->w, buffer->h);
 
-        auto params = Debayer::Parameters::BestDefaultsByExt(prefix1);
-        params.setNumBitsOut(meta["bits"][0]);
-        return Debayer::Demosaic(buffer.get(), params);
+            auto params = Debayer::Parameters::BestDefaultsByExt(prefix1);
+            params.setNumBitsOut(meta["bits"][0]);
+            return Debayer::Demosaic(buffer.get(), params);
+        }
     }
 
     return new RGB24Buffer(buffer.get());  // simple conversion to gray image
