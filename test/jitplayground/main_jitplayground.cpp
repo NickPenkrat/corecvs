@@ -41,10 +41,10 @@ FixtureScene *genTest()
     FixtureScene *scene = new FixtureScene;
 
     CameraModel model;
-    model.getPinhole()->setPrincipalX(320);
-    model.getPinhole()->setPrincipalX(240);
-    model.getPinhole()->setFocalX(589);
-    model.getPinhole()->setFocalY(589);
+    model.getPinhole()->setCx(320);
+    model.getPinhole()->setCy(240);
+    model.getPinhole()->setFx(589);
+    model.getPinhole()->setFy(589);
     model.getPinhole()->setSize(Vector2dd(640, 480));
 
 

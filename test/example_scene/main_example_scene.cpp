@@ -55,11 +55,11 @@ void testJSON_FixtureScene()
 
         model.extrinsics = CameraLocationData(position);
 
-        model.getPinhole()->setPrincipalX(100);
-        model.getPinhole()->setPrincipalY(100);
+        model.getPinhole()->setCx(100);
+        model.getPinhole()->setCy(100);
 
-        model.getPinhole()->setFocalX(100);
-        model.getPinhole()->setFocalY(100);
+        model.getPinhole()->setFx(100);
+        model.getPinhole()->setFy(100);
 
         model.getPinhole()->setSize(Vector2dd(200, 200));
         model.getPinhole()->setDistortedSize(Vector2dd(200, 200));
@@ -133,11 +133,11 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 
     CameraModel model;
 
-    model.getPinhole()->setPrincipalX(320);
-    model.getPinhole()->setPrincipalY(240);
+    model.getPinhole()->setCx(320);
+    model.getPinhole()->setCy(240);
 
-    model.getPinhole()->setFocalX(589);
-    model.getPinhole()->setFocalY(589);
+    model.getPinhole()->setFx(589);
+    model.getPinhole()->setFy(589);
 
     model.getPinhole()->setSize(Vector2dd(640, 480));
     model.getPinhole()->setDistortedSize(Vector2dd(640, 480));

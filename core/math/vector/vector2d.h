@@ -241,7 +241,7 @@ template<class VisitorType>
         y() = v.y();
     }
 
-    operator Vector2dParameters() const
+    explicit operator Vector2dParameters() const
     {
         return Vector2dParameters(x(), y());
     }
@@ -271,23 +271,6 @@ template<typename ElementType>
 int Vector2d<ElementType>::dummy = Vector2d<ElementType>::staticInit();
 
 #else
-
-// It's moved to vector2d.cpp
-
-//template<> Reflection Vector2d<double>::reflection = Reflection();
-//template<> int        Vector2d<double>::dummy = Vector2d<double>::staticInit();
-//
-//template<> Reflection Vector2d<uint32_t>::reflection = Reflection();
-//template<> int        Vector2d<uint32_t>::dummy = Vector2d<uint32_t>::staticInit();
-//
-//template<> Reflection Vector2d<uint16_t>::reflection = Reflection();
-//template<> int        Vector2d<uint16_t>::dummy = Vector2d<uint16_t>::staticInit();
-//
-//template<> Reflection Vector2d<int32_t>::reflection = Reflection();
-//template<> int        Vector2d<int32_t>::dummy = Vector2d<int32_t>::staticInit();
-//
-//template<> Reflection Vector2d<int16_t>::reflection = Reflection();
-//template<> int        Vector2d<int16_t>::dummy = Vector2d<int16_t>::staticInit();
 
 #endif
 

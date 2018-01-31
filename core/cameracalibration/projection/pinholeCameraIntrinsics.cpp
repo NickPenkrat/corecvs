@@ -170,7 +170,7 @@ PinholeCameraIntrinsics::PinholeCameraIntrinsics(const Vector2dd &resolution, do
 
     mSkew = 0.0;
 
-    mSize = resolution;
+    mSize = Vector2dParameters(resolution);
 
     double ratio = tan(hfov / 2.0);
     double f = (size().x() / 2.0) / ratio;
