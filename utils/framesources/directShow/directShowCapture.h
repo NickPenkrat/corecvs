@@ -5,21 +5,18 @@
  * \date Jul 15, 2010
  * \author sergeyle
  */
-
 #ifndef _DIRECT_SHOW_CVCAPTURE_H_
 #define _DIRECT_SHOW_CVCAPTURE_H_
 
 #include <stdint.h>
-#include <QtCore/QThread>
-#include <QtCore/QMutex>
 #include <string>
+#include <mutex>
 
 #include "directShow.h"
 #include "imageCaptureInterface.h"
 #include "core/utils/preciseTimer.h"
-#include "../../frames.h"
-
 #include "cameraControlParameters.h"
+#include "../../frames.h"
 
 #define PREFFERED_RGB_BPP 24
 #define AUTUSELECT_FORMAT_FEATURE -255
@@ -32,7 +29,7 @@ using namespace std;
     typedef ImageCaptureInterface::CapErrorCode CapErrorCode;
 
     /* Main fields */
-    QMutex                      mProtectFrame;
+    std::mutex                  mProtectFrame;
     string                      mDevname;  /**< Stores the device name*/
     DirectShowCameraDescriptor  mCameras  [MAX_INPUTS_NUMBER];
     CaptureTypeFormat           mFormats  [MAX_INPUTS_NUMBER];
@@ -90,4 +87,3 @@ using namespace std;
  };
 
 #endif /* _DIRECT_SHOW_CVCAPTURE_H_ */
-

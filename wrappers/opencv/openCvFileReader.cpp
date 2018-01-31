@@ -61,11 +61,21 @@ RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
     return convert(img);
 }
 
-bool OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std::string &s)
+bool OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std::string &s, int quality)
 {
     auto* b = OpenCVTools::getCVImageFromRGB24Buffer(&const_cast<corecvs::RGB24Buffer&>(buffer));
     CVMAT_FROM_IPLIMAGE(mat, b, false);
-    bool success = cv::imwrite(corecvs::HelperUtils::toNativeSlashes(s), mat);
+
+    vector<int> params;
+    if (quality != 95)      // for non default value we deliver wished values of compression level
+    {
+        params.push_back(CV_IMWRITE_JPEG_QUALITY);
+        params.push_back(quality);                      // 0..100, 100 min compression
+
+        params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+        params.push_back((100 - quality) * 9 / 100);    // 0..9, 9 max compression
+    }
+    bool success = cv::imwrite(corecvs::HelperUtils::toNativeSlashes(s), mat, params);
     cvReleaseImage(&b);
     return success;
 }
@@ -122,7 +132,9 @@ RuntimeTypeBuffer *OpenCVRuntimeTypeBufferLoader::load(std::string name)
 
 bool OpenCVRGB24Saver::acceptsFile(string name)
 {
-    std::vector<std::string> extList  = extentions();
+    std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+
+    std::vector<std::string> extList = extentions();
     for (auto &ext : extList)
     {
         if (HelperUtils::endsWith(name, ext))
@@ -133,7 +145,7 @@ bool OpenCVRGB24Saver::acceptsFile(string name)
     return false;
 }
 
-bool OpenCVRGB24Saver::save(RGB24Buffer &buffer, string name)
+bool OpenCVRGB24Saver::save(const corecvs::RGB24Buffer &buffer, const std::string& name, int quality)
 {
-    return OpenCvBufferReader().writeRgb(buffer, name);
+    return OpenCvBufferReader().writeRgb(buffer, name, quality);
 }

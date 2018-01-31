@@ -19,26 +19,23 @@ class CommandLineSetter
 public:
     string mArgPrefix;
     string mArgSeparator;
-
     vector<string> mArgs;
 
-    CommandLineSetter() :
-        mArgPrefix("--"),
-        mArgSeparator("=")
-    {
-    }
+    CommandLineSetter() : mArgPrefix("--"), mArgSeparator("=")
+    {}
 
-    CommandLineSetter(const vector<string> &args) :
-        CommandLineSetter()
+    CommandLineSetter(const vector<string> &args) : CommandLineSetter()
     {
         mArgs = args;
     }
 
-    CommandLineSetter(int argc, const char **argv) :
-        CommandLineSetter()
+    CommandLineSetter(int argc, const char **argv) : CommandLineSetter()
     {
         mArgs.assign(argv, argv + argc);
     }
+
+    CommandLineSetter(int argc, char **argv) : CommandLineSetter(argc, (const char **)argv)
+    {}
 
     /* Helper getters */
     bool hasOption(const string& option, unsigned* pos = NULL)

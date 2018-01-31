@@ -59,7 +59,7 @@ public:
 
         CameraModel::accept(visitor);
         IdType id = getObjectId();
-        visitor.visit(id, IdType(0) , "id");
+        visitor.visit(id, IdType(0), "id");
         setObjectId(id);
 
         int imageSize = (int)mImages.size();

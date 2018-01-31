@@ -30,11 +30,8 @@ public:
     virtual corecvs::RGB24Buffer * load(string name) override;
     virtual std::vector<string> extentions() override   { return std::vector<string>({prefix1, prefix2}); }
     virtual string name() override                      { return "LibPNG"; }
-    virtual bool save(string name, corecvs::RGB24Buffer *buffer);
-
-    bool savePNG(string name, corecvs::RGB24Buffer *buffer, bool alpha=false);
-
-
+    virtual bool save(const string& name, const corecvs::RGB24Buffer *buffer, int quality = 95);
+    bool savePNG(string name, corecvs::RGB24Buffer *buffer, int quality = 95, bool alpha=false);
     virtual ~LibpngFileReader() {}
 };
 
@@ -48,7 +45,7 @@ public:
     }
     
     virtual bool acceptsFile(string name)             { return LibpngFileReader().acceptsFile(name); }
-    virtual bool save(corecvs::RGB24Buffer &buffer, string name) override { return LibpngFileReader().save(name, &buffer); }
+    virtual bool save(const corecvs::RGB24Buffer& buffer, const string& name, int quality = 95) override { return LibpngFileReader().save(name, &buffer, quality); }
     virtual string              name()       override { return "LibPNG_Saver"; }
     virtual std::vector<string> extentions() override { return LibpngFileReader().extentions(); }
     virtual ~LibpngFileSaver() {}

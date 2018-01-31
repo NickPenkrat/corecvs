@@ -89,23 +89,15 @@ void DecoupleYUYV::decoupleAnaglythSSE(unsigned formatH, unsigned formatW, uint8
             int g1 = ((298 * cy1 - 100 * cu - 208 * cv + 128) >> 8);
             int b1 = ((298 * cy1 + 516 * cu            + 128) >> 8);
 
-            if (r1 > 255) r1 = 255;  if (r1 < 0) r1 = 0;
-            if (g1 > 255) g1 = 255;  if (g1 < 0) g1 = 0;
-            if (b1 > 255) b1 = 255;  if (b1 < 0) b1 = 0;
-
             int r2 = ((298 * cy2            + 409 * cv + 128) >> 8);
             int g2 = ((298 * cy2 - 100 * cu - 208 * cv + 128) >> 8);
             int b2 = ((298 * cy2 + 516 * cu            + 128) >> 8);
 
-            if (r2 > 255) r2 = 255;  if (r2 < 0) r2 = 0;
-            if (g2 > 255) g2 = 255;  if (g2 < 0) g2 = 0;
-            if (b2 > 255) b2 = 255;  if (b2 < 0) b2 = 0;
+            result.bufferLeft() ->element(i,j    ) = clamp(r1, 0, 255) << 4;
+            result.bufferLeft() ->element(i,j + 1) = clamp(r2, 0, 255) << 4;
 
-            result.bufferLeft() ->element(i,j    ) = (r1 << 4);
-            result.bufferLeft() ->element(i,j + 1) = (r2 << 4);
-
-            result.bufferRight()->element(i,j    ) = ((b1 + g1) << 3);
-            result.bufferRight()->element(i,j + 1) = ((b2 + g2) << 3);
+            result.bufferRight()->element(i,j    ) = (clamp(b1, 0, 255) + clamp(g1, 0, 255)) << 3;
+            result.bufferRight()->element(i,j + 1) = (clamp(b2, 0, 255) + clamp(g2, 0, 255)) << 3;
 
             ptr += 4;
         }
@@ -250,12 +242,8 @@ void DecoupleYUYV::decoupleAnaglythUnrolled(unsigned formatH, unsigned formatW, 
             int g = ((298 * C - 100 * D - 208 * E + 128) >> 8);
             int b = ((298 * C + 516 * D           + 128) >> 8);
 
-            if (r > 255) r = 255;  if (r < 0) r = 0;
-            if (g > 255) g = 255;  if (g < 0) g = 0;
-            if (b > 255) b = 255;  if (b < 0) b = 0;
-
-            result.bufferLeft() ->element(i,j) = (r << 4);
-            result.bufferRight()->element(i,j) = ((b + g) << 3);
+            result.bufferLeft() ->element(i,j) = clamp(r, 0, 255) << 4;
+            result.bufferRight()->element(i,j) = (clamp(b, 0, 255) + clamp(g, 0, 255)) << 3;
 
             // line 2
             y = (ptr2[0] + ptr2[2]) / 2;
@@ -270,12 +258,8 @@ void DecoupleYUYV::decoupleAnaglythUnrolled(unsigned formatH, unsigned formatW, 
             g = ((298 * C - 100 * D - 208 * E + 128) >> 8);
             b = ((298 * C + 516 * D           + 128) >> 8);
 
-            if (r > 255) r = 255;  if (r < 0) r = 0;
-            if (g > 255) g = 255;  if (g < 0) g = 0;
-            if (b > 255) b = 255;  if (b < 0) b = 0;
-
-            result.bufferLeft() ->element(i,j) += (r << 4);
-            result.bufferRight()->element(i,j) += ((b + g) << 3);
+            result.bufferLeft() ->element(i,j) += clamp(r, 0, 255) << 4;
+            result.bufferRight()->element(i,j) += (clamp(b, 0, 255) + clamp(g, 0, 255)) << 3;
 
             result.bufferLeft() ->element(i,j) /= 2;
             result.bufferRight()->element(i,j) /= 2;
@@ -284,9 +268,7 @@ void DecoupleYUYV::decoupleAnaglythUnrolled(unsigned formatH, unsigned formatW, 
             ptr2 += 4;
         }
     }
-
 }
-
 
 void DecoupleYUYV::decouple(unsigned formatH, unsigned formatW, uint8_t *ptr, ImageCouplingType coupling, ImageCaptureInterface::FramePair &result)
 {

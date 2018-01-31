@@ -41,42 +41,34 @@ TEST(FileFormats, testFileFormats)
     delete_safe(rawLoader);
 
     /** Test case 2 */
-    BMPLoader *bmpLoader = new BMPLoader();
-    G12Buffer *bmp = bmpLoader->loadG12("data/testdata/test_bmp.bmp");
+    G12Buffer *bmp = BMPLoader().loadG12("data/testdata/test_bmp.bmp");
     CORE_ASSERT_TRUE(bmp->h == bmp->w, "BMP Image sizes corrupted");
     CORE_ASSERT_TRUE(bmp != NULL, "BMP Image load failed");
     CORE_ASSERT_TRUE(bmp->verify(), "BMP Image verification failed");
     delete_safe(bmp);
-    delete_safe(bmpLoader);
 
     /** Test case 3 */
-    PPMLoader *ppmLoader = new PPMLoader();
-    G12Buffer *ppm = ppmLoader->loadG12("data/testdata/test_ppm.ppm");
-    CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
-    CORE_ASSERT_TRUE(ppm->h == ppm->w, "PPM Image sizes corrupted");
-    CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
+    G12Buffer *ppm = PPMLoader().loadG12("data/testdata/test_ppm.ppm");
+    CORE_ASSERT_TRUE(ppm == NULL, "test PPM with type:6 image has been loaded but shouldn't!");
+    //CORE_ASSERT_TRUE(ppm->h == ppm->w, "PPM Image sizes corrupted");
+    //CORE_ASSERT_TRUE(ppm->verify(), "PPM Image verification failed");
     delete_safe(ppm);
-    delete_safe(ppmLoader);
 
     /** Test case 4 */
-    PPMLoader *metappmLoader = new PPMLoader();
     MetaData *metadata = new MetaData;
-    G12Buffer *metappm = metappmLoader->loadMeta("data/testdata/test_pgm_metadata.pgm", metadata);
+    G12Buffer *metappm = PPMLoader().loadG12("data/testdata/test_pgm_metadata.pgm", metadata);
     CORE_ASSERT_TRUE(metappm != NULL, "PGM with Metadata Image load failed");
     CORE_ASSERT_TRUE(metappm->h == metappm->w, "PGM with Metadata Image sizes corrupted");
     CORE_ASSERT_TRUE(metappm->verify(), "PGM with Metadata Image verification failed");
     CORE_ASSERT_TRUE(metadata->at("hello_world")[0] == 42, "PGM Metadata read failed");
     delete_safe(metappm);
-    delete_safe(metappmLoader);
     delete_safe(metadata);
 
     /** Test case 5 */
-    BMPLoader *bmpLoader1 = new BMPLoader();
-    G12Buffer *bmp1 = bmpLoader1->loadG12("data/calib-object.bmp");
+    G12Buffer *bmp1 = BMPLoader().loadG12("data/calib-object.bmp");
     CORE_ASSERT_TRUE(bmp1 != NULL, "BMP Image load failed");
     CORE_ASSERT_TRUE(bmp1->verify(), "BMP Image verification failed");
     delete_safe(bmp1);
-    delete_safe(bmpLoader1);
 }
 
 TEST(FileFormats, DISABLED_testBMP24)

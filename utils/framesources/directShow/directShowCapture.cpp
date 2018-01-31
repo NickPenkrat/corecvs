@@ -5,18 +5,15 @@
  * \date Jul 15, 2010
  * \author apimenov
  */
-#include <QtCore/QRegExp>
-#include <QtCore/QString>
-
-#include <sstream>
-
-#include "core/utils/global.h"
-
-#include "core/utils/log.h"
-#include "core/utils/preciseTimer.h"
 #include "directShowCapture.h"
 #include "mjpegDecoderLazy.h"
 #include "cameraControlParameters.h"
+#include "core/utils/log.h"
+#include "core/utils/preciseTimer.h"
+
+#include <sstream>
+
+#include <QtCore/QRegExp>
 
 
 void DirectShowCaptureInterface::init(const string &devname, int h, int w, int fps,  bool isRgb, int bpp, int compressed)
@@ -24,13 +21,20 @@ void DirectShowCaptureInterface::init(const string &devname, int h, int w, int f
     CORE_ASSERT_TRUE_P((uint)compressed < DirectShowCameraDescriptor::codec_size, ("invalid 'compressed' in DirectShowCaptureInterface::init()"));
 
     mAutoFormat = false;
-    mDevname = QString("%1:1/%2:%3:%4x%5")
-        .arg(devname.c_str())
-        .arg(fps)
-        .arg(DirectShowCameraDescriptor::codec_names[compressed])
-        .arg(w)
-        .arg(h)
-        .toStdString();
+
+    stringstream ss;
+    ss << devname << ":1/"
+        << fps << ":"
+        << DirectShowCameraDescriptor::codec_names[compressed] << ":"
+        << w << "x" << h;
+    //mDevname = QString("%1:1/%2:%3:%4x%5")
+    //    .arg(devname.c_str())
+    //    .arg(fps)
+    //    .arg(DirectShowCameraDescriptor::codec_names[compressed])
+    //    .arg(w)
+    //    .arg(h)
+    //    .toStdString();
+    mDevname = ss.str();
 
     mDeviceIDs[LEFT_FRAME] = atoi(devname.c_str());
     mDeviceIDs[RIGHT_FRAME] = -1;
@@ -99,8 +103,8 @@ DirectShowCaptureInterface::DirectShowCaptureInterface(const string &devname, bo
     static const int HeightGroup      = 14;
 
     L_DDEBUG_P("Input string <%s>", devname.c_str());
-    QString qdevname(devname.c_str());
-    int result = deviceStringPattern.indexIn(qdevname);
+
+    int result = deviceStringPattern.indexIn(devname.c_str());
     if (result == -1)
     {
         L_ERROR_P("Error in device string format:<%s>", devname.c_str());
@@ -190,9 +194,8 @@ ImageCaptureInterface::CapErrorCode DirectShowCaptureInterface::initCapture()
             continue;
         }
 
-        if(mAutoFormat)
+        if (mAutoFormat)
         {
-
             int format = selectCameraFormat(mFormats[i].height, mFormats[i].width);
             int bpp = format == DirectShowCameraDescriptor::UNCOMPRESSED_RGB ? PREFFERED_RGB_BPP : AUTUSELECT_FORMAT_FEATURE;
             init(devname, mFormats[i].height, mFormats[i].width, mFormats[i].fps, mIsRgb, bpp, format);
@@ -596,9 +599,7 @@ void DirectShowCaptureInterface::getAllCameras(vector<string> &cameras)
     DirectShowCapDll_devicesNumber(&num);
     for (int i = 0; i < num; i++)
     {
-        std::ostringstream s;
-        s << i;
-        cameras.push_back(s.str());
+        cameras.push_back(std::to_string(i));
     }
 }
 

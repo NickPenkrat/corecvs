@@ -12,6 +12,7 @@ public:
     static std::string prefix2;
     static std::string prefix3;
     static std::string prefix4;
+
 public:
     static int registerMyself()
     {

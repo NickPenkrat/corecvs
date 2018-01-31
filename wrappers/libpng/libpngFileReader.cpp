@@ -102,12 +102,12 @@ RGB24Buffer *LibpngFileReader::load(string name)
     return toReturn;
 }
 
-bool LibpngFileReader::save(string name, RGB24Buffer *buffer)
+bool LibpngFileReader::save(const string &name, const RGB24Buffer *buffer, int quality)
 {
     return savePNG(name, buffer);
 }
 
-bool LibpngFileReader::savePNG(std::string name, RGB24Buffer *buffer, bool alpha)
+bool LibpngFileReader::savePNG(const string &name, const RGB24Buffer *buffer, int quality, bool alpha)
 {
     FILE * fp;
     png_byte ** row_pointers;
@@ -119,8 +119,8 @@ bool LibpngFileReader::savePNG(std::string name, RGB24Buffer *buffer, bool alpha
     int depth = 8;
     png_uint_32 width = buffer->w, height = buffer->h;
 
-    fp = fopen (name.c_str(), "wb");
-    if (! fp) {
+    FILE *fp = fopen (name.c_str(), "wb");
+    if (!fp) {
         goto fopen_failed;
     }
 
@@ -135,14 +135,11 @@ bool LibpngFileReader::savePNG(std::string name, RGB24Buffer *buffer, bool alpha
     }
 
     /* Set up error handling. */
-
     if (setjmp (png_jmpbuf (png_ptr))) {
         goto png_failure;
     }
 
     /* Set image attributes. */
-
-
     png_set_IHDR (png_ptr,
                   info_ptr,
                   width,
@@ -154,7 +151,6 @@ bool LibpngFileReader::savePNG(std::string name, RGB24Buffer *buffer, bool alpha
                   PNG_FILTER_TYPE_DEFAULT);
 
     /* Initialize rows of PNG. */
-
     row_pointers = (png_byte **) png_malloc (png_ptr, height * sizeof (png_byte *));
     for (y = 0; y < height; ++y) {
         png_byte *row =
@@ -173,17 +169,17 @@ bool LibpngFileReader::savePNG(std::string name, RGB24Buffer *buffer, bool alpha
     }
 
     /* Write the image data to "fp". */
-
-    png_init_io (png_ptr, fp);
+    png_init_io  (png_ptr, fp);
     png_set_rows (png_ptr, info_ptr, row_pointers);
-    png_write_png (png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+    png_write_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
+
+    status = 0;
 
     for (y = 0; y < height; y++) {
         png_free (png_ptr, row_pointers[y]);
     }
-    png_free (png_ptr, row_pointers);
+    png_free(png_ptr, row_pointers);
 
-    status = 0;
     png_failure:
         png_create_info_struct_failed:
         png_destroy_write_struct (&png_ptr, &info_ptr);
@@ -209,6 +205,5 @@ corecvs::RuntimeTypeBuffer *LibpngRuntimeTypeBufferLoader::load(string name)
         }
     }
     delete tmp;
-
     return result;
 }

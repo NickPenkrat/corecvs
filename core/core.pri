@@ -86,7 +86,8 @@ with_suppressincs {
     INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP $$CORE_INCLUDEPATH
 } else {
     INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP
-    message(Per-Folder includes are suppressed. Only including $$CORE_INCLUDEPATH_SUPP)
+
+    !build_pass: message(Per-Folder includes are suppressed. Only including $$CORE_INCLUDEPATH_SUPP)
 }
 
 
@@ -95,7 +96,7 @@ DEPENDPATH  += $$CORE_INCLUDEPATH
 exists($$COREDIR/../../../config.pri) {
     COREBINDIR = $$COREDIR/../../../bin
 } else {
-    message(Using local core. Global config should be at $$COREDIR/../../../config.pri)
+    !build_pass: message(Using local core. Global config should be at $$COREDIR/../../../config.pri)
     COREBINDIR = $$COREDIR/../bin
 }
 
@@ -139,5 +140,3 @@ with_unorthodox {
 
 
 } # !contains(CORECVS_INCLUDED, "core.pri")
-
-
