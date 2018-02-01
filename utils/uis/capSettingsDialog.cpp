@@ -21,9 +21,10 @@ CapSettingsDialog::CapSettingsDialog(QWidget *parent, QString rootPath)
     refreshDialog();
 }
 
-void CapSettingsDialog::setCaptureInterface(ImageCaptureInterface *pInterface)
+void CapSettingsDialog::setCaptureInterface(ImageCaptureInterface *pInterface, bool updateOnFly)
 {
     mCaptureInterface = pInterface;
+    mUpdateOnFly = updateOnFly;
     refreshDialog();
 }
 
@@ -47,23 +48,21 @@ void CapSettingsDialog::refreshDialog()
     if (mCaptureInterface == NULL)
         return;
 
-    //clearDialog();
-
-     //ImageCaptureInterface::CapErrorCode res =
+    //ImageCaptureInterface::CapErrorCode res =
     mCaptureInterface->queryCameraParameters(mCameraParameters);
+
+    mUi->updateOnFlyCheckBox->setChecked(mUpdateOnFly ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
 
     QLayout *layout = mUi->scrollAreaWidgetContents->layout();
 
-    signalMapper = new QSignalMapper(this);
+    signalMapper      = new QSignalMapper(this);
     resetSignalMapper = new QSignalMapper(this);
 
-    for (int i = CameraParameters::FIRST; i < CameraParameters::LAST; i++)
+    for (int id = CameraParameters::FIRST; id < CameraParameters::LAST; id++)
     {
-        CaptureParameter &params = mCameraParameters.mCameraControls[i];
-
-        if (!params.active()) {
+        CaptureParameter &params = mCameraParameters.mCameraControls[id];
+        if (!params.active())
             continue;
-        }
 
         ParameterEditorWidget *paramEditor = NULL;
 
@@ -72,6 +71,7 @@ void CapSettingsDialog::refreshDialog()
             ParameterSlider* paramSlider = new ParameterSlider(this);
             paramSlider->setMinimum(params.minimum());
             paramSlider->setMaximum(params.maximum());
+            paramSlider->setStep   (params.step());
             paramEditor = paramSlider;
         }
         else
@@ -79,35 +79,34 @@ void CapSettingsDialog::refreshDialog()
             ParameterSelector* paramSelector = new ParameterSelector(this);
             for (unsigned index = 0; index < params.getMenuItemNumber(); index++)
             {
-                paramSelector->pushOption(
-                    QString::fromStdString(params.getMenuItem(index)),
-                    params.getMenuValue(index));
+                paramSelector->pushOption(params.getMenuItem(index).c_str(),
+                                          params.getMenuValue(index));
             }
             paramEditor = paramSelector;
         }
 
-        paramEditor->setName(QString(CameraParameters::names[i]));
+        paramEditor->setName(CameraParameters::names[id]);
         paramEditor->setAutoSupported(params.autoSupported());
         paramEditor->setEnabled(params.active());
 
         int value;
-        mCaptureInterface->getCaptureProperty(i, &value);
+        mCaptureInterface->getCaptureProperty(id, &value);
         paramEditor->setValue(value);
 
         layout->addWidget(paramEditor);
-        sliders.insert(i, paramEditor);
+        sliders.insert(id, paramEditor);
 
         connect(paramEditor, SIGNAL(valueChanged(int)), signalMapper, SLOT(map()));
-        signalMapper->setMapping(paramEditor, i);
+        signalMapper->setMapping(paramEditor, id);
 
         connect(paramEditor, SIGNAL(resetPressed()), resetSignalMapper, SLOT(map()));
-        resetSignalMapper->setMapping(paramEditor, i);
+        resetSignalMapper->setMapping(paramEditor, id);
     }
 
     layout->addItem(new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding));
 
     //layout->addChildLayout()(new QSpacerItem(0,0));
-    connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(parameterChanged(int)));
+    connect(signalMapper     , SIGNAL(mapped(int)), this, SLOT(parameterChanged(int)));
     connect(resetSignalMapper, SIGNAL(mapped(int)), this, SLOT(resetPressed(int)));
 }
 
@@ -119,11 +118,11 @@ void CapSettingsDialog::loadFromQSettings(const QString &fileName, const QString
     QString interfaceName = QString::fromStdString(mCaptureInterface->getInterfaceName());
     if (interfaceName.isEmpty())
     {
-        qDebug("CapSettingsDialog::loadFromQSettings(): Loading won't happen. Interface is NULL");
+        qDebug("CapSettingsDialog::loadFromQSettings(): Loading won't happen. InterfaceName is empty");
         return;
     }
-
     qDebug() << "CapSettingsDialog::loadFromQSettings(): Interface name: " << interfaceName;
+
     QSettings *settings = new QSettings(fileName, QSettings::IniFormat);
     settings->beginGroup(_root);
     settings->beginGroup(mRootPath);
@@ -168,7 +167,8 @@ void CapSettingsDialog::saveToQSettings(const QString &fileName, const QString &
     }
 
     qDebug() << "CapSettingsDialog::saveToQSettings(): Interface name: " << interfaceName;
-    QSettings *settings = new QSettings(fileName, QSettings::IniFormat);
+
+    std::unique_ptr<QSettings> settings(new QSettings(fileName, QSettings::IniFormat));
     settings->beginGroup(_root);
     settings->beginGroup(mRootPath);
     if (interfaceGroup)
@@ -183,14 +183,13 @@ void CapSettingsDialog::saveToQSettings(const QString &fileName, const QString &
         ParameterEditorWidget *widget = i.value();
         double value = widget->value();
         settings->setValue(name, value);
-        qDebug() << "   " << QString(name).leftJustified(16, ' ') << ": " << value;
+        qDebug() << "   " << QString(name).leftJustified(16) << ": " << value;
     }
 
     if (interfaceGroup)
         settings->endGroup();
     settings->endGroup();
     settings->endGroup();
-    delete_safe(settings);
 }
 
 void CapSettingsDialog::refreshLimitsPressed()
@@ -208,12 +207,16 @@ CapSettingsDialog::~CapSettingsDialog()
 
 void CapSettingsDialog::parameterChanged(int id)
 {
-    //printf("Changed: %d\n", id);
-    /*if (id == 0)
-    {
-        sliders[1]->setValue(0);
-    }*/
-    mCaptureInterface->setCaptureProperty(id, sliders[id]->value());
+    if (mCaptureInterface == NULL)
+        return;
+
+    bool updCam = mUi->updateOnFlyCheckBox->isChecked();
+    int  v      = sliders[id]->value();
+
+    qDebug() << "parameterChanged\t" << CameraParameters::names[id] << (updCam ? "cam" : "NO-cam") << "\tv:" << v;
+
+    if (updCam)
+        mCaptureInterface->setCaptureProperty(id, v);
 }
 
 void CapSettingsDialog::resetPressed(int id)
@@ -221,19 +224,48 @@ void CapSettingsDialog::resetPressed(int id)
     if (mCaptureInterface == NULL)
         return;
 
-    //printf("Changed: %d\n", id);
-    mCaptureInterface->setCaptureProperty(id, mCameraParameters.mCameraControls[id].defaultValue());
-    sliders[id]->setValue(mCameraParameters.mCameraControls[id].defaultValue());
+    bool updCam = mUi->updateOnFlyCheckBox->isChecked();
+    int  v      = mCameraParameters.mCameraControls[id].defaultValue();
+
+    qDebug() << "resetPressed\t" << CameraParameters::names[id] << (updCam ? "cam" : "NO-cam") << "+dlg\tv:" << v;
+
+    if (updCam)
+        mCaptureInterface->setCaptureProperty(id, v);
+
+    sliders[id]->setValue(v);
 }
 
 void CapSettingsDialog::resetAllPressed()
 {
-    for (int i = CameraParameters::FIRST; i < CameraParameters::LAST; i++)
+    for (int id = CameraParameters::FIRST; id < CameraParameters::LAST; id++)
     {
-        CaptureParameter &params = mCameraParameters.mCameraControls[i];
-        if (!params.active())
+        CaptureParameter &param = mCameraParameters.mCameraControls[id];
+        if (!param.active())
             continue;
-        resetPressed(i);
+
+        resetPressed(id);
+    }
+}
+
+void CapSettingsDialog::updateAllPressed()
+{
+    for (int id = CameraParameters::FIRST; id < CameraParameters::LAST; id++)
+    {
+        CaptureParameter &param = mCameraParameters.mCameraControls[id];
+        if (!param.active())
+            continue;
+
+        int prev;
+        mCaptureInterface->getCaptureProperty(id, &prev);
+
+        int v = sliders[id]->value();
+
+        if (prev != v)
+        {
+            qDebug() << "updateAll\t" << CameraParameters::names[id] << "cam \tv:" << v;
+
+            mCaptureInterface->setCaptureProperty(id, v);
+        }
     }
 }
 

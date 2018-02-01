@@ -22,16 +22,11 @@ class CapSettingsDialog : public QWidget, public SaveableWidget
 
 public:
     CapSettingsDialog(QWidget *parent = NULL, QString rootPath = "");
-    ~CapSettingsDialog();
+   ~CapSettingsDialog();
 
-    void setCaptureInterface(ImageCaptureInterface *pInterface = NULL);
+    void setCaptureInterface(ImageCaptureInterface *pInterface = NULL, bool updateOnFly = true);
     void clearDialog();
     void refreshDialog();
-
-    ParameterEditorWidget *getParameter(int i)
-    {
-        return sliders[i];
-    }
 
     virtual void loadFromQSettings (const QString &fileName, const QString &_root, bool interfaceGroup = true);
     virtual void saveToQSettings   (const QString &fileName, const QString &_root, bool interfaceGroup = true);
@@ -41,19 +36,23 @@ public slots:
     void resetPressed(int id);
     void resetAllPressed();
     void refreshLimitsPressed();
+    void updateAllPressed();
 
 protected:
     void changeEvent(QEvent *e);
     void showEvent(QShowEvent *e);
 
 private:
-    QString                mRootPath;
-    Ui_CapSettingsDialog  *mUi;
-    ImageCaptureInterface *mCaptureInterface;
-    CameraParameters       mCameraParameters;
+    //ParameterEditorWidget *getParameter(int i) { return sliders[i]; }
 
-    QSignalMapper         *signalMapper;
-    QSignalMapper         *resetSignalMapper;
+    QString                            mRootPath;
+    Ui_CapSettingsDialog              *mUi;
+    ImageCaptureInterface             *mCaptureInterface;
+    bool                               mUpdateOnFly;
+    CameraParameters                   mCameraParameters;
+
+    QSignalMapper                     *signalMapper;
+    QSignalMapper                     *resetSignalMapper;
     QMap<int, ParameterEditorWidget *> sliders;
 };
 
