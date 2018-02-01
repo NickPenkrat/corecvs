@@ -1,14 +1,12 @@
 #pragma once
 
 #include <stdint.h>
-#include <string>
-#include <QtCore/QThread>
-#include <QtCore/QMutex>
 
-#include "capdll.h"
+#include "core/utils/global.h"
 #include "imageCaptureInterface.h"
-#include "core/utils/preciseTimer.h"
-#include "cameraControlParameters.h"
+#include "cameraControlParameters.h" // CameraParameters
+
+#include "capdll.h" // DSCapDeviceId, CAPTURE_FORMAT_TYPE
 
 class DirectShowCameraDescriptor
 {
@@ -41,7 +39,7 @@ public:
     DirectShowCameraDescriptor() {}
 
 private:
-    static void setFromCameraParam(CaptureParameter &param,CameraParameter &camParam);
+    static void setFromCameraParam(CaptureParameter &param, CameraParameter &camParam);
 
 public:
     int queryCameraParameters(CameraParameters &parameters);

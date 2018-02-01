@@ -15,13 +15,13 @@
 #include "directShow.h"
 #include "imageCaptureInterface.h"
 #include "core/utils/preciseTimer.h"
-#include "cameraControlParameters.h"
-#include "../../frames.h"
+#include "cameraControlParameters.h"    // CameraParameters
+#include "../../frames.h"     // Frames::
 
 #define PREFFERED_RGB_BPP 24
-#define AUTUSELECT_FORMAT_FEATURE -255
+#define AUTOSELECT_FORMAT_FEATURE -255
 
-using namespace std;
+using std::string;
 
  class DirectShowCaptureInterface : public virtual ImageCaptureInterface
  {
@@ -50,40 +50,40 @@ using namespace std;
     DirectShowCaptureInterface(const string &devname, int h, int w, int fps, bool isRgb);
     DirectShowCaptureInterface(const string &devname, ImageCaptureInterface::CameraFormat format, bool isRgb);
 
-    virtual FramePair    getFrame();
-    virtual FramePair    getFrameRGB24();
+    virtual FramePair    getFrame() override;
+    virtual FramePair    getFrameRGB24() override;
 
-    virtual CapErrorCode initCapture();
-    virtual CapErrorCode startCapture();
+    virtual CapErrorCode initCapture() override;
+    virtual CapErrorCode startCapture() override;
 
     virtual bool         getCurrentFormat(CameraFormat &format);
 
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameters) override;
     virtual CapErrorCode setCaptureProperty(int id, int value) override;
     virtual CapErrorCode getCaptureProperty(int id, int *value) override;
-    virtual CapErrorCode getCaptureName(std::string &value)  override;
+    virtual CapErrorCode getCaptureName(string &value) override;
     virtual CapErrorCode getFormats(int *num, CameraFormat *&formats) override;
-    virtual std::string  getInterfaceName()  override;
-    virtual CapErrorCode getDeviceName(int num, std::string &name)  override;
-    virtual std::string  getDeviceSerial(int num = Frames::LEFT_FRAME)  override;
+    virtual string       getInterfaceName() override;
+    virtual CapErrorCode getDeviceName(int num, string &name) override;
+    virtual string       getDeviceSerial(int num = Frames::LEFT_FRAME) override;
 
 
     /* Callback function */
     static void callback (void *thiz, DSCapDeviceId dev, FrameData data);
-    void memberCallback(DSCapDeviceId dev, FrameData data);
+    void  memberCallback(DSCapDeviceId dev, FrameData data);
 
-    static void getAllCameras(vector<std::string> &cameras);
+    static void getAllCameras(vector<string> &cameras);
 
     virtual ~DirectShowCaptureInterface();
 
  private:
-    void init(const string &devname, int h, int w, int fps, bool isRgb, int bpp, int compressed);
-    void initForAutoFormat(const string &devname, int h, int w, int fps, bool isRgb);
+    void         init(const string &devname, int h, int w, int fps, bool isRgb, int bpp, int compressed);
+    void         initForAutoFormat(const string &devname, int h, int w, int fps, bool isRgb);
 
-    bool isCorrectDeviceHandle(int cameraNum);
+    bool         isCorrectDeviceHandle(int cameraNum);
     CapErrorCode getCaptureFormats(int &number, CaptureTypeFormat *&list);
     CapErrorCode getCameraFormatsForResolution(int h, int w, std::vector<CAPTURE_FORMAT_TYPE> &formats);
-    int selectCameraFormat(int h, int w);
+    int          selectCameraFormat(int h, int w);
  };
 
 #endif /* _DIRECT_SHOW_CVCAPTURE_H_ */
