@@ -1,24 +1,21 @@
+#include "capSettingsDialog.h"
+#include "parameterSelector.h"
+
 #include <QMessageBox>
 #include <QtCore/QSettings>
 #include <QtCore/QDebug>
 
-#include "core/utils/global.h"
-#include "capSettingsDialog.h"
-
-#include "parameterSelector.h"
-
-
-CapSettingsDialog::CapSettingsDialog(QWidget *parent, QString rootPath) :
-        QWidget(parent),
-        mRootPath(rootPath),
-        mUi(new Ui::CapSettingsDialog),
-        mCaptureInterface(NULL),
-        signalMapper(NULL),
-        resetSignalMapper(NULL)
+CapSettingsDialog::CapSettingsDialog(QWidget *parent, QString rootPath)
+    :   QWidget(parent)
+    ,   mRootPath(rootPath)
+    ,   mUi(new Ui::CapSettingsDialog)
+    ,   mCaptureInterface(NULL)
+    ,   signalMapper(NULL)
+    ,   resetSignalMapper(NULL)
 {
     mUi->setupUi(this);
-    setWindowTitle(rootPath);
 
+    setWindowTitle(rootPath);
     setWindowFlags(windowFlags() ^ Qt::WindowMinimizeButtonHint);
 
     refreshDialog();
@@ -30,7 +27,6 @@ void CapSettingsDialog::setCaptureInterface(ImageCaptureInterface *pInterface)
     refreshDialog();
 }
 
-
 void CapSettingsDialog::clearDialog()
 {
     delete_safe(signalMapper);
@@ -38,7 +34,7 @@ void CapSettingsDialog::clearDialog()
 
     QLayout *layout = mUi->scrollAreaWidgetContents->layout();
     QLayoutItem *item;
-    while ((item = layout->takeAt(0)) != 0)
+    while ((item = layout->takeAt(0)) != nullptr)
     {
         delete item->widget();
         delete_safe(item);
@@ -47,84 +43,78 @@ void CapSettingsDialog::clearDialog()
 
 void CapSettingsDialog::refreshDialog()
 {
-   clearDialog();
-   if (mCaptureInterface == NULL)
-   {
-       return;
-   }
+    clearDialog();
+    if (mCaptureInterface == NULL)
+        return;
 
-   //clearDialog();
+    //clearDialog();
 
-    //ImageCaptureInterface::CapErrorCode resLeft =
-   mCaptureInterface->queryCameraParameters(mLeftCameraParameters);
-   //ImageCaptureInterface::CapErrorCode resRight =
-   mCaptureInterface->queryCameraParameters(mRightCameraParameters);
+     //ImageCaptureInterface::CapErrorCode res =
+    mCaptureInterface->queryCameraParameters(mCameraParameters);
 
-   QLayout *layout = mUi->scrollAreaWidgetContents->layout();
+    QLayout *layout = mUi->scrollAreaWidgetContents->layout();
 
-   signalMapper = new QSignalMapper(this);
-   resetSignalMapper = new QSignalMapper(this);
+    signalMapper = new QSignalMapper(this);
+    resetSignalMapper = new QSignalMapper(this);
 
-   for (int i = CameraParameters::FIRST; i < CameraParameters::LAST; i++)
-   {
-       CaptureParameter &params = mLeftCameraParameters.mCameraControls[i];
+    for (int i = CameraParameters::FIRST; i < CameraParameters::LAST; i++)
+    {
+        CaptureParameter &params = mCameraParameters.mCameraControls[i];
 
-       if (!params.active()) {
-           continue;
-       }
+        if (!params.active()) {
+            continue;
+        }
 
-       ParameterEditorWidget *paramEditor = NULL;
+        ParameterEditorWidget *paramEditor = NULL;
 
-       if (!params.isMenu() || !params.hasMenuItems())
-       {
-           ParameterSlider* paramSlider = new ParameterSlider(this);
-           paramSlider->setMinimum(params.minimum());
-           paramSlider->setMaximum(params.maximum());
-           paramEditor = paramSlider;
-       } else {
-           ParameterSelector* paramSelector = new ParameterSelector(this);
-           for (unsigned index = 0; index < params.getMenuItemNumber(); index++)
-           {
-               paramSelector->pushOption(
-                   QString::fromStdString(params.getMenuItem(index)),
-                   params.getMenuValue(index));
-           }
-           paramEditor = paramSelector;
-       }
+        if (!params.isMenu() || !params.hasMenuItems())
+        {
+            ParameterSlider* paramSlider = new ParameterSlider(this);
+            paramSlider->setMinimum(params.minimum());
+            paramSlider->setMaximum(params.maximum());
+            paramEditor = paramSlider;
+        }
+        else
+        {
+            ParameterSelector* paramSelector = new ParameterSelector(this);
+            for (unsigned index = 0; index < params.getMenuItemNumber(); index++)
+            {
+                paramSelector->pushOption(
+                    QString::fromStdString(params.getMenuItem(index)),
+                    params.getMenuValue(index));
+            }
+            paramEditor = paramSelector;
+        }
 
-       paramEditor->setName(QString(CameraParameters::names[i]));
-       paramEditor->setAutoSupported(params.autoSupported());
-       paramEditor->setEnabled(params.active());
+        paramEditor->setName(QString(CameraParameters::names[i]));
+        paramEditor->setAutoSupported(params.autoSupported());
+        paramEditor->setEnabled(params.active());
 
-       int value;
-       mCaptureInterface->getCaptureProperty(i, &value);
-       paramEditor->setValue(value);
+        int value;
+        mCaptureInterface->getCaptureProperty(i, &value);
+        paramEditor->setValue(value);
 
-       layout->addWidget(paramEditor);
-       sliders.insert(i, paramEditor);
+        layout->addWidget(paramEditor);
+        sliders.insert(i, paramEditor);
 
-       connect(paramEditor, SIGNAL(valueChanged(int)), signalMapper, SLOT(map()));
-       signalMapper->setMapping(paramEditor, i);
+        connect(paramEditor, SIGNAL(valueChanged(int)), signalMapper, SLOT(map()));
+        signalMapper->setMapping(paramEditor, i);
 
-       connect(paramEditor, SIGNAL(resetPressed()), resetSignalMapper, SLOT(map()));
-       resetSignalMapper->setMapping(paramEditor, i);
-   }
+        connect(paramEditor, SIGNAL(resetPressed()), resetSignalMapper, SLOT(map()));
+        resetSignalMapper->setMapping(paramEditor, i);
+    }
 
-   layout->addItem(new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding));
+    layout->addItem(new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Expanding));
 
-   //layout->addChildLayout()(new QSpacerItem(0,0));
-   connect(signalMapper,      SIGNAL(mapped(int)), this, SLOT(parameterChanged(int)));
-   connect(resetSignalMapper, SIGNAL(mapped(int)), this, SLOT(resetPressed(int)));
-
-
+    //layout->addChildLayout()(new QSpacerItem(0,0));
+    connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(parameterChanged(int)));
+    connect(resetSignalMapper, SIGNAL(mapped(int)), this, SLOT(resetPressed(int)));
 }
 
-void CapSettingsDialog::loadFromQSettings (const QString &fileName, const QString &_root, bool interfaceGroup)
+void CapSettingsDialog::loadFromQSettings(const QString &fileName, const QString &_root, bool interfaceGroup)
 {
     if (mCaptureInterface == NULL)
-    {
         return;
-    }
 
     QString interfaceName = QString::fromStdString(mCaptureInterface->getInterfaceName());
     if (interfaceName.isEmpty())
@@ -139,8 +129,6 @@ void CapSettingsDialog::loadFromQSettings (const QString &fileName, const QStrin
     settings->beginGroup(mRootPath);
     if (interfaceGroup)
         settings->beginGroup(interfaceName);
-
-
 
     QMapIterator<int, ParameterEditorWidget *> i(sliders);
     while (i.hasNext())
@@ -161,10 +149,9 @@ void CapSettingsDialog::loadFromQSettings (const QString &fileName, const QStrin
     settings->endGroup();
 
     delete_safe(settings);
-
 }
 
-void CapSettingsDialog::saveToQSettings (const QString &fileName, const QString &_root, bool interfaceGroup)
+void CapSettingsDialog::saveToQSettings(const QString &fileName, const QString &_root, bool interfaceGroup)
 {
     qDebug() << QString("CapSettingsDialog::saveToQSettings(\"%1\", \"%2\"): called").arg(fileName, _root);
     if (mCaptureInterface == NULL)
@@ -206,13 +193,11 @@ void CapSettingsDialog::saveToQSettings (const QString &fileName, const QString 
     delete_safe(settings);
 }
 
-
 void CapSettingsDialog::refreshLimitsPressed()
 {
     clearDialog();
     refreshDialog();
 }
-
 
 CapSettingsDialog::~CapSettingsDialog()
 {
@@ -234,21 +219,18 @@ void CapSettingsDialog::parameterChanged(int id)
 void CapSettingsDialog::resetPressed(int id)
 {
     if (mCaptureInterface == NULL)
-    {
         return;
-    }
 
     //printf("Changed: %d\n", id);
-    mCaptureInterface->setCaptureProperty(id, mLeftCameraParameters.mCameraControls[id].defaultValue());
-    sliders[id]->setValue(mLeftCameraParameters.mCameraControls[id].defaultValue());
+    mCaptureInterface->setCaptureProperty(id, mCameraParameters.mCameraControls[id].defaultValue());
+    sliders[id]->setValue(mCameraParameters.mCameraControls[id].defaultValue());
 }
-
 
 void CapSettingsDialog::resetAllPressed()
 {
     for (int i = CameraParameters::FIRST; i < CameraParameters::LAST; i++)
     {
-        CaptureParameter &params = mLeftCameraParameters.mCameraControls[i];
+        CaptureParameter &params = mCameraParameters.mCameraControls[i];
         if (!params.active())
             continue;
         resetPressed(i);

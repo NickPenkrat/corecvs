@@ -1,6 +1,5 @@
 #include "cameraControlParameters.h"
 
-
 const char *CameraParameters::names[] = {
     "EXPOSURE_ABS",
     "EXPOSURE_AUTO",

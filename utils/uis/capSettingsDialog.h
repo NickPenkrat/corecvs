@@ -1,7 +1,6 @@
 #ifndef CAPSETTINGSDIALOG_H
 #define CAPSETTINGSDIALOG_H
 
-
 #include <QtCore/QSignalMapper>
 #include <QtCore/QMap>
 #include <QWidget>
@@ -17,12 +16,13 @@ namespace Ui {
     class CapSettingsDialog;
 }
 
-class CapSettingsDialog : public QWidget, public SaveableWidget {
+class CapSettingsDialog : public QWidget, public SaveableWidget
+{
     Q_OBJECT
+
 public:
     CapSettingsDialog(QWidget *parent = NULL, QString rootPath = "");
     ~CapSettingsDialog();
-
 
     void setCaptureInterface(ImageCaptureInterface *pInterface = NULL);
     void clearDialog();
@@ -36,29 +36,25 @@ public:
     virtual void loadFromQSettings (const QString &fileName, const QString &_root, bool interfaceGroup = true);
     virtual void saveToQSettings   (const QString &fileName, const QString &_root, bool interfaceGroup = true);
 
-
 public slots:
     void parameterChanged(int id);
     void resetPressed(int id);
     void resetAllPressed();
-
     void refreshLimitsPressed();
+
 protected:
     void changeEvent(QEvent *e);
     void showEvent(QShowEvent *e);
 
 private:
-    QString mRootPath;
-
-    Ui_CapSettingsDialog *mUi;
+    QString                mRootPath;
+    Ui_CapSettingsDialog  *mUi;
     ImageCaptureInterface *mCaptureInterface;
+    CameraParameters       mCameraParameters;
 
-    QSignalMapper *signalMapper;
-    QSignalMapper *resetSignalMapper;
+    QSignalMapper         *signalMapper;
+    QSignalMapper         *resetSignalMapper;
     QMap<int, ParameterEditorWidget *> sliders;
-
-    CameraParameters mLeftCameraParameters;
-    CameraParameters mRightCameraParameters;
 };
 
 #endif // CAPSETTINGSDIALOG_H
