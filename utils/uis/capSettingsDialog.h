@@ -34,6 +34,7 @@ public:
 public slots:
     void parameterChanged(int id);
     void resetPressed(int id);
+    void newCameraParamValue(int id);
     void resetAllPressed();
     void refreshLimitsPressed();
     void updateAllPressed();

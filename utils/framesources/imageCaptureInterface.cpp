@@ -51,6 +51,18 @@ void ImageCaptureInterface::notifyAboutNewFrame(frame_data_t frameData)
     }
 }
 
+void ImageCaptureInterface::notifyAboutNewCameraParamValue(int idParam)
+{
+    SYNC_PRINT(("ImageCaptureInterface::notifyAboutNewCameraParamValue(%d)\n", idParam));
+    if (imageInterfaceReceiver != NULL)
+    {
+        imageInterfaceReceiver->newCameraParamValueCallBack(idParam);
+    }
+    else {
+        SYNC_PRINT(("Warning: ImageCaptureInterface::notifyAboutNewCameraParamValue(): imageInterfaceReceiver is NULL\n"));
+    }
+}
+
 ImageCaptureInterface::ImageCaptureInterface()
    : mIsRgb(false)
 {

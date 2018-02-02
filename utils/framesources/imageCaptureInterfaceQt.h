@@ -23,6 +23,7 @@ signals:
     void    newImageReady();
     void    newStatisticsReady(CaptureStatistics stats);
     void    streamPaused();
+    void    newCameraParamValue(int idParam);
 };
 
 class ImageCaptureInterfaceQt: public ImageInterfaceReceiver, public ImageCaptureQtNotifier, public virtual ImageCaptureInterface
@@ -53,6 +54,11 @@ public:
     virtual void streamPausedCallback() override
     {
         emit streamPaused();
+    }
+
+    virtual void newCameraParamValueCallBack(int idParam) override
+    {
+        emit newCameraParamValue(idParam);
     }
 };
 

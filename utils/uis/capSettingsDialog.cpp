@@ -219,6 +219,20 @@ void CapSettingsDialog::parameterChanged(int id)
         mCaptureInterface->setCaptureProperty(id, v);
 }
 
+void CapSettingsDialog::newCameraParamValue(int id)
+{
+    qDebug() << "CapSettingsDialog::newCameraParameterValue\t" << CameraParameters::names[id];
+
+    if (mCaptureInterface == NULL)
+        return;
+
+    int v;
+    mCaptureInterface->getCaptureProperty(id, &v);
+    sliders[id]->setValue(v);
+
+    qDebug() << "CapSettingsDialog::newCameraParameterValue\t" << CameraParameters::names[id] << "from cam" << "\tv:" << v;
+}
+
 void CapSettingsDialog::resetPressed(int id)
 {
     if (mCaptureInterface == NULL)

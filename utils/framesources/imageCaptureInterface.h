@@ -78,6 +78,7 @@ public:
     virtual void newImageReadyCallback() = 0;
     virtual void newStatisticsReadyCallback(CaptureStatistics stats) = 0;
     virtual void streamPausedCallback() = 0;
+    virtual void newCameraParamValueCallBack(int idParam) = 0;
 };
 
 class ImageCaptureInterface
@@ -217,7 +218,7 @@ public:
     ImageCaptureInterface();
     virtual ~ImageCaptureInterface();
 
-    /*Callback reciever*/
+    /* Callback receiver */
     ImageInterfaceReceiver *imageInterfaceReceiver;
 
     /**
@@ -301,6 +302,7 @@ protected:
      **/
     virtual void notifyAboutNewFrame(frame_data_t frameData);
 
+    virtual void notifyAboutNewCameraParamValue(int idParam);
 };
 
 #endif // IMAGECAPTUREINTERFACE_H
