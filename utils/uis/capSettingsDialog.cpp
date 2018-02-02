@@ -228,25 +228,25 @@ void CapSettingsDialog::newCameraParamValue(int id)
 
     int v;
     mCaptureInterface->getCaptureProperty(id, &v);
+
+    //sliders[id]->blockSignals(true);
     sliders[id]->setValue(v);
+    //sliders[id]->blockSignals(false);
 
     qDebug() << "CapSettingsDialog::newCameraParameterValue\t" << CameraParameters::names[id] << "from cam" << "\tv:" << v;
 }
 
 void CapSettingsDialog::resetPressed(int id)
 {
-    if (mCaptureInterface == NULL)
-        return;
-
     bool updCam = mUi->updateOnFlyCheckBox->isChecked();
     int  v      = mCameraParameters.mCameraControls[id].defaultValue();
 
     qDebug() << "resetPressed\t" << CameraParameters::names[id] << (updCam ? "cam" : "NO-cam") << "+dlg\tv:" << v;
 
-    if (updCam)
+    if (updCam && mCaptureInterface)
         mCaptureInterface->setCaptureProperty(id, v);
 
-    sliders[id]->setValue(v);
+    sliders[id]->setValue(v);       //TODO: ??? parameterChanged will be called later, which actualizes camState
 }
 
 void CapSettingsDialog::resetAllPressed()
