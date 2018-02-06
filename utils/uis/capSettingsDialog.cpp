@@ -1,5 +1,6 @@
 #include "capSettingsDialog.h"
 #include "parameterSelector.h"
+#include "core/utils/log.h"
 
 #include <QMessageBox>
 #include <QtCore/QSettings>
@@ -51,7 +52,7 @@ void CapSettingsDialog::refreshDialog()
     //ImageCaptureInterface::CapErrorCode res =
     mCaptureInterface->queryCameraParameters(mCameraParameters);
 
-    mUi->updateOnFlyCheckBox->setChecked(mUpdateOnFly ? Qt::CheckState::Checked : Qt::CheckState::Unchecked);
+    mUi->updateOnFlyCheckBox->setChecked(mUpdateOnFly ? true : false);
 
     QLayout *layout = mUi->scrollAreaWidgetContents->layout();
 
@@ -118,10 +119,10 @@ void CapSettingsDialog::loadFromQSettings(const QString &fileName, const QString
     QString interfaceName = QString::fromStdString(mCaptureInterface->getInterfaceName());
     if (interfaceName.isEmpty())
     {
-        qDebug("CapSettingsDialog::loadFromQSettings(): Loading won't happen. InterfaceName is empty");
+        L_DDEBUG_P("loading won't happen - interfaceName is empty");
         return;
     }
-    qDebug() << "CapSettingsDialog::loadFromQSettings(): Interface name: " << interfaceName;
+    L_DDEBUG_P("ifcName: %s", QSTR_DATA_PTR(interfaceName));
 
     QSettings *settings = new QSettings(fileName, QSettings::IniFormat);
     settings->beginGroup(_root);
@@ -152,21 +153,20 @@ void CapSettingsDialog::loadFromQSettings(const QString &fileName, const QString
 
 void CapSettingsDialog::saveToQSettings(const QString &fileName, const QString &_root, bool interfaceGroup)
 {
-    qDebug() << QString("CapSettingsDialog::saveToQSettings(\"%1\", \"%2\"): called").arg(fileName, _root);
+    L_DDEBUG_P("filename: <%s> root:<%s>", QSTR_DATA_PTR(fileName), QSTR_DATA_PTR(_root));
     if (mCaptureInterface == NULL)
     {
-        qDebug() << "CapSettingsDialog::saveToQSettings(): mCaptureInterface is null";
+        L_DDEBUG_P("mCaptureInterface is null");
         return;
     }
 
     QString interfaceName = QString::fromStdString(mCaptureInterface->getInterfaceName());
     if (interfaceName.isEmpty())
     {
-        qDebug() << "CapSettingsDialog::saveToQSettings(): interface name is empty";
+        L_DDEBUG_P("interfaceName is empty");
         return;
     }
-
-    qDebug() << "CapSettingsDialog::saveToQSettings(): Interface name: " << interfaceName;
+    L_DDEBUG_P("ifcName: %s", QSTR_DATA_PTR(interfaceName));
 
     std::unique_ptr<QSettings> settings(new QSettings(fileName, QSettings::IniFormat));
     settings->beginGroup(_root);
@@ -213,7 +213,7 @@ void CapSettingsDialog::parameterChanged(int id)
     bool updCam = mUi->updateOnFlyCheckBox->isChecked();
     int  v      = sliders[id]->value();
 
-    qDebug() << "parameterChanged\t" << CameraParameters::names[id] << (updCam ? "cam" : "NO-cam") << "\tv:" << v;
+    L_DDEBUG_P("id:%d %s\t dlg=>%s\tv: %d", id, CameraParameters::names[id], (updCam ? "cam" : "NO-cam"), v);
 
     if (updCam)
         mCaptureInterface->setCaptureProperty(id, v);
@@ -221,7 +221,7 @@ void CapSettingsDialog::parameterChanged(int id)
 
 void CapSettingsDialog::newCameraParamValue(int id)
 {
-    qDebug() << "CapSettingsDialog::newCameraParameterValue\t" << CameraParameters::names[id];
+    L_DDEBUG_P("id:%d %s", id, CameraParameters::names[id]);
 
     if (mCaptureInterface == NULL)
         return;
@@ -229,11 +229,12 @@ void CapSettingsDialog::newCameraParamValue(int id)
     int v;
     mCaptureInterface->getCaptureProperty(id, &v);
 
+    //TODO: ??? parameterChanged will be called later, which actualizes camState
     //sliders[id]->blockSignals(true);
     sliders[id]->setValue(v);
     //sliders[id]->blockSignals(false);
 
-    qDebug() << "CapSettingsDialog::newCameraParameterValue\t" << CameraParameters::names[id] << "from cam" << "\tv:" << v;
+    L_DDEBUG_P("id:%d %s\t cam=>dlg \t v: %d", id, CameraParameters::names[id], v);
 }
 
 void CapSettingsDialog::resetPressed(int id)
@@ -241,12 +242,13 @@ void CapSettingsDialog::resetPressed(int id)
     bool updCam = mUi->updateOnFlyCheckBox->isChecked();
     int  v      = mCameraParameters.mCameraControls[id].defaultValue();
 
-    qDebug() << "resetPressed\t" << CameraParameters::names[id] << (updCam ? "cam" : "NO-cam") << "+dlg\tv:" << v;
+    L_DDEBUG_P("id:%d %s\t def=>dlf+%s\t v: %d", id, CameraParameters::names[id], (updCam ? "cam" : "NO-cam"), v);
 
     if (updCam && mCaptureInterface)
         mCaptureInterface->setCaptureProperty(id, v);
 
-    sliders[id]->setValue(v);       //TODO: ??? parameterChanged will be called later, which actualizes camState
+    //TODO: ??? parameterChanged will be called later, which actualizes camState
+    sliders[id]->setValue(v);
 }
 
 void CapSettingsDialog::resetAllPressed()
@@ -269,14 +271,14 @@ void CapSettingsDialog::updateAllPressed()
         if (!param.active())
             continue;
 
-        int prev;
-        mCaptureInterface->getCaptureProperty(id, &prev);
+        int camv;
+        mCaptureInterface->getCaptureProperty(id, &camv);
 
         int v = sliders[id]->value();
 
-        if (prev != v)
+        if (camv != v)
         {
-            qDebug() << "updateAll\t" << CameraParameters::names[id] << "cam \tv:" << v;
+            L_DDEBUG_P("id:%d %s\t dlg=>cam\t prev: %d\t v: %d", id, CameraParameters::names[id], camv, v);
 
             mCaptureInterface->setCaptureProperty(id, v);
         }
