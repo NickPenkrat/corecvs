@@ -1,8 +1,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "openCvImageRemapper.h"
 
-namespace corecvs
-{
+namespace corecvs {
 
 static void convertRGB(const corecvs::RGB24Buffer& buffer, cv::Mat& mat)
 {
@@ -30,7 +29,7 @@ static void convertRGB(const cv::Mat& mat, corecvs::RGB24Buffer& buffer)
 	}
 }
 
-static void convertDisplacementBuffer( const corecvs::DisplacementBuffer &transform, cv::Mat& map )
+static void convertDisplacementBuffer(const corecvs::DisplacementBuffer &transform, cv::Mat& map)
 {
     const int height = transform.getH();
     const int width = transform.getW();
@@ -47,6 +46,8 @@ static void convertDisplacementBuffer( const corecvs::DisplacementBuffer &transf
     }
 }
 
+#ifdef WITH_OPENCV_GPU
+# ifdef WITH_OPENCV_3x
 static void convertDisplacementBuffer(const corecvs::DisplacementBuffer &transform, cv::Mat& mapX, cv::Mat& mapY)
 {
 	const int height = transform.getH();
@@ -64,6 +65,9 @@ static void convertDisplacementBuffer(const corecvs::DisplacementBuffer &transfo
 		}
 	}
 }
+#endif // WITH_OPENCV_3x
+#endif // WITH_OPENCV_GPU
+
 
 void convert( const corecvs::DisplacementBuffer &transform, cv::Mat &map0, cv::Mat &map1 )
 {
@@ -78,14 +82,17 @@ void remap( corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, const corecvs:
     cv::Mat map, map0, map1;
 
 	convertRGB(src, input);
-    convertDisplacementBuffer( transform, map );
+    convertDisplacementBuffer(transform, map);
     cv::convertMaps( map, cv::Mat(), map0, map1, CV_16SC2, true );
     cv::remap( input, output, map0, map1, cv::INTER_NEAREST );
 	convertRGB(output, dst);
 }
 
+#ifdef WITH_OPENCV_GPU
+# ifdef WITH_OPENCV_3x
+
 template< typename T >
-void convertT( const corecvs::DisplacementBuffer &transform, T &map0, T &map1 )
+void convertT(const corecvs::DisplacementBuffer &transform, T &map0, T &map1)
 {
 	cv::Mat _map0, _map1;
 	convertDisplacementBuffer(transform, _map0, _map1);
@@ -93,8 +100,6 @@ void convertT( const corecvs::DisplacementBuffer &transform, T &map0, T &map1 )
 	map1 = T(_map1);
 }
 
-#   ifdef WITH_OPENCV_GPU
-#       ifdef WITH_OPENCV_3x
 // cuda version
 void convert( const corecvs::DisplacementBuffer &transform, cv::cuda::GpuMat &map0, cv::cuda::GpuMat &map1 )
 {
@@ -107,7 +112,8 @@ void convert( const corecvs::DisplacementBuffer &transform, cv::UMat &map0, cv::
     convertT( transform, map0, map1 );
 }
 
-#       else
+# else // WITH_OPENCV_3x
+
 // cuda version
 void convert( const corecvs::DisplacementBuffer &transform, cv::gpu::GpuMat &map0, cv::gpu::GpuMat &map1 )
 {
@@ -120,7 +126,8 @@ void convert( const corecvs::DisplacementBuffer &transform, cv::ocl::oclMat &map
     convertT( transform, map0, map1 );
 }
 
-#       endif
-#   endif
+# endif // !WITH_OPENCV_3x
 
-};
+#endif // WITH_OPENCV_GPU
+
+} // namespace corecvs

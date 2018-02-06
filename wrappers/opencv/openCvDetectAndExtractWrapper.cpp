@@ -1,9 +1,6 @@
 #include "openCvDetectAndExtractWrapper.h"
 #include "openCvKeyPointsWrapper.h"
-
 #include "openCvDefaultParams.h"
-
-#include "core/utils/global.h"
 
 #include <opencv2/features2d/features2d.hpp>       // cv::FeatureDetector
 #include <opencv2/imgproc/imgproc.hpp>
@@ -22,7 +19,7 @@ struct CvRemapCache
 
 struct DetectorHolder
 {
-    DetectorHolder() : tag( SIFT ),
+    DetectorHolder() : tag(SIFT),
 #ifdef WITH_OPENCV_3x
         sift() {}
     ~DetectorHolder() {}
@@ -30,15 +27,12 @@ struct DetectorHolder
         sift(0) {}
     ~DetectorHolder()
     {
-        switch ( tag ) {
-        case SIFT:
-            delete sift;
-        case SURF:
-            delete surf;
-        case BRISK:
-            delete brisk;
-        case ORB:
-            delete orb;
+        switch (tag)
+        {
+            case SIFT:  delete sift;  break;
+            case SURF:  delete surf;  break;
+            case BRISK: delete brisk; break;
+            case ORB:   delete orb;   break;
         }
     }
 #endif
@@ -48,8 +42,6 @@ struct DetectorHolder
 #ifdef WITH_OPENCV_3x
         , STAR, FAST, AKAZE
 #endif
-
-
     } tag;
 
 
@@ -72,24 +64,17 @@ struct DetectorHolder
     };
 
 #ifdef WITH_OPENCV_3x
-    cv::Feature2D *get() {
+    cv::Feature2D *get()
+    {
         switch (tag) {
-        case SIFT:
-            return sift.get();
-        case SURF:
-            return surf.get();
-        case STAR:
-            return star.get();
-        case FAST:
-            return fast.get();
-        case BRISK:
-            return brisk.get();
-        case ORB:
-            return orb.get();
-        case AKAZE:
-            return akaze.get();
-        default:
-            return nullptr;
+            case SIFT:  return sift.get();
+            case SURF:  return surf.get();
+            case STAR:  return star.get();
+            case FAST:  return fast.get();
+            case BRISK: return brisk.get();
+            case ORB:   return orb.get();
+            case AKAZE: return akaze.get();
+            default:    return nullptr;
         }
     }
 
@@ -122,19 +107,19 @@ struct DetectorHolder
         akaze = value;
     }
 #else
-    void set( cv::SIFT *value ) {
+    void set(cv::SIFT *value) {
         tag = SIFT;
         sift = value;
     }
-    void set( cv::SURF *value ) {
+    void set(cv::SURF *value) {
         tag = SURF;
         surf = value;
     }
-    void set( cv::BRISK *value ) {
+    void set(cv::BRISK *value) {
         tag = BRISK;
         brisk = value;
     }
-    void set( cv::ORB *value ) {
+    void set(cv::ORB *value) {
         tag = ORB;
         orb = value;
     }
@@ -181,21 +166,13 @@ void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(corecvs::RuntimeTypeBuf
 #ifdef WITH_OPENCV_3x
     holder->get()->detectAndCompute(img, cv::Mat(), kps, cv_descriptors);
 #else
-    switch ( holder->tag ) {
-    case DetectorHolder::SIFT:
-        ( *holder->sift )( img, cv::Mat(), kps, cv_descriptors );
-        break;
-    case DetectorHolder::SURF:
-        ( *holder->surf )( img, cv::Mat(), kps, cv_descriptors );
-        break;
-    case DetectorHolder::BRISK:
-        ( *holder->brisk )( img, cv::Mat(), kps, cv_descriptors );
-        break;
-    case DetectorHolder::ORB:
-        ( *holder->orb )( img, cv::Mat(), kps, cv_descriptors );
-        break;
-    default:
-        break;
+    switch (holder->tag)
+    {
+        case DetectorHolder::SIFT:  (*holder->sift)(img, cv::Mat(), kps, cv_descriptors);  break;
+        case DetectorHolder::SURF:  (*holder->surf)(img, cv::Mat(), kps, cv_descriptors);  break;
+        case DetectorHolder::BRISK: (*holder->brisk)(img, cv::Mat(), kps, cv_descriptors); break;
+        case DetectorHolder::ORB:   (*holder->orb)(img, cv::Mat(), kps, cv_descriptors);   break;
+        default: break;
     }
 #endif
 
@@ -235,7 +212,7 @@ OpenCvDetectAndExtractProvider::OpenCvDetectAndExtractProvider() {}
 
 DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const PipelineAlgoType &detectorType, const PipelineAlgoType &descriptorType, const std::string &params)
 {
-    if(detectorType != descriptorType)
+    if (detectorType != descriptorType)
         return nullptr;
     auto type = detectorType;
 
@@ -254,9 +231,9 @@ DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const PipelineAlgo
 #ifdef WITH_OPENCV_3x
         cv::Ptr< cv::xfeatures2d::SIFT > ptr = cv::xfeatures2d::SIFT::create(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);
 #else
-        cv::SIFT *ptr = new cv::SIFT( 0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma );
+        cv::SIFT *ptr = new cv::SIFT(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);
 #endif
-        holder->set( ptr );
+        holder->set(ptr);
         p = ptr;
     }
 
@@ -265,7 +242,7 @@ DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const PipelineAlgo
 #ifdef WITH_OPENCV_3x
         cv::Ptr< cv::xfeatures2d::SURF > ptr = cv::xfeatures2d::SURF::create(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright);
 #else
-        cv::SURF *ptr = new cv::SURF( surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright );
+        cv::SURF *ptr = new cv::SURF(surfParams.hessianThreshold, surfParams.octaves, surfParams.octaveLayers, surfParams.extended, surfParams.upright);
 #endif
         holder->set(ptr);
         p = ptr;
@@ -276,7 +253,7 @@ DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const PipelineAlgo
 #ifdef WITH_OPENCV_3x
         cv::Ptr< cv::BRISK > ptr = cv::BRISK::create(briskParams.thresh, briskParams.octaves, briskParams.patternScale);
 #else
-        cv::BRISK *ptr = new cv::BRISK( briskParams.thresh, briskParams.octaves, briskParams.patternScale );
+        cv::BRISK *ptr = new cv::BRISK(briskParams.thresh, briskParams.octaves, briskParams.patternScale);
 #endif
         holder->set(ptr);
         p = ptr;
@@ -295,17 +272,17 @@ DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const PipelineAlgo
 
 #ifdef WITH_OPENCV_3x
 
-    if ( type == "STAR" )
+    if (type == "STAR")
     {
-        cv::Ptr< cv::xfeatures2d::StarDetector > ptr = cv::xfeatures2d::StarDetector::create( starParams.maxSize, starParams.responseThreshold, starParams.lineThresholdProjected, starParams.lineThresholdBinarized, starParams.supressNonmaxSize );
-        holder->set( ptr );
+        cv::Ptr< cv::xfeatures2d::StarDetector > ptr = cv::xfeatures2d::StarDetector::create(starParams.maxSize, starParams.responseThreshold, starParams.lineThresholdProjected, starParams.lineThresholdBinarized, starParams.supressNonmaxSize);
+        holder->set(ptr);
         p = ptr;
     }
 
-    if ( type == "FAST" )
+    if (type == "FAST")
     {
-        cv::Ptr< cv::FastFeatureDetector > ptr = cv::FastFeatureDetector::create( fastParams.threshold, fastParams.nonmaxSuppression );
-        holder->set( ptr );
+        cv::Ptr< cv::FastFeatureDetector > ptr = cv::FastFeatureDetector::create(fastParams.threshold, fastParams.nonmaxSuppression );
+        holder->set(ptr);
         p = ptr;
     }
 
@@ -317,18 +294,18 @@ DetectAndExtract *OpenCvDetectAndExtractProvider::getDetector(const PipelineAlgo
     }
 #endif
 
-    return p ? new OpenCvDetectAndExtractWrapper( holder ) : 0;
+    return p ? new OpenCvDetectAndExtractWrapper(holder) : 0;
 }
 
 #define SWITCH_TYPE(str, expr) \
-    if(type == #str) \
+    if (type == #str) \
         { \
         expr; \
         }
 
-bool OpenCvDetectAndExtractProvider::provides( const DetectorType &detectorType, const DescriptorType &descriptorType )
+bool OpenCvDetectAndExtractProvider::provides(const DetectorType &detectorType, const DescriptorType &descriptorType)
 {
-    if(descriptorType == detectorType) {
+    if (descriptorType == detectorType) {
         const DetectorType &type = detectorType;
         SWITCH_TYPE(SIFT, return true;)
         SWITCH_TYPE(SURF, return true;)

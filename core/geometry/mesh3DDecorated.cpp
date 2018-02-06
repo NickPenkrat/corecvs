@@ -159,7 +159,7 @@ bool Mesh3DDecorated::verify( void )
                 SYNC_PRINT(("Wrong texture index\n"));
                 return false;
             }
-            if (texId[i][3] < 0 || texId[i][3] >= materials.size())
+            if (texId[i][3] < 0 || texId[i][3] >= (int)materials.size())
             {
                 SYNC_PRINT(("Wrong texture name\n"));
                 return false;

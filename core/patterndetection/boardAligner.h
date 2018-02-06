@@ -67,9 +67,9 @@ struct BoardAlignerParams
     void accept(VisitorType &visitor)
     {
         // default ctor: old board FIT_WIDTH_18x11_noMarkers of the old chessboard with 19x12 cells
-        int m = corecvs::asInteger(type);
-        visitor.visit(m, corecvs::asInteger(AlignmentType::FIT_WIDTH), "alignmentType");
-        type = static_cast<AlignmentType>(m);
+        //int m = corecvs::asInteger(type);
+        visitor.visit((int &)type, corecvs::asInteger(AlignmentType::FIT_WIDTH), "alignmentType");
+        //type = static_cast<AlignmentType>(m);
 
         visitor.visit(idealWidth,  18, "idealWidth");
         visitor.visit(idealHeight, 11, "idealHeight");

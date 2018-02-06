@@ -154,18 +154,17 @@ public:
     {
         initial = 0,                ///< initial state and "localToWorld" matrix is invalid
         final = 1,                  ///< final state and "localToWorld" matrix is valid (and must be identity)
-        convertable = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
+        convertible = 2             ///< intermediate state and  "localToWorld" is a valid matrix to convert from parrot to target coordinates
     };
     static inline const char *getSystemName(const CoordinateSystemState &value)
     {
         switch (value)
         {
-         case initial     : return "initial";     break ;
-         case final       : return "final";       break ;
-         case convertable : return "convertable"; break ;
-         default : return "Not in range"; break ;
+         case initial    : return "initial";      break;
+         case final      : return "final";        break;
+         case convertible: return "convertible";  break;
+         default:          return "Not in range"; break;
         }
-        return "Not in range";
     }
     CoordinateSystemState         coordinateSystemState = CoordinateSystemState::initial;  
 
@@ -411,9 +410,9 @@ public:
                 bool loadPrototypes = true,
                 bool loadGeometry = true)
     {
-        visitor.visit(relativeImageDataPath       , std::string(""),                     "relativeImageDataPath");
-        visitor.visit((int &)coordinateSystemState, (int)CoordinateSystemState::initial, "coordinateSystemState");
-        visitor.visit(localToWorld                , Matrix44::Identity(),                "localToWorld");
+        visitor.visit(relativeImageDataPath       , std::string(""),      "relativeImageDataPath");
+        visitor.visit((int &)coordinateSystemState, corecvs::asInteger(CoordinateSystemState::initial), "coordinateSystemState");
+        visitor.visit(localToWorld                , Matrix44::Identity(), "localToWorld");
 
         if (visitor.isLoader())
         {

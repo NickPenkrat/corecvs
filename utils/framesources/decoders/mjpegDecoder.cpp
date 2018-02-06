@@ -119,12 +119,12 @@ static unsigned char zig2[64] = {
 #define M_BADHUFF    -1
 #define M_EOF        0x80
 
-#define LEBI_DCL    int le, bi
+#define LEBI_DCL    int le; unsigned int bi
 #define LEBI_GET(in)    (le = in->left, bi = in->bits)
 #define LEBI_PUT(in)    (in->left = le, in->bits = bi)
 
 #define GETBITS(in, n) (                                              \
-        (le < (n) ? (le = fillbits(in, le, bi), bi = in->bits) : 0),    \
+        (le < (n) ? (le = fillbits(in, le, bi), bi = in->bits) : 0),  \
         (le -= (n)),                                                  \
         bi >> le & ((1 << (n)) - 1)                                   \
     )
@@ -474,9 +474,7 @@ void idct(int *in, int *out, int *quant, long off, int max)
         out[j + 7] = ITOINT(tmp3 - t7);
         j += 8;
     }
-
 }
-
 
 int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp, int c, int i)
 {
@@ -489,8 +487,9 @@ int dec_rec2(struct in *in, struct dec_hufftbl *hu, int *runp, int c, int i)
         i >>= 16;
     } else {
         for (i = DECBITS;
-             (c = ((c << 1) | GETBITS(in, 1))) >= (hu->maxcode[i]); i++);
-                if (i >= 16) {
+            (c = ((c << 1) | GETBITS(in, 1))) >= (hu->maxcode[i]);
+            i++);
+        if (i >= 16) {
             in->marker = M_BADHUFF;
             return 0;
         }

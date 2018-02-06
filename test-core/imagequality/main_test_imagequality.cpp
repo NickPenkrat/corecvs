@@ -68,6 +68,7 @@ TEST(imagequality, DISABLED_testimagequality)
         return b.yd() / 255.0;
     });
     bool hasDetected = detector.detectPatternCandidates(grayscale, boards);
+    cout << "hasDetected:" << hasDetected << endl;
 
     cout << "Boards " << boards.size() << endl;
 

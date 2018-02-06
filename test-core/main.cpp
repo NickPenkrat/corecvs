@@ -19,20 +19,6 @@ static bool checkFileExist(const std::string& dirPath, const std::string& filePa
     return access(path.c_str(), 0) == 0;
 }
 
-static bool checkFileExist(const char* dirName, const std::string& filePath)
-{
-    cchar* dir = getenv(dirName);
-    if (dir == NULL) {
-        //FAIL();
-        CORE_ASSERT_FAIL_P(("Missed environment variable %s", dirName));
-        return false;
-    }
-    //SUCCEED();
-    std::cout << dirName << "=" << dir << std::endl;
-
-    return checkFileExist(std::string(dir), filePath);
-}
-
 // Check existance for the "./data/pair/image0001_c0.pgm"
 TEST(EnvTest, CheckCurrentDirTest)
 {

@@ -48,11 +48,10 @@ TEST(jit, testasm)
     double out[5] = {0};
 
     asmF(in, out);
-    for (int i = 0; i < CORE_COUNT_OF(out); i++)
+    for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
     {
         cout << out[i] << " " << endl;
     }
-
 }
 
 TEST(jit, DISABLED_testjit)
@@ -251,8 +250,7 @@ TEST(jit, testjitfunction)
 {
     ASTContext::MAIN_CONTEXT = new ASTContext();
 
-
-    cout << "AST fcuntions" << endl;
+    cout << "AST functions" << endl;
 
     ASTNode in[6] = {
          ASTNode("M[0]"), ASTNode("M[1]"), ASTNode("M[2]"),
@@ -261,5 +259,8 @@ TEST(jit, testjitfunction)
     ASTNodeInt out(ASTNodeInt::OPERATOR_FUNCTION);
     out.payload = new ASTNodeDotProduct();
 
-
+    for (auto& elem : in)
+    {
+        elem.p->print();
+    }
 }
