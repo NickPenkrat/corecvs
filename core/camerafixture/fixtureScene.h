@@ -9,6 +9,7 @@
 #include "core/camerafixture/fixtureCamera.h"
 #include "core/camerafixture/sceneFeaturePoint.h"
 #include "core/camerafixture/cameraPrototype.h"
+#include "core/utils/typesafeBitmaskEnums.h"
 
 /* In future Scene would like to control memory management for child objects */
 //#define SCENE_OWN_ALLOCATOR_DRAFT

@@ -7,6 +7,7 @@
 #include "core/camerafixture/fixtureCamera.h"
 #include "core/features2d/imageKeyPoints.h"
 #include "core/camerafixture/wildcardablePointerPair.h"
+#include "core/utils/typesafeBitmaskEnums.h"
 
 /* Presentation related */
 #include "core/buffers/rgb24/rgbColor.h"
