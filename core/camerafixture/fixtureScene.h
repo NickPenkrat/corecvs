@@ -412,7 +412,7 @@ public:
                 bool loadGeometry = true)
     {
         visitor.visit(relativeImageDataPath       , std::string(""),      "relativeImageDataPath");
-        visitor.visit((int &)coordinateSystemState, corecvs::asInteger(CoordinateSystemState::initial), "coordinateSystemState");
+        visitor.visit((int &)coordinateSystemState, (int)/*corecvs::asInteger*/(CoordinateSystemState::initial), "coordinateSystemState");
         visitor.visit(localToWorld                , Matrix44::Identity(), "localToWorld");
 
         if (visitor.isLoader())
