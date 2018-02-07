@@ -268,13 +268,13 @@ public:
         visitor.visit(id, IdType(0) , "id");
         setObjectId(id);
 
-        visitor.visit(name                       , std::string("")   , "name");
-        visitor.visit(position                   , Vector3dd(0.0)    , "position");
-        visitor.visit(hasKnownPosition           , false             , "hasKnownPosition");
-        visitor.visit(reprojectedPosition        , Vector3dd(0.0)    , "reprojectedPosition");
-        visitor.visit(hasKnownReprojectedPosition, false             , "hasKnownReprojectedPosition");
-        visitor.visit((int &)type, corecvs::asInteger(POINT_UNKNOWN) , "type");
-        visitor.visit(color                      , RGBColor::Black() , "color");
+        visitor.visit(name                       , std::string("")  , "name");
+        visitor.visit(position                   , Vector3dd(0.0)   , "position");
+        visitor.visit(hasKnownPosition           , false            , "hasKnownPosition");
+        visitor.visit(reprojectedPosition        , Vector3dd(0.0)   , "reprojectedPosition");
+        visitor.visit(hasKnownReprojectedPosition, false            , "hasKnownReprojectedPosition");
+        visitor.visit((int &)type, (int)/*corecvs::asInteger*/(POINT_UNKNOWN), "type");
+        visitor.visit(color                      , RGBColor::Black(), "color");
 
         int observeSize = (int)observations.size();
         visitor.visit(observeSize, 0, "observations.size");
