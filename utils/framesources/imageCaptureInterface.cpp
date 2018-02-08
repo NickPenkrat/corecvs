@@ -141,6 +141,11 @@ string ImageCaptureInterface::getDeviceSerial(int /*num*/)
     return "";
 }
 
+ImageCaptureInterface::CapErrorCode ImageCaptureInterface::initDevice(bool)
+{
+    return ImageCaptureInterface::SUCCESS;
+}
+
 ImageCaptureInterface::CapErrorCode ImageCaptureInterface::initCapture()
 {
     return FAILURE;

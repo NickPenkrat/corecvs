@@ -284,6 +284,7 @@ public:
      *
      * Actually set format can then be queried by the call to getCurrentFormat()
      **/
+    virtual CapErrorCode initDevice(bool fullInit);
     virtual CapErrorCode initCapture();
 
     virtual CapErrorCode startCapture();
