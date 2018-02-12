@@ -5,12 +5,12 @@
  * \date MMM DD, 20YY
  * \author autoGenerator
  */
+
 #include "rgbColorParametersControlWidget.h"
 #include "ui_rgbColorParametersControlWidget.h"
+#include <memory>
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
-
-#include <memory>
 
 
 RgbColorParametersControlWidget::RgbColorParametersControlWidget(QWidget *parent, bool _autoInit, QString _rootPath)
@@ -28,6 +28,7 @@ RgbColorParametersControlWidget::RgbColorParametersControlWidget(QWidget *parent
 
 RgbColorParametersControlWidget::~RgbColorParametersControlWidget()
 {
+
     delete mUi;
 }
 
@@ -48,12 +49,15 @@ void RgbColorParametersControlWidget::getParameters(RgbColorParameters& params) 
     params = *std::unique_ptr<RgbColorParameters>(createParameters());
 }
 
+
 RgbColorParameters *RgbColorParametersControlWidget::createParameters() const
 {
 
     /**
      * We should think of returning parameters by value or saving them in a preallocated place
      **/
+
+
     return new RgbColorParameters(
           mUi->rSpinBox->value()
         , mUi->gSpinBox->value()

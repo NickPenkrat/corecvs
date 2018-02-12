@@ -18,7 +18,7 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     QObject::connect(ui->lensDistortionWidget, SIGNAL(paramsChanged())     , this, SLOT(paramsChangedInUI()));
     QObject::connect(ui->extrinsicWorldWidget, SIGNAL(paramsChanged())     , this, SLOT(paramsChangedInUI()));
 
-    QObject::connect(ui->spinBoxFocalX, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    /*QObject::connect(ui->spinBoxFocalX, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
     QObject::connect(ui->spinBoxFocalY, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 
     QObject::connect(ui->spinBoxCx, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
@@ -30,10 +30,10 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     QObject::connect(ui->spinBoxSizeDistortedX, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
     QObject::connect(ui->spinBoxSizeDistortedY, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
 
-    QObject::connect(ui->spinBoxSkew, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));
+    QObject::connect(ui->spinBoxSkew, SIGNAL(valueChanged(double)), this, SLOT(paramsChangedInUI()));*/
 
     /* So far just hide old stuff*/
-    if (true)
+    /*if (true)
     {
         ui->oldFrame->hide();
         ui->spinBoxFocalX->hide();
@@ -49,8 +49,12 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
         ui->spinBoxSizeDistortedY->hide();
 
         ui->spinBoxSkew->hide();
-    }
+    }*/
 
+
+    QObject::connect(ui->showDistortionCheckBox, SIGNAL(toggled(bool)), ui->lensDistortionWidget, SLOT(setVisible(bool)));
+    // QObject::connect(ui->showProjection        , SIGNAL(toggled(bool)), ui->projection, SLOT(setVisible(bool));
+    QObject::connect(ui->showExtrinsicsCheckBox, SIGNAL(toggled(bool)), ui->tabWidget,            SLOT(setVisible(bool)));
 
 //    writeUi();
     /* Addintional buttons */

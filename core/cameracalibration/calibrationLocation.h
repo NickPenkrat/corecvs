@@ -496,6 +496,13 @@ public:
         return true;
     }
 
+    friend ostream& operator << (ostream &out, CameraLocationData &toPrint)
+    {
+        cout << "Camera at:"  << toPrint.position << " rotor "<< toPrint.orientation << std::endl;
+        return cout;
+    }
+
+
     /* Pretty print */
     void prettyPrint (ostream &out = cout);
     void prettyPrint1(ostream &out = cout);

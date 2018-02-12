@@ -66,11 +66,13 @@ public:
     Vector2dd           accuracy;
     enum ValidFlags {
         OBSERVATION_VALID = 0x1,
-        DIRECTION_VALID   = 0x2
+        DIRECTION_VALID   = 0x2,
+        UNDISTORTED_VALID = 0x4
     };
 
 private:
     mutable Vector2dd   observation;                /**< distorted position at the image */
+    mutable Vector2dd   unditorted;                 /**< undistorted position at the image in current projection model*/
     mutable Vector3dd   observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
     mutable int         validityFlags;
 
@@ -89,9 +91,15 @@ public:
     /* */
     Vector2dd           getUndist() const;
     Vector2dd           getDist  () const;
+    Vector3dd           getRay   () const;
+
+    /* Helper */
+    Ray3d               getFullRay() const;
 
     void                setUndist(const Vector2dd &undist);
     void                setDist  (const Vector2dd &dist);
+    void                setRay   (const Vector3dd &rayDir);
+
 
 private:
     FixtureCamera      *getCameraById(FixtureCamera::IdType id);
@@ -102,6 +110,7 @@ public:
     {
         visitor.visit(observDir    , Vector3dd(0.0) , "observDir");
         visitor.visit(observation  , Vector2dd(0.0) , "observation");
+        visitor.visit(unditorted   , Vector2dd(0.0) , "unditorted");
         visitor.visit(accuracy     , Vector2dd(0.0) , "accuracy");
         visitor.visit(validityFlags, 0              , "validityFlags");
 

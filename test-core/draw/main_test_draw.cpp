@@ -12,6 +12,8 @@
 #include <random>
 #include <fstream>
 
+#include "core/geometry/renderer/attributedTriangleSpanIterator.h"
+
 #include "gtest/gtest.h"
 
 #include "core/utils/global.h"
@@ -317,6 +319,7 @@ TEST(Draw, testSpanDrawTriangle1)
 
     RGB24Buffer *buffer  = new RGB24Buffer(h, w, RGBColor::Black());
     RGB24Buffer *bufferA = new RGB24Buffer(h, w, RGBColor::Black());
+    RGB24Buffer *bufferF = new RGB24Buffer(h, w, RGBColor::Black());
 
 
     vector<Triangle2dd> t;
@@ -364,7 +367,17 @@ TEST(Draw, testSpanDrawTriangle1)
                     itA.step();
                 }
             }
-
+            /**/
+            {
+                AttributedTriangle triF = AttributedTriangle(tri.p1(), tri.p2(), tri.p3());
+                AttributedTriangleSpanIterator itF(triF);
+                while (itF.hasValue())
+                {
+                    AttributedHLineSpan span = itF.getAttrSpan();
+                    bufferF->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
+                    itF.step();
+                }
+            }
 
             /* Mark the corners */
             for (int k = 0; k < tri.SIZE; k++) {
@@ -383,6 +396,9 @@ TEST(Draw, testSpanDrawTriangle1)
 
     BMPLoader().save("trianglemany.bmp", buffer);
     BMPLoader().save("triangleAmany.bmp", bufferA);
+    BMPLoader().save("triangleFmany.bmp", bufferA);
+
+    delete_safe(bufferF);
     delete_safe(bufferA);
     delete_safe(buffer);
 

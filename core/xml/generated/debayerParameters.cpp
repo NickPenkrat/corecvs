@@ -70,7 +70,8 @@ int DebayerParameters::staticInit()
           "Bayer pos",
           true,
          -1,
-         3
+         3,
+         1
         );
     fields().push_back(field1);
     /*  */ 
@@ -84,7 +85,8 @@ int DebayerParameters::staticInit()
           "numBitsOut",
           true,
          -1,
-         15
+         15,
+         1
         );
     fields().push_back(field2);
     /*  */ 
@@ -97,8 +99,13 @@ int DebayerParameters::staticInit()
           3,
           "gains",
           "gains",
-          "RGB gains"
+          "RGB gains",
+          true,
+         0.1,
+         8,
+         1
         );
+    field3->precision=2;
     fields().push_back(field3);
     /*  */ 
     double mGamma_dv[] = {1,1};
@@ -110,8 +117,13 @@ int DebayerParameters::staticInit()
           2,
           "gamma",
           "gamma",
-          "Gamma values"
+          "Gamma values",
+          true,
+         0.2,
+         2.9,
+         1
         );
+    field4->precision=2;
     fields().push_back(field4);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();

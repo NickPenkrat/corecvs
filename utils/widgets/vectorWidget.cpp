@@ -42,13 +42,15 @@ DoubleVectorWidget::DoubleVectorWidget(QWidget *parent) :
     ui(new Ui::VectorWidget)
 {
     ui->setupUi(this);
-    mMaximum = 1000;
-    mMinimum = 0;
+    mMaximum    = 1000;
+    mMinimum    = 0;
+    mDecimals   = 2;
+    mSingleStep = 1;
 }
 
 DoubleVectorWidget::~DoubleVectorWidget()
 {
-    delete ui;
+    delete_safe(ui);
 }
 
 void DoubleVectorWidget::addEntry()

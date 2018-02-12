@@ -416,7 +416,7 @@ int OBJLoader::saveObj(const  string &fileName, Mesh3DDecorated &mesh)
         if (mesh.hasTexCoords) {
             Vector4d32 &texid = mesh.texId[i];
             int t = texid[3];
-            if (t != currentMaterial && t < mesh.materials.size()) {
+            if (t != currentMaterial && t < (int)mesh.materials.size()) {
                 out << "usemtl " << mesh.materials[t].name << endl;
                 currentMaterial = t;
             }

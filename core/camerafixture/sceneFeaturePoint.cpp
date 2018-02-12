@@ -16,24 +16,6 @@ std::string SceneObservation::getPointName()
     return featurePoint ? featurePoint->name : "";
 }
 
-Vector2dd SceneObservation::getUndist() const
-{
-    if (validityFlags & ValidFlags::DIRECTION_VALID) {
-        return observDir.xy();
-    }
-
-    if (camera != NULL && (validityFlags & ValidFlags::OBSERVATION_VALID))
-    {
-        // This is a temporary solution. Z value should be computed, not just set to focal
-        // MEFIXASAP
-        //observDir = Vector3dd(camera->distortion.mapBackward(observation), camera->intrinsics.focal.x());
-        observDir = camera->intrinsics->reverse(camera->distortion.mapBackward(observation));
-
-        validityFlags |= (int)ValidFlags::DIRECTION_VALID;
-        return observDir.xy();
-    }
-    return Vector2dd::Zero(); /* Should I return NaN? */
-}
 
 Vector2dd SceneObservation::getDist() const
 {
@@ -41,13 +23,79 @@ Vector2dd SceneObservation::getDist() const
         return observation;
     }
 
-    if (camera != NULL && (validityFlags & ValidFlags::DIRECTION_VALID))
+    if (camera != NULL && (validityFlags & ValidFlags::UNDISTORTED_VALID))
     {
-        observation = camera->distortion.mapForward(observDir.xy());
+        observation = camera->distortion.mapForward(unditorted);
         validityFlags |= (int)ValidFlags::OBSERVATION_VALID;
         return observation;
     }
+
+    if (camera != NULL && (validityFlags & ValidFlags::DIRECTION_VALID))
+    {
+        unditorted = camera->intrinsics->project(observDir);
+        validityFlags |= (int)ValidFlags::UNDISTORTED_VALID;
+        observation = camera->distortion.mapForward(unditorted);
+        validityFlags |= (int)ValidFlags::OBSERVATION_VALID;
+        return observation;
+    }
+
+
     return Vector2dd::Zero(); /* Should I return NaN? */
+}
+
+
+Vector2dd SceneObservation::getUndist() const
+{
+    if (validityFlags & ValidFlags::UNDISTORTED_VALID) {
+        return unditorted;
+    }
+
+    if (camera != NULL && (validityFlags & ValidFlags::OBSERVATION_VALID))
+    {
+        unditorted = camera->distortion.mapBackward(observation);
+        validityFlags |= (int)ValidFlags::UNDISTORTED_VALID;
+        return unditorted;
+    }
+
+    if (camera != NULL && (validityFlags & ValidFlags::DIRECTION_VALID))
+    {
+        unditorted = camera->intrinsics->project(observDir);
+        validityFlags |= (int)ValidFlags::UNDISTORTED_VALID;
+        return unditorted;
+    }
+
+    return Vector2dd::Zero(); /* Should I return NaN? */
+}
+
+Vector3dd SceneObservation::getRay() const
+{
+    if (validityFlags & ValidFlags::DIRECTION_VALID) {
+        return observDir;
+    }
+
+    if (camera != NULL &&  (validityFlags & ValidFlags::UNDISTORTED_VALID)) {
+        observDir = camera->intrinsics->reverse(unditorted);
+        validityFlags |= ValidFlags::DIRECTION_VALID;
+        return observDir;
+    }
+
+    if (camera != NULL &&  (validityFlags & ValidFlags::OBSERVATION_VALID)) {
+        unditorted = camera->distortion.mapBackward(observation);
+        validityFlags |= (int)ValidFlags::UNDISTORTED_VALID;
+        observDir = camera->intrinsics->reverse(unditorted);
+        validityFlags |= ValidFlags::DIRECTION_VALID;
+        return observDir;
+    }
+
+    return Vector3dd::Zero(); /* Should I return NaN? */
+
+}
+
+Ray3d SceneObservation::getFullRay() const
+{
+   return Ray3d::FromOriginAndDirection(
+               (camera == NULL) ? Vector3dd::Zero() : camera->getAffine().shift,
+               getRay());
 }
 
 void SceneObservation::setUndist(const Vector2dd &undist)
@@ -55,9 +103,8 @@ void SceneObservation::setUndist(const Vector2dd &undist)
     if (camera != NULL)
     {
         // This is a temporary solution. Z value should be computed, not just set to focal
-        // MEFIXASAP
-        //observDir = Vector3dd(undist, camera->intrinsics.focal.x());
-        validityFlags = ValidFlags::DIRECTION_VALID;
+        unditorted = undist;
+        validityFlags = ValidFlags::UNDISTORTED_VALID;
     }
     else {
         SYNC_PRINT(("SceneObservation::setUndist(): ignored coord as camera is nul\n"));
@@ -68,6 +115,12 @@ void SceneObservation::setDist(const Vector2dd &dist)
 {
     observation = dist;
     validityFlags = ValidFlags::OBSERVATION_VALID;
+}
+
+void SceneObservation::setRay(const Vector3dd &rayDir)
+{
+    observDir = rayDir;
+    validityFlags = ValidFlags::DIRECTION_VALID;
 }
 
 FixtureCamera *SceneObservation::getCameraById(FixtureCamera::IdType id)

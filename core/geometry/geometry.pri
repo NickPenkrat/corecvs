@@ -27,7 +27,8 @@ HEADERS += \
     $$PWD/meshClicker.h \
     $$PWD/raytrace/sdfRenderableObjects.h \
     $$PWD/convexHull.h \
-    $$PWD/convexQuickHull.h
+    $$PWD/convexQuickHull.h \
+    $$PWD/renderer/attributedTriangleSpanIterator.h
 
 
 SOURCES += \ 
@@ -54,5 +55,6 @@ SOURCES += \
     $$PWD/meshClicker.cpp \
     $$PWD/raytrace/sdfRenderableObjects.cpp \
     $$PWD/convexHull.cpp \
-    $$PWD/convexQuickHull.cpp
+    $$PWD/convexQuickHull.cpp \
+    $$PWD/renderer/attributedTriangleSpanIterator.cpp
 

@@ -428,6 +428,8 @@ void ConfigLoader::loadClasses(QDomDocument const &config, QFileInfo const &curr
 
 void ConfigLoader::loadParamsMapper(QDomDocument const &config, const QFileInfo &currentFile)
 {
+    Q_UNUSED(currentFile);
+
     QDomNodeList paramsMappers = config.elementsByTagName("parametersMapper");
     for (int i = 0; i < paramsMappers.length(); i++)
     {

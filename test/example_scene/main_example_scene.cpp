@@ -6,6 +6,9 @@
 #include <vector>
 #include <fstream>
 
+#include "core/reflection/commandLineSetter.h"
+#include "core/utils/utils.h"
+
 #include "core/buffers/rgb24/abstractPainter.h"
 #include "core/fileformats/bmpLoader.h"
 
@@ -361,25 +364,91 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 
 }
 
+
+void testJSON_CarScene(int targetSize = 3, bool useDistortion = false )
+{
+    FixtureScene *scene = new FixtureScene();
+
+    CameraFixture *fixture = scene->createCameraFixture();
+    fixture->name = "Z";
+
+
+
+    cout << "Original scene:" << endl;
+    cout << "================================" << endl;
+    scene->dumpInfo(cout);
+    cout << "================================" << endl;
+
+    {
+        JSONSetter setter("stereo.json");
+        setter.visit(*scene, "scene");
+    }
+
+
+    delete_safe(scene);
+}
+
 void testJSON_StereoRecheck()
 {
-     FixtureSceneFactory::getInstance()->print();
-     FixtureScene *scene = FixtureSceneFactory::getInstance()->sceneFactory();
+
+}
+
+void usage()
+{
+    SYNC_PRINT(("Example scene generator:\n"));
+    SYNC_PRINT(("example_scene --help\n"));
+    SYNC_PRINT(("       - print help\n"));
+    SYNC_PRINT(("example_scene --resave  --file in.json [--format <format>] \n"));
+    SYNC_PRINT(("       - loads a file to internal scene format and saves back.\n"
+                "         this is used to check if legacy format is still readable\n"));
+
+}
+
+void doResave(CommandLineSetter &params)
+{
+    SYNC_PRINT(("Resaveing\n"));
+    FixtureSceneFactory::getInstance()->print();
 
 
-     {
-         JSONGetter getter("stereo.json");
-         getter.visit(*scene, "scene");
-     }
-     {
-         JSONSetter setter("stereo-secondary.json");
-         setter.visit(*scene, "scene");
-     }
+    std::string name = "stereo.json";
+    name = params.getString("file", name);
+
+    SYNC_PRINT(("Loading <%s>\n", name.c_str()));
+    FixtureScene *scene = FixtureSceneFactory::getInstance()->sceneFactory();
+
+    {
+        JSONGetter getter(name);
+        getter.visit(*scene, "scene");
+    }
+
+
+    std::string outname = corecvs::HelperUtils::getFullPathWithNewExt(name, "-secondary.json");
+    SYNC_PRINT(("Saveing <%s>\n", outname.c_str()));
+
+    {
+        JSONSetter setter(outname);
+        setter.visit(*scene, "scene");
+    }
+    SYNC_PRINT(("Done\n"));
 }
 
 int main (int argc, char ** argv)
 {
     printf("Generate some test scenes\n");
+
+    CommandLineSetter s(argc, argv);
+    bool help = s.getBool("help");
+    if (help || argc < 2) {
+        usage();
+        return 0;
+    }
+
+    bool resave = s.getBool("resave");
+    if (resave) {
+        doResave(s);
+        return 0;
+    }
+
 
     int size = 3;
     bool custom     = false;

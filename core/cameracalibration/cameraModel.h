@@ -303,12 +303,8 @@ public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        // MEFIXASAP
-        //visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
-
         ProjectionFactory wrapper(intrinsics);
         visitor.visit(wrapper, "intrinsics");
-        //visitor.visit(intrinsics, PinholeCameraIntrinsics()      , "intrinsics");
 
         visitor.visit(extrinsics, CameraLocationData()           , "extrinsics");
         visitor.visit(distortion, LensDistortionModelParameters(), "distortion");

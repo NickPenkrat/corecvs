@@ -48,14 +48,14 @@ public:
     /** Section with variables */
 
     /** 
-     * \brief X 
-     * X 
+     * \brief x 
+     * x 
      */
     double mX;
 
     /** 
-     * \brief Y 
-     * Y 
+     * \brief y 
+     * y 
      */
     double mY;
 

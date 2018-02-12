@@ -528,6 +528,7 @@ bool FixtureScene::integrityRelink()
         FixtureCamera *cam = mOrphanCameras[i];
         cam->ownerScene = this;
         cam->cameraFixture = NULL;
+        cam->sequenceNumber = i;
         for (size_t c = 0; c < cam->mImages.size(); c++)
         {
             ImageRelatedData *image = cam->mImages[c];
@@ -541,6 +542,7 @@ bool FixtureScene::integrityRelink()
     {
         CameraFixture *fixture = mFixtures[i];
         fixture->ownerScene = this;
+        fixture->sequenceNumber = i;
 
         vectorErase(fixture->cameras, (FixtureCamera *)NULL);
 
@@ -549,6 +551,7 @@ bool FixtureScene::integrityRelink()
             FixtureCamera *cam = fixture->cameras[j];
             cam->ownerScene = this;
             cam->cameraFixture = fixture;
+            cam->sequenceNumber = j;
             for (size_t c = 0; c < cam->mImages.size(); c++)
             {
                 ImageRelatedData *image = cam->mImages[c];
