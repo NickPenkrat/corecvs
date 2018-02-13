@@ -73,7 +73,7 @@ bool OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std:
         params.push_back(quality);                      // 0..100, 100 min compression
 
         params.push_back(CV_IMWRITE_PNG_COMPRESSION);
-        params.push_back((100 - quality) * 9 / 100);    // 0..9, 9 max compression
+        params.push_back(_roundDivUp(quality * 9, 100));    // 0..9, 9 max compression:  100->9, 95->3, 0->0
     }
     bool success = cv::imwrite(corecvs::HelperUtils::toNativeSlashes(s), mat, params);
     cvReleaseImage(&b);
