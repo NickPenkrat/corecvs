@@ -237,7 +237,12 @@ public:
 
     virtual bool isVisible(const Vector3dd &p) const override
     {
-        CORE_UNUSED(p);
+        Vector2dd proj = project(p);
+
+        if (!proj.isInRect(Vector2dd(0.0, 0.0), size()))
+        {
+            return false;
+        }
         return true;
     }
 

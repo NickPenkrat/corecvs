@@ -52,7 +52,7 @@ void SillyCost::operator ()(const double in[], double out[])
         Affine3DQ cam;
         cam.shift.x() = in[7 * obs.cam + 0];
         cam.shift.y() = in[7 * obs.cam + 1];
-        cam.shift.x() = in[7 * obs.cam + 2];
+        cam.shift.z() = in[7 * obs.cam + 2];
 
         cam.rotor.x() = in[7 * obs.cam + 3];
         cam.rotor.y() = in[7 * obs.cam + 4];
@@ -61,18 +61,19 @@ void SillyCost::operator ()(const double in[], double out[])
         cam.rotor.normalise();
 
         Vector3dd position;
+        int offset = 7 * scene->cameras.size();
 
-        position.x() = in[3 * obs.cam + 1 + 7 * scene->cameras.size()];
-        position.y() = in[3 * obs.cam + 2 + 7 * scene->cameras.size()];
-        position.z() = in[3 * obs.cam + 3 + 7 * scene->cameras.size()];
+        position.x() = in[3 * obs.point + 0 + offset];
+        position.y() = in[3 * obs.point + 1 + offset];
+        position.z() = in[3 * obs.point + 2 + offset];
 
 
-        Vector3dd modeled = cam * position;
-        modeled.normalise();
+        Vector3dd modeled = (cam * position).normalised();
+        Vector3dd obsvec  = obs.obs.normalised();
 
-        out[3 * obsId + 0] = modeled.x() - obs.obs.x();
-        out[3 * obsId + 1] = modeled.y() - obs.obs.y();
-        out[3 * obsId + 2] = modeled.z() - obs.obs.z();
+        out[3 * obsId + 0] = modeled.x() - obsvec.x();
+        out[3 * obsId + 1] = modeled.y() - obsvec.y();
+        out[3 * obsId + 2] = modeled.z() - obsvec.z();
 
     }
 
@@ -195,7 +196,7 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
         Vector3dd coef = ray1.intersectCoef(ray2);
 
         if (coef[0] < 0 || coef[1] < 0 ) {
-            SYNC_PRINT(("Point %s: rejected beacause it is triangulated behind cameras\n", p->name.c_str()));
+            SYNC_PRINT(("Point %s: rejected beacause it is triangulated behind cameras \n", p->name.c_str()));
             continue;
         }
 
@@ -203,6 +204,7 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
         Vector3dd x2 = ray2.getPoint(coef[1]);
         Vector3dd x = (x1 + x2) / 2.0;
 
+        cout << "Triangulated " << p->position << " to " << x << endl;
         p->position = x;
 
         S.points.push_back(p->position);

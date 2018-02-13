@@ -201,14 +201,16 @@ public:
      **/
     Polygon projectViewport(const CameraModel &right, double pyramidLength1 = -1, double pyramidLength2 = -1) const;
 
+#if 0 // depricated
     /**
      * Only checks for the fact that point belongs to viewport.
      * If you are projecting 3d point you should be sure that point is in front
      **/
     bool isVisible(const Vector2dd &point)
     {
-        return point.isInRect(Vector2dd(0.0,0.0), intrinsics->size());
+        return intrinsics->isVisible(point);
     }
+#endif
 
     /**
      * Checks full visibility of 3d point

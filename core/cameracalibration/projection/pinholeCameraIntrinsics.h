@@ -78,7 +78,7 @@ struct PinholeCameraIntrinsics : public PinholeCameraIntrinsicsBaseParameters,  
 
     virtual bool isVisible(const Vector3dd &p) const override
     {
-        if (p[2] <= 0.0) {
+        if (p.z() <= 0.0) {
             return false;
         }
         Vector2dd proj = project(p);

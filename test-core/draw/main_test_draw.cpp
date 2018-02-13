@@ -370,7 +370,7 @@ TEST(Draw, testSpanDrawTriangle1)
             /**/
             {
                 AttributedTriangle triF = AttributedTriangle(tri.p1(), tri.p2(), tri.p3());
-                AttributedTriangleSpanIterator itF(triF);
+                AttributedTriangleSpanIteratorFix itF(triF);
                 while (itF.hasValue())
                 {
                     AttributedHLineSpan span = itF.getAttrSpan();
@@ -396,7 +396,7 @@ TEST(Draw, testSpanDrawTriangle1)
 
     BMPLoader().save("trianglemany.bmp", buffer);
     BMPLoader().save("triangleAmany.bmp", bufferA);
-    BMPLoader().save("triangleFmany.bmp", bufferA);
+    BMPLoader().save("triangleFmany.bmp", bufferF);
 
     delete_safe(bufferF);
     delete_safe(bufferA);

@@ -117,6 +117,11 @@ public:
     AttributedTriangleSpanIteratorFix(const AttributedTriangle &triangle)
     {
         sortedt = triangle;
+
+        sortedt.p1().y() = fround(sortedt.p1().y());
+        sortedt.p2().y() = fround(sortedt.p2().y());
+        sortedt.p3().y() = fround(sortedt.p3().y());
+
         sortedt.sortByY();
 
         double longslope = (sortedt.p3().x() - sortedt.p1().x()) / (sortedt.p3().y() - sortedt.p1().y());
@@ -136,14 +141,6 @@ public:
             std::swap(centerx1, centerx2);
             std::swap(    att1,     att2);
         }
-
-        /* We are rounding the pixels */
-/*        int p1y = fround(sortedt.p1().y());
-        int p2y = fround(sortedt.p2().y());*/
-
-
-
-
 
         part = TrapezoidSpanIterator(sortedt.p1().y(), sortedt.p2().y(), sortedt.p1().x(), sortedt.p1().x(), centerx1, centerx2);
         part.a11 = sortedt.p1().attributes;

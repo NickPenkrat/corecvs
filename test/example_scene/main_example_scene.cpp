@@ -10,6 +10,8 @@
 #include "core/utils/utils.h"
 
 #include "core/buffers/rgb24/abstractPainter.h"
+#include "core/buffers/bufferFactory.h"
+
 #include "core/fileformats/bmpLoader.h"
 
 #include "core/camerafixture/fixtureScene.h"
@@ -23,6 +25,7 @@
 #include "jsonSetter.h"
 
 #include "core/reflection/jsonPrinter.h"
+#include "core/geometry/mesh3d.h"
 
 using namespace std;
 
@@ -365,22 +368,96 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 }
 
 
-void testJSON_CarScene(int targetSize = 3, bool useDistortion = false )
+void testJSON_CarScene(CommandLineSetter &params)
 {
     FixtureScene *scene = new FixtureScene();
 
     CameraFixture *fixture = scene->createCameraFixture();
-    fixture->name = "Z";
+    fixture->name = "Car Body";
 
 
+    Mesh3D mesh;
+    mesh.addIcoSphere(Vector3dd::Zero(), 20.0, 1);
 
-    cout << "Original scene:" << endl;
+    for (int i = 0; i < mesh.vertexes.size(); i++)
+    {
+        Vector3dd pos = mesh.vertexes[i];
+        if (pos.z() < 0) {
+            continue;
+        }
+
+        SceneFeaturePoint *point = scene->createFeaturePoint();
+        point->setPosition(pos);
+        point->color = RGBColor::Yellow();
+    }
+
+    std::string input =
+    "omnidirectional\n"
+    "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
+    std::istringstream ss(input);
+
+    CameraModel model = CameraModel::loadCatadioptricFromTxt(ss);
+
+    FixtureCamera *front = scene->createCamera(); scene->addCameraToFixture(front, fixture);
+    front->nameId = "Front";
+    FixtureCamera *right = scene->createCamera(); scene->addCameraToFixture(right, fixture);
+    right->nameId = "Right";
+    FixtureCamera *back  = scene->createCamera(); scene->addCameraToFixture(back , fixture);
+    back->nameId = "Back";
+    FixtureCamera *left  = scene->createCamera(); scene->addCameraToFixture(left , fixture);
+    back->nameId = "Left";
+
+    FixtureCamera *cams[] = {front, right, back, left};
+
+    front->copyModelFrom(model);
+    right->copyModelFrom(model);
+    back ->copyModelFrom(model);
+    left ->copyModelFrom(model);
+
+    scene->positionCameraInFixture(fixture, front, Affine3DQ(Quaternion::RotationZ(degToRad(  0)), Vector3dd( 1, 0, 0)));
+    scene->positionCameraInFixture(fixture, right, Affine3DQ(Quaternion::RotationZ(degToRad( 90)), Vector3dd( 0, 1, 0)));
+    scene->positionCameraInFixture(fixture,  left, Affine3DQ(Quaternion::RotationZ(degToRad(180)), Vector3dd(-3, 0, 0)));
+    scene->positionCameraInFixture(fixture,  back, Affine3DQ(Quaternion::RotationZ(degToRad(270)), Vector3dd( 0,-1, 0)));
+
+    scene->projectForward(SceneFeaturePoint::POINT_ALL);
+
+
+    for (int i = 0; i < 4; i++)
+    {
+        RGB24Buffer *image = new RGB24Buffer(model.intrinsics->h(), model.intrinsics->w(), RGBColor::gray(75));
+
+        image->checkerBoard(100, RGBColor::Gray(50));
+
+        AbstractPainter<RGB24Buffer> painter(image);
+
+        for (size_t pId = 0; pId < scene->featurePoints().size(); pId++)
+        {
+            SceneFeaturePoint *point = scene->featurePoints()[pId];
+
+            if (point->getObservation(cams[i]) != NULL) {
+                Vector2dd p = point->getObservation(cams[i])->getUndist();
+                painter.drawCircle(p.x(), p.y(), 30, point->color);
+
+                SYNC_PRINT(("Drawing point at %lf %lf\n", p.x(), p.y()));
+            }
+        }
+        std::string name = std::string("SP") /*+  fixture->name*/ + cams[i]->nameId + ".bmp";
+        BufferFactory::getInstance()->saveRGB24Bitmap(image, name);
+
+        ImageRelatedData *sceneImage = scene->createImageData();
+        sceneImage->mImagePath = name;
+        cams[i]->addImageToCamera(sceneImage);
+
+        delete_safe(image);
+    }
+
+    cout << "Car scene:" << endl;
     cout << "================================" << endl;
     scene->dumpInfo(cout);
     cout << "================================" << endl;
 
     {
-        JSONSetter setter("stereo.json");
+        JSONSetter setter("car.json");
         setter.visit(*scene, "scene");
     }
 
@@ -398,6 +475,8 @@ void usage()
     SYNC_PRINT(("Example scene generator:\n"));
     SYNC_PRINT(("example_scene --help\n"));
     SYNC_PRINT(("       - print help\n"));
+    SYNC_PRINT(("example_scene --car\n"));
+    SYNC_PRINT(("       - create an example car scene\n"));
     SYNC_PRINT(("example_scene --resave  --file in.json [--format <format>] \n"));
     SYNC_PRINT(("       - loads a file to internal scene format and saves back.\n"
                 "         this is used to check if legacy format is still readable\n"));
@@ -446,6 +525,12 @@ int main (int argc, char ** argv)
     bool resave = s.getBool("resave");
     if (resave) {
         doResave(s);
+        return 0;
+    }
+
+    bool carScene = s.getBool("car");
+    if (carScene) {
+        testJSON_CarScene(s);
         return 0;
     }
 

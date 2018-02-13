@@ -72,7 +72,7 @@ public:
 
 private:
     mutable Vector2dd   observation;                /**< distorted position at the image */
-    mutable Vector2dd   unditorted;                 /**< undistorted position at the image in current projection model*/
+    mutable Vector2dd   undistorted;                 /**< undistorted position at the image in current projection model*/
     mutable Vector3dd   observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
     mutable int         validityFlags;
 
@@ -110,7 +110,7 @@ public:
     {
         visitor.visit(observDir    , Vector3dd(0.0) , "observDir");
         visitor.visit(observation  , Vector2dd(0.0) , "observation");
-        visitor.visit(unditorted   , Vector2dd(0.0) , "unditorted");
+        visitor.visit(undistorted   , Vector2dd(0.0) , "unditorted");
         visitor.visit(accuracy     , Vector2dd(0.0) , "accuracy");
         visitor.visit(validityFlags, 0              , "validityFlags");
 

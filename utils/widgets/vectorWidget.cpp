@@ -8,11 +8,19 @@ VectorWidget::VectorWidget(QWidget *parent) :
     ui(new Ui::VectorWidget)
 {
     ui->setupUi(this);
+    // buttonsSide(true);
+    ui->widgetLow->setVisible(false);
 }
 
 VectorWidget::~VectorWidget()
 {
     delete ui;
+}
+
+void VectorWidget::buttonsSide(bool flag)
+{
+    ui->widgetLow ->setVisible(!flag);
+    ui->widgetSide->setVisible(flag);
 }
 
 void VectorWidget::addEntry()

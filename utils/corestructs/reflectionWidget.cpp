@@ -27,8 +27,8 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
     setWindowTitle(reflection->name.name);
 
     gridLayout = new QGridLayout(this);
-    gridLayout->setSpacing(3);
-    gridLayout->setContentsMargins(3, 3, 3, 3);
+    gridLayout->setSpacing(2);
+    gridLayout->setContentsMargins(2, 2, 2, 2);
 
     fieldToPosition.resize(reflection->fields.size(), -1);
 

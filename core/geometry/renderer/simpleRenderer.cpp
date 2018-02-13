@@ -237,7 +237,7 @@ void ClassicRenderer::fragmentShader(AttributedHLineSpan &span)
                 RGBColor c = color;
 
                 /* Texture block*/
-                if (texId < textures.size() && textures[texId] != NULL)
+                if (texId < (int)textures.size() && textures[texId] != NULL)
                 {
 
                     RGB24Buffer *texture = textures[texId];

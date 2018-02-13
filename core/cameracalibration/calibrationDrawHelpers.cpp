@@ -388,6 +388,15 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, 
             Vector3dd p2 = ray.getPoint(projectionRayLength() * scale);
             mesh.addLine(ray.p, p2);
 
+            {
+                RGBColor color = mesh.currentColor;
+                mesh.setColor(RGBColor::Green());
+                Ray3d ray = observ.getFullRay();
+                Vector3dd p2 = ray.getPoint(projectionRayLength() * scale);
+                mesh.addLine(ray.p, p2);
+                mesh.setColor(color);
+            }
+
             /*Ray3d rayDir(rawCam.extrinsics.position, observ.observDir);
             Vector3dd p3 = rayDir.getPoint(scale);
             mesh.addLine(rayDir.p, p3);*/

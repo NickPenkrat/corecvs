@@ -140,7 +140,7 @@ public:
      *    Y      -Z     |    Y       -X
      *    X      -Y     |    Z       -Y
      *
-     *  This transform only happens when you use ::positionCameraInStation() method. Thoough we encourage you to do so.
+     *  This transform only happens when you use ::positionCameraInFixture() method. Though we encourage you to do so.
      *
      **/
     static Affine3DQ              DEFAULT_WORLD_TO_CAMERA;

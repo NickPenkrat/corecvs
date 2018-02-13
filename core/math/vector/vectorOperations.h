@@ -749,6 +749,27 @@ public:
         std::cout << "\n";
     }
 
+    /**/
+    void loadFrom(const ElementType *in)
+    {
+        for (int i = 0; i < _size(); i++)
+        {
+            _at(i) = in[i];
+        }
+    }
+
+    void storeTo(ElementType *in)
+    {
+        for (int i = 0; i < _size(); i++)
+        {
+            in[i] = _at(i);
+        }
+    }
+
+
+
+    /* Per element */
+
     inline ElementType minimum() const
     {
         ElementType minimum = numeric_limits<ElementType>::max();

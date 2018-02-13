@@ -25,16 +25,16 @@ Vector2dd SceneObservation::getDist() const
 
     if (camera != NULL && (validityFlags & ValidFlags::UNDISTORTED_VALID))
     {
-        observation = camera->distortion.mapForward(unditorted);
+        observation = camera->distortion.mapForward(undistorted);
         validityFlags |= (int)ValidFlags::OBSERVATION_VALID;
         return observation;
     }
 
     if (camera != NULL && (validityFlags & ValidFlags::DIRECTION_VALID))
     {
-        unditorted = camera->intrinsics->project(observDir);
+        undistorted = camera->intrinsics->project(observDir);
         validityFlags |= (int)ValidFlags::UNDISTORTED_VALID;
-        observation = camera->distortion.mapForward(unditorted);
+        observation = camera->distortion.mapForward(undistorted);
         validityFlags |= (int)ValidFlags::OBSERVATION_VALID;
         return observation;
     }
@@ -47,21 +47,21 @@ Vector2dd SceneObservation::getDist() const
 Vector2dd SceneObservation::getUndist() const
 {
     if (validityFlags & ValidFlags::UNDISTORTED_VALID) {
-        return unditorted;
+        return undistorted;
     }
 
     if (camera != NULL && (validityFlags & ValidFlags::OBSERVATION_VALID))
     {
-        unditorted = camera->distortion.mapBackward(observation);
+        undistorted = camera->distortion.mapBackward(observation);
         validityFlags |= (int)ValidFlags::UNDISTORTED_VALID;
-        return unditorted;
+        return undistorted;
     }
 
     if (camera != NULL && (validityFlags & ValidFlags::DIRECTION_VALID))
     {
-        unditorted = camera->intrinsics->project(observDir);
+        undistorted = camera->intrinsics->project(observDir);
         validityFlags |= (int)ValidFlags::UNDISTORTED_VALID;
-        return unditorted;
+        return undistorted;
     }
 
     return Vector2dd::Zero(); /* Should I return NaN? */
@@ -74,15 +74,15 @@ Vector3dd SceneObservation::getRay() const
     }
 
     if (camera != NULL &&  (validityFlags & ValidFlags::UNDISTORTED_VALID)) {
-        observDir = camera->intrinsics->reverse(unditorted);
+        observDir = camera->intrinsics->reverse(undistorted);
         validityFlags |= ValidFlags::DIRECTION_VALID;
         return observDir;
     }
 
     if (camera != NULL &&  (validityFlags & ValidFlags::OBSERVATION_VALID)) {
-        unditorted = camera->distortion.mapBackward(observation);
+        undistorted = camera->distortion.mapBackward(observation);
         validityFlags |= (int)ValidFlags::UNDISTORTED_VALID;
-        observDir = camera->intrinsics->reverse(unditorted);
+        observDir = camera->intrinsics->reverse(undistorted);
         validityFlags |= ValidFlags::DIRECTION_VALID;
         return observDir;
     }
@@ -95,7 +95,7 @@ Ray3d SceneObservation::getFullRay() const
 {
    return Ray3d::FromOriginAndDirection(
                (camera == NULL) ? Vector3dd::Zero() : camera->getAffine().shift,
-               getRay());
+               camera->getAffine().rotor * getRay());
 }
 
 void SceneObservation::setUndist(const Vector2dd &undist)
@@ -103,7 +103,7 @@ void SceneObservation::setUndist(const Vector2dd &undist)
     if (camera != NULL)
     {
         // This is a temporary solution. Z value should be computed, not just set to focal
-        unditorted = undist;
+        undistorted = undist;
         validityFlags = ValidFlags::UNDISTORTED_VALID;
     }
     else {
@@ -467,7 +467,7 @@ void SceneFeaturePoint::projectForward(FixtureCamera *camera, CameraFixture *fix
     CameraModel worldCam = camera->getWorldCameraModel();
 
     Vector2dd projection = worldCam.project(position);
-    if (!worldCam.isVisible(projection) || !worldCam.isInFront(position))
+    if (!worldCam.isVisible(position))
         return;
 
     if (round) {

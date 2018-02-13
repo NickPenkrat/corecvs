@@ -21,6 +21,7 @@ public:
     ParametersControlWidgetBaseFabric *mFabric = NULL;
 
 public slots:
+    void buttonsSide(bool flag);
     void addEntry();
     void removeEntry();
 

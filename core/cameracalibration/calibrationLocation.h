@@ -498,8 +498,8 @@ public:
 
     friend ostream& operator << (ostream &out, CameraLocationData &toPrint)
     {
-        cout << "Camera at:"  << toPrint.position << " rotor "<< toPrint.orientation << std::endl;
-        return cout;
+        out << "Camera at:"  << toPrint.position << " rotor "<< toPrint.orientation << std::endl;
+        return out;
     }
 
 
