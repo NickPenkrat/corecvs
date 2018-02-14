@@ -21,7 +21,8 @@ Debayer::Parameters& Debayer::Parameters::BestDefaultsByExt(const string& ext)
         raw.setGamma({ 0.4, 2.8 });
         bestDefsMap["raw"] = raw;
 
-        Debayer::Parameters pgm(1);
+        Debayer::Parameters pgm(1); // bpos=1
+        pgm.setGains({ 1.34, 1.0, 1.75 });
         bestDefsMap["pgm"] = pgm;
     }
 
