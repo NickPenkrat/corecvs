@@ -1,24 +1,18 @@
 <poco version="5.0">
   <include name="parameters.xml"/>
 
+  <enum name="Scene Draw Backend Type">
+    <item name="Old"        id="0" comment="Old"/>
+    <item name="New"        id="1" comment="New"/>
+    <item name="Integrated" id="2" comment="Integrated"/>
+  </enum>
+
 
   <class name="Calibration Draw Helpers Parameters">
 
-   <!--
-       bool    printNames;
-       bool    privateColor;
-       bool    largePoints;
-
-       /* */
-       bool    drawFixtureCams;
-       bool    drawObservations;
-       bool    drawRays;
-
-   -->
-
-    <field type="bool"      name="Use Old Backend"     defaultValue="true" >
+    <field type="Scene Draw Backend Type"      name="Backend"     defaultValue="0" >
         <description>EXPERIMENTAL</description>
-        <comment>EXPERIMENTAL We have two OpenGL backends to draw. Old is without shaders, new is with shaders</comment>
+        <comment>EXPERIMENTAL We have three OpenGL backends to draw. Old is without shaders, new is with shaders</comment>
     </field>
 
     <field type="double"    name="Scale For Cameras"      defaultValue="1"  min="0.01" max="1000" step="1"/>
@@ -47,6 +41,10 @@
     <field type="double"    name="Projection Ray Length" defaultValue="10"  min="0.01" max="1000" step="1"/>
 
     <field type="bool"      name="drawRays"          defaultValue="true" />
+  </class>
+
+  <class name="Extrinsics Placer Parameters">
+    <field type="bool"      name="triangulate on sphere"     defaultValue="false" />
   </class>
 
 </poco>

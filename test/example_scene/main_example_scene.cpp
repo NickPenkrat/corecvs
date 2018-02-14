@@ -370,6 +370,8 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 
 void testJSON_CarScene(CommandLineSetter &params)
 {
+    bool addNoise = params.getBool("noise");
+
     FixtureScene *scene = new FixtureScene();
 
     CameraFixture *fixture = scene->createCameraFixture();
@@ -405,7 +407,7 @@ void testJSON_CarScene(CommandLineSetter &params)
     FixtureCamera *back  = scene->createCamera(); scene->addCameraToFixture(back , fixture);
     back->nameId = "Back";
     FixtureCamera *left  = scene->createCamera(); scene->addCameraToFixture(left , fixture);
-    back->nameId = "Left";
+    left->nameId = "Left";
 
     FixtureCamera *cams[] = {front, right, back, left};
 
@@ -419,7 +421,8 @@ void testJSON_CarScene(CommandLineSetter &params)
     scene->positionCameraInFixture(fixture,  left, Affine3DQ(Quaternion::RotationZ(degToRad(180)), Vector3dd(-3, 0, 0)));
     scene->positionCameraInFixture(fixture,  back, Affine3DQ(Quaternion::RotationZ(degToRad(270)), Vector3dd( 0,-1, 0)));
 
-    scene->projectForward(SceneFeaturePoint::POINT_ALL);
+
+    scene->projectForward(SceneFeaturePoint::POINT_ALL, addNoise);
 
 
     for (int i = 0; i < 4; i++)

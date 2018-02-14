@@ -1,6 +1,7 @@
 #ifndef EXTRINSICSPLACER_H
 #define EXTRINSICSPLACER_H
 
+#include "core/xml/generated/extrinsicsPlacerParameters.h"
 #include "core/cameracalibration/calibrationLocation.h"
 #include "core/function/function.h"
 
@@ -31,11 +32,6 @@ public:
     };
     std::vector<Observation> obs;
 
-    int getInputNumber() const
-    {
-        return cameras.size() * 7 + points.size() * 3;
-    }
-
     friend ostream& operator << (ostream &out, SimplifiedScene &toPrint)
     {
 
@@ -58,13 +54,28 @@ public:
 
 };
 
-class SillyNormalizer : public FunctionArgs
+struct SillyModel
 {
-public:
+    static const int CAM_MODEL_SIZE = Vector3dd::LENGTH + Quaternion::LENGTH;
+
+    static int getInputNumber(const SimplifiedScene *scene)
+    {
+        return scene->cameras.size() * CAM_MODEL_SIZE + scene->points.size() * Vector3dd::LENGTH;
+    }
+
+    static int getOutputNumber(const SimplifiedScene *scene)
+    {
+        return scene->obs.size() * Vector3dd::LENGTH;
+    }
+};
+
+class SillyNormalizer : public FunctionArgs, public SillyModel
+{
+public:    
     SimplifiedScene *scene = NULL;
 
     SillyNormalizer(SimplifiedScene *scene) :
-        FunctionArgs(scene->getInputNumber(), scene->getInputNumber()),
+        FunctionArgs(getInputNumber(scene), getInputNumber(scene)),
         scene(scene)
     {
     }
@@ -74,13 +85,13 @@ public:
 };
 
 /* Ray angle is used as the base for cost function */
-class SillyCost : public FunctionArgs
+class SillyCost : public FunctionArgs, public SillyModel
 {
 public:
     SimplifiedScene *scene = NULL;
 
     SillyCost(SimplifiedScene *scene) :
-        FunctionArgs(scene->getInputNumber(), scene->obs.size() * 3),
+        FunctionArgs(getInputNumber(scene), getOutputNumber(scene)),
         scene(scene)
     {
     }
@@ -103,6 +114,8 @@ class ExtrinsicsPlacer
 {
 public:
     ExtrinsicsPlacer();
+
+    ExtrinsicsPlacerParameters params;
 
     void place (FixtureScene *scene);
 };

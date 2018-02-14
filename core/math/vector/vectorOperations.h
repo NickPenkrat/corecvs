@@ -758,7 +758,7 @@ public:
         }
     }
 
-    void storeTo(ElementType *in)
+    void storeTo(ElementType *in) const
     {
         for (int i = 0; i < _size(); i++)
         {

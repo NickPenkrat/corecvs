@@ -25,17 +25,9 @@ void SillyNormalizer::operator ()(const double in[], double out[])
     for (size_t camId = 0; camId < scene->cameras.size(); camId++)
     {
         Quaternion rotor;
-        rotor.x() = out[7 * camId + 3];
-        rotor.y() = out[7 * camId + 4];
-        rotor.z() = out[7 * camId + 5];
-        rotor.t() = out[7 * camId + 6];
-
+        rotor.loadFrom(&out[CAM_MODEL_SIZE * camId + 3]);
         rotor.normalise();
-
-        out[7 * camId + 3] = rotor.x();
-        out[7 * camId + 4] = rotor.y();
-        out[7 * camId + 5] = rotor.z();
-        out[7 * camId + 6] = rotor.t();
+        rotor.storeTo (&out[CAM_MODEL_SIZE * camId + 3]);
     }
 }
 
@@ -50,31 +42,20 @@ void SillyCost::operator ()(const double in[], double out[])
         SimplifiedScene::Observation &obs = scene->obs[obsId];
 
         Affine3DQ cam;
-        cam.shift.x() = in[7 * obs.cam + 0];
-        cam.shift.y() = in[7 * obs.cam + 1];
-        cam.shift.z() = in[7 * obs.cam + 2];
-
-        cam.rotor.x() = in[7 * obs.cam + 3];
-        cam.rotor.y() = in[7 * obs.cam + 4];
-        cam.rotor.z() = in[7 * obs.cam + 5];
-        cam.rotor.t() = in[7 * obs.cam + 6];
+        cam.shift.loadFrom(& in[CAM_MODEL_SIZE * obs.cam]);
+        cam.rotor.loadFrom(& in[CAM_MODEL_SIZE * obs.cam + Vector3dd::LENGTH]);
         cam.rotor.normalise();
 
         Vector3dd position;
-        int offset = 7 * scene->cameras.size();
+        int offset = CAM_MODEL_SIZE * scene->cameras.size();
 
-        position.x() = in[3 * obs.point + 0 + offset];
-        position.y() = in[3 * obs.point + 1 + offset];
-        position.z() = in[3 * obs.point + 2 + offset];
-
+        position.loadFrom(&in[3 * obs.point + offset]);
 
         Vector3dd modeled = (cam * position).normalised();
         Vector3dd obsvec  = obs.obs.normalised();
 
-        out[3 * obsId + 0] = modeled.x() - obsvec.x();
-        out[3 * obsId + 1] = modeled.y() - obsvec.y();
-        out[3 * obsId + 2] = modeled.z() - obsvec.z();
-
+        Vector3dd error = modeled - obsvec;
+        error.storeTo(&out[3 * obsId]);
     }
 
 }
@@ -82,27 +63,20 @@ void SillyCost::operator ()(const double in[], double out[])
 vector<double> SillyCost::sceneToModel(const SimplifiedScene& scene)
 {
     vector<double> out;
-    out.resize(scene.getInputNumber());
+    out.resize(getInputNumber(&scene));
 
     for (size_t i = 0; i < scene.cameras.size(); i++ )
     {
         Affine3DQ transform = scene.cameras[i].toMockAffine3D();
-        out[i*7 + 0] = transform.shift.x();
-        out[i*7 + 1] = transform.shift.y();
-        out[i*7 + 2] = transform.shift.z();
-
-        out[i*7 + 3] = transform.rotor.x();
-        out[i*7 + 4] = transform.rotor.y();
-        out[i*7 + 5] = transform.rotor.z();
-        out[i*7 + 6] = transform.rotor.t();
+        transform.shift.storeTo(&out[CAM_MODEL_SIZE * i]);
+        transform.rotor.storeTo(&out[CAM_MODEL_SIZE * i + Vector3dd::LENGTH]);
     }
 
-    int offset = scene.cameras.size() * 7;
+    int offset = scene.cameras.size() * CAM_MODEL_SIZE;
+
     for (size_t i = 0; i < scene.points.size(); i++ )
     {
-        out[i*3 + 0 + offset] = scene.points[i].x();
-        out[i*3 + 1 + offset] = scene.points[i].y();
-        out[i*3 + 2 + offset] = scene.points[i].z();
+        scene.points[i].storeTo(&out[i * Vector3dd::LENGTH + offset]);
     }
 
     return out;
@@ -113,24 +87,16 @@ void SillyCost::sceneFromModel(SimplifiedScene &scene, const vector<double> &mod
     for (size_t i = 0; i < scene.cameras.size(); i++ )
     {
         Affine3DQ transform;
-        transform.shift.x() = model[i*7 + 0];
-        transform.shift.y() = model[i*7 + 1];
-        transform.shift.z() = model[i*7 + 2];
-
-        transform.rotor.x() = model[i*7 + 3];
-        transform.rotor.y() = model[i*7 + 4];
-        transform.rotor.z() = model[i*7 + 5];
-        transform.rotor.t() = model[i*7 + 6];
+        transform.shift.loadFrom(&model[i * CAM_MODEL_SIZE]);
+        transform.rotor.loadFrom(&model[i * CAM_MODEL_SIZE + Vector3dd::LENGTH]);
 
         scene.cameras[i] = CameraLocationData::FromMockAffine3D(transform);
     }
 
-    int offset = scene.cameras.size() * 7;
+    int offset = scene.cameras.size() * CAM_MODEL_SIZE;
     for (size_t i = 0; i < scene.points.size(); i++ )
     {
-        scene.points[i].x() = model[i*3 + 0 + offset];
-        scene.points[i].y() = model[i*3 + 1 + offset];
-        scene.points[i].z() = model[i*3 + 2 + offset];
+        scene.points[i].loadFrom(&model[i * Vector3dd::LENGTH +  offset]);
     }
 
 
@@ -204,10 +170,11 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
         Vector3dd x2 = ray2.getPoint(coef[1]);
         Vector3dd x = (x1 + x2) / 2.0;
 
-        cout << "Triangulated " << p->position << " to " << x << endl;
-        p->position = x;
+        cout << "Triangulated " << p->reprojectedPosition << " to " << x << endl;
+        p->reprojectedPosition = x;
+        p->hasKnownReprojectedPosition = true;
 
-        S.points.push_back(p->position);
+        S.points.push_back(p->reprojectedPosition);
         idToScene.push_back(i);
 
         for (auto &obsIt: p->observations)
@@ -215,7 +182,7 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
             FixtureCamera    *cam = obsIt.first;
             SceneObservation &obs = obsIt.second;
             Vector3dd ray = obs.getRay();
-            SimplifiedScene::Observation simpleObs((int)cam->sequenceNumber, (int)i, ray);
+            SimplifiedScene::Observation simpleObs((int)cam->sequenceNumber, (int)(S.points.size() - 1), ray);
             S.obs.push_back(simpleObs);
         }
 
@@ -223,6 +190,7 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
 
     cout << "Simplified Scene" << endl;
     cout << S << endl;
+    cout << "Camera Model Size" << SillyCost::CAM_MODEL_SIZE << endl;
 
     SillyCost F(&S);
     SillyNormalizer N(&S);
@@ -233,12 +201,12 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
 
     LevenbergMarquardt lmFit;
 
-    lmFit.maxIterations = 10000001;
+    lmFit.maxIterations = 1001;
     lmFit.maxLambda = 10e80;
     lmFit.fTolerance = 1e-19;
     lmFit.xTolerance = 1e-19;
 
-    lmFit.lambdaFactor = 8;
+    lmFit.lambdaFactor = 4;
     lmFit.traceCrucial  = true;
     lmFit.traceProgress = true;
     lmFit.trace         = true;

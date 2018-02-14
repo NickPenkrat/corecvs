@@ -678,6 +678,14 @@ template<class VisitorType>
         return RGBColor(r + m, g + m, b + m);
     }
 
+
+    static RGBColor colorBlindPalette[6];
+
+    static RGBColor getPalleteColor(int id)
+    {
+        return colorBlindPalette[id % 6];
+    }
+
 };
 
 } //namespace corecvs

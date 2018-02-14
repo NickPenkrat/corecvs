@@ -8,15 +8,6 @@
 
 using namespace corecvs;
 
-RGBColor CalibrationDrawHelpers::palette[] =
-{
-    RGBColor(0x762a83u),
-    RGBColor(0xaf8dc3u),
-    RGBColor(0xe7d4e8u),
-    RGBColor(0xd9f0d3u),
-    RGBColor(0x7fbf7bu),
-    RGBColor(0x1b7837u)
-};
 
 void CalibrationDrawHelpers::setParameters(const CalibrationDrawHelpersParameters &params)
 {
@@ -279,25 +270,15 @@ void CalibrationDrawHelpers::drawCameraEx (Mesh3DDecorated &mesh, const CameraMo
     }
 }
 
-void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, double scale)
+void CalibrationDrawHelpers::drawFixture(Mesh3D &mesh, const CameraFixture &ps, double scale)
 {
 //    SYNC_PRINT(("CalibrationHelpers::drawPly():called\n"));
-
-
-    // Colorblind-safe palette
-    // CameraLocationData loc = ps.getLocation();
-    // Quaternion qs = loc.orientation.conjugated();
-    // std::cout << qs << std::endl;
-
-    int colorId = 0;
-
     if (drawFixtureCams())
     {
         for (size_t cam = 0; cam < ps.cameras.size(); cam++)
         {
-            mesh.setColor(palette[colorId]);
-            //SYNC_PRINT(("CalibrationDrawHelpers::drawPly color %d(%d)\n", colorId, CORE_COUNT_OF(palette)));
-            colorId = (colorId + 1) % CORE_COUNT_OF(palette);
+            mesh.setColor(RGBColor::getPalleteColor(cam));
+            //SYNC_PRINT(("CalibrationDrawHelpers::drawPly color %d(%d)\n", colorId, CORE_COUNT_OF(palette)));           
             drawCamera(mesh, ps.getRawCamera((int)cam), scale);
         }
     }
@@ -324,26 +305,21 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const CameraFixture &ps, doub
     }
 }
 
-void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const FixtureSceneGeometry &fg, double /*scale*/)
+void CalibrationDrawHelpers::drawFixtureEx(Mesh3DDecorated &mesh, const CameraFixture &ps, double scale)
+{
+
+
+
+}
+
+void CalibrationDrawHelpers::drawSceneGeometry(Mesh3D &mesh, const FixtureSceneGeometry &fg, double /*scale*/)
 {
     mesh.setColor(RGBColor::Red());
-#if 0
-    /* Simple way */
-    for (size_t i = 0; i < fg.polygon.size(); i++)
-    {
-        Vector2dd p1 = fg.polygon.getPoint((int)i);
-        Vector2dd p2 = fg.polygon.getNextPoint((int)i);
-
-        Vector3dd point1 = fg.frame.getPoint(p1);
-        Vector3dd point2 = fg.frame.getPoint(p2);
-        mesh.addLine(point1, point2);
-    }
-#endif
     mesh.addFlatPolygon(fg);
 }
 
 
-void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
+void CalibrationDrawHelpers::drawObservationList(Mesh3D &mesh, const ObservationList &list)
 {
     mesh.currentColor = RGBColor(~0u);
     for (const PointObservation& pt: list)
@@ -352,7 +328,7 @@ void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const ObservationList &list)
     }
 }
 
-void CalibrationDrawHelpers::drawPly(Mesh3D &mesh, const SceneFeaturePoint &fp, double scale)
+void CalibrationDrawHelpers::drawScenePoint(Mesh3D &mesh, const SceneFeaturePoint &fp, double scale)
 {
     mesh.setColor(fp.color);
     Vector3dd pos = fp.getDrawPosition(preferReprojected(), forceKnown());
@@ -415,25 +391,50 @@ void CalibrationDrawHelpers::drawScene(Mesh3D &mesh, const FixtureScene &scene, 
     int count = 0;
     for (FixtureCamera *cam: scene.orphanCameras())
     {
-        mesh.setColor(palette[count++]);
+        mesh.setColor(RGBColor::getPalleteColor(count++));
         drawCamera(mesh, *cam, scale);
     }
 
     for (CameraFixture *ps: scene.fixtures())
     {
-        drawPly(mesh, *ps, scale);
+        drawFixture(mesh, *ps, scale);
     }
 
     for (SceneFeaturePoint *fp: scene.featurePoints())
     {
-        drawPly(mesh, *fp, scale);
+        drawScenePoint(mesh, *fp, scale);
     }
 
     for (FixtureSceneGeometry *fg: scene.geometries())
     {
-        drawPly(mesh, *fg, scale);
+        drawSceneGeometry(mesh, *fg, scale);
     }
 
+}
+
+void CalibrationDrawHelpers::drawScene(Mesh3DDecorated &mesh, const FixtureScene &scene, double scale)
+{
+    int count = 0;
+    for (FixtureCamera *cam: scene.orphanCameras())
+    {
+        mesh.setColor(RGBColor::getPalleteColor(count++));
+        drawCameraEx(mesh, *cam, scale, 0);
+    }
+
+    for (CameraFixture *ps: scene.fixtures())
+    {
+        drawFixtureEx(mesh, *ps, scale);
+    }
+
+    for (SceneFeaturePoint *fp: scene.featurePoints())
+    {
+        drawScenePoint(mesh, *fp, scale);
+    }
+
+    for (FixtureSceneGeometry *fg: scene.geometries())
+    {
+        drawSceneGeometry(mesh, *fg, scale);
+    }
 }
 
 

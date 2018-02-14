@@ -21,7 +21,7 @@ CalibrationDrawHelpersParametersControlWidget::CalibrationDrawHelpersParametersC
 {
     mUi->setupUi(this);
 
-    QObject::connect(mUi->useOldBackendCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
+    QObject::connect(mUi->backendComboBox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->scaleForCamerasSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->gridStepForCamerasSpinBox, SIGNAL(valueChanged(int)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->useTexturesForCamerasCheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
@@ -72,7 +72,7 @@ CalibrationDrawHelpersParameters *CalibrationDrawHelpersParametersControlWidget:
 
 
     return new CalibrationDrawHelpersParameters(
-          mUi->useOldBackendCheckBox->isChecked()
+          static_cast<SceneDrawBackendType::SceneDrawBackendType>(mUi->backendComboBox->currentIndex())
         , mUi->scaleForCamerasSpinBox->value()
         , mUi->gridStepForCamerasSpinBox->value()
         , mUi->useTexturesForCamerasCheckBox->isChecked()
@@ -95,7 +95,7 @@ void CalibrationDrawHelpersParametersControlWidget::setParameters(const Calibrat
 {
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
-    mUi->useOldBackendCheckBox->setChecked(input.useOldBackend());
+    mUi->backendComboBox->setCurrentIndex(input.backend());
     mUi->scaleForCamerasSpinBox->setValue(input.scaleForCameras());
     mUi->gridStepForCamerasSpinBox->setValue(input.gridStepForCameras());
     mUi->useTexturesForCamerasCheckBox->setChecked(input.useTexturesForCameras());

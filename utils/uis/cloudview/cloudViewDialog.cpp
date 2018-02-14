@@ -889,7 +889,7 @@ void CloudViewDialog::setNewRectificationResult (QSharedPointer<RectificationRes
     StereoCameraScene *cameraModels = new StereoCameraScene(*(mRectificationResult.data()));
     Draw3dCameraParameters parameters;
     cameraModels->setParameters(&parameters);
-    setNewScenePointer(QSharedPointer<Scene3D>(cameraModels), CAMERA_PAIR);
+    setNewScenePointer(QSharedPointer<Scene3D>(cameraModels), FIXTUE_SCENE);
 
     mUi.widget->update();
 }

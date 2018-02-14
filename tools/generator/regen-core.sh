@@ -232,6 +232,7 @@ enums+=" distortionResizePolicy"
 enums+=" checkerboardDetectionAlgorithm"
 enums+=" bitcodeBoardOrientation"
 enums+=" projectionType"
+enums+=" sceneDrawBackendType"
 
 classes+=" vector2dParameters"
 classes+=" vector3dParameters"
@@ -256,6 +257,7 @@ classes+=" focusEstimationResult"
 classes+=" drawGCodeParameters"
 classes+=" stereoAlignParameters"
 
+classes+=" extrinsicsPlacerParameters"
 
 full_ui_classes+=" checkerboardDetectionParameters"
 full_ui_classes+=" lineDistortionEstimatorParameters"

@@ -42,16 +42,21 @@ int CalibrationDrawHelpersParameters::staticInit()
      getReflection()->objectSize = sizeof(CalibrationDrawHelpersParameters);
      
 
-    BoolField* field0 = new BoolField
+    EnumField* field0 = new EnumField
         (
-          CalibrationDrawHelpersParameters::USE_OLD_BACKEND_ID,
-          offsetof(CalibrationDrawHelpersParameters, mUseOldBackend),
-          true,
-          "Use Old Backend",
+          CalibrationDrawHelpersParameters::BACKEND_ID,
+          offsetof(CalibrationDrawHelpersParameters, mBackend),
+          0,
+          "Backend",
           "EXPERIMENTAL",
-          "EXPERIMENTAL We have two OpenGL backends to draw. Old is without shaders, new is with shaders"
+          "EXPERIMENTAL We have three OpenGL backends to draw. Old is without shaders, new is with shaders",
+          new EnumReflection(3
+          , new EnumOption(0,"Old")
+          , new EnumOption(1,"New")
+          , new EnumOption(2,"Integrated")
+          )
         );
-    field0->widgetHint=BaseField::CHECK_BOX;
+    field0->widgetHint=BaseField::COMBO_BOX;
     fields().push_back(field0);
     /*  */ 
     DoubleField* field1 = new DoubleField

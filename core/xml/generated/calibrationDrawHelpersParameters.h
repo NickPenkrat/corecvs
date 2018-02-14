@@ -31,16 +31,17 @@
 /*
  *  Additional includes for enum section.
  */
+#include "core/xml/generated/sceneDrawBackendType.h"
 
 /**
  * \brief EXPERIMENTAL 
- * EXPERIMENTAL We have two OpenGL backends to draw. Old is without shaders, new is with shaders 
+ * EXPERIMENTAL We have three OpenGL backends to draw. Old is without shaders, new is with shaders 
  **/
 class CalibrationDrawHelpersParameters : public corecvs::BaseReflection<CalibrationDrawHelpersParameters>
 {
 public:
     enum FieldId {
-        USE_OLD_BACKEND_ID,
+        BACKEND_ID,
         SCALE_FOR_CAMERAS_ID,
         GRID_STEP_FOR_CAMERAS_ID,
         USE_TEXTURES_FOR_CAMERAS_ID,
@@ -63,9 +64,9 @@ public:
 
     /** 
      * \brief EXPERIMENTAL 
-     * EXPERIMENTAL We have two OpenGL backends to draw. Old is without shaders, new is with shaders 
+     * EXPERIMENTAL We have three OpenGL backends to draw. Old is without shaders, new is with shaders 
      */
-    bool mUseOldBackend;
+    int mBackend;
 
     /** 
      * \brief Scale For Cameras 
@@ -167,9 +168,9 @@ public:
     {
         return (const unsigned char *)(this) + fields()[fieldId]->offset;
     }
-    bool useOldBackend() const
+    SceneDrawBackendType::SceneDrawBackendType backend() const
     {
-        return mUseOldBackend;
+        return static_cast<SceneDrawBackendType::SceneDrawBackendType>(mBackend);
     }
 
     double scaleForCameras() const
@@ -248,9 +249,9 @@ public:
     }
 
     /* Section with setters */
-    void setUseOldBackend(bool useOldBackend)
+    void setBackend(SceneDrawBackendType::SceneDrawBackendType backend)
     {
-        mUseOldBackend = useOldBackend;
+        mBackend = backend;
     }
 
     void setScaleForCameras(double scaleForCameras)
@@ -333,7 +334,7 @@ public:
 template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(mUseOldBackend,             static_cast<const corecvs::BoolField *>(fields()[USE_OLD_BACKEND_ID]));
+        visitor.visit((int &)mBackend,            static_cast<const corecvs::EnumField *>(fields()[BACKEND_ID]));
         visitor.visit(mScaleForCameras,           static_cast<const corecvs::DoubleField *>(fields()[SCALE_FOR_CAMERAS_ID]));
         visitor.visit(mGridStepForCameras,        static_cast<const corecvs::IntField *>(fields()[GRID_STEP_FOR_CAMERAS_ID]));
         visitor.visit(mUseTexturesForCameras,     static_cast<const corecvs::BoolField *>(fields()[USE_TEXTURES_FOR_CAMERAS_ID]));
@@ -358,7 +359,7 @@ template<class VisitorType>
     }
 
     CalibrationDrawHelpersParameters(
-          bool useOldBackend
+          SceneDrawBackendType::SceneDrawBackendType backend
         , double scaleForCameras
         , int gridStepForCameras
         , bool useTexturesForCameras
@@ -376,7 +377,7 @@ template<class VisitorType>
         , bool drawRays
     )
     {
-        mUseOldBackend = useOldBackend;
+        mBackend = backend;
         mScaleForCameras = scaleForCameras;
         mGridStepForCameras = gridStepForCameras;
         mUseTexturesForCameras = useTexturesForCameras;
@@ -396,7 +397,7 @@ template<class VisitorType>
 
     bool operator ==(const CalibrationDrawHelpersParameters &other) const 
     {
-        if ( !(this->mUseOldBackend == other.mUseOldBackend)) return false;
+        if ( !(this->mBackend == other.mBackend)) return false;
         if ( !(this->mScaleForCameras == other.mScaleForCameras)) return false;
         if ( !(this->mGridStepForCameras == other.mGridStepForCameras)) return false;
         if ( !(this->mUseTexturesForCameras == other.mUseTexturesForCameras)) return false;
