@@ -54,6 +54,38 @@ int ExtrinsicsPlacerParameters::staticInit()
     field0->widgetHint=BaseField::CHECK_BOX;
     fields().push_back(field0);
     /*  */ 
+    DoubleField* field1 = new DoubleField
+        (
+          ExtrinsicsPlacerParameters::SKYDOME_SIZE_ID,
+          offsetof(ExtrinsicsPlacerParameters, mSkydomeSize),
+          30,
+          "Skydome size",
+          "Skydome size",
+          "Skydome size",
+          true,
+         0.01,
+         1000,
+         1
+        );
+    field1->widgetHint=BaseField::SPIN_BOX;
+    field1->precision=2;
+    fields().push_back(field1);
+    /*  */ 
+    IntField* field2 = new IntField
+        (
+          ExtrinsicsPlacerParameters::ITERATIONS_ID,
+          offsetof(ExtrinsicsPlacerParameters, mIterations),
+          100,
+          "Iterations",
+          "Iterations",
+          "Iterations",
+          true,
+         2,
+         10000,
+         1
+        );
+    fields().push_back(field2);
+    /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Extrinsics Placer Parameters")]= &reflection;
    return 0;

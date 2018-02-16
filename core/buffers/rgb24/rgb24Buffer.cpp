@@ -57,6 +57,11 @@ void RGB24Buffer::drawPixel(int x, int y, RGBColor color)
     }
 }
 
+void RGB24Buffer::drawPixel(double x, double y, RGBColor color)
+{
+    this->drawPixel(fround(x), fround(y), color);
+}
+
 void RGB24Buffer::drawLine(int x1, int y1, int x2, int y2, RGBColor color)
 {
     Rectangle<int> rect;

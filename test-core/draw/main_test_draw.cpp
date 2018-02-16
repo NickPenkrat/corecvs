@@ -133,7 +133,7 @@ TEST(Draw, testCircleIterator)
 
 TEST(Draw, testLineterator)
 {
-    RGB24Buffer *buffer = new RGB24Buffer(100, 100);
+    RGB24Buffer *buffer  = new RGB24Buffer(100, 100);
     RGB24Buffer *buffer1 = new RGB24Buffer(100, 100);
 
     Segment<Vector2d32> segments[4] =
@@ -217,7 +217,7 @@ TEST(Draw, testRectangles)
 TEST(Draw, testSpanDraw)
 {
     int h = 200;
-    int w = 200;
+    int w = 300;
 
     RGB24Buffer *buffer = new RGB24Buffer(h, w, RGBColor::Black());
 
@@ -239,6 +239,25 @@ TEST(Draw, testSpanDraw)
             buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
             it.step();
         }
+    }
+
+    {
+        Vector2dd p1(210, 10);
+        Vector2dd p2(205, 12);
+        Vector2dd p3(285, 12);
+
+
+        TrapezoidSpanIterator it(p1.y(), p2.y(), p1.x(), p1.x(), p2.x(), p3.x());
+        while (it.hasValue())
+        {
+            HLineSpanInt span = it.getSpan();
+            buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
+            it.step();
+        }
+        buffer->drawPixel(p1.x(), p1.y(), RGBColor::Red());
+        buffer->drawPixel(p2.x(), p2.y(), RGBColor::Red());
+        buffer->drawPixel(p3.x(), p3.y(), RGBColor::Red());
+
     }
 
     {
@@ -383,6 +402,7 @@ TEST(Draw, testSpanDrawTriangle1)
             for (int k = 0; k < tri.SIZE; k++) {
                 buffer ->element(fround(tri.p[k].y()), fround(tri.p[k].x())) =  RGBColor::Red();
                 bufferA->element(fround(tri.p[k].y()), fround(tri.p[k].x())) =  RGBColor::Red();
+                bufferF->element(fround(tri.p[k].y()), fround(tri.p[k].x())) =  RGBColor::Red();
 
             }
 

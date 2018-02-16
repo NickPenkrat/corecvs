@@ -151,28 +151,47 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
         }
 
         auto it = p->observations.begin();
-        SceneObservation &obs1 = (*it).second;
-        it++;
-        SceneObservation &obs2 = (*it).second;
 
-        Ray3d ray1 = obs1.getFullRay();
-        Ray3d ray2 = obs2.getFullRay();
+        if (params.triangulateOnSphere())
+        {
+            Sphere3d sphere(Vector3dd::Zero(), params.skydomeSize());
+            SceneObservation &obs1 = (*it).second;
+            Ray3d ray1 = obs1.getFullRay();
+
+            double t1,t2;
+            sphere.intersectRayHelper(ray1, t1, t2);
+
+            double t = std::max(std::max(t1, t2), 0.0);
+
+            Vector3dd x = ray1.getPoint(t);
+            cout << "Triangulated on sphere" << p->reprojectedPosition << " to " << x << endl;
+            p->reprojectedPosition = x;
+            p->hasKnownReprojectedPosition = true;
+
+        } else {
+            SceneObservation &obs1 = (*it).second;
+            it++;
+            SceneObservation &obs2 = (*it).second;
+
+            Ray3d ray1 = obs1.getFullRay();
+            Ray3d ray2 = obs2.getFullRay();
 
 
-        Vector3dd coef = ray1.intersectCoef(ray2);
+            Vector3dd coef = ray1.intersectCoef(ray2);
 
-        if (coef[0] < 0 || coef[1] < 0 ) {
-            SYNC_PRINT(("Point %s: rejected beacause it is triangulated behind cameras \n", p->name.c_str()));
-            continue;
+            if (coef[0] < 0 || coef[1] < 0 ) {
+                SYNC_PRINT(("Point %s: rejected beacause it is triangulated behind cameras \n", p->name.c_str()));
+                continue;
+            }
+
+            Vector3dd x1 = ray1.getPoint(coef[0]);
+            Vector3dd x2 = ray2.getPoint(coef[1]);
+            Vector3dd x = (x1 + x2) / 2.0;
+
+            cout << "Triangulated " << p->reprojectedPosition << " to " << x << endl;
+            p->reprojectedPosition = x;
+            p->hasKnownReprojectedPosition = true;
         }
-
-        Vector3dd x1 = ray1.getPoint(coef[0]);
-        Vector3dd x2 = ray2.getPoint(coef[1]);
-        Vector3dd x = (x1 + x2) / 2.0;
-
-        cout << "Triangulated " << p->reprojectedPosition << " to " << x << endl;
-        p->reprojectedPosition = x;
-        p->hasKnownReprojectedPosition = true;
 
         S.points.push_back(p->reprojectedPosition);
         idToScene.push_back(i);

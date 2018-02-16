@@ -97,7 +97,8 @@ public:
      * \param x
      * \param color
      **/
-    void drawPixel ( int x, int y, RGBColor color);
+    void drawPixel(int    x, int    y, RGBColor color);
+    void drawPixel(double x, double y, RGBColor color);
 
     /**
      * This function is used to draw a sort of marker over the buffer
