@@ -15,6 +15,9 @@ public:
     std::vector<CameraLocationData> cameras;
     std::vector<Vector3dd> points;
 
+    /* This is not essential part of scene*/
+    std::vector<int> idToScene;
+
     struct Observation {
         int cam;
         int point;

@@ -43,6 +43,7 @@ public:
         TRIANGULATE_ON_SPHERE_ID,
         SKYDOME_SIZE_ID,
         ITERATIONS_ID,
+        LOCK_1_CAM_ID,
         EXTRINSICS_PLACER_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -65,6 +66,12 @@ public:
      * Iterations 
      */
     int mIterations;
+
+    /** 
+     * \brief lock 1 cam 
+     * lock 1 cam 
+     */
+    bool mLock1Cam;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -91,6 +98,11 @@ public:
         return mIterations;
     }
 
+    bool lock1Cam() const
+    {
+        return mLock1Cam;
+    }
+
     /* Section with setters */
     void setTriangulateOnSphere(bool triangulateOnSphere)
     {
@@ -107,6 +119,11 @@ public:
         mIterations = iterations;
     }
 
+    void setLock1Cam(bool lock1Cam)
+    {
+        mLock1Cam = lock1Cam;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -115,6 +132,7 @@ template<class VisitorType>
         visitor.visit(mTriangulateOnSphere,       static_cast<const corecvs::BoolField *>(fields()[TRIANGULATE_ON_SPHERE_ID]));
         visitor.visit(mSkydomeSize,               static_cast<const corecvs::DoubleField *>(fields()[SKYDOME_SIZE_ID]));
         visitor.visit(mIterations,                static_cast<const corecvs::IntField *>(fields()[ITERATIONS_ID]));
+        visitor.visit(mLock1Cam,                  static_cast<const corecvs::BoolField *>(fields()[LOCK_1_CAM_ID]));
     }
 
     ExtrinsicsPlacerParameters()
@@ -127,11 +145,13 @@ template<class VisitorType>
           bool triangulateOnSphere
         , double skydomeSize
         , int iterations
+        , bool lock1Cam
     )
     {
         mTriangulateOnSphere = triangulateOnSphere;
         mSkydomeSize = skydomeSize;
         mIterations = iterations;
+        mLock1Cam = lock1Cam;
     }
 
     bool operator ==(const ExtrinsicsPlacerParameters &other) const 
@@ -139,6 +159,7 @@ template<class VisitorType>
         if ( !(this->mTriangulateOnSphere == other.mTriangulateOnSphere)) return false;
         if ( !(this->mSkydomeSize == other.mSkydomeSize)) return false;
         if ( !(this->mIterations == other.mIterations)) return false;
+        if ( !(this->mLock1Cam == other.mLock1Cam)) return false;
         return true;
     }
     friend std::ostream& operator << (std::ostream &out, ExtrinsicsPlacerParameters &toSave)
