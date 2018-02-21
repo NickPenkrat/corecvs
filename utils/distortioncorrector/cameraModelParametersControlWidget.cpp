@@ -52,9 +52,9 @@ CameraModelParametersControlWidget::CameraModelParametersControlWidget(QWidget *
     }*/
 
 
-    QObject::connect(ui->showDistortionCheckBox, SIGNAL(toggled(bool)), ui->lensDistortionWidget, SLOT(setVisible(bool)));
+    //QObject::connect(ui->showDistortionCheckBox, SIGNAL(toggled(bool)), ui->lensDistortionWidget, SLOT(setVisible(bool)));
     // QObject::connect(ui->showProjection        , SIGNAL(toggled(bool)), ui->projection, SLOT(setVisible(bool));
-    QObject::connect(ui->showExtrinsicsCheckBox, SIGNAL(toggled(bool)), ui->tabWidget,            SLOT(setVisible(bool)));
+    //QObject::connect(ui->showExtrinsicsCheckBox, SIGNAL(toggled(bool)), ui->tabWidget,            SLOT(setVisible(bool)));
 
 //    writeUi();
     /* Addintional buttons */

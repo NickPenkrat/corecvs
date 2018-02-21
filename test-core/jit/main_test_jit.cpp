@@ -48,7 +48,7 @@ TEST(jit, testasm)
     double out[5] = {0};
 
     asmF(in, out);
-    for (int i = 0; i < CORE_COUNT_OF(out); i++)
+    for (size_t i = 0; i < CORE_COUNT_OF(out); i++)
     {
         cout << out[i] << " " << endl;
     }

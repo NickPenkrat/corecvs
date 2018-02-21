@@ -758,14 +758,45 @@ public:
         }
     }
 
-    void storeTo(ElementType *in) const
+    void loadFromStream(const ElementType *in, bool *mask = NULL)
     {
+        if (mask == NULL) {
+            this->loadFrom(in);
+            in += _size();
+        }
+
         for (int i = 0; i < _size(); i++)
         {
-            in[i] = _at(i);
+            if (mask[i]) {
+                _at(i) = *in;
+                in++;
+            }
         }
     }
 
+    void storeTo(ElementType *out) const
+    {
+        for (int i = 0; i < _size(); i++)
+        {
+            out[i] = _at(i);
+        }
+    }
+
+    void storeToStream(ElementType *out, bool *mask = NULL) const
+    {
+        if (mask == NULL) {
+            this->storeTo(out);
+            out += _size();
+        }
+
+        for (int i = 0; i < _size(); i++)
+        {
+            if (mask[i]) {
+                *out = _at(i);
+                out++;
+            }
+        }
+    }
 
 
     /* Per element */

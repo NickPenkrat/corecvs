@@ -110,8 +110,8 @@ void MergerDialog::initParameterWidgets()
     for (int i = 0; i < 4; i++)
     {
         mCams[i] = new CameraModelParametersControlWidget();
-        mCams[i]->ui->distortionFrame->hide();
-        mCams[i]->ui->projectionFrame->hide();
+        //mCams[i]->ui->distortionFrame->hide();
+        //mCams[i]->ui->projectionFrame->hide();
         mCams[i]->ui->projectionTypeFrame->hide();
 
 

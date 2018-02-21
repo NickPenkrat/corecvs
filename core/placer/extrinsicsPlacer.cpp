@@ -13,7 +13,6 @@ ExtrinsicsPlacer::ExtrinsicsPlacer()
 
 }
 
-
 void SillyNormalizer::operator ()(const double in[], double out[])
 {
     if (scene == NULL) {
@@ -30,6 +29,14 @@ void SillyNormalizer::operator ()(const double in[], double out[])
         rotor.storeTo (&out[CAM_MODEL_SIZE * camId + 3]);
     }
 }
+
+/**
+ * =========================================================================================
+ *
+ *  Trivial cost block
+ *
+ * =========================================================================================
+ **/
 
 void SillyCost::operator ()(const double in[], double out[])
 {
@@ -98,41 +105,151 @@ void SillyCost::sceneFromModel(SimplifiedScene &scene, const vector<double> &mod
     {
         scene.points[i].loadFrom(&model[i * Vector3dd::LENGTH +  offset]);
     }
+}
+
+/**
+ * =========================================================================================
+ *
+ *  Mask cost block
+ *
+ * =========================================================================================
+ **/
+
+void SillyCostMask::operator ()(const double in[], double out[])
+{
+    if (scene == NULL) {
+        return;
+    }
 
 
+    for (size_t obsId = 0; obsId < scene->obs.size(); obsId++)
+    {
+        SimplifiedScene::Observation &obs = scene->obs[obsId];
+
+        Affine3DQ cam = scene->cameras[obs.cam].toMockAffine3D();
+
+        if (!params.lock1Cam() || obs.cam != 0)
+        {
+            int offset = getCameraOffset(scene, params);
+
+            offset += getCameraModelSize(params) * (params.lock1Cam() ? (obs.cam - 1) : obs.cam);
+
+            const double *input = &in[offset];
+
+            if (!params.lockPositions()) {
+                cam.shift.loadFromStream(input);
+            }
+            if (!params.lockOrientations()) {
+                cam.rotor.loadFromStream(input);
+            }
+        }
+
+        cam.rotor.normalise();
+
+        Vector3dd position;
+        int pointOffset = getPointsOffset(scene, params);
+        position.loadFrom(&in[Vector3dd::LENGTH * obs.point + pointOffset]);
+
+
+        /* Actual computation */
+
+        Vector3dd modeled = (cam * position).normalised();
+        Vector3dd obsvec  = obs.obs.normalised();
+
+        Vector3dd error = modeled - obsvec;
+        error.storeTo(&out[3 * obsId]);
+    }
 
 }
 
-#if 0
-void SillyCost::sceneToModel(const FixtureScene *scene, vector<double> &model)
+vector<double> SillyCostMask::sceneToModel(const SimplifiedScene& scene)
 {
-    CameraFixture *fixture = scene->fixtures()[0];
-    for (size_t i = 0; i < fixture->cameras.size(); i++)
+    vector<double> out;
+    out.resize(getInputNumber(&scene, params));
+
+    double *output = out.data();
+
+    for (size_t i = 0; i < scene.points.size(); i++ )
     {
+        scene.points[i].storeTo(output);
+    }
 
+    int startCam = params.lock1Cam() ? 1 : 0;
 
+    for (size_t i = startCam ; i < scene.cameras.size(); i++ )
+    {
+        Affine3DQ transform = scene.cameras[i].toMockAffine3D();
+
+        if (!params.lockPositions())
+            transform.shift.storeToStream(output);
+        if (!params.lockOrientations())
+            transform.rotor.storeToStream(output);
+    }
+    return out;
+}
+
+void SillyCostMask::sceneFromModel(SimplifiedScene &scene, const vector<double> &model)
+{
+    const double *input  = &model[0];
+
+    for (size_t i = 0; i < scene.points.size(); i++ )
+    {
+        scene.points[i].loadFromStream(input);
+    }
+
+    int startCam = params.lock1Cam() ? 1 : 0;
+
+    for (size_t i = startCam; i < scene.cameras.size(); i++ )
+    {
+        Affine3DQ transform = scene.cameras[i].toMockAffine3D();
+        if (!params.lockPositions())
+            transform.shift.loadFrom(input);
+        if (!params.lockOrientations())
+            transform.rotor.loadFrom(input);
+
+        scene.cameras[i] = CameraLocationData::FromMockAffine3D(transform);
     }
 }
 
-void SillyCost::sceneFromModel(FixtureScene *scene, const vector<double> &model)
+
+
+void SillyNormalizerMask::operator ()(const double in[], double out[])
 {
-    CameraFixture *fixture = scene->fixtures()[0];
-    for (size_t i = 0; i < fixture->cameras.size(); i++)
+    if (scene == NULL) {
+        return;
+    }
+
+    memcpy(out, in, sizeof(double) * outputs);
+    if (params.lockOrientations())
+        return;
+
+
+    int camNum = params.lock1Cam() ? scene->cameras.size() - 1 : scene->cameras.size();
+    int startOffset = getCameraOffset(scene, params);
+
+    for (size_t camId = 0; camId < camNum; camId++)
     {
+        int offset = startOffset + camId * getCameraModelSize(params);
+        if (!params.lockPositions())
+            offset += Vector3dd::LENGTH;
 
-
+        Quaternion rotor;
+        rotor.loadFrom(&out[offset]);
+        rotor.normalise();
+        rotor.storeTo (&out[offset]);
     }
 }
-#endif
 
-void ExtrinsicsPlacer::place(FixtureScene *scene)
+
+
+/* */
+
+
+
+
+SimplifiedScene SimplifiedScene::extractSimpleScene (const FixtureScene *scene)
 {
-    SYNC_PRINT(("ExtrinsicsPlacer::place(FixtureScene *scene)\n"));
-    scene->integrityRelink();
-
     SimplifiedScene S;
-    vector<int> idToScene;
-
     CameraFixture *fixture = scene->fixtures()[0];
 
     for (size_t i = 0; i < fixture->cameras.size(); i++)
@@ -149,6 +266,54 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
             SYNC_PRINT(("Point %s: rejected beacause it have few observations\n", p->name.c_str()));
             continue;
         }
+
+        if (!p->hasKnownReprojectedPosition)
+        {
+            SYNC_PRINT(("Point %s: rejected beacause it have no position \n", p->name.c_str()));
+            continue;
+        }
+        S.points.push_back(p->reprojectedPosition);
+        S.idToScene.push_back(i);
+
+        for (auto &obsIt: p->observations)
+        {
+            FixtureCamera    *cam = obsIt.first;
+            SceneObservation &obs = obsIt.second;
+            Vector3dd ray = obs.getRay();
+            SimplifiedScene::Observation simpleObs((int)cam->sequenceNumber, (int)(S.points.size() - 1), ray);
+            S.obs.push_back(simpleObs);
+        }
+
+    }
+
+    return S;
+}
+
+void SimplifiedScene::mergeSimpleScene(FixtureScene *scene, const SimplifiedScene &S)
+{
+    CameraFixture *fixture = scene->fixtures()[0];
+
+
+    for (size_t i = 0; i < S.cameras.size(); i++)
+    {
+        Affine3DQ transform = S.cameras[i].toAffine3D();
+        fixture->cameras[i]->setWorldLocation(transform);
+    }
+
+    for (size_t i = 0; i < S.points.size(); i++)
+    {
+        scene->featurePoints()[S.idToScene[i]]->position = S.points[i];
+    }
+}
+
+
+
+void ExtrinsicsPlacer::triangulate(FixtureScene *scene)
+{
+    for (size_t i = 0; i < scene->featurePoints().size(); i++)
+    {
+        SceneFeaturePoint *p = scene->featurePoints()[i];
+        /* One more time manual triangulation */
 
         auto it = p->observations.begin();
 
@@ -169,6 +334,12 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
             p->hasKnownReprojectedPosition = true;
 
         } else {
+
+            if (p->observations.size() < 2) {
+                SYNC_PRINT(("Point %s: rejected beacause it have few observations\n", p->name.c_str()));
+                continue;
+            }
+
             SceneObservation &obs1 = (*it).second;
             it++;
             SceneObservation &obs2 = (*it).second;
@@ -192,31 +363,24 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
             p->reprojectedPosition = x;
             p->hasKnownReprojectedPosition = true;
         }
-
-        S.points.push_back(p->reprojectedPosition);
-        idToScene.push_back(i);
-
-        for (auto &obsIt: p->observations)
-        {
-            FixtureCamera    *cam = obsIt.first;
-            SceneObservation &obs = obsIt.second;
-            Vector3dd ray = obs.getRay();
-            SimplifiedScene::Observation simpleObs((int)cam->sequenceNumber, (int)(S.points.size() - 1), ray);
-            S.obs.push_back(simpleObs);
-        }
-
     }
+}
+
+
+
+
+void ExtrinsicsPlacer::place(FixtureScene *scene)
+{
+    SYNC_PRINT(("ExtrinsicsPlacer::place(FixtureScene *scene)\n"));
+    scene->integrityRelink();
+
+    SimplifiedScene S = SimplifiedScene::extractSimpleScene(scene);
+    //vector<int> idToScene;
+
 
     cout << "Simplified Scene" << endl;
     cout << S << endl;
     cout << "Camera Model Size" << SillyCost::CAM_MODEL_SIZE << endl;
-
-    SillyCost F(&S);
-    SillyNormalizer N(&S);
-
-    vector<double> input = SillyCost::sceneToModel(S);
-    vector<double> outputs;
-    outputs.resize(F.outputs, 0);
 
     LevenbergMarquardt lmFit;
 
@@ -230,29 +394,54 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
     lmFit.traceProgress = true;
     lmFit.trace         = true;
 
-    lmFit.f = &F;
-    lmFit.normalisation = &N;
+    vector<double> input;
+    vector<double> outputs;
+    vector<double> result;
 
-
-    vector<double> result = lmFit.fit(input, outputs);
-
-    SillyCost::sceneFromModel(S, result);
-
-    for (size_t i = 0; i < S.cameras.size(); i++)
+    if (params.lock1Cam() ||
+        params.lockPositions() ||
+        params.lockOrientations())
     {
-        Affine3DQ transform = S.cameras[i].toAffine3D();
-        fixture->cameras[i]->setWorldLocation(transform);
+        SillyCostMask       F(&S, params);
+        SillyNormalizerMask N(&S, params);
+
+        input = SillyCost::sceneToModel(S);
+        outputs.resize(F.outputs, 0);
+
+        lmFit.f = &F;
+        lmFit.normalisation = &N;
+
+        result = lmFit.fit(input, outputs);
+        SillyCost::sceneFromModel(S, result);
+
+    } else {
+
+        SillyCost F(&S);
+        SillyNormalizer N(&S);
+
+        input = SillyCost::sceneToModel(S);
+        outputs.resize(F.outputs, 0);
+
+        lmFit.f = &F;
+        lmFit.normalisation = &N;
+
+        result = lmFit.fit(input, outputs);
+        SillyCost::sceneFromModel(S, result);
     }
 
-    for (size_t i = 0; i < S.points.size(); i++)
-    {
-
-        scene->featurePoints()[idToScene[i]]->position = S.points[i];
-    }
+    SimplifiedScene::mergeSimpleScene(scene, S);
 
 
     cout << "Input :" << input << endl;
     cout << "Result:" << result << endl;
+}
+
+double ExtrinsicsPlacer::getCost(FixtureScene *scene)
+{
+    SimplifiedScene S = SimplifiedScene::extractSimpleScene(scene);
+    SillyCost F(&S);
+    vector<double> input = SillyCost::sceneToModel(S);
+    return F.resultLength(input.data());
 }
 
 

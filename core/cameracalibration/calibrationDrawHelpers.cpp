@@ -123,19 +123,18 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
             for (int i = 0; i < step  - 1 ; i++)
             {
                 for (int j = 0; j <  step  - 1; j++)
-                {
-                    RGBColor color = mesh.currentColor;
+                {                    
                     bool cornerMark = (i < step / 2  && j < step / 2);
 
                     if (cornerMark) {
-                        mesh.setColor(RGBColor::Yellow());
+                        mesh.pushColor(RGBColor::Yellow());
                     }
 
                     mesh.addLine(poses.element(i,j), poses.element(i    ,j + 1));
                     mesh.addLine(poses.element(i,j), poses.element(i + 1,j    ));
 
                     if (cornerMark) {
-                        mesh.setColor(color);
+                        mesh.popColor();
                     }
 
                 }
@@ -172,12 +171,11 @@ void CalibrationDrawHelpers::drawCamera(Mesh3D &mesh, const CameraModel &cam, do
             }
         }
 
-        RGBColor color = mesh.currentColor;
-        mesh.setColor(RGBColor::Blue());
+        mesh.pushColor(RGBColor::Blue());
         Vector2dd pos = cam.intrinsics->principal();
         Vector3dd dir = cam.extrinsics.camToWorld(cam.intrinsics->reverse(pos) * scale * 2);
         mesh.addLine(center, dir);
-        mesh.setColor(color);
+        mesh.popColor();
     }
 
 
@@ -251,12 +249,11 @@ void CalibrationDrawHelpers::drawCameraEx (Mesh3DDecorated &mesh, const CameraMo
     }
 
 
-    RGBColor color = mesh.currentColor;
-    mesh.setColor(RGBColor::Blue());
+    mesh.pushColor(RGBColor::Blue());
     Vector2dd pos = cam.intrinsics->principal();
     Vector3dd dir = cam.extrinsics.camToWorld(cam.intrinsics->reverse(pos) * scale * 2);
     mesh.addLine(center, dir);
-    mesh.setColor(color);
+    mesh.popColor();
 
 
 
@@ -351,37 +348,46 @@ void CalibrationDrawHelpers::drawScenePoint(Mesh3D &mesh, const SceneFeaturePoin
         for (auto it = fp.observations.begin(); it != fp.observations.end(); ++it)
         {
             FixtureCamera *cam = it->first;
+            if (cam == NULL) continue;
+
             const SceneObservation &observ = it->second;
             CameraFixture *fixture = cam->cameraFixture;
+            if (fixture == NULL) continue;
+
             FixtureCamera rawCam = fixture->getWorldCamera(cam);
 
             if (fp.hasKnownPosition && drawTrueLines()) {
+                mesh.pushColor(RGBColor::Cyan());
                 mesh.addLine(rawCam.extrinsics.position, fp.position);
+                mesh.popColor();
             } else {
             }
 
-            Ray3d ray = rawCam.rayFromPixel(observ.getUndist());
-            Vector3dd p2 = ray.getPoint(projectionRayLength() * scale);
-            mesh.addLine(ray.p, p2);
+            {
+                mesh.pushColor(RGBColor::Yellow());
+                Ray3d ray = rawCam.rayFromPixel(observ.getUndist());
+                Vector3dd p2 = ray.getPoint(projectionRayLength() * scale);
+                mesh.addLine(ray.p, p2);
+                mesh.popColor();
+            }
 
             {
-                RGBColor color = mesh.currentColor;
-                mesh.setColor(RGBColor::Green());
+                mesh.pushColor(RGBColor::Green());
                 Ray3d ray = observ.getFullRay();
                 Vector3dd p2 = ray.getPoint(projectionRayLength() * scale);
                 mesh.addLine(ray.p, p2);
-                mesh.setColor(color);
+                mesh.popColor();
             }
 
             /*Ray3d rayDir(rawCam.extrinsics.position, observ.observDir);
             Vector3dd p3 = rayDir.getPoint(scale);
             mesh.addLine(rayDir.p, p3);*/
 
-            if (!largePoints()) {
+            /*if (!largePoints()) {
                 mesh.addPoint(p2);
             } else {
                 mesh.addIcoSphere(p2, scale / 100.0, 2);
-            }
+            }*/
         }
     }
 }

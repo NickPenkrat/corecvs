@@ -44,6 +44,8 @@ public:
         SKYDOME_SIZE_ID,
         ITERATIONS_ID,
         LOCK_1_CAM_ID,
+        LOCK_ORIENTATIONS_ID,
+        LOCK_POSITIONS_ID,
         EXTRINSICS_PLACER_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -72,6 +74,18 @@ public:
      * lock 1 cam 
      */
     bool mLock1Cam;
+
+    /** 
+     * \brief lock orientations 
+     * lock orientations 
+     */
+    bool mLockOrientations;
+
+    /** 
+     * \brief lock positions 
+     * lock positions 
+     */
+    bool mLockPositions;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -103,6 +117,16 @@ public:
         return mLock1Cam;
     }
 
+    bool lockOrientations() const
+    {
+        return mLockOrientations;
+    }
+
+    bool lockPositions() const
+    {
+        return mLockPositions;
+    }
+
     /* Section with setters */
     void setTriangulateOnSphere(bool triangulateOnSphere)
     {
@@ -124,6 +148,16 @@ public:
         mLock1Cam = lock1Cam;
     }
 
+    void setLockOrientations(bool lockOrientations)
+    {
+        mLockOrientations = lockOrientations;
+    }
+
+    void setLockPositions(bool lockPositions)
+    {
+        mLockPositions = lockPositions;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -133,6 +167,8 @@ template<class VisitorType>
         visitor.visit(mSkydomeSize,               static_cast<const corecvs::DoubleField *>(fields()[SKYDOME_SIZE_ID]));
         visitor.visit(mIterations,                static_cast<const corecvs::IntField *>(fields()[ITERATIONS_ID]));
         visitor.visit(mLock1Cam,                  static_cast<const corecvs::BoolField *>(fields()[LOCK_1_CAM_ID]));
+        visitor.visit(mLockOrientations,          static_cast<const corecvs::BoolField *>(fields()[LOCK_ORIENTATIONS_ID]));
+        visitor.visit(mLockPositions,             static_cast<const corecvs::BoolField *>(fields()[LOCK_POSITIONS_ID]));
     }
 
     ExtrinsicsPlacerParameters()
@@ -146,12 +182,16 @@ template<class VisitorType>
         , double skydomeSize
         , int iterations
         , bool lock1Cam
+        , bool lockOrientations
+        , bool lockPositions
     )
     {
         mTriangulateOnSphere = triangulateOnSphere;
         mSkydomeSize = skydomeSize;
         mIterations = iterations;
         mLock1Cam = lock1Cam;
+        mLockOrientations = lockOrientations;
+        mLockPositions = lockPositions;
     }
 
     bool operator ==(const ExtrinsicsPlacerParameters &other) const 
@@ -160,6 +200,8 @@ template<class VisitorType>
         if ( !(this->mSkydomeSize == other.mSkydomeSize)) return false;
         if ( !(this->mIterations == other.mIterations)) return false;
         if ( !(this->mLock1Cam == other.mLock1Cam)) return false;
+        if ( !(this->mLockOrientations == other.mLockOrientations)) return false;
+        if ( !(this->mLockPositions == other.mLockPositions)) return false;
         return true;
     }
     friend std::ostream& operator << (std::ostream &out, ExtrinsicsPlacerParameters &toSave)

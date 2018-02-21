@@ -90,13 +90,37 @@ int ExtrinsicsPlacerParameters::staticInit()
         (
           ExtrinsicsPlacerParameters::LOCK_1_CAM_ID,
           offsetof(ExtrinsicsPlacerParameters, mLock1Cam),
-          true,
+          false,
           "lock 1 cam",
           "lock 1 cam",
           "lock 1 cam"
         );
     field3->widgetHint=BaseField::CHECK_BOX;
     fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
+        (
+          ExtrinsicsPlacerParameters::LOCK_ORIENTATIONS_ID,
+          offsetof(ExtrinsicsPlacerParameters, mLockOrientations),
+          false,
+          "lock orientations",
+          "lock orientations",
+          "lock orientations"
+        );
+    field4->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field4);
+    /*  */ 
+    BoolField* field5 = new BoolField
+        (
+          ExtrinsicsPlacerParameters::LOCK_POSITIONS_ID,
+          offsetof(ExtrinsicsPlacerParameters, mLockPositions),
+          false,
+          "lock positions",
+          "lock positions",
+          "lock positions"
+        );
+    field5->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field5);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Extrinsics Placer Parameters")]= &reflection;

@@ -55,6 +55,10 @@ public:
         return out;
     }
 
+
+    static SimplifiedScene extractSimpleScene (const FixtureScene *scene);
+    static void            mergeSimpleScene   (FixtureScene *scene, const SimplifiedScene &simple);
+
 };
 
 struct SillyModel
@@ -67,6 +71,34 @@ struct SillyModel
     }
 
     static int getOutputNumber(const SimplifiedScene *scene)
+    {
+        return scene->obs.size() * Vector3dd::LENGTH;
+    }
+
+    /* ====== */
+
+    static int getCameraModelSize(ExtrinsicsPlacerParameters &params)
+    {
+        return  (params.lockOrientations() ? 0 : Quaternion::LENGTH) +
+                (params.lockPositions()    ? 0 :  Vector3dd::LENGTH);
+    }
+
+    static int getPointsOffset(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
+    {
+        return 0;
+    }
+
+    static int getCameraOffset(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
+    {
+        return scene->points.size() * Vector3dd::LENGTH;
+    }
+
+    static int getInputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
+    {
+        return getPointsOffset(scene, params) + scene->points.size() * Vector3dd::LENGTH;
+    }
+
+    static int getOutputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
     {
         return scene->obs.size() * Vector3dd::LENGTH;
     }
@@ -87,7 +119,6 @@ public:
 
 };
 
-/* Ray angle is used as the base for cost function */
 class SillyCost : public FunctionArgs, public SillyModel
 {
 public:
@@ -103,13 +134,47 @@ public:
 
     static vector<double>  sceneToModel  (const SimplifiedScene &scene);
     static void sceneFromModel(SimplifiedScene &scene, const vector<double> &model);
-
-#if 0
-    static void sceneToModel  (const FixtureScene *scene,       vector<double> &model);
-    static void sceneFromModel(      FixtureScene *scene, const vector<double> &model);
-#endif
 };
 
+
+
+class SillyCostMask : public FunctionArgs, public SillyModel
+{
+public:
+    SimplifiedScene *scene = NULL;
+    ExtrinsicsPlacerParameters params;
+
+
+
+    SillyCostMask(SimplifiedScene *scene, ExtrinsicsPlacerParameters &params) :
+        FunctionArgs(getInputNumber(scene, params), getOutputNumber(scene, params)),
+        scene(scene)
+    {
+    }
+
+    virtual void operator()(const double in[], double out[]) override;
+
+    vector<double>  sceneToModel  (const SimplifiedScene &scene);
+    void sceneFromModel(SimplifiedScene &scene, const vector<double> &model);
+
+};
+
+
+class SillyNormalizerMask : public FunctionArgs, public SillyModel
+{
+public:
+    SimplifiedScene *scene = NULL;
+    ExtrinsicsPlacerParameters params;
+
+    SillyNormalizerMask(SimplifiedScene *scene, ExtrinsicsPlacerParameters &params) :
+        FunctionArgs(getInputNumber(scene, params), getInputNumber(scene, params)),
+        scene(scene)
+    {
+    }
+
+    virtual void operator()(const double in[], double out[]) override;
+
+};
 
 
 /** Most trival placer that optimises rays from observations by moving the cameras **/
@@ -120,7 +185,10 @@ public:
 
     ExtrinsicsPlacerParameters params;
 
+    void triangulate (FixtureScene *scene);
     void place (FixtureScene *scene);
+
+    double getCost(FixtureScene *scene);
 };
 
 
