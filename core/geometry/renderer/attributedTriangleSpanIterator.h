@@ -5,6 +5,7 @@
 
 namespace corecvs {
 
+#if 0
 class AttributedTriangleSpanIterator : public GenericTriangleSpanIterator<AttributedTriangle>
 {
 public:
@@ -107,14 +108,15 @@ public:
 
 
 };
+#endif
 
 
-class AttributedTriangleSpanIteratorFix : public GenericTriangleSpanIterator<AttributedTriangle>
+class AttributedTriangleSpanIterator : public GenericTriangleSpanIterator<AttributedTriangle>
 {
 public:
     typedef GenericTriangleSpanIterator<AttributedTriangle> BaseClass;
 
-    AttributedTriangleSpanIteratorFix(const AttributedTriangle &triangle)
+    AttributedTriangleSpanIterator(const AttributedTriangle &triangle)
     {
         sortedt = triangle;
 
@@ -165,24 +167,31 @@ private:
 public:
     void step()
     {
-        if (!part.hasValue())
+        part.step();
+        if (!part.hasValue() && hasValue())
         {
             initLowerPart();
+            if (part.hasValue()) {
+                part.step();
+            }
             return;
         }
-        part.step();
     }
 
     void stepTo(int Y)
     {
-        if (Y >= sortedt.p2().y())
+        part.stepTo(Y);
+        if (!part.hasValue() && hasValue())
         {
             initLowerPart();
-            part.stepTo(Y);
+            if (part.hasValue()) {
+                part.stepTo(Y);
+            }
             return;
         }
-        part.stepTo(Y);
     }
+
+
 
     bool hasValue() {
         return (part.currentY <= sortedt.p3().y());

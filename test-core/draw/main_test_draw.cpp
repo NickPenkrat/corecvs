@@ -31,6 +31,8 @@
 using namespace corecvs;
 
 
+typedef AttributedTriangleSpanIterator AttributedTriangleSpanIteratorFix;
+
 TEST(Draw, testHistogram)
 {
     RGB24Buffer *buffer = new RGB24Buffer(512, 512);
@@ -242,10 +244,41 @@ TEST(Draw, testSpanDraw)
     }
 
     {
+
+
         Vector2dd p1(210, 10);
         Vector2dd p2(205, 12);
         Vector2dd p3(285, 12);
 
+
+        TrapezoidSpanIterator it(p1.y(), p2.y(), p1.x(), p1.x(), p2.x(), p3.x());
+        while (it.hasValue())
+        {
+            HLineSpanInt span = it.getSpan();
+            buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
+            it.step();
+        }
+        buffer->drawPixel(p1.x(), p1.y(), RGBColor::Red());
+        buffer->drawPixel(p2.x(), p2.y(), RGBColor::Red());
+        buffer->drawPixel(p3.x(), p3.y(), RGBColor::Red());
+
+    }
+
+    {
+
+
+        Vector2dd p1(216.381, 132.5448);
+        Vector2dd p2(214.665, 109.82056);
+        Vector2dd p3(282.487, 112.7939);
+
+        AttributedTriangle triF = AttributedTriangle(p1, p2, p3);
+        AttributedTriangleSpanIteratorFix itF(triF);
+        while (itF.hasValue()  && itF.part.y1 < 111 )
+        {
+            AttributedHLineSpan span = itF.getAttrSpan();
+            buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Blue());
+            itF.step();
+        }
 
         TrapezoidSpanIterator it(p1.y(), p2.y(), p1.x(), p1.x(), p2.x(), p3.x());
         while (it.hasValue())
@@ -358,8 +391,13 @@ TEST(Draw, testSpanDrawTriangle1)
             p.drawFormat(j * sample, i * sample, RGBColor::Blue(), 2, "%d", offset);
             AbstractPainter<RGB24Buffer> pA(bufferA);
             pA.drawFormat(j * sample, i * sample, RGBColor::Blue(), 2, "%d", offset);
-
+            AbstractPainter<RGB24Buffer> pF(bufferF);
+            pF.drawFormat(j * sample, i * sample, RGBColor::Blue(), 2, "%d", offset);
             Triangle2dd &tri = t[offset];
+
+            if (offset == 12)
+                cout << tri << endl;
+
 
             {
                 TriangleSpanIterator it(tri);
@@ -368,7 +406,7 @@ TEST(Draw, testSpanDrawTriangle1)
                     HLineSpanInt span = it.getSpan();
                     buffer->drawHLine(span.x1, span.y(), span.x2, RGBColor::Green());
 
-                    if (offset == 2)
+                    if (offset == 12)
                         cout << span << endl;
 
 
@@ -388,6 +426,8 @@ TEST(Draw, testSpanDrawTriangle1)
             }
             /**/
             {
+
+
                 AttributedTriangle triF = AttributedTriangle(tri.p1(), tri.p2(), tri.p3());
                 AttributedTriangleSpanIteratorFix itF(triF);
                 while (itF.hasValue())

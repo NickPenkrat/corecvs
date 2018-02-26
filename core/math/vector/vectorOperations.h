@@ -763,6 +763,7 @@ public:
         if (mask == NULL) {
             this->loadFrom(in);
             in += _size();
+            return;
         }
 
         for (int i = 0; i < _size(); i++)
@@ -787,6 +788,7 @@ public:
         if (mask == NULL) {
             this->storeTo(out);
             out += _size();
+            return;
         }
 
         for (int i = 0; i < _size(); i++)

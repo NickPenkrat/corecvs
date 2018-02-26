@@ -106,4 +106,5 @@ SOURCES += \
     quadric/main_test_quadric.cpp \
     planefit/main_test_planefit.cpp \
     noise/main_test_noise.cpp \
-	projection/main_test_projection.cpp \
+    projection/main_test_projection.cpp \
+    placer/main_test_placer.cpp \

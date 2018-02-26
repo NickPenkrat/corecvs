@@ -2,14 +2,18 @@
 
 #include <iomanip>
 
-void corecvs::RuntimeTypeBuffer::load(std::istream &is)
+namespace corecvs {
+
+void RuntimeTypeBuffer::load(std::istream &is)
 {
     is >> (*this);
 }
 
-void corecvs::RuntimeTypeBuffer::save(std::ostream &os) const
+void RuntimeTypeBuffer::save(std::ostream &os) const
 {
     os << (*this);
+}
+
 }
 
 template< typename T, typename U >
@@ -263,7 +267,8 @@ G12Buffer *RuntimeTypeBuffer::toG12Buffer(double min, double max)
         {
             for (size_t j = 0; j < cols; j++)
             {
-                double value = lerpLimit(0, G12Buffer::BUFFER_MAX_VALUE, at<float>(i, j), min, max);
+                int maxVal = G12Buffer::BUFFER_MAX_VALUE;
+                double value = lerpLimit(0, maxVal, at<float>(i, j), min, max);
                 buffer->element(i, j) = (uint16_t)value;
             }
         }

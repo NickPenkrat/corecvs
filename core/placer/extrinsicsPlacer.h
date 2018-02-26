@@ -95,7 +95,9 @@ struct SillyModel
 
     static int getInputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
     {
-        return getPointsOffset(scene, params) + scene->points.size() * Vector3dd::LENGTH;
+        int camNum = params.lock1Cam() ? scene->cameras.size() - 1 : scene->cameras.size();
+
+        return getCameraOffset(scene, params) + getCameraModelSize(params) * camNum;
     }
 
     static int getOutputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
@@ -141,6 +143,8 @@ public:
 class SillyCostMask : public FunctionArgs, public SillyModel
 {
 public:
+    using FunctionArgs::operator();
+
     SimplifiedScene *scene = NULL;
     ExtrinsicsPlacerParameters params;
 
@@ -148,7 +152,8 @@ public:
 
     SillyCostMask(SimplifiedScene *scene, ExtrinsicsPlacerParameters &params) :
         FunctionArgs(getInputNumber(scene, params), getOutputNumber(scene, params)),
-        scene(scene)
+        scene(scene),
+        params(params)
     {
     }
 

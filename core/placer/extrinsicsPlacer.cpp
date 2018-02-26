@@ -185,6 +185,8 @@ vector<double> SillyCostMask::sceneToModel(const SimplifiedScene& scene)
         if (!params.lockOrientations())
             transform.rotor.storeToStream(output);
     }
+
+    CORE_ASSERT_TRUE(output - out.data() != inputs, "SillyCostMask::sceneToModel(): fail\n");
     return out;
 }
 

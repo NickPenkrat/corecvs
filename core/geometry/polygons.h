@@ -285,6 +285,13 @@ public:
         }
     }
 
+
+    friend ostream & operator <<(ostream &out, const GenericTriangle &triangle)
+    {
+        out << "(" << triangle.p1() << triangle.p2() << " " << triangle.p3() << ") " << std::endl;
+        return out;
+    }
+
 };
 
 typedef GenericTriangle<Vector3d<int32_t> > Triangle32;
