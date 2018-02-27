@@ -396,7 +396,16 @@ public:
      *
      **/
     static CameraModel loadCatadioptricFromTxt(const std::string &filename);
+
     static CameraModel loadCatadioptricFromTxt(std::istream &filename);
+    static CameraModel storeCatadioptricToTxt (std::ostream &filename, CatadioptricProjection projection);
+
+
+    /**
+     *  projective
+     *  fx fy cx cy w h
+     **/
+    static CameraModel loadProjectiveFromTxt(std::istream &filename);
 
 
 };

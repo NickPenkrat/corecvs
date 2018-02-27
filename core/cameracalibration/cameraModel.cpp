@@ -504,6 +504,17 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
    return model;
 }
 
+CameraModel CameraModel::loadProjectiveFromTxt(std::istream &filename)
+{
+
+
+    stream >> s;
+    stream >> c.x() >> c.y();
+    stream >> imax;
+
+    stream >> n0;
+}
+
 
 /* FACTORY */
 

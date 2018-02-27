@@ -157,9 +157,16 @@ void Mesh3DDecorated::recomputeMeanNormals()
 
 bool Mesh3DDecorated::verify( void )
 {
-    if (faces.size() != texId.size() || faces.size() != normalCoords.size())
+    if (faces.size() != texId.size())
     {
-        SYNC_PRINT(("Wrong face/texId/normalId index\n"));
+        SYNC_PRINT(("Wrong face/texId index (%d != %d)\n", faces.size(), texId.size()));
+        return false;
+
+    }
+
+    if (faces.size() != normalId.size())
+    {
+        SYNC_PRINT(("Wrong face/normalId index (%d != %d)\n", faces.size(), normalId.size()));
         return false;
     }
 

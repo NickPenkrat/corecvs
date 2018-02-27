@@ -13,16 +13,6 @@ namespace corecvs {
 
 class CameraProjection {
 public:
-#if 0
-    enum ProjectionType {
-        PINHOLE = 0,
-        EQUIDISTANT,
-        CATADIOPTRIC,
-        STEREOGRAPHIC,
-        EQUISOLID,
-        ORTHOGRAPIC /*Other impelementation*/
-    };
-#endif
 
     ProjectionType::ProjectionType projection = ProjectionType::PINHOLE;
 
