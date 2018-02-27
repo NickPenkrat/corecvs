@@ -31,10 +31,10 @@ enum ProjectionType {
      */
     EQUIDISTANT = 1,
     /** 
-     * \brief CATADIOPTRIC 
-     * CATADIOPTRIC 
+     * \brief OMNIDIRECTIONAL 
+     * OMNIDIRECTIONAL 
      */
-    CATADIOPTRIC = 2,
+    OMNIDIRECTIONAL = 2,
     /** 
      * \brief STEREOGRAPHIC 
      * STEREOGRAPHIC 
@@ -63,7 +63,7 @@ static inline const char *getName(const ProjectionType &value)
     {
      case PINHOLE : return "PINHOLE"; break ;
      case EQUIDISTANT : return "EQUIDISTANT"; break ;
-     case CATADIOPTRIC : return "CATADIOPTRIC"; break ;
+     case OMNIDIRECTIONAL : return "OMNIDIRECTIONAL"; break ;
      case STEREOGRAPHIC : return "STEREOGRAPHIC"; break ;
      case EQUISOLID : return "EQUISOLID"; break ;
      case ORTHOGRAPHIC : return "ORTHOGRAPHIC"; break ;

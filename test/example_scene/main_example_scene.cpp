@@ -333,9 +333,9 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
     cameraEq->nameId = "equidist";
     cameraEq->copyModelFrom(equidist);
 
-    /** Catadioptric **/
+    /** Omnidirectional **/
     CameraModel catadioptric;
-    catadioptric.intrinsics.reset(new CatadioptricProjection(Vector2dd(100,100), 100, Vector2dd(200,200)));
+    catadioptric.intrinsics.reset(new OmnidirectionalProjection(Vector2dd(100,100), 100, Vector2dd(200,200)));
     catadioptric.setLocation(Affine3DQ::Shift(0,40,0));
 
     FixtureCamera *cameraCat = scene->createCamera();
@@ -398,7 +398,7 @@ void testJSON_CarScene(CommandLineSetter &params)
     "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
     std::istringstream ss(input);
 
-    CameraModel model = CameraModel::loadCatadioptricFromTxt(ss);
+    CameraModel model = CameraModel::loadOmnidirectionalFromTxt(ss);
 
     FixtureCamera *front = scene->createCamera(); scene->addCameraToFixture(front, fixture);
     front->nameId = "Front";

@@ -247,7 +247,7 @@ classes+=" iterativeEstimateParameters"
 
 classes+=" projectionBaseParameters"
 classes+=" pinholeCameraIntrinsicsBaseParameters"
-classes+=" catadioptricBaseParameters"
+classes+=" omnidirectionalBaseParameters"
 
 
 # We will try to use reflectionWidget

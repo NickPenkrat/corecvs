@@ -55,30 +55,30 @@ void MergerThread::cacheIntrinsics()
     for (int c=0; c < 4; c++)
     {
         CameraModel slowModel = mCarScene->fixtures()[0]->cameras[c]->getWorldCameraModel();
-        if (slowModel.getCatadioptric() == NULL )
+        if (slowModel.getOmnidirectional() == NULL )
         {
              SYNC_PRINT(("Cam %d doesn't have catadioptric projection %d\n", c, slowModel.intrinsics->projection));
              continue;
         }
 
         bool same = true;
-        if      (  mRemapCached.cached[c].getCatadioptric() == NULL) {
+        if      (  mRemapCached.cached[c].getOmnidirectional() == NULL) {
             same = false;
             SYNC_PRINT(("Cache not catadioptric\n"));
         } else if (!(mRemapCached.cached[c].distortion == slowModel.distortion)) {
             //same = false;
             SYNC_PRINT(("Distortion differ\n"));
         }
-        else if (!(*slowModel.getCatadioptric() == *mRemapCached.cached[c].getCatadioptric()))
+        else if (!(*slowModel.getOmnidirectional() == *mRemapCached.cached[c].getOmnidirectional()))
         {
             //same = false;
-            SYNC_PRINT(("Catadioptric model parameters differ\n"));
+            SYNC_PRINT(("Omnidirectional model parameters differ\n"));
         }
 
-        if (mRemapCached.cached[c].getCatadioptric() != 0)
+        if (mRemapCached.cached[c].getOmnidirectional() != 0)
         {
-            cout << "Cached" <<  *mRemapCached.cached[c].getCatadioptric() << std::endl;
-            cout << "New"    <<  *slowModel.getCatadioptric() << std::endl;
+            cout << "Cached" <<  *mRemapCached.cached[c].getOmnidirectional() << std::endl;
+            cout << "New"    <<  *slowModel.getOmnidirectional() << std::endl;
         }
 
         if (same)
@@ -90,7 +90,7 @@ void MergerThread::cacheIntrinsics()
         SYNC_PRINT(("Cam %d recalculating\n", c));
 
 
-        CatadioptricProjection slowProjection = *static_cast<CatadioptricProjection *>(slowModel.intrinsics.get());
+        OmnidirectionalProjection slowProjection = *static_cast<OmnidirectionalProjection *>(slowModel.intrinsics.get());
 
         EquidistantProjection target;
         target.setPrincipalX(slowProjection.principalX());

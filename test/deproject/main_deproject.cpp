@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     CameraModel model;
     if (!camtxt.empty())
     {
-        model = CameraModel::loadCatadioptricFromTxt(camtxt);
+        model = CameraModel::loadOmnidirectionalFromTxt(camtxt);
     }
 
     RGB24Buffer *out = new RGB24Buffer(in->getSize());

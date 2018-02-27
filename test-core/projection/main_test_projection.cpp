@@ -67,9 +67,9 @@ TEST(projection, testEquisolid)
     ASSERT_TRUE(source.notTooFar(rsource, 1e-7));
 }
 
-TEST(projection, testCatadioptric)
+TEST(projection, testOmnidirectional)
 {
-    CatadioptricProjection projection;
+    OmnidirectionalProjection projection;
 
     Vector2dd source(Vector2dd(1.0, 1.0));
     Vector3dd p = projection.reverse(source);
@@ -77,7 +77,7 @@ TEST(projection, testCatadioptric)
     cout << "Will call project" << endl;
     Vector2dd rsource = projection.project(p);
 
-    cout << "CatadioptricBaseParameters:" << endl
+    cout << "OmnidirectionalBaseParameters:" << endl
          << projection << endl;
     cout << " Source: " << source << endl;
     cout << " RayDir: " << p << endl;
@@ -86,9 +86,9 @@ TEST(projection, testCatadioptric)
     ASSERT_TRUE(source.notTooFar(rsource, 1e-7));
 }
 
-TEST(projection, testCatadioptric1)
+TEST(projection, testOmnidirectional1)
 {
-    CatadioptricProjection projection;
+    OmnidirectionalProjection projection;
 
     projection.mN[0] = 0.1;
 
@@ -98,16 +98,16 @@ TEST(projection, testCatadioptric1)
     cout << "Will call project" << endl;
     Vector2dd rsource = projection.project(p);
 
-    cout << "CatadioptricBaseParameters:" << endl
+    cout << "OmnidirectionalBaseParameters:" << endl
          << projection << endl;
     cout << " Source: " << source << endl;
     cout << " RayDir: " << p << endl;
     cout << "RSource: " << rsource << endl;
 }
 
-TEST(projection, testCatadioptric2)
+TEST(projection, testOmnidirectional2)
 {
-    CatadioptricProjection projection;
+    OmnidirectionalProjection projection;
 
     projection.mN[0] = 0.1;
     projection.mN[1] = 0.2;
@@ -118,7 +118,7 @@ TEST(projection, testCatadioptric2)
     cout << "Will call project" << endl;
     Vector2dd rsource = projection.project(p);
 
-    cout << "CatadioptricBaseParameters:" << endl
+    cout << "OmnidirectionalBaseParameters:" << endl
          << projection << endl;
     cout << " Source: " << source << endl;
     cout << " RayDir: " << p << endl;
@@ -127,9 +127,9 @@ TEST(projection, testCatadioptric2)
     ASSERT_TRUE(source.notTooFar(rsource, 1e-7));
 }
 
-TEST(projection, testCatadioptric3)
+TEST(projection, testOmnidirectional3)
 {
-    CatadioptricProjection projection;
+    OmnidirectionalProjection projection;
 
     projection.mN = vector<double>({ -3.97282, -7.61552, 26.471, -43.6205});
 
@@ -139,7 +139,7 @@ TEST(projection, testCatadioptric3)
     cout << "Will call project" << endl;
     Vector2dd rsource = projection.project(p);
 
-    cout << "CatadioptricBaseParameters:" << endl
+    cout << "OmnidirectionalBaseParameters:" << endl
          << projection << endl;
     cout << " Source: " << source << endl;
     cout << " RayDir: " << p << endl;
@@ -155,7 +155,7 @@ TEST(projection, testFormatLoad)
     "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
     std::istringstream ss(input);
 
-    CameraModel model = CameraModel::loadCatadioptricFromTxt(ss);
+    CameraModel model = CameraModel::loadOmnidirectionalFromTxt(ss);
     cout << model;
 }
 
@@ -185,8 +185,8 @@ TEST(projection, testProjectionChange)
     "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
     std::istringstream ss(input);
 
-    CameraModel model = CameraModel::loadCatadioptricFromTxt(ss);
-    CatadioptricProjection slowProjection = * static_cast<CatadioptricProjection *>(model.intrinsics.get());
+    CameraModel model = CameraModel::loadOmnidirectionalFromTxt(ss);
+    OmnidirectionalProjection slowProjection = * static_cast<OmnidirectionalProjection *>(model.intrinsics.get());
 
     RGB24Buffer *image = new RGB24Buffer(slowProjection.sizeY(), slowProjection.sizeX());
     image->checkerBoard(50, RGBColor::White());

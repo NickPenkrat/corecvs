@@ -90,9 +90,9 @@ public:
         return projection == ProjectionType::PINHOLE;
     }
 
-    bool isCatadioptric() const
+    bool isOmnidirectional() const
     {
-        return projection == ProjectionType::CATADIOPTRIC;
+        return projection == ProjectionType::OMNIDIRECTIONAL;
     }
 
 };

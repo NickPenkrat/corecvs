@@ -1,5 +1,5 @@
-#ifndef CATADIOPTRICPROJECTION_H
-#define CATADIOPTRICPROJECTION_H
+#ifndef OMNIDIRECTIONALPROJECTION_H
+#define OMNIDIRECTIONALPROJECTION_H
 
 #include "core/polynomial/polynomial.h"
 #include "core/polynomial/polynomialSolver.h"
@@ -10,20 +10,20 @@
 
 #include "core/cameracalibration/projection/projectionModels.h"
 #include "core/xml/generated/projectionBaseParameters.h"
-#include "core/xml/generated/catadioptricBaseParameters.h"
+#include "core/xml/generated/omnidirectionalBaseParameters.h"
 
 
 namespace corecvs{
 
 template<class ElementType>
-class GenericCatadioptricProjection : public CameraProjection {
+class GenericOmnidirectionalProjection : public CameraProjection {
 
 
 
 };
 
 /**
- *  Catadioptric Projection
+ *  Omnidirectional Projection
  *
  *  Point in the image if formed by the ray which parameters are computed as follows
  *
@@ -43,8 +43,8 @@ class GenericCatadioptricProjection : public CameraProjection {
  *  \f[ {\overrightarrow d_n} = {{\overrightarrow {d}} \over {\vert \overrightarrow{d} \vert }} \f]
  *
  *
- *  Catadioptric Projection is quite universal.
- *  For example ortographic projection is particular case of Catadioptric.
+ *  Omnidirectional Projection is quite universal.
+ *  For example ortographic projection is particular case of Omnidirectional.
  *
  *
  *  \f[ d_n = (q_x, q_y, \sqrt {1 - q_x^2 - q_y ^ 2} ) \f]
@@ -74,17 +74,17 @@ class GenericCatadioptricProjection : public CameraProjection {
  *  \f[ r = ((p_x - p_x^0)/f, (p_y - p_y^0)/f, 1.0 ) = (q_x, q_y, 1.0)\f]
 */
 
-class CatadioptricProjection : public CatadioptricBaseParameters, public CameraProjection
+class OmnidirectionalProjection : public OmnidirectionalBaseParameters, public CameraProjection
 {
 public:
 
-    CatadioptricProjection() :
-        CameraProjection(ProjectionType::CATADIOPTRIC)
+    OmnidirectionalProjection() :
+        CameraProjection(ProjectionType::OMNIDIRECTIONAL)
     {}
 
-    CatadioptricProjection(const Vector2dd &principal, double focal, const Vector2dd &size) :
-        CatadioptricBaseParameters(principal.x(), principal.y(), focal, {} ,size.x(), size.y(), size.x(), size.y()),
-        CameraProjection(ProjectionType::CATADIOPTRIC)
+    OmnidirectionalProjection(const Vector2dd &principal, double focal, const Vector2dd &size) :
+        OmnidirectionalBaseParameters(principal.x(), principal.y(), focal, {} ,size.x(), size.y(), size.x(), size.y()),
+        CameraProjection(ProjectionType::OMNIDIRECTIONAL)
     {
 
     }
@@ -134,7 +134,7 @@ public:
         return n.template block<2, 1>(0, 0) * bestRoot * intrinsics[0] +
                Vector2d(intrinsics[1], intrinsics[2]);
 #else
-        // SYNC_PRINT(("CatadioptricProjection::project(%lf %lf %lf):called\n", p.x(), p.y(), p.z()));
+        // SYNC_PRINT(("OmnidirectionalProjection::project(%lf %lf %lf):called\n", p.x(), p.y(), p.z()));
 
         Vector3dd norm = p.normalised();
         vector<double> coefs;
@@ -265,25 +265,25 @@ public:
     }
 
     /* Misc */
-    virtual CatadioptricProjection *clone() const override
+    virtual OmnidirectionalProjection *clone() const override
     {
-        CatadioptricProjection *p = new CatadioptricProjection();
+        OmnidirectionalProjection *p = new OmnidirectionalProjection();
         *p = *this;
         return p;
     }
 
     virtual DynamicObjectWrapper getDynamicWrapper() override
     {
-        return DynamicObjectWrapper(&reflection, static_cast<CatadioptricBaseParameters *>(this));
+        return DynamicObjectWrapper(&reflection, static_cast<OmnidirectionalBaseParameters *>(this));
     }
 
 
 
 
-    virtual ~CatadioptricProjection() {}
+    virtual ~OmnidirectionalProjection() {}
 
 };
 
 }
 
-#endif // CATADIOPTRICPROJECTION_H
+#endif // OMNIDIRECTIONALPROJECTION_H

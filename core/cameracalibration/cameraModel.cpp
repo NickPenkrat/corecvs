@@ -436,14 +436,14 @@ void CameraModel::prettyPrint(std::ostream &out)
     accept(visitor);
 }
 
-CameraModel CameraModel::loadCatadioptricFromTxt(const std::string &filename)
+CameraModel CameraModel::loadOmnidirectionalFromTxt(const std::string &filename)
 {
     std::ifstream is;
     is.open(filename, std::ifstream::in);
-    return loadCatadioptricFromTxt(is);
+    return loadOmnidirectionalFromTxt(is);
 }
 
-CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
+CameraModel CameraModel::loadOmnidirectionalFromTxt(std::istream &stream)
 {
    // "omnidirectional\n"
    // "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
@@ -482,7 +482,7 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
    }
 
    CameraModel model;
-   CatadioptricProjection projection;
+   OmnidirectionalProjection projection;
    projection.setFocal(s * n0);
    projection.setPrincipalX(s * c.x());
    projection.setPrincipalY(s * c.y());
@@ -504,6 +504,7 @@ CameraModel CameraModel::loadCatadioptricFromTxt(std::istream &stream)
    return model;
 }
 
+#if 0
 CameraModel CameraModel::loadProjectiveFromTxt(std::istream &filename)
 {
 
@@ -514,7 +515,7 @@ CameraModel CameraModel::loadProjectiveFromTxt(std::istream &filename)
 
     stream >> n0;
 }
-
+#endif
 
 /* FACTORY */
 
@@ -526,8 +527,8 @@ CameraProjection *ProjectionFactory::projectionById(const ProjectionType::Projec
         return new PinholeCameraIntrinsics();
     case  ProjectionType::EQUIDISTANT:
         return new EquidistantProjection();
-    case  ProjectionType::CATADIOPTRIC:
-        return new CatadioptricProjection();
+    case  ProjectionType::OMNIDIRECTIONAL:
+        return new OmnidirectionalProjection();
     case  ProjectionType::STEREOGRAPHIC:
         return new StereographicProjection();
     case  ProjectionType::EQUISOLID:
@@ -544,8 +545,8 @@ Reflection *ProjectionFactory::reflectionById(const ProjectionType::ProjectionTy
         return &PinholeCameraIntrinsics::reflection;
     case  ProjectionType::EQUIDISTANT:
         return &EquidistantProjection::reflection;
-    case  ProjectionType::CATADIOPTRIC:
-        return &CatadioptricProjection::reflection;
+    case  ProjectionType::OMNIDIRECTIONAL:
+        return &OmnidirectionalProjection::reflection;
     case  ProjectionType::STEREOGRAPHIC:
         return &StereographicProjection::reflection;
     case  ProjectionType::EQUISOLID:

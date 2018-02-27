@@ -57,8 +57,8 @@ public:
                 static_cast<PinholeCameraIntrinsics *>(target.get())->accept<Visitor>(visitor); break;
             case  ProjectionType::EQUIDISTANT:
                 static_cast<EquidistantProjection *>  (target.get())->accept<Visitor>(visitor); break;
-            case  ProjectionType::CATADIOPTRIC:
-                static_cast<CatadioptricProjection *> (target.get())->accept<Visitor>(visitor); break;
+            case  ProjectionType::OMNIDIRECTIONAL:
+                static_cast<OmnidirectionalProjection *> (target.get())->accept<Visitor>(visitor); break;
             case  ProjectionType::STEREOGRAPHIC:
                 static_cast<StereographicProjection *>(target.get())->accept<Visitor>(visitor); break;
             case  ProjectionType::EQUISOLID:
@@ -351,10 +351,10 @@ public:
         }
         return NULL;
     }
-    CatadioptricProjection *getCatadioptric() const
+    OmnidirectionalProjection *getOmnidirectional() const
     {
-        if (intrinsics->isCatadioptric()) {
-            return static_cast<CatadioptricProjection *>(intrinsics.get());
+        if (intrinsics->isOmnidirectional()) {
+            return static_cast<OmnidirectionalProjection *>(intrinsics.get());
         }
         return NULL;
     }
@@ -370,7 +370,7 @@ public:
      *  Output ray
      * \f[ d = (u_1, v_1, P(r)) \f]
      *
-     * To match our format in CatadioptricProjection
+     * To match our format in OmnidirectionalProjection
      *
      * \f[ (P(r) / n_0) = 1 + 0 \cdot r + {n_2 \over n_0} r^2 + {n_3 \over n_0} r^3 + \cdots + {n_i \over n_0} r^{i} \f]
      *
@@ -395,10 +395,10 @@ public:
      *
      *
      **/
-    static CameraModel loadCatadioptricFromTxt(const std::string &filename);
+    static CameraModel loadOmnidirectionalFromTxt(const std::string &filename);
 
-    static CameraModel loadCatadioptricFromTxt(std::istream &filename);
-    static CameraModel storeCatadioptricToTxt (std::ostream &filename, CatadioptricProjection projection);
+    static CameraModel loadOmnidirectionalFromTxt(std::istream &filename);
+    static CameraModel storeOmnidirectionalToTxt (std::ostream &filename, OmnidirectionalProjection projection);
 
 
     /**
