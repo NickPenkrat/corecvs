@@ -16,6 +16,7 @@
 
 #include "core/camerafixture/fixtureScene.h"
 #include "core/camerafixture/cameraFixture.h"
+#include "core/cameracalibration/ilFormat.h"
 
 #include "core/math/vector/vector3d.h"
 #include "xmlSetter.h"
@@ -381,7 +382,7 @@ void testJSON_CarScene(CommandLineSetter &params)
     Mesh3D mesh;
     mesh.addIcoSphere(Vector3dd::Zero(), 20.0, 1);
 
-    for (int i = 0; i < mesh.vertexes.size(); i++)
+    for (size_t i = 0; i < mesh.vertexes.size(); i++)
     {
         Vector3dd pos = mesh.vertexes[i];
         if (pos.z() < 0) {
@@ -398,7 +399,8 @@ void testJSON_CarScene(CommandLineSetter &params)
     "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
     std::istringstream ss(input);
 
-    CameraModel model = CameraModel::loadOmnidirectionalFromTxt(ss);
+    CameraModel model;
+    model.intrinsics.reset(ILFormat::loadIntrisics(ss));
 
     FixtureCamera *front = scene->createCamera(); scene->addCameraToFixture(front, fixture);
     front->nameId = "Front";

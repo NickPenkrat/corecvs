@@ -198,28 +198,26 @@ void FixtureScene::deleteCamera(FixtureCamera *camera)
 
 void FixtureScene::deleteCameraPrototype(CameraPrototype *cameraPrototype)
 {
-     //mOrphanCameras.erase(
-     //   std::remove_if(mOrphanCameras.begin(), mOrphanCameras.end(),
-     //       [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
-     //   mOrphanCameras.end()
-     //);
+     for (FixtureCamera *cam: mOrphanCameras)
+     {
+         if (cam->cameraPrototype == cameraPrototype)
+             cam->cameraPrototype = NULL;
+     }
 
-     //for (size_t i = 0; i < mFixtures.size(); i++)
-     //{
-     //   CameraFixture *station = mFixtures[i];
-     //   if (station == NULL)
-     //       continue;
+     for (size_t i = 0; i < mFixtures.size(); i++)
+     {
+        CameraFixture *fixture = mFixtures[i];
+        if (fixture == NULL)
+            continue;
 
-     //   auto cameras = station->cameras;
-     //   cameras.erase(
-     //      std::remove_if(cameras.begin(), cameras.end(),
-     //          [=](FixtureCamera *cam) {return cam->cameraPrototype == cameraPrototype;} ),
-     //      cameras.end()
-     //   );
-     //}
+        for (FixtureCamera *cam: fixture->cameras)
+        {
+            if (cam->cameraPrototype == cameraPrototype)
+                cam->cameraPrototype = NULL;
+        }
+     }
 
      vectorErase(mCameraPrototypes, cameraPrototype);
-
      delete_safe(cameraPrototype);
 }
 

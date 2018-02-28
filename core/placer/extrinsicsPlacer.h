@@ -95,7 +95,7 @@ struct SillyModel
 
     static int getInputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
     {
-        int camNum = params.lock1Cam() ? scene->cameras.size() - 1 : scene->cameras.size();
+        int camNum = params.lock1Cam() ? (scene->cameras.size() - 1) : (scene->cameras.size());
 
         return getCameraOffset(scene, params) + getCameraModelSize(params) * camNum;
     }

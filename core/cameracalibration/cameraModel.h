@@ -12,66 +12,11 @@
 
 #include "core/alignment/selectableGeometryFeatures.h"
 
+#include "core/cameracalibration/projection/projectionFactory.h"
 
-#include "core/cameracalibration/projection/pinholeCameraIntrinsics.h"
-#include "core/cameracalibration/projection/equidistantProjection.h"
-#include "core/cameracalibration/projection/equisolidAngleProjection.h"
-#include "core/cameracalibration/projection/catadioptricProjection.h"
-#include "core/cameracalibration/projection/stereographicProjection.h"
 
 namespace corecvs {
 
-
-/**
- * Serialization is a bit more tricky. So far - stupid approach
- *
- * This class is a wrapper that is able to manually transform dinamic polimorphism into static for ProjectionType hierarchy
- *
- **/
-class ProjectionFactory {
-public:
-    std::unique_ptr<CameraProjection> &target;
-
-    ProjectionFactory(std::unique_ptr<CameraProjection> &target) :
-        target(target) {}
-
-
-    static CameraProjection     *projectionById(const ProjectionType::ProjectionType &projection);
-    static Reflection           *reflectionById(const ProjectionType::ProjectionType &projection);
-
-    template<class Visitor>
-    void accept(Visitor &visitor)
-    {
-
-        int projectionNum = (int)target->projection;
-        visitor.visit((int&)projectionNum, (int)ProjectionType::PINHOLE, "projectionType");
-        ProjectionType::ProjectionType projectionType = (ProjectionType::ProjectionType)projectionNum;
-
-        if (projectionType != target->projection)
-        {
-            target.reset(projectionById(projectionType));
-        }
-
-        switch (projectionType) {
-            case  ProjectionType::PINHOLE:
-                static_cast<PinholeCameraIntrinsics *>(target.get())->accept<Visitor>(visitor); break;
-            case  ProjectionType::EQUIDISTANT:
-                static_cast<EquidistantProjection *>  (target.get())->accept<Visitor>(visitor); break;
-            case  ProjectionType::OMNIDIRECTIONAL:
-                static_cast<OmnidirectionalProjection *> (target.get())->accept<Visitor>(visitor); break;
-            case  ProjectionType::STEREOGRAPHIC:
-                static_cast<StereographicProjection *>(target.get())->accept<Visitor>(visitor); break;
-            case  ProjectionType::EQUISOLID:
-                static_cast<EquisolidAngleProjection *>(target.get())->accept<Visitor>(visitor); break;
-            /*case  CameraProjection::ORTHOGRAPIC:
-                static_cast<EquidistantProjection *>(target.get())->accept<Visitor>(visitor); break;*/
-            default:
-                break;
-
-        }
-    }
-
-};
 
 class CameraModel
 {
@@ -267,7 +212,11 @@ public:
 
 
     void copyModelFrom(const CameraModel &other) {
-        intrinsics.reset(other.intrinsics->clone());
+        if (other.intrinsics != NULL) {
+            intrinsics.reset(other.intrinsics->clone());
+        } else {
+            intrinsics.reset(NULL);
+        }
         distortion = other.distortion;
         extrinsics = other.extrinsics;
     }
@@ -358,55 +307,6 @@ public:
         }
         return NULL;
     }
-
-    /**
-     * Temporary function that loads from following format
-     *
-     * \f[ s \quad c_x \quad c_y \quad i \quad n_0 \quad n_2 \quad ... \quad n_i \f]
-     *
-     * \f[ p = (u, v) \f]
-     * \f[ (u_1, v_1)=(u, v)/s-(cx,cy) \quad r = \vert| (u1, v1) \vert|  \f]
-     * \f[ P(r) = n_0 + 0 \cdot r + n_2 r^2 + n_3 r^3 + \cdots + n_i r^{i} \f]
-     *  Output ray
-     * \f[ d = (u_1, v_1, P(r)) \f]
-     *
-     * To match our format in OmnidirectionalProjection
-     *
-     * \f[ (P(r) / n_0) = 1 + 0 \cdot r + {n_2 \over n_0} r^2 + {n_3 \over n_0} r^3 + \cdots + {n_i \over n_0} r^{i} \f]
-     *
-     * \f[ d = (u_1, v_1, P(r)) \sim (u_1 / n_0, v_1 / n_0, P(r) / n_0) \f]
-     * \f[ (u_1 / n_0, v_1 / n_0)= ((u, v)/s-(c_x,c_y)) / n_0 = (u-s c_x, v-s c_y) / (s  n_0) \f]
-     * \f[ r / n_0 = \vert| (u_1, v_1) \vert| = \vert| (u_1/n_0, v_1/n_0) \vert| \f]
-     *
-     * Now we have
-     * \f[ (P(r) / n_0) = 1 + 0 \cdot {r \over n_0} + {n_2 \over n_0} n_0^2 {r^2 \over n_0^2} + {n_3 \over n_0} n_0^3 {r^3 \over n_0^3} + \cdots + {n_i \over n_0} n_0^i {r^i \over n_0^i} \f]
-     * And we expect to have the following
-     * \f[ (P(r) / n_0) = (P^1(r / n_0) / n_0) = 1 + 0 \cdot r + n_2^1 r^2 + n_3^1 r^3 + \cdots + n_i^1 r^{i} \f]
-     *
-     *
-     * So \f{eqnarray*}
-     *   p_{principal} &=& (s c_x, s c_y) \\
-     *               f &=&  s  n_0      \\
-     *            n_0^1  :&=& n_2  n_0  \\
-     *            n_1^1  :&=& n_3  n_0^2  \\
-     *                   &\cdots&             \\
-     *            n_i^1  :&=& n_{i+2}  n_0^{i-1}
-     * \f}
-     *
-     *
-     **/
-    static CameraModel loadOmnidirectionalFromTxt(const std::string &filename);
-
-    static CameraModel loadOmnidirectionalFromTxt(std::istream &filename);
-    static CameraModel storeOmnidirectionalToTxt (std::ostream &filename, OmnidirectionalProjection projection);
-
-
-    /**
-     *  projective
-     *  fx fy cx cy w h
-     **/
-    static CameraModel loadProjectiveFromTxt(std::istream &filename);
-
 
 };
 

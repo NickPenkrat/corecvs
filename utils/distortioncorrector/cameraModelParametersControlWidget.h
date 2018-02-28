@@ -26,9 +26,10 @@ public:
     explicit CameraModelParametersControlWidget(QWidget *parent = 0);
     ~CameraModelParametersControlWidget();
 
+#if 0
     LensDistortionModelParameters lensDistortionParameters();
     void setLensDistortionParameters(const LensDistortionModelParameters &params);
-
+#endif
 
     CameraModel* createParameters() const;
     void getParameters(CameraModel &params) const;
@@ -75,7 +76,7 @@ protected:
     void assertProjectionMatch();
 };
 
-
+#if 0
 /* Should support additional protype field*/
 class FixtureCameraParametersControlWidget : public CameraModelParametersControlWidget
 {
@@ -84,5 +85,6 @@ public:
 
 
 };
+#endif
 
 #endif // CAMERAMODELPARAMETERSCONTROLWIDGET_H

@@ -89,6 +89,7 @@ CameraModelParametersControlWidget::~CameraModelParametersControlWidget()
     delete_safe(ui);
 }
 
+#if 0
 LensDistortionModelParameters CameraModelParametersControlWidget::lensDistortionParameters()
 {
     LensDistortionModelParameters result;
@@ -100,6 +101,7 @@ void CameraModelParametersControlWidget::setLensDistortionParameters(const LensD
 {
     ui->lensDistortionWidget->setParameters(params);
 }
+#endif
 
 void CameraModelParametersControlWidget::loadParamWidget(WidgetLoader &loader)
 {
@@ -193,27 +195,6 @@ void CameraModelParametersControlWidget::getParameters(CameraModel& params) cons
     ui->extrinsicWorldWidget->getParameters(location);
     params.setLocation(location);
 
-#if 0
-    PinholeCameraIntrinsics *pinhole = params.getPinhole();
-
-    if (pinhole != NULL) {
-        pinhole->setFocalX(ui->spinBoxFocalX->value());
-        pinhole->setFocalX(ui->spinBoxFocalY->value());
-
-        pinhole->setPrincipalX(ui->spinBoxCx->value());
-        pinhole->setPrincipalY(ui->spinBoxCy->value());
-
-        pinhole->setSizeX(ui->spinBoxSizeX->value());
-        pinhole->setSizeY(ui->spinBoxSizeY->value());
-
-        pinhole->setDistortedSizeX(ui->spinBoxSizeDistortedX->value());
-        pinhole->setDistortedSizeX(ui->spinBoxSizeDistortedY->value());
-
-        pinhole->setSkew(ui->spinBoxSkew->value());
-    } else {
-    }
-#endif
-
     ProjectionType::ProjectionType curId = (ProjectionType::ProjectionType) ui->projectionTypeComboBox->currentIndex();
     if (params.intrinsics->projection != curId)
     {
@@ -300,7 +281,7 @@ void CameraModelParametersControlWidget::setParametersVirtual(void *input)
 
 
 
-
+#if 0
 FixtureCameraParametersControlWidget::FixtureCameraParametersControlWidget(QWidget *parent) :
     CameraModelParametersControlWidget(parent)
 {
@@ -310,3 +291,4 @@ FixtureCameraParametersControlWidget::FixtureCameraParametersControlWidget(QWidg
 
     ui->mainLayout->addWidget(prototypeBox, 0, 0, 1, 1);
 }
+#endif

@@ -36,10 +36,10 @@
      </property>
     </widget>
    </item>
-   <item row="12" column="0" colspan="5">
+   <item row="11" column="0" colspan="5">
     <widget class="QTabWidget" name="tabWidget_2">
      <property name="currentIndex">
-      <number>1</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
@@ -91,12 +91,6 @@
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>10</width>
-           <height>10</height>
-          </size>
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
@@ -249,6 +243,26 @@
          </widget>
         </widget>
        </item>
+       <item row="1" column="1">
+        <widget class="QPushButton" name="resetExtrinsicsPushButton">
+         <property name="toolTip">
+          <string>Sets angles to default camera rotation</string>
+         </property>
+         <property name="text">
+          <string>Reset</string>
+         </property>
+         <property name="icon">
+          <iconset resource="../../resources/main.qrc">
+           <normaloff>:/new/prefix1/bullet_orange.png</normaloff>:/new/prefix1/bullet_orange.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>24</width>
+           <height>24</height>
+          </size>
+         </property>
+        </widget>
+       </item>
        <item row="0" column="1">
         <widget class="QPushButton" name="zeroExtrinsicsPushButton">
          <property name="sizePolicy">
@@ -275,31 +289,24 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QPushButton" name="resetExtrinsicsPushButton">
-         <property name="toolTip">
-          <string>Sets angles to default camera rotation</string>
+       <item row="2" column="0" colspan="2">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-         <property name="text">
-          <string>Reset</string>
-         </property>
-         <property name="icon">
-          <iconset resource="../../resources/main.qrc">
-           <normaloff>:/new/prefix1/bullet_orange.png</normaloff>:/new/prefix1/bullet_orange.png</iconset>
-         </property>
-         <property name="iconSize">
+         <property name="sizeHint" stdset="0">
           <size>
-           <width>24</width>
-           <height>24</height>
+           <width>20</width>
+           <height>40</height>
           </size>
          </property>
-        </widget>
+        </spacer>
        </item>
       </layout>
      </widget>
     </widget>
    </item>
-   <item row="10" column="0" colspan="6">
+   <item row="9" column="0" colspan="6">
     <widget class="QFrame" name="buttonFrame">
      <layout class="QHBoxLayout" name="horizontalLayout">
       <property name="leftMargin">
@@ -320,7 +327,7 @@
    <item row="0" column="4">
     <widget class="QLineEdit" name="cameraNameEdit"/>
    </item>
-   <item row="15" column="0" colspan="5">
+   <item row="14" column="0" colspan="5">
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -333,7 +340,7 @@
      </property>
     </spacer>
    </item>
-   <item row="13" column="0" colspan="5">
+   <item row="12" column="0" colspan="5">
     <layout class="QHBoxLayout" name="buttonLayout">
      <item>
       <widget class="QPushButton" name="loadPushButton">

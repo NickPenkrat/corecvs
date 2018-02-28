@@ -407,28 +407,28 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
         SillyCostMask       F(&S, params);
         SillyNormalizerMask N(&S, params);
 
-        input = SillyCost::sceneToModel(S);
+        input = F.sceneToModel(S);
         outputs.resize(F.outputs, 0);
 
         lmFit.f = &F;
         lmFit.normalisation = &N;
 
         result = lmFit.fit(input, outputs);
-        SillyCost::sceneFromModel(S, result);
+        F.sceneFromModel(S, result);
 
     } else {
 
         SillyCost F(&S);
         SillyNormalizer N(&S);
 
-        input = SillyCost::sceneToModel(S);
+        input = F.sceneToModel(S);
         outputs.resize(F.outputs, 0);
 
         lmFit.f = &F;
         lmFit.normalisation = &N;
 
         result = lmFit.fit(input, outputs);
-        SillyCost::sceneFromModel(S, result);
+        F.sceneFromModel(S, result);
     }
 
     SimplifiedScene::mergeSimpleScene(scene, S);

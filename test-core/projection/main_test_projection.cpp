@@ -14,6 +14,8 @@
 #include "core/cameracalibration/projection/equidistantProjection.h"
 #include "core/cameracalibration/projection/equisolidAngleProjection.h"
 #include "core/cameracalibration/projection/catadioptricProjection.h"
+#include "core/cameracalibration/ilFormat.h"
+
 
 #include "core/cameracalibration/cameraModel.h"
 #include "core/utils/global.h"
@@ -155,7 +157,8 @@ TEST(projection, testFormatLoad)
     "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
     std::istringstream ss(input);
 
-    CameraModel model = CameraModel::loadOmnidirectionalFromTxt(ss);
+    CameraModel model;
+    model.intrinsics.reset(ILFormat::loadIntrisics(ss));
     cout << model;
 }
 
@@ -185,7 +188,8 @@ TEST(projection, testProjectionChange)
     "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
     std::istringstream ss(input);
 
-    CameraModel model = CameraModel::loadOmnidirectionalFromTxt(ss);
+    CameraModel model;
+    model.intrinsics.reset(ILFormat::loadIntrisics(ss));
     OmnidirectionalProjection slowProjection = * static_cast<OmnidirectionalProjection *>(model.intrinsics.get());
 
     RGB24Buffer *image = new RGB24Buffer(slowProjection.sizeY(), slowProjection.sizeX());

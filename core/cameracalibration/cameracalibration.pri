@@ -9,7 +9,9 @@ HEADERS += \
         cameracalibration/projection/equidistantProjection.h    \
         cameracalibration/projection/catadioptricProjection.h   \
         cameracalibration/projection/equisolidAngleProjection.h \
-    $$PWD/projection/stereographicProjection.h
+    $$PWD/projection/stereographicProjection.h \
+    $$PWD/projection/projectionFactory.h \
+    $$PWD/ilFormat.h
 
 
 SOURCES += \
@@ -23,5 +25,7 @@ SOURCES += \
         cameracalibration/projection/equidistantProjection.cpp    \
         cameracalibration/projection/catadioptricProjection.cpp   \
         cameracalibration/projection/equisolidAngleProjection.cpp \
-    $$PWD/projection/stereographicProjection.cpp
+    $$PWD/projection/stereographicProjection.cpp \
+    $$PWD/projection/projectionFactory.cpp \
+    $$PWD/ilFormat.cpp
 

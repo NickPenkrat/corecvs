@@ -12,6 +12,7 @@
 #include "core/reflection/commandLineSetter.h"
 #include "core/utils/utils.h"
 #include "qtFileLoader.h"
+#include "core/cameracalibration/ilFormat.h"
 
 using namespace std;
 using namespace corecvs;
@@ -60,7 +61,7 @@ int main(int argc, char **argv)
     CameraModel model;
     if (!camtxt.empty())
     {
-        model = CameraModel::loadOmnidirectionalFromTxt(camtxt);
+        model.intrinsics.reset(ILFormat::loadIntrisics(camtxt));
     }
 
     RGB24Buffer *out = new RGB24Buffer(in->getSize());
