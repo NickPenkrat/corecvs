@@ -10,10 +10,10 @@ ILFormat::ILFormat()
 }
 
 const std::string ILFormat::IL_OMNIDIRECTIONAL = "omnidirectional";
-const std::string ILFormat::IL_PROJECTIVE = "projective";
+const std::string ILFormat::IL_PROJECTIVE      = "projective";
 
 
-CameraProjection *ILFormat::loadIntrisics(std::istream &stream)
+CameraProjection *ILFormat::loadIntrisics(std::istream &filename)
 {
     /**
       Some examples
@@ -29,7 +29,7 @@ CameraProjection *ILFormat::loadIntrisics(std::istream &stream)
     **/
 
     std::string cameraType;
-    stream >> cameraType;
+    filename >> cameraType;
 
     if (cameraType == IL_OMNIDIRECTIONAL)
     {
@@ -38,16 +38,16 @@ CameraProjection *ILFormat::loadIntrisics(std::istream &stream)
         int imax;
         double n0;
 
-        stream >> s;
-        stream >> c.x() >> c.y();
-        stream >> imax;
+        filename >> s;
+        filename >> c.x() >> c.y();
+        filename >> imax;
 
-        stream >> n0;
+        filename >> n0;
         vector<double> n;
         for (int i = 0; i < imax-1; i++)
         {
             double v = 0;
-            stream >> v;
+            filename >> v;
             n.push_back(v);
         }
 
@@ -91,9 +91,9 @@ CameraProjection *ILFormat::loadIntrisics(std::istream &stream)
         Vector2dd pripcipal = Vector2dd::Zero();
         Vector2dd size      = Vector2dd::Zero();
 
-        stream >> focal.x()     >> focal.y();
-        stream >> pripcipal.x() >> pripcipal.y();
-        stream >> size.x()      >> size.y();
+        filename >> focal.x()     >> focal.y();
+        filename >> pripcipal.x() >> pripcipal.y();
+        filename >> size.x()      >> size.y();
 
         projection->setFocal(focal);
         projection->setPrincipal(pripcipal);
@@ -142,6 +142,34 @@ void ILFormat::saveIntrisics(const CameraProjection &projection, const std::stri
     os << std::setprecision(std::numeric_limits<double>::digits10 + 2);
 
     ILFormat::saveIntrisics(projection, os);
+}
+
+Affine3DQ ILFormat::loadExtrinsics(std::istream &stream)
+{
+    Affine3DQ transform;
+    Matrix44 m(1.0);
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            stream >> m.a(i, j);
+        }
+    }
+    transform.shift = m.translationPart();
+    transform.rotor = Quaternion::FromMatrix(m.topLeft33());
+    return transform;
+}
+
+void ILFormat::saveExtrinsics(const Affine3DQ &transform, std::ostream &stream)
+{
+    Matrix44 m = (Matrix44) transform;
+    for (int i = 0; i < 3; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            stream << std::setprecision(16) << std::scientific << m.a(i, j) << " ";
+        }
+    }
 }
 
 

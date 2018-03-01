@@ -32,6 +32,8 @@ SUBDIRS +=       \
     widget_harness \
 #    command_harness \
     example_scene \
+    ceres_playground  \
+
 
 !win32 {
     SUBDIRS += jitplayground
@@ -57,6 +59,9 @@ serialize1                          = serialize1/serialize1.pro
 jitplayground                       = jitplayground/jitplayground.pro
 gcodeplayground                     = gcodeplayground/gcodeplayground.pro
 example_scene                       = example_scene/example_scene.pro
+
+ceres_playground                    = ceres_playground/ceres_playground.pro
+
 adoptcolor                          = adoptcolor/adoptcolor.pro
 avigrab                             = avigrab/avigrab.pro
 decodebayer                         = decodebayer/decodebayer.pro

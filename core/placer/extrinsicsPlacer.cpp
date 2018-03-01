@@ -171,7 +171,7 @@ vector<double> SillyCostMask::sceneToModel(const SimplifiedScene& scene)
 
     for (size_t i = 0; i < scene.points.size(); i++ )
     {
-        scene.points[i].storeTo(output);
+        scene.points[i].storeToStream(output);
     }
 
     int startCam = params.lock1Cam() ? 1 : 0;
@@ -205,9 +205,9 @@ void SillyCostMask::sceneFromModel(SimplifiedScene &scene, const vector<double> 
     {
         Affine3DQ transform = scene.cameras[i].toMockAffine3D();
         if (!params.lockPositions())
-            transform.shift.loadFrom(input);
+            transform.shift.loadFromStream(input);
         if (!params.lockOrientations())
-            transform.rotor.loadFrom(input);
+            transform.rotor.loadFromStream(input);
 
         scene.cameras[i] = CameraLocationData::FromMockAffine3D(transform);
     }
@@ -441,8 +441,8 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
 double ExtrinsicsPlacer::getCost(FixtureScene *scene)
 {
     SimplifiedScene S = SimplifiedScene::extractSimpleScene(scene);
-    SillyCost F(&S);
-    vector<double> input = SillyCost::sceneToModel(S);
+    SillyCostMask F(&S, params);
+    vector<double> input = F.sceneToModel(S);
     return F.resultLength(input.data());
 }
 

@@ -61,12 +61,18 @@ public:
     static const std::string IL_PROJECTIVE;
 
     /*interfacing to streams*/
-    static CameraProjection *loadIntrisics(std::istream &stream);
-    static void saveIntrisics(const CameraProjection &projection, std::ostream &stream);
+    static CameraProjection *loadIntrisics(std::istream &filename);
+    static void              saveIntrisics(const CameraProjection &projection, std::ostream &stream);
 
     /*interfacing to files*/
     static CameraProjection *loadIntrisics(const std::string &filename);
-    static void saveIntrisics(const CameraProjection &projection, const std::string &stream);
+    static void              saveIntrisics(const CameraProjection &projection, const std::string &stream);
+
+
+    /* Helper to serialise Affine3DQ*/
+    static void      saveExtrinsics(const Affine3DQ &transform, std::ostream &stream);
+    static Affine3DQ loadExtrinsics(std::istream &stream);
+
 
 
 };

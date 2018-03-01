@@ -107,4 +107,4 @@ SOURCES += \
     planefit/main_test_planefit.cpp \
     noise/main_test_noise.cpp \
     projection/main_test_projection.cpp \
-#    placer/main_test_placer.cpp \
+    placer/main_test_placer.cpp \
