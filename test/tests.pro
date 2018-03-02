@@ -32,8 +32,11 @@ SUBDIRS +=       \
     widget_harness \
 #    command_harness \
     example_scene \
-    ceres_playground  \
 
+
+with_ceres {
+    SUBDIRS += ceres_playground
+}
 
 !win32 {
     SUBDIRS += jitplayground

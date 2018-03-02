@@ -304,7 +304,10 @@ void SimplifiedScene::mergeSimpleScene(FixtureScene *scene, const SimplifiedScen
 
     for (size_t i = 0; i < S.points.size(); i++)
     {
-        scene->featurePoints()[S.idToScene[i]]->position = S.points[i];
+        SceneFeaturePoint *targetPoint = scene->featurePoints()[S.idToScene[i]];
+
+        targetPoint->reprojectedPosition         = S.points[i];
+        targetPoint->hasKnownReprojectedPosition = true;
     }
 }
 

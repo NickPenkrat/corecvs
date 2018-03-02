@@ -128,7 +128,8 @@ template <>
 void JSONPrinter::visit<bool>(bool &boolField, bool /*defaultValue*/, const char *fieldName)
 {
     if (!stream) return;
-    *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << NAME_DECORATOR << (boolField ? "true" : "false") << NAME_DECORATOR;
+ // *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << NAME_DECORATOR << (boolField ? "true" : "false") << NAME_DECORATOR;
+    *stream << separate() << indent() << decorateName(fieldName) << FIELD_VALUE_SEPARATOR << (boolField ? "true" : "false");
 }
 
 template <>

@@ -151,6 +151,13 @@ public:
         }
 #endif
     }
+
+    friend std::ostream& operator << (std::ostream &out, SceneObservation &toSave)
+    {
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
+        return out;
+    }
 };
 
 
@@ -335,6 +342,13 @@ public:
                 observations__[WPP(observ.cameraFixture, observ.camera)] = observ;
             }
         }
+    }
+
+    friend std::ostream& operator << (std::ostream &out, SceneFeaturePoint &toSave)
+    {
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
+        return out;
     }
 
     /* Helper functions */
