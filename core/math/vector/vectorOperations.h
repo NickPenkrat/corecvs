@@ -758,7 +758,7 @@ public:
         }
     }
 
-    void loadFromStream(const ElementType *in, bool *mask = NULL)
+    void loadFromStream(const ElementType * &in, bool *mask = NULL)
     {
         if (mask == NULL) {
             this->loadFrom(in);
@@ -783,7 +783,7 @@ public:
         }
     }
 
-    void storeToStream(ElementType *out, bool *mask = NULL) const
+    void storeToStream(ElementType * &out, bool *mask = NULL) const
     {
         if (mask == NULL) {
             this->storeTo(out);

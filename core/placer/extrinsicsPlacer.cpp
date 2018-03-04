@@ -172,6 +172,7 @@ vector<double> SillyCostMask::sceneToModel(const SimplifiedScene& scene)
     for (size_t i = 0; i < scene.points.size(); i++ )
     {
         scene.points[i].storeToStream(output);
+        cout << output << endl;
     }
 
     int startCam = params.lock1Cam() ? 1 : 0;
@@ -186,7 +187,7 @@ vector<double> SillyCostMask::sceneToModel(const SimplifiedScene& scene)
             transform.rotor.storeToStream(output);
     }
 
-    CORE_ASSERT_TRUE(output - out.data() != inputs, "SillyCostMask::sceneToModel(): fail\n");
+    CORE_ASSERT_TRUE_P(output - out.data() == inputs, ("SillyCostMask::sceneToModel(): fail (%d vs %d)\n", output - out.data(), inputs));
     return out;
 }
 
@@ -226,7 +227,7 @@ void SillyNormalizerMask::operator ()(const double in[], double out[])
         return;
 
 
-    int camNum = params.lock1Cam() ? scene->cameras.size() - 1 : scene->cameras.size();
+    int camNum = params.lock1Cam() ? (scene->cameras.size() - 1) : scene->cameras.size();
     int startOffset = getCameraOffset(scene, params);
 
     for (size_t camId = 0; camId < camNum; camId++)
@@ -234,6 +235,11 @@ void SillyNormalizerMask::operator ()(const double in[], double out[])
         int offset = startOffset + camId * getCameraModelSize(params);
         if (!params.lockPositions())
             offset += Vector3dd::LENGTH;
+
+        if (offset >= outputs)
+        {
+            SYNC_PRINT(("SillyNormalizerMask::operator (): out of bounds. off=%d cam=%d camsize=%d (%d vs %d)", startOffset, camId, getCameraModelSize(params), offset, outputs));
+        }
 
         Quaternion rotor;
         rotor.loadFrom(&out[offset]);
@@ -403,9 +409,7 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
     vector<double> outputs;
     vector<double> result;
 
-    if (params.lock1Cam() ||
-        params.lockPositions() ||
-        params.lockOrientations())
+    if (!params.useSimpleCost())
     {
         SillyCostMask       F(&S, params);
         SillyNormalizerMask N(&S, params);
@@ -444,9 +448,19 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
 double ExtrinsicsPlacer::getCost(FixtureScene *scene)
 {
     SimplifiedScene S = SimplifiedScene::extractSimpleScene(scene);
-    SillyCostMask F(&S, params);
-    vector<double> input = F.sceneToModel(S);
-    return F.resultLength(input.data());
+
+    if (!params.useSimpleCost())
+    {
+        SillyCostMask F(&S, params);
+        vector<double> input = F.sceneToModel(S);
+        cout << "Cost Vectorc Mask:" << input << endl;
+        return F.resultLength(input.data());
+    } else {
+        SillyCost F(&S);
+        vector<double> input = F.sceneToModel(S);
+        cout << "Cost Vector:" << input << endl;
+        return F.resultLength(input.data());
+    }
 }
 
 

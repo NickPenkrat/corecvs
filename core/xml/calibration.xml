@@ -48,9 +48,11 @@
     <field type="double"    name="Skydome size"              defaultValue="30"  min="0.01" max="1000" step="1"/>
     <field type="int"       name="Iterations"                defaultValue="100" min="2"    max="10000" step="1"/>
 
-    <field type="bool"      name="lock 1 cam"        defaultValue="false" />
-    <field type="bool"      name="lock orientations" defaultValue="false" />
-    <field type="bool"      name="lock positions"    defaultValue="false" />
+    <field type="bool"      name="use simple cost"    defaultValue="false" />
+
+    <field type="bool"      name="lock 1 cam"         defaultValue="false" />
+    <field type="bool"      name="lock orientations"  defaultValue="false" />
+    <field type="bool"      name="lock positions"     defaultValue="false" />
 </class>
 
 </poco>

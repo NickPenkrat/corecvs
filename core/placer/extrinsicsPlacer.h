@@ -173,7 +173,8 @@ public:
 
     SillyNormalizerMask(SimplifiedScene *scene, ExtrinsicsPlacerParameters &params) :
         FunctionArgs(getInputNumber(scene, params), getInputNumber(scene, params)),
-        scene(scene)
+        scene(scene),
+        params(params)
     {
     }
 

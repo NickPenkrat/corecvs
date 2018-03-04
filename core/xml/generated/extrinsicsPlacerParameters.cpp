@@ -88,6 +88,18 @@ int ExtrinsicsPlacerParameters::staticInit()
     /*  */ 
     BoolField* field3 = new BoolField
         (
+          ExtrinsicsPlacerParameters::USE_SIMPLE_COST_ID,
+          offsetof(ExtrinsicsPlacerParameters, mUseSimpleCost),
+          false,
+          "use simple cost",
+          "use simple cost",
+          "use simple cost"
+        );
+    field3->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field3);
+    /*  */ 
+    BoolField* field4 = new BoolField
+        (
           ExtrinsicsPlacerParameters::LOCK_1_CAM_ID,
           offsetof(ExtrinsicsPlacerParameters, mLock1Cam),
           false,
@@ -95,10 +107,10 @@ int ExtrinsicsPlacerParameters::staticInit()
           "lock 1 cam",
           "lock 1 cam"
         );
-    field3->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field3);
+    field4->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field4);
     /*  */ 
-    BoolField* field4 = new BoolField
+    BoolField* field5 = new BoolField
         (
           ExtrinsicsPlacerParameters::LOCK_ORIENTATIONS_ID,
           offsetof(ExtrinsicsPlacerParameters, mLockOrientations),
@@ -107,10 +119,10 @@ int ExtrinsicsPlacerParameters::staticInit()
           "lock orientations",
           "lock orientations"
         );
-    field4->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field4);
+    field5->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field5);
     /*  */ 
-    BoolField* field5 = new BoolField
+    BoolField* field6 = new BoolField
         (
           ExtrinsicsPlacerParameters::LOCK_POSITIONS_ID,
           offsetof(ExtrinsicsPlacerParameters, mLockPositions),
@@ -119,8 +131,8 @@ int ExtrinsicsPlacerParameters::staticInit()
           "lock positions",
           "lock positions"
         );
-    field5->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field5);
+    field6->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field6);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Extrinsics Placer Parameters")]= &reflection;

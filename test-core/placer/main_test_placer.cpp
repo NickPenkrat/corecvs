@@ -26,7 +26,7 @@ TEST(placer, testplacer)
 
     for (size_t i = 0; i < scene.points.size(); i++)
     {
-        scene.points[i] = Vector3dd(i,i,i);
+        scene.points[i] = Vector3dd(i + 0.1, i + 0.1, i + 0.1);
     }
 
     scene.obs.push_back(SimplifiedScene::Observation(0,0, Vector3dd::Zero()));
@@ -38,6 +38,8 @@ TEST(placer, testplacer)
     params.setLock1Cam(true);
     SillyCostMask cost(&scene, params);
     vector<double> m = cost.sceneToModel(scene);
+    cout << "Model vector:" << m << endl;
+
     vector<double> p(cost.outputs);
     cost.operator ()(m, p);
     cost.sceneFromModel(scene, m);

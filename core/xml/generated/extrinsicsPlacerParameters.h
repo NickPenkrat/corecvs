@@ -43,6 +43,7 @@ public:
         TRIANGULATE_ON_SPHERE_ID,
         SKYDOME_SIZE_ID,
         ITERATIONS_ID,
+        USE_SIMPLE_COST_ID,
         LOCK_1_CAM_ID,
         LOCK_ORIENTATIONS_ID,
         LOCK_POSITIONS_ID,
@@ -68,6 +69,12 @@ public:
      * Iterations 
      */
     int mIterations;
+
+    /** 
+     * \brief use simple cost 
+     * use simple cost 
+     */
+    bool mUseSimpleCost;
 
     /** 
      * \brief lock 1 cam 
@@ -112,6 +119,11 @@ public:
         return mIterations;
     }
 
+    bool useSimpleCost() const
+    {
+        return mUseSimpleCost;
+    }
+
     bool lock1Cam() const
     {
         return mLock1Cam;
@@ -143,6 +155,11 @@ public:
         mIterations = iterations;
     }
 
+    void setUseSimpleCost(bool useSimpleCost)
+    {
+        mUseSimpleCost = useSimpleCost;
+    }
+
     void setLock1Cam(bool lock1Cam)
     {
         mLock1Cam = lock1Cam;
@@ -166,6 +183,7 @@ template<class VisitorType>
         visitor.visit(mTriangulateOnSphere,       static_cast<const corecvs::BoolField *>(fields()[TRIANGULATE_ON_SPHERE_ID]));
         visitor.visit(mSkydomeSize,               static_cast<const corecvs::DoubleField *>(fields()[SKYDOME_SIZE_ID]));
         visitor.visit(mIterations,                static_cast<const corecvs::IntField *>(fields()[ITERATIONS_ID]));
+        visitor.visit(mUseSimpleCost,             static_cast<const corecvs::BoolField *>(fields()[USE_SIMPLE_COST_ID]));
         visitor.visit(mLock1Cam,                  static_cast<const corecvs::BoolField *>(fields()[LOCK_1_CAM_ID]));
         visitor.visit(mLockOrientations,          static_cast<const corecvs::BoolField *>(fields()[LOCK_ORIENTATIONS_ID]));
         visitor.visit(mLockPositions,             static_cast<const corecvs::BoolField *>(fields()[LOCK_POSITIONS_ID]));
@@ -181,6 +199,7 @@ template<class VisitorType>
           bool triangulateOnSphere
         , double skydomeSize
         , int iterations
+        , bool useSimpleCost
         , bool lock1Cam
         , bool lockOrientations
         , bool lockPositions
@@ -189,6 +208,7 @@ template<class VisitorType>
         mTriangulateOnSphere = triangulateOnSphere;
         mSkydomeSize = skydomeSize;
         mIterations = iterations;
+        mUseSimpleCost = useSimpleCost;
         mLock1Cam = lock1Cam;
         mLockOrientations = lockOrientations;
         mLockPositions = lockPositions;
@@ -199,6 +219,7 @@ template<class VisitorType>
         if ( !(this->mTriangulateOnSphere == other.mTriangulateOnSphere)) return false;
         if ( !(this->mSkydomeSize == other.mSkydomeSize)) return false;
         if ( !(this->mIterations == other.mIterations)) return false;
+        if ( !(this->mUseSimpleCost == other.mUseSimpleCost)) return false;
         if ( !(this->mLock1Cam == other.mLock1Cam)) return false;
         if ( !(this->mLockOrientations == other.mLockOrientations)) return false;
         if ( !(this->mLockPositions == other.mLockPositions)) return false;
