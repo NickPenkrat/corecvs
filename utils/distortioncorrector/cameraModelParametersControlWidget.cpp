@@ -224,6 +224,7 @@ CameraModel *CameraModelParametersControlWidget::createParameters() const
 
 void CameraModelParametersControlWidget::setParameters(const CameraModel &input)
 {
+    SYNC_PRINT(("CameraModelParametersControlWidget::setParameters()/n"));
     // Block signals to send them all at once
     bool wasBlocked = blockSignals(true);
 

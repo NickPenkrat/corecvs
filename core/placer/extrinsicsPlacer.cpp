@@ -172,7 +172,7 @@ vector<double> SillyCostMask::sceneToModel(const SimplifiedScene& scene)
     for (size_t i = 0; i < scene.points.size(); i++ )
     {
         scene.points[i].storeToStream(output);
-        cout << output << endl;
+        //cout << output << endl;
     }
 
     int startCam = params.lock1Cam() ? 1 : 0;
@@ -391,7 +391,7 @@ void ExtrinsicsPlacer::place(FixtureScene *scene)
 
     cout << "Simplified Scene" << endl;
     cout << S << endl;
-    cout << "Camera Model Size" << SillyCost::CAM_MODEL_SIZE << endl;
+    //cout << "Camera Model Size" << SillyCost::CAM_MODEL_SIZE << endl;
 
     LevenbergMarquardt lmFit;
 

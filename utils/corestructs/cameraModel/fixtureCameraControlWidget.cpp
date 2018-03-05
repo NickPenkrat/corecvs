@@ -29,6 +29,8 @@ void FixtureCameraControlWidget::getParameters(FixtureCamera &params) const
 
 void FixtureCameraControlWidget::setParameters(const FixtureCamera &input)
 {
+    SYNC_PRINT(("FixtureCameraControlWidget::setParameters()/n"));
+
     const FixtureCamera *camera = static_cast<const FixtureCamera *>(&input);
     FixtureScene *scene = camera->ownerScene;
     if (scene != NULL) {
