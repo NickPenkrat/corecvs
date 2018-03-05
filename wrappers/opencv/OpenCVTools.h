@@ -37,11 +37,11 @@ class OpenCVTools
 {
 public:
     static IplImage *getCVImageFromRGB24Buffer(RGB24Buffer *input);
-    static IplImage *getCVImageFromG12Buffer(G12Buffer *input);
-    static IplImage *getCVImageFromG8Buffer(G8Buffer *input);
+    static IplImage *getCVImageFromG12Buffer  (G12Buffer *input);
+    static IplImage *getCVImageFromG8Buffer   (G8Buffer *input);
 
     static RGB24Buffer *getRGB24BufferFromCVImage(IplImage *input);
-    static G12Buffer   *getG12BufferFromCVImage(IplImage *input);
+    static G12Buffer   *getG12BufferFromCVImage  (IplImage *input);
 
 
 template<typename OtherStruct>

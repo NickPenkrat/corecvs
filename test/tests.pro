@@ -25,13 +25,14 @@ SUBDIRS +=       \
 #    cr2reader           \
 #    debayer          \
     deproject        \
-    softrender       \
-    raytracerender   \
-    stereo_generator \
-    widgets_test \
-    widget_harness \
-#    command_harness \
-    example_scene \
+    fisheye_egomotion \
+    softrender        \
+    raytracerender    \
+    stereo_generator  \
+    widgets_test      \
+    widget_harness    \
+#    command_harness  \
+    example_scene     \
 
 
 with_ceres {
@@ -78,6 +79,7 @@ debayer.file                        = debayer/debayer.pro
 debayer.depends                    -= utils
 
 deproject.file                      = deproject/deproject.pro
+deproject.file                      = fisheye_egomotion/fisheye_egomotion.pro
 
 softrender.file                     = softrender/softrender.pro
 softrender.depends                 -= utils

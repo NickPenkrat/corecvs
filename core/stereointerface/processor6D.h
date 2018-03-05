@@ -19,7 +19,7 @@
 #include "core/buffers/flow/sixDBuffer.h"
 #include "core/stats/calculationStats.h"
 
-using namespace corecvs;
+namespace corecvs {
 
 class Processor6D
 {
@@ -108,5 +108,6 @@ public:
     vector<Processor6DFactory *> mProviders;
 };
 
+} // namespace
 
 #endif /* PROCESSOR6D_H_ */

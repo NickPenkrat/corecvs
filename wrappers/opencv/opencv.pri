@@ -62,3 +62,11 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
     SOURCES     += $$OPENCV_WRAPPER_DIR/faceDetect/faceDetect.cpp
 
 }
+
+INCLUDEPATH += $$PWD/moc-flow
+
+HEADERS += \
+    $$PWD/moc-flow/openCVMovingObjectFlow.h
+
+SOURCES += \
+    $$PWD/moc-flow/openCVMovingObjectFlow.cpp

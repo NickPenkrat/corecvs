@@ -1,5 +1,6 @@
 #include "core/stereointerface/processor6D.h"
 
+namespace corecvs {
 
 /** -- **/
 std::unique_ptr<Processor6DFactoryHolder> Processor6DFactoryHolder::sThis(new Processor6DFactoryHolder);
@@ -52,3 +53,5 @@ vector<std::string> Processor6DFactoryHolder::getHints()
     }
     return hints;
 }
+
+} //namespace

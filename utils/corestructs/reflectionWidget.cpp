@@ -437,7 +437,7 @@ bool ReflectionWidget::getParameters(void *param) const
 
                 if (refWidget != NULL) {
                     void *targetObj = obj.getField<void *>(fieldId);
-                    cout << "In composite field:" << targetObj << std::endl;
+                    // cout << "In composite field:" << targetObj << std::endl;
                     refWidget->getParameters(targetObj);
                 } else {
                     qDebug() << "There is no widget for" << cField->getSimpleName();
