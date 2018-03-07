@@ -3,18 +3,19 @@
 #include "openCvDefaultParams.h"
 
 #include "core/utils/global.h"
+#include "core/buffers/runtimeTypeBuffer.h"
 
 #include <opencv2/features2d/features2d.hpp>    // cv::DescriptorExtractor
 #include <opencv2/imgproc/imgproc.hpp>			// cv::remap
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 #   include <opencv2/xfeatures2d/nonfree.hpp>      // cv::xfeatures2d::SURF, cv::xfeatures2d::SIFT
 #   include <opencv2/xfeatures2d.hpp>				// cv::xfeatures2d::STAR
 #else
 #   include <opencv2/nonfree/features2d.hpp>       // cv::SURF
 #endif
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 struct SmartPtrExtractorHolder
 {
     SmartPtrExtractorHolder() : tag(SIFT), sift() {}
@@ -84,7 +85,7 @@ OpenCvDescriptorExtractorWrapper::~OpenCvDescriptorExtractorWrapper()
     delete holder;
 }
 
-#else // !WITH_OPENCV_3x
+#else // !WITH_OPENCV_3X
 
 using namespace corecvs;
 
@@ -105,9 +106,10 @@ struct CvRemapCache
 	cv::Mat mat1;
 };
 
-void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
+void OpenCvDescriptorExtractorWrapper::computeImpl(
+      corecvs::RuntimeTypeBuffer &image
     , std::vector<KeyPoint> &keyPoints
-    , RuntimeTypeBuffer &descriptors
+    , corecvs::RuntimeTypeBuffer &descriptors
 	, void* pRemapCache )
 {
     std::vector<cv::KeyPoint> kps;
@@ -139,7 +141,7 @@ void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
 
 void OpenCvDescriptorExtractorWrapper::setProperty(const std::string &name, const double &value)
 {
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     CORE_UNUSED(name);
     CORE_UNUSED(value);
 #else
@@ -149,7 +151,7 @@ void OpenCvDescriptorExtractorWrapper::setProperty(const std::string &name, cons
 
 double OpenCvDescriptorExtractorWrapper::getProperty(const std::string &name) const
 {
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     CORE_UNUSED(name);
     return 0.0;
 #else
@@ -175,7 +177,7 @@ DescriptorExtractor* OpenCvDescriptorExtractorProvider::getDescriptorExtractor(c
     BriskParams briskParams(params);
     OrbParams orbParams(params);
     AkazeParams akazeParams(params);
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     SmartPtrExtractorHolder* holder = new SmartPtrExtractorHolder;
     if (type == "SIFT")
     {
@@ -231,7 +233,7 @@ bool OpenCvDescriptorExtractorProvider::provides(const DescriptorType &type)
     SWITCH_TYPE(SURF, return true;);
     SWITCH_TYPE(BRISK, return true;);
     SWITCH_TYPE(ORB, return true;);
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     SWITCH_TYPE(AKAZE, return true;);
 #endif
     return false;
@@ -245,7 +247,7 @@ std::vector<std::string> OpenCvDescriptorExtractorProvider::provideHints()
     result.push_back("SURF");
     result.push_back("BRISK");
     result.push_back("ORB");
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     result.push_back("AKAZE");
 #endif
     return result;

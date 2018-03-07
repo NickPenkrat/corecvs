@@ -7,7 +7,7 @@
 
 #include <opencv2/features2d/features2d.hpp>    // cv::FeatureDetector
 #include <opencv2/imgproc/imgproc.hpp>			// cv::remap
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 #   include <opencv2/xfeatures2d/nonfree.hpp>      // cv::xfeatures2d::SURF, cv::xfeatures2d::SIFT
 #   include <opencv2/xfeatures2d.hpp>				// cv::xfeatures2d::STAR
 #else
@@ -16,7 +16,7 @@
 
 using namespace corecvs;
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 struct SmartPtrDetectorHolder
 {
     SmartPtrDetectorHolder() : tag(SIFT), sift() {}
@@ -100,7 +100,7 @@ OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper()
     delete holder;
 }
 
-#else // !WITH_OPENCV_3x
+#else // !WITH_OPENCV_3X
 OpenCvFeatureDetectorWrapper::OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector) : detector(detector)
 {}
 
@@ -109,11 +109,11 @@ OpenCvFeatureDetectorWrapper::~OpenCvFeatureDetectorWrapper()
     delete detector;
 }
 
-#endif // !WITH_OPENCV_3x
+#endif // !WITH_OPENCV_3X
 
 double OpenCvFeatureDetectorWrapper::getProperty(const std::string &name) const
 {
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 	CORE_UNUSED(name);
 	return 0.0;
 #else
@@ -123,7 +123,7 @@ double OpenCvFeatureDetectorWrapper::getProperty(const std::string &name) const
 
 void OpenCvFeatureDetectorWrapper::setProperty(const std::string &name, const double &value)
 {
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 	CORE_UNUSED(name);
 	CORE_UNUSED(value);
 #else
@@ -181,7 +181,7 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
 	BriskParams briskParams(params);
 	OrbParams orbParams(params);
     AkazeParams akazeParams(params);
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 
 	SmartPtrDetectorHolder* holder = new SmartPtrDetectorHolder;
 	if (type == "SIFT")
@@ -258,7 +258,7 @@ bool OpenCvFeatureDetectorProvider::provides(const DetectorType &type)
 	SWITCH_TYPE(FAST, return true;);
 	SWITCH_TYPE(BRISK, return true;);
 	SWITCH_TYPE(ORB, return true;);
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     SWITCH_TYPE(AKAZE, return true;);
 #endif
     return false;
@@ -273,7 +273,7 @@ std::vector<std::string> OpenCvFeatureDetectorProvider::provideHints()
     toReturn.push_back("FAST");
     toReturn.push_back("BRISK");
     toReturn.push_back("ORB");
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     toReturn.push_back("AKAZE");
 #endif
     return toReturn;

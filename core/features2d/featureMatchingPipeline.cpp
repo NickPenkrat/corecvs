@@ -1752,7 +1752,7 @@ void DetectExtractAndMatchStage::saveResults(FeatureMatchingPipeline *pipeline, 
 void addDetectExtractAndMatchStage(FeatureMatchingPipeline& pipeline, DetectorType detectorType, DescriptorType descriptorType, MatcherType matcherType,
     int maxFeatureCount, int downsampleFactor, const std::string &params, size_t responsesPerPoint)
 {
-#ifndef WITH_OPENCV_3x
+#ifndef WITH_OPENCV_3X
     if (std::string::npos != detectorType  .find("_GPU") &&
         std::string::npos != descriptorType.find("_GPU") &&
         std::string::npos != matcherType   .find("_GPU"))

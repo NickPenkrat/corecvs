@@ -47,15 +47,18 @@ int OpenCVMovingObjectFlow::endFrame()
 std::map<std::string, DynamicObject> OpenCVMovingObjectFlow::getParameters()
 {
     std::map<std::string, DynamicObject> result;
-    result.emplace("dummy", DynamicObject(&RgbColorParameters::reflection, true));
+    result.emplace("main", DynamicObject(&params));
 
     return result;
 }
 
 bool OpenCVMovingObjectFlow::setParameters(std::string name, const DynamicObject &param)
 {
-    if (name == "dummy")
+    if (name == "main") {
+        param.copyTo(&params);
+        cout << params;
         return true;
+    }
     return false;
 }
 
@@ -92,15 +95,15 @@ MeshFlow::MeshFlow() {
 }
 
 void MeshFlow::init( const int image_height,
-                    const int image_width,
-                    const int mesh_row,
-                    const int mesh_col,
-                    const int mesh_ransac_row,
-                    const int mesh_ransac_col,
-                    const int median_filter_size_y,
-                    const int median_filter_size_x,
-                    const int num_max_feature,
-                    const float th_feature ) {
+                     const int image_width,
+                     const int mesh_row,
+                     const int mesh_col,
+                     const int mesh_ransac_row,
+                     const int mesh_ransac_col,
+                     const int median_filter_size_y,
+                     const int median_filter_size_x,
+                     const int num_max_feature,
+                     const float th_feature ) {
     image_height_ = image_height;
     image_width_ = image_width;
     threshold_features_ = th_feature;

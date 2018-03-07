@@ -5,11 +5,11 @@
 
 #ifdef WITH_OPENCV
 #include "opencv2/core/core.hpp"
-#   if defined( WITH_OPENCV_GPU ) && !defined( WITH_OPENCV_3x )
+#   if defined( WITH_OPENCV_GPU ) && !defined( WITH_OPENCV_3X )
 #       include <opencv2/ocl/ocl.hpp>
 #       include <opencv2/gpu/gpu.hpp>
 #   endif
-#   if defined( WITH_OPENCV_GPU ) && defined( WITH_OPENCV_3x )
+#   if defined( WITH_OPENCV_GPU ) && defined( WITH_OPENCV_3X )
 #       include <opencv2/cuda/cuda.hpp>
 #   endif
 
@@ -25,7 +25,7 @@ typedef struct RemapCache
 typedef struct CudaRemapCache
 {
     RemapCache cpuCache;
-#       if defined( WITH_OPENCV_3x )
+#       if defined( WITH_OPENCV_3X )
     cv::cuda::GpuMat
 #else
     cv::gpu::GpuMat
@@ -36,7 +36,7 @@ typedef struct CudaRemapCache
 typedef struct OpenCLRemapCache
 {
     RemapCache cpuCache;
-#       if defined( WITH_OPENCV_3x )
+#       if defined( WITH_OPENCV_3X )
     cv::UMat
 #else
     cv::ocl::oclMat
@@ -52,7 +52,7 @@ typedef struct OpenCLRemapCache
     void convert( const corecvs::DisplacementBuffer &src, cv::Mat &map0, cv::Mat &map1 );
 
 #   ifdef WITH_OPENCV_GPU
-#       ifdef WITH_OPENCV_3x
+#       ifdef WITH_OPENCV_3X
     // cuda version
     void convert( const corecvs::DisplacementBuffer &transform, cv::cuda::GpuMat &map0, cv::cuda::GpuMat &map1 ); 
     // openCL version
@@ -68,5 +68,5 @@ typedef struct OpenCLRemapCache
 #endif
 
     void remap( corecvs::RGB24Buffer &src, corecvs::RGB24Buffer &dst, const corecvs::DisplacementBuffer &transform );
-};
+}
 

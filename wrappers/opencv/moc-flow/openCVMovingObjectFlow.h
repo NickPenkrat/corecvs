@@ -3,18 +3,30 @@
 
 #include "core/stereointerface/processor6D.h"
 #include "core/stats/calculationStats.h"
+#include "xml/generated/meshFlowDrawParameters.h"
 
-#include "math.h"
+
+#include <math.h>
 #include <numeric>
-#include "time.h"
+#include <time.h>
+
+#ifdef WITH_OPENCV_3X
+#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/features2d.hpp>
+#include <opencv2/video/tracking.hpp>
+#include <opencv2/calib3d.hpp>
+#else
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc.hpp>
+#endif
 
 class OpenCVMovingObjectFlow : public corecvs::Processor6D
 {
 public:
     OpenCVMovingObjectFlow();
+    MeshFlowDrawParameters params;
+
     corecvs::Statistics *stats = NULL;
 
 

@@ -63,10 +63,18 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 
 }
 
+OTHER_FILES += $$PWD/xml/*.xml
+OTHER_FILES += $$PWD/../../tools/generator/regen-opencv.sh
+
+INCLUDEPATH += $$PWD/xml/generated
+
 INCLUDEPATH += $$PWD/moc-flow
 
 HEADERS += \
-    $$PWD/moc-flow/openCVMovingObjectFlow.h
+    $$PWD/moc-flow/openCVMovingObjectFlow.h \
+    $$PWD/xml/generated/*.h
 
 SOURCES += \
-    $$PWD/moc-flow/openCVMovingObjectFlow.cpp
+    $$PWD/moc-flow/openCVMovingObjectFlow.cpp \
+    $$PWD/xml/generated/*.cpp
+

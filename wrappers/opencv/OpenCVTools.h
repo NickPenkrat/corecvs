@@ -10,7 +10,7 @@
 
 #define __XMLDocument_FWD_DEFINED__  // to omit conflict "msxml.h:3376: using typedef-name 'XMLDocument' after 'class'"
 
-#ifndef WITH_OPENCV_3x
+#ifndef WITH_OPENCV_3X
 #   include <opencv2/core/types_c.h> // CvSize, IplImage
 #endif
 
@@ -27,7 +27,7 @@ using corecvs::G12Buffer;
 using corecvs::G8Buffer;
 using corecvs::RGB24Buffer;
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 #   define CVMAT_FROM_IPLIMAGE( cvmat, iplimage, copydata ) cv::Mat cvmat = cv::cvarrToMat( iplimage, copydata )
 #else
 #   define CVMAT_FROM_IPLIMAGE( cvmat, iplimage, copydata ) cv::Mat cvmat( iplimage, copydata )
@@ -40,9 +40,12 @@ public:
     static IplImage *getCVImageFromG12Buffer  (G12Buffer *input);
     static IplImage *getCVImageFromG8Buffer   (G8Buffer *input);
 
+    static cv::Mat getCVMatFromRGB24Buffer(RGB24Buffer *input);
+
     static RGB24Buffer *getRGB24BufferFromCVImage(IplImage *input);
     static G12Buffer   *getG12BufferFromCVImage  (IplImage *input);
 
+    static RGB24Buffer *getRGB24BufferFromCVMat(cv::Mat &input);
 
 template<typename OtherStruct>
     static CvSize getCvSizeFromVector(const OtherStruct &other)

@@ -74,6 +74,30 @@ IplImage *OpenCVTools::getCVImageFromG8Buffer(G8Buffer *input)
     return result;
 }
 
+cv::Mat OpenCVTools::getCVMatFromRGB24Buffer(RGB24Buffer *input)
+{
+    CvSize size  = getCvSizeFromVector(input->getSize());
+
+    cv::Mat result(size, CV_8UC3);
+
+    for (int i = 0; i < input->h; i++)
+    {
+        RGBColor *srcData = &(input->element(i,0));
+        uint8_t  *dstData = (uint8_t *)&result.at<cv::Vec3b>(i,0);
+
+        /*TODO: Add SSE implementation*/
+        for (int j = 0; j < input->w; j++)
+        {
+            *dstData = srcData->b();
+            *(dstData + 1) = srcData->g();
+            *(dstData + 2) = srcData->r();
+            dstData += 3;
+            srcData++;
+        }
+    }
+    return result;
+}
+
 /*TODO: Support other depth and channel numbers*/
 G12Buffer *OpenCVTools::getG12BufferFromCVImage(IplImage *input)
 {
@@ -156,6 +180,54 @@ RGB24Buffer *OpenCVTools::getRGB24BufferFromCVImage(IplImage *input)
 
             /*TODO: Add SSE implementation*/
             for (int j = 0; j < input->width; j++)
+            {
+                uint8_t g = *(srcData );
+                *dstData = RGBColor::gray(g);
+                dstData++;
+                srcData ++;
+            }
+        }
+    }
+
+    return toReturn;
+}
+
+RGB24Buffer *OpenCVTools::getRGB24BufferFromCVMat(cv::Mat &input)
+{
+    RGB24Buffer *toReturn = new RGB24Buffer(input.rows, input.cols);
+
+    CORE_ASSERT_TRUE_P((input.type() == CV_8UC1) || (input.type() == CV_8UC3),
+        ("getRGB24BufferFromCVMat(): Unsupported cv::Mat format: depth=%d, type = %d\n", input.depth(), input.type()));
+
+    if (input.type() == CV_8UC3)
+    {
+        for (int i = 0; i < input.rows; i++)
+        {
+            uint8_t *srcData = (uint8_t *)&input.at<cv::Vec3b>(i, 0);
+            RGB24Buffer::InternalElementType *dstData =  &(toReturn->element(i,0));
+
+            /*TODO: Add SSE implementation*/
+            for (int j = 0; j < input.cols; j++)
+            {
+                uint8_t b = *(srcData );
+                uint8_t g = *(srcData + 1);
+                uint8_t r = *(srcData + 2);
+                *dstData = RGBColor(r,g,b);
+                dstData++;
+                srcData += 3;
+            }
+        }
+    }
+
+    if (input.type() == CV_8UC1)
+    {
+        for (int i = 0; i < input.rows; i++)
+        {
+            uint8_t *srcData = (uint8_t *)&input.at<uint8_t>(i, 0);
+            RGB24Buffer::InternalElementType *dstData =  &(toReturn->element(i,0));
+
+            /*TODO: Add SSE implementation*/
+            for (int j = 0; j < input.cols; j++)
             {
                 uint8_t g = *(srcData );
                 *dstData = RGBColor::gray(g);

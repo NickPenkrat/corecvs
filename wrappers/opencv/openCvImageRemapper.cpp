@@ -94,7 +94,7 @@ void convertT( const corecvs::DisplacementBuffer &transform, T &map0, T &map1 )
 }
 
 #   ifdef WITH_OPENCV_GPU
-#       ifdef WITH_OPENCV_3x
+#       ifdef WITH_OPENCV_3X
 // cuda version
 void convert( const corecvs::DisplacementBuffer &transform, cv::cuda::GpuMat &map0, cv::cuda::GpuMat &map1 )
 {

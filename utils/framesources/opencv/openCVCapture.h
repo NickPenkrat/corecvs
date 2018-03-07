@@ -20,9 +20,17 @@
 
 #include "imageCaptureInterface.h"
 
+/*
 #define CAP_ANY       (uint)  0
 #define CAP_VFW       (uint)200
 #define CAP_DS        (uint)700
+*/
+
+enum OpenCVCapType {
+    OPENCV_CAP_ANY = 0,
+    OPENCV_CAP_VFW = 200,
+    OPENCV_CAP_DS  = 700
+};
 
 #define CAP_DEFAULT_DELAY 35
 

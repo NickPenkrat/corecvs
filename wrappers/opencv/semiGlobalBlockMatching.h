@@ -19,7 +19,7 @@ class BMOpenCV
 {
 public:
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     cv::Ptr< StereoBM > bm;
 #else
     StereoBM bm;
@@ -36,7 +36,7 @@ class SGBMOpenCV
 {
 public:
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     cv::Ptr< StereoSGBM > sgbm;
 #else
     StereoSGBM sgbm;
