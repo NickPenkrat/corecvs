@@ -21,6 +21,7 @@ CORE_SUBMODULES =       \
     cammodel            \
     fileformats         \
     filesystem          \
+    framesources        \
     filters             \
     function            \
     geometry            \
@@ -39,7 +40,7 @@ CORE_SUBMODULES =       \
     features2d          \
     patterndetection    \
     cameracalibration   \
-    device \
+    device              \
     graphs              \
     polynomial          \
     camerafixture       \
@@ -72,6 +73,7 @@ CORE_INCLUDEPATH += \
     $$COREDIR/clustering3d \
     $$COREDIR/geometry/raytrace \
     $$COREDIR/geometry/renderer \
+    $$COREDIR/framesources/file \
     $$COREDIR/xml \
     $$COREDIR/xml/generated \
     $$COREDIR/tinyxml \

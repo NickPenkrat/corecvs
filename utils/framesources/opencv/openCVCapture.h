@@ -18,7 +18,7 @@
 
 #include "core/utils/global.h"
 
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 
 /*
 #define CAP_ANY       (uint)  0

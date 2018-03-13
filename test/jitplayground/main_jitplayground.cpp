@@ -1,4 +1,3 @@
-#include <abstractFileCaptureSpinThread.h>
 #include <cmath>
 #include <stdio.h>
 #include <fstream>

@@ -14,6 +14,16 @@ AbstractFileCaptureSpinThread::AbstractFileCaptureSpinThread(
 {
 }
 
+AbstractFileCaptureSpinThread::~AbstractFileCaptureSpinThread()
+{
+    delete_safe(mThread);
+}
+
+void AbstractFileCaptureSpinThread::launchThread(AbstractFileCaptureSpinThread *object)
+{
+    object->run();
+}
+
 void AbstractFileCaptureSpinThread::run()
 {
     if (!grabFramePair())  // We must get a frame before querying for properties
@@ -26,10 +36,11 @@ void AbstractFileCaptureSpinThread::run()
     frameData.timestamp = mInterface->mTimeStamp;
     mInterface->notifyAboutNewFrame(frameData);
 
-    while (mInterface->spinThreadRunMutex().tryLock())
+    while (mInterface->spinThreadRunMutex().try_lock())
     {
         if (mDelay != 0) {
-            msleep(mDelay);
+            std::this_thread::sleep_for(std::chrono::milliseconds(mDelay));
+            //msleep(mDelay);
         }
 
         if (!mPaused || mNextFrameNeeded)
@@ -67,8 +78,20 @@ void AbstractFileCaptureSpinThread::nextFrame()
     mNextFrameNeeded = true;
 }
 
+void AbstractFileCaptureSpinThread::start()
+{
+    mThread = new std::thread(AbstractFileCaptureSpinThread::launchThread, this);
+}
+
 void AbstractFileCaptureSpinThread::pause()
 {
     mPaused = true;
     mInterface->notifyAboutStreamPaused();
+}
+
+void AbstractFileCaptureSpinThread::join()
+{
+    if (mThread) {
+        mThread->join();
+    }
 }

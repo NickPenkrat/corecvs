@@ -29,16 +29,16 @@ CONFIG += with_widgets
 #
 HEADERS += \
     frames.h \
-    framesources/imageCaptureInterface.h \
-    framesources/cameraControlParameters.h \
+#    framesources/imageCaptureInterface.h \
+#    framesources/cameraControlParameters.h \
     framesources/decoders/mjpegDecoder.h \
     framesources/decoders/mjpegDecoderLazy.h \
     framesources/decoders/decoupleYUYV.h \
     framesources/decoders/aLowCodec.h \
     \
-    framesources/file/imageFileCaptureInterface.h \
-    framesources/file/abstractFileCapture.h \
-    framesources/file/abstractFileCaptureSpinThread.h \
+#   framesources/file/core/framesources/file/imageFileCaptureInterface.h \
+#   framesources/file/abstractFileCapture.h \
+#   framesources/file/abstractFileCaptureSpinThread.h \
     \
     fileformats/qtFileLoader.h \
     \
@@ -118,16 +118,16 @@ HEADERS += \
 
 SOURCES += \
     frames.cpp \
-    framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
-    framesources/cameraControlParameters.cpp \
+#    framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
+#    framesources/cameraControlParameters.cpp \
     framesources/decoders/mjpegDecoder.cpp \
     framesources/decoders/mjpegDecoderLazy.cpp \
     framesources/decoders/decoupleYUYV.cpp \
     framesources/decoders/aLowCodec.cpp \
     \
-    framesources/file/imageFileCaptureInterface.cpp \
-    framesources/file/abstractFileCapture.cpp \
-    framesources/file/abstractFileCaptureSpinThread.cpp \
+#    framesources/file/imageFileCaptureInterface.cpp \
+#    framesources/file/abstractFileCapture.cpp \
+#    framesources/file/abstractFileCaptureSpinThread.cpp \
     \
     fileformats/qtFileLoader.cpp \
     \
@@ -224,18 +224,18 @@ FORMS += \
 CONFIG += with_framesource_prec
 
 with_framesource_prec {
-HEADERS +=  framesources/file/precCapture.h
-SOURCES +=  framesources/file/precCapture.cpp
-DEFINES += WITH_FRAMESOURCE_PREC
+#HEADERS +=  framesources/file/precCapture.h
+#SOURCES +=  framesources/file/precCapture.cpp
+#DEFINES += WITH_FRAMESOURCE_PREC
 }
 
 # FILE
 CONFIG += with_framesource_file
 
 with_framesource_file {
-HEADERS +=  framesources/file/fileCapture.h
-SOURCES +=  framesources/file/fileCapture.cpp
-DEFINES += WITH_FRAMESOURCE_FILE
+#HEADERS +=  framesources/file/fileCapture.h
+#SOURCES +=  framesources/file/fileCapture.cpp
+#DEFINES += WITH_FRAMESOURCE_FILE
 }
 
 
@@ -623,14 +623,8 @@ with_directshow {
 
 
 with_avcodec {
-    HEADERS += \
-        framesources/avcodec/aviCapture.h \
-        framesources/avcodec/rtspCapture.h \
-
-    SOURCES += \
-        framesources/avcodec/aviCapture.cpp \
-        framesources/avcodec/rtspCapture.cpp \
-
+    AVCODEC_WRAPPER_DIR = $$UTILSDIR/../wrappers/avcodec
+    include($$AVCODEC_WRAPPER_DIR/avcodec.pri)
 }
 
 with_synccam {

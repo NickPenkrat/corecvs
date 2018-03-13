@@ -4,7 +4,7 @@
 #include "core/cameracalibration/projection/pinholeCameraIntrinsics.h"
 #include "core/cameracalibration/projection/equidistantProjection.h"
 #include "core/cameracalibration/projection/equisolidAngleProjection.h"
-#include "core/cameracalibration/projection/catadioptricProjection.h"
+#include "core/cameracalibration/projection/omnidirectionalProjection.h"
 #include "core/cameracalibration/projection/stereographicProjection.h"
 
 

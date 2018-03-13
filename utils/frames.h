@@ -12,7 +12,7 @@
 #include "core/utils/global.h"
 
 #include "core/buffers/g12Buffer.h"
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 
 class Frames
 {

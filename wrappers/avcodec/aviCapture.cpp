@@ -1,13 +1,19 @@
 /**
- * \brief Capture video stream from RTSP stream using avcodec library
+ * \brief Capture video stream from avi file using avcodec library
  */
 #include <QtCore/QRegExp>
 #include <QtCore/QString>
 
-#include "rtspCapture.h"
+#include "core/utils/preciseTimer.h"
 
-RTSPCapture::RTSPCapture(QString const &params):
-       mName(params.toStdString())
+#include "aviCapture.h"
+
+
+bool AviCapture::avCodecInited = false;
+
+AviCapture::AviCapture(const std::string &params)
+    : /*AbstractFileCapture(params),*/
+       mName(params)
      , mFormatContext(NULL)
      , mCodecContext(NULL)
      , mCodec(NULL)
@@ -15,44 +21,35 @@ RTSPCapture::RTSPCapture(QString const &params):
      , mFrame(NULL)
      , count(1)
 {
-    SYNC_PRINT(("RTSPCapture::RTSPCapture(%s): called\n", params.toLatin1().constData()));
-    SYNC_PRINT(("Registering the codecs...\n"));
+    SYNC_PRINT(("AviCapture::AviCapture(%s): called\n", params.c_str()));
+    if (!avCodecInited)
+    {
+        SYNC_PRINT(("Registering the codecs...\n"));
+        av_register_all();
+        avCodecInited = true;
+    }
 
-    av_register_all();
-    avformat_network_init();
-
-    SYNC_PRINT(("RTSPCapture::RTSPCapture(): exited\n"));
+    SYNC_PRINT(("AviCapture::AviCapture(): exited\n"));
 }
 
-RTSPCapture::~RTSPCapture()
+ImageCaptureInterface::CapErrorCode AviCapture::initCapture()
 {
-    SYNC_PRINT(("RTSPCapture::~RTSPCapture(): called\n"));
-
-    av_free(mFrame);
-    avcodec_close(mCodecContext);
-    avformat_close_input(&mFormatContext);
-
-    SYNC_PRINT(("RTSPCapture::~RTSPCapture(): exited\n"));
-}
-
-ImageCaptureInterface::CapErrorCode RTSPCapture::initCapture()
-{
-    SYNC_PRINT(("RTSPCapture::initCapture(): called\n"));
+    SYNC_PRINT(("AviCapture::initCapture(): called\n"));
 
     int res;
     res = avformat_open_input(&mFormatContext, mName.c_str(), NULL, NULL);
     if (res < 0) {
-        SYNC_PRINT(("RTSPCapture::initCapture(): failed to open file"));
+        SYNC_PRINT(("AviCapture::initCapture(): failed to open file"));
         return ImageCaptureInterface::FAILURE;
     }
 
     res = avformat_find_stream_info(mFormatContext, NULL);
     if (res < 0) {
-        SYNC_PRINT(("RTSPCapture::initCapture(): Unable to find stream info\n"));
+        SYNC_PRINT(("AviCapture::initCapture(): Unable to find stream info\n"));
         return ImageCaptureInterface::FAILURE;
     }
 
-    SYNC_PRINT(("Stream seem to have %d streams\n", mFormatContext->nb_streams));
+    SYNC_PRINT(("File seem to have %d streams\n", mFormatContext->nb_streams));
 
     // Dump information about file onto standard error
     av_dump_format(mFormatContext, 0, mName.c_str(), 0);
@@ -65,27 +62,27 @@ ImageCaptureInterface::CapErrorCode RTSPCapture::initCapture()
     }
 
     if (mVideoStream == mFormatContext->nb_streams) {
-        SYNC_PRINT(("RTSPCapture::initCapture(): Unable to find video stream among %d streams\n", mFormatContext->nb_streams));
+        SYNC_PRINT(("AviCapture::initCapture(): Unable to find video stream among %d streams\n", mFormatContext->nb_streams));
         return ImageCaptureInterface::FAILURE;
     }
 
-    SYNC_PRINT(("RTSPCapture::initCapture(): Video Stream found\n"));
+    SYNC_PRINT(("AviCapture::initCapture(): Video Stream found\n"));
     mCodecContext = mFormatContext->streams[mVideoStream]->codec;
     mCodec = avcodec_find_decoder(mCodecContext->codec_id);
     res = avcodec_open2(mCodecContext, mCodec, NULL);
     if (res < 0) {
-        SYNC_PRINT(("RTSPCapture::initCapture(): Unable to open codec\n"));
+        SYNC_PRINT(("AviCapture::initCapture(): Unable to open codec\n"));
         return ImageCaptureInterface::FAILURE;
     }
-    SYNC_PRINT(("RTSPCapture::initCapture(): Video codec found\n"));
+    SYNC_PRINT(("AviCapture::initCapture(): Video codec found\n"));
 
-    mFrame = avcodec_alloc_frame();
+    mFrame = av_frame_alloc();
 
-    SYNC_PRINT(("RTSPCapture::initCapture(): exited\n"));
-    return ImageCaptureInterface::SUCCESS;
+    SYNC_PRINT(("AviCapture::initCapture(): exited\n"));
+    return ImageCaptureInterface::SUCCESS_1CAM;
 }
 
-ImageCaptureInterface::FramePair RTSPCapture::getFrame()
+ImageCaptureInterface::FramePair AviCapture::getFrame()
 {
     CaptureStatistics  stats;
     PreciseTimer start = PreciseTimer::currentTime();
@@ -94,28 +91,27 @@ ImageCaptureInterface::FramePair RTSPCapture::getFrame()
     //mProtectFrame.lock();
         FramePair result(NULL, NULL);
         int res;
-        av_init_packet(&mPacket);
         while ( (res = av_read_frame(mFormatContext, &mPacket)) >= 0)
         {
             if (mPacket.stream_index == mVideoStream)
             {
                 int frame_finished;
                 avcodec_decode_video2(mCodecContext, mFrame, &frame_finished, &mPacket);
-
+                av_free_packet(&mPacket);
                 if (frame_finished) {
 //                    SYNC_PRINT(("AviCapture::getFrame(): Frame ready\n"));
                     break;
                 }
+            } else {
+                av_free_packet(&mPacket);
             }
-            // Free the packet that was allocated by av_read_frame
-            av_free_packet(&mPacket);
         }
 
         if (res >= 0)
-        {
-            if (mFrame->format != PIX_FMT_YUV420P && mFrame->format != PIX_FMT_YUVJ420P)
+        {            
+            if (mFrame->format != AV_PIX_FMT_YUV420P && mFrame->format != AV_PIX_FMT_YUVJ420P)
             {
-                SYNC_PRINT(("RTSPCapture::getFrame(): Not supported format %d\n", mFrame->format));
+                SYNC_PRINT(("AviCapture::getFrame(): Not supported format %d\n", mFrame->format));
                 return result;
             }
 
@@ -135,8 +131,8 @@ ImageCaptureInterface::FramePair RTSPCapture::getFrame()
                 }
             }
 
-            result.setRgbBufferRight(new RGB24Buffer(result.rgbBufferLeft()));
-            result.setBufferRight   (new G12Buffer(result.bufferLeft()));
+            result.setRgbBufferRight (new RGB24Buffer(result.rgbBufferLeft()));
+            result.setBufferRight    (new G12Buffer(result.bufferLeft()));
         }
 
 
@@ -152,7 +148,6 @@ ImageCaptureInterface::FramePair RTSPCapture::getFrame()
     }
     mLastFrameTime = PreciseTimer::currentTime();
     stats.values[CaptureStatistics::DATA_SIZE] = 0;
-
     if (imageInterfaceReceiver != NULL)
     {
         imageInterfaceReceiver->newStatisticsReadyCallback(stats);
@@ -166,47 +161,79 @@ ImageCaptureInterface::FramePair RTSPCapture::getFrame()
         frameData.timestamp = (count * 10);
         notifyAboutNewFrame(frameData);
     } else {
-        SYNC_PRINT(("RTSPCapture::getFrame(): Paused\n"));
+        SYNC_PRINT(("AviCapture::getFrame(): Paused\n"));
     }
 
     //count++;
+
     return result;
 }
 
-ImageCaptureInterface::CapErrorCode RTSPCapture::startCapture()
+ImageCaptureInterface::CapErrorCode AviCapture::startCapture()
 {
-    SYNC_PRINT(("RTSPCapture::startCapture(): called\n"));
+//  return ImageCaptureInterface::CapSuccess1Cam;
+    SYNC_PRINT(("AviCapture::startCapture(): called\n"));
     frame_data_t frameData;
 
     //mIsPaused = false;
 
     count++;
     frameData.timestamp = (count * 10);
-    SYNC_PRINT(("RTSPCapture::startCapture(): sending notification\n"));
+    SYNC_PRINT(("AviCapture::startCapture(): sending notification\n"));
     notifyAboutNewFrame(frameData);
 
 
-    SYNC_PRINT(("RTSPCapture::startCapture(): exited\n"));
+    SYNC_PRINT(("AviCapture::startCapture(): exited\n"));
     return ImageCaptureInterface::SUCCESS;
 }
 
-ImageCaptureInterface::CapErrorCode RTSPCapture::pauseCapture()
+ImageCaptureInterface::CapErrorCode AviCapture::pauseCapture()
 {
-    return ImageCaptureInterface::FAILURE;
+    mIsPaused = !mIsPaused;
+    SYNC_PRINT(("AviCapture::pauseCapture(): called. Pause is %s\n", mIsPaused ? "ON" : "OFF"));
+    if (!mIsPaused)
+    {
+        nextFrame();
+    }
+
+    return ImageCaptureInterface::SUCCESS;
 }
 
-ImageCaptureInterface::CapErrorCode RTSPCapture::nextFrame()
+ImageCaptureInterface::CapErrorCode AviCapture::nextFrame()
 {
     count++;
     frame_data_t frameData;
     frameData.timestamp = (count * 10);
-    SYNC_PRINT(("RTSPCapture::nextFrame(): sending notification\n"));
+    SYNC_PRINT(("AviCapture::nextFrame(): sending notification\n"));
     notifyAboutNewFrame(frameData);
 
     return ImageCaptureInterface::SUCCESS;
 }
 
-bool RTSPCapture::supportPause()
+bool AviCapture::supportPause()
 {
-    return false;
+    return true;
 }
+
+AviCapture::~AviCapture()
+{
+    SYNC_PRINT(("AviCapture::~AviCapture(): called\n"));
+
+    if (mFrame != NULL) {
+    av_free(mFrame);
+        mFrame = NULL;
+    }
+
+    if (mCodecContext != NULL) {
+    avcodec_close(mCodecContext);
+        mCodecContext = NULL;
+    }
+
+    if (mFormatContext != NULL) {
+    avformat_close_input(&mFormatContext);
+        mFormatContext = NULL;
+    }
+
+    SYNC_PRINT(("AviCapture::~AviCapture(): exited\n"));
+}
+

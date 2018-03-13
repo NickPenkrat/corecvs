@@ -1,31 +1,40 @@
 #pragma once
 
-#include <QtCore/QThread>
+#include <thread>
+//#include <QtCore/QThread>
 
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 
 class AbstractFileCapture;
 
-class AbstractFileCaptureSpinThread : public QThread
+class AbstractFileCaptureSpinThread /*: public QThread*/
 {
 public:
     AbstractFileCaptureSpinThread(AbstractFileCapture *pInterface, int delay, ImageCaptureInterface::FramePair &framePair);
-    virtual ~AbstractFileCaptureSpinThread() {}
+    virtual ~AbstractFileCaptureSpinThread();
 
-    virtual void run();
+    /** This is because is legacy design. Kind of stupid. If you have courage - rework this **/
+    static void launchThread (AbstractFileCaptureSpinThread *object);
+
     void         togglePause();
     void         nextFrame();
 
     virtual bool grabFramePair() = 0;
+    void run ();
+
+
+    void start();
+    void pause();
+    void join ();
 
 protected:
     ImageCaptureInterface::FramePair &mFramePair;
     AbstractFileCapture *mInterface;  // Doesn't have ownership.
 
-    void pause();
-
+    std::thread  *mThread = NULL;
 private:
     bool mPaused;
     bool mNextFrameNeeded;
     int  mDelay;
 };
+

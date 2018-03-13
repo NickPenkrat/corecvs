@@ -6,8 +6,8 @@
 #include <QtCore/QMap>
 #include <QWidget>
 
-#include "cameraControlParameters.h"
-#include "imageCaptureInterface.h"
+#include "core/framesources/cameraControlParameters.h"
+#include "core/framesources/imageCaptureInterface.h"
 #include "ui_capSettingsDialog.h"
 #include "parameterSlider.h"
 #include "parametersControlWidgetBase.h"

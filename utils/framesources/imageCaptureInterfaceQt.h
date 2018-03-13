@@ -3,7 +3,7 @@
 
 #include <QtCore/QObject>
 
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 
 
 class ImageCaptureInterfaceQt;

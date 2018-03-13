@@ -23,7 +23,6 @@ public:
     unsigned trySize;
     RansacParameters ransacParams;
 
-
     RansacEstimator(
             unsigned  _trySize,
             unsigned _maxIterations,

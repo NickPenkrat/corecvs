@@ -62,6 +62,13 @@ public:
     {
         return (flags & FLAG_FILTER_MASK) != 0;
     }
+
+    friend std::ostream & operator <<(std::ostream &out, const PrimitiveCorrespondence &element)
+    {
+        out << "[" << element.start << " = > " << element.end << "] (" << element.value << "," << element.flags << ")";
+        return out;
+    }
+
 };
 
 typedef PrimitiveCorrespondence<Vector2dd, Vector2dd> Correspondence;
@@ -112,6 +119,8 @@ public:
       }
       return (size() != 0) ? mean / size() : Vector2dd(0.0);
     }
+
+
 };
 
 

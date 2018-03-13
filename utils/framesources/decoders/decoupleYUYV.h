@@ -9,7 +9,7 @@
  */
 
 
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 #include "core/buffers/kernels/fastkernel/readers.h"
 #include "core/math/vector/fixedVector.h"
 #include "core/math/sse/sseWrapper.h"

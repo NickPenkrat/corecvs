@@ -85,9 +85,15 @@ enum _MOTION_PROPAGATION { NORMAL, REGIONWISE };
 
 
 class MeshFlow {
-
     //Function
   public:
+    enum FlowClass {
+        FLOW_UNKNOWN = 0,
+        FLOW_KNOWN   = 1,
+        FLOW_INLIER  = 2,
+        FLOW_OUTLIER = 3
+    };
+
 
     /*
         mesh_row_ & mesh_col_					  : normally set as 16x16 -> vertex size is 17x17 for 720 x 480 input
@@ -105,17 +111,17 @@ class MeshFlow {
 
     void init(const int image_height,
               const int image_width,
-              const int mesh_row,
-              const int mesh_col,
-              const int mesh_ransac_row,
-              const int mesh_ransac_col,
-              const int median_filter_size_y,
-              const int median_filter_size_x,
-              const int num_max_feature,
-              const float th_feature );
+              const int mesh_row = 16,
+              const int mesh_col = 16,
+              const int mesh_ransac_row = 4,
+              const int mesh_ransac_col = 4,
+              const int median_filter_size_y = 5,
+              const int median_filter_size_x = 5,
+              const int num_max_feature = 50,
+              const float th_feature = 10.0f);
 
-    void ComputeMeshFlow (const Mat image_prev,
-                           const Mat image_cur);
+    void computeMeshFlow (const Mat image_prev,
+                          const Mat image_cur);
 
     //void ComputeResidualFlow ( Mat& residual_flow_y,
     //                           Mat& residual_flow_x );
@@ -125,7 +131,7 @@ class MeshFlow {
         @Date : 2017.01.10
         @Do   : Feature matching result (1 - static background, 2 - moving objects, 3 - outliers)
     */
-    Mat GetFeatureMatchingResult ();
+    Mat getFeatureMatchingResult ();
     /*
         @Name : GetMeshFlowResult
         @Date : 2017.01.10
@@ -296,6 +302,10 @@ class MeshFlow {
     //local flow on each vertex of mesh-grid
     Mat mesh_flow_local_x_;
     Mat mesh_flow_local_y_;
+
+   public:
+    corecvs::Statistics *stats = NULL;
+
 };
 
 

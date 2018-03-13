@@ -12,7 +12,7 @@
 #include "QTimer"
 
 #include "main_grab_N_captures.h"
-#include "cameraControlParameters.h"
+#include "core/framesources/cameraControlParameters.h"
 
 /* Temporary solution. This need to be hidden inside image capture interface */
 #ifdef Q_OS_WIN

@@ -6,7 +6,7 @@
 
 #include <opencv2/highgui/highgui.hpp>  // cv::VideoCapture
 
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 
 class OpenCvFileCapture : public virtual ImageCaptureInterface
 {

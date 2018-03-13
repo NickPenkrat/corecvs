@@ -7,11 +7,11 @@ HEADERS += \
         cameracalibration/projection/projectionModels.h         \
         cameracalibration/projection/pinholeCameraIntrinsics.h  \
         cameracalibration/projection/equidistantProjection.h    \
-        cameracalibration/projection/catadioptricProjection.h   \
         cameracalibration/projection/equisolidAngleProjection.h \
     $$PWD/projection/stereographicProjection.h \
     $$PWD/projection/projectionFactory.h \
-    $$PWD/ilFormat.h
+    $$PWD/ilFormat.h \
+    $$PWD/projection/omnidirectionalProjection.h
 
 
 SOURCES += \

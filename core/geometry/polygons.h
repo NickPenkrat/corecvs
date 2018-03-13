@@ -146,7 +146,7 @@ public:
        </pre>
 
     **/
-    bool intersectWithRay(Ray3d &ray, double &resT, double &u, double &v)
+    bool intersectWithRay(const Ray3d &ray, double &resT, double &u, double &v)
     {
         Vector3dd d = p1 - ray.p;
         Matrix33 M = Matrix33::FromColumns(ray.a, e1, e2);
@@ -160,6 +160,14 @@ public:
         v    = -res.z();
 
         return true;
+    }
+
+    Vector2dd intersectWithRayPoint(const Ray3d &ray)
+    {
+        double t = 0;
+        Vector2dd result(std::numeric_limits<double>::quiet_NaN());
+        intersectWithRay(ray, t, result.x(), result.y());
+        return result;
     }
 
     template<class VisitorType>

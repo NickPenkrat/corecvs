@@ -176,6 +176,7 @@ Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
         ransac(trySize, ransacParams);
 
     ransac.data = data;
+    ransac.trace = true;
 
     ModelEssential8Point result = ransac.getModelRansac();
     for (unsigned i = 0; i < data->size(); i++)

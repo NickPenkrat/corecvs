@@ -9,7 +9,7 @@
 #include <QtCore/QThread>
 #include <QtCore/QMutex>
 
-#include "imageFileCaptureInterface.h"
+#include "core/framesources/file/imageFileCaptureInterface.h"
 #include "abstractFileCaptureSpinThread.h"
 #include "abstractFileCapture.h"
 

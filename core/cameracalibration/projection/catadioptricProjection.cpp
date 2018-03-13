@@ -1,2 +1,2 @@
-#include "catadioptricProjection.h"
+#include "omnidirectionalProjection.h"
 

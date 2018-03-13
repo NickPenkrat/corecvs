@@ -19,7 +19,7 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 #include "core/utils/preciseTimer.h"
 
 class RTSPCapture : public virtual ImageCaptureInterface

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <QtCore/QMutex>
+#include <mutex>
 
-#include "imageFileCaptureInterface.h"
+#include "core/framesources/file/imageFileCaptureInterface.h"
 #include "abstractFileCaptureSpinThread.h"
 
 /**
@@ -26,8 +26,8 @@ public:
 
     virtual bool supportPause();
 
-    QMutex& spinThreadRunMutex();
-    QMutex& protectFrameMutex();
+    std::mutex& spinThreadRunMutex();
+    std::mutex& protectFrameMutex();
 
     void    notifyAboutStreamPaused();
     void    increaseTimeStamp();
@@ -39,16 +39,15 @@ protected:
     uint64_t    mDelay;
     FramePair   mCurrent;
 
-    //QString   mPathFmt; // moved to ImageFileCaptureInterface
     friend class AbstractFileCaptureSpinThread;
     AbstractFileCaptureSpinThread *mSpin;  // Has ownership.
 
     /** protectFrame protects changes of mCount and mCurrentCount */
-    QMutex      mProtectFrame;
+    std::mutex      mProtectFrame;
 
     bool        mShouldSkipUnclaimed;
     /** controls the spin thread. if locked spin thread will exit ASAP */
-    QMutex      mSpinThreadRun;
+    std::mutex      mSpinThreadRun;
 
 public:
     bool        shouldStopSpinThread;

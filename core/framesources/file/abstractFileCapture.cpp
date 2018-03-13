@@ -68,7 +68,7 @@ AbstractFileCapture::~AbstractFileCapture()
 {
     shouldStopSpinThread = true;
     mSpinThreadRun.lock();
-    mSpin->wait();
+    mSpin->join();
     DOTRACE(("file capture thread killed\n"));
     delete mSpin;
 }
@@ -103,12 +103,12 @@ ImageCaptureInterface::CapErrorCode AbstractFileCapture::nextFrame()
     return ImageCaptureInterface::SUCCESS;
 }
 
-QMutex& AbstractFileCapture::spinThreadRunMutex()
+std::mutex& AbstractFileCapture::spinThreadRunMutex()
 {
     return mSpinThreadRun;
 }
 
-QMutex& AbstractFileCapture::protectFrameMutex()
+std::mutex& AbstractFileCapture::protectFrameMutex()
 {
     return mProtectFrame;
 }

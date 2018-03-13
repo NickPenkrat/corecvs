@@ -151,8 +151,9 @@ void MeshFlow::ResetInternalMemory() {
     }
 }
 
-void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
+void MeshFlow::computeMeshFlow ( const Mat image_prev,
                                  const Mat image_cur ) {
+    Statistics::startInterval(stats);
     //clock_t s, e;
     //double t_feat_extraction, t_feat_tracking, t_motion_propagation;
     vector<Point2f> features_vec;
@@ -160,9 +161,10 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
         if ( feat_status_[p] == 0 )  //Moving objects
             features_vec.push_back(feat_cur_[p]);
 
-
+    Statistics::resetInterval(stats, "Reset flow status");
     ResetInternalMemory();
 
+    Statistics::resetInterval(stats, "Reset internal memory");
     Mat gray_prev, gray_cur;
     image_prev.copyTo ( image_prev_ );
     image_cur.copyTo ( image_cur_ );
@@ -170,7 +172,7 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
     cvtColor ( image_cur_, gray_cur, CV_BGR2GRAY );
 
     //1. Fast feature detection
-    //s = clock();
+    Statistics::resetInterval(stats, "Convert to grayscale");
 
 
     for ( int i = 0; i < mesh_row_; ++i ) {
@@ -192,10 +194,9 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
         }
     }
 
-
+    Statistics::resetInterval(stats, "FAST features");
 
     //2. KLT tracking
-    //s = clock();
     vector<Point2f> features_vec_tracked, features_vec_tracked_bwd;
     vector<unsigned char> features_status, features_status_bwd;
     vector<float> features_err, features_err_bwd;
@@ -211,6 +212,8 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
                                cvTermCriteria ( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3 ),
                                0 );
 
+    Statistics::resetInterval(stats, "KLT forward");
+
     //2.1 - Bi-directional tracking
     cv::calcOpticalFlowPyrLK ( gray_cur,
                                gray_prev,
@@ -222,6 +225,8 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
                                5,
                                cvTermCriteria ( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3 ),
                                0 );
+    Statistics::resetInterval(stats, "KLT backward");
+
     //2.2- Bi-directional error, intensity difference, matching error
     RefineFeatureTracking ( image_prev_,
                             image_cur_,
@@ -230,6 +235,8 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
                             features_err,
                             features_status,
                             features_status_bwd );
+    Statistics::resetInterval(stats, "Bi-diectional matching");
+
 //
 // 	//2.3 - 2-steps RANSAC Outliers rejection
     vector<Mat> mesh_homography;
@@ -238,6 +245,8 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
                             features_status,
                             features_err,
                             mesh_homography );
+
+    Statistics::resetInterval(stats, "RANSAC");
 
     //3.1 - Collecting inlier for building mesh-flow
     vector<Point2f> t_refined_features_vec;
@@ -264,6 +273,8 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
     else {
         global_homography = Mat::eye ( 3, 3, CV_64FC1 );
     }
+
+    Statistics::resetInterval(stats, "Constructing homography");
 
     //GlobalOutlierRejection ( features_vec, features_vec_tracked, features_status, global_homography );
 
@@ -298,10 +309,7 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
         global_features_flow.at ( p ) = refined_features_vec_reprojected.at ( p ) -
                                         refined_features_vec.at ( p );
     }
-    //e = clock();
-    //t_feat_tracking = (double)((double)(e - s) / CLOCKS_PER_SEC);
 
-    //s = clock();
     InitializeGlobalMeshFlow ( global_homography );
     SuppressingMotionNoise ( refined_features_vec, local_features_flow );
 
@@ -314,12 +322,8 @@ void MeshFlow::ComputeMeshFlow ( const Mat image_prev,
     feat_prev_ = features_vec;
     feat_cur_ = features_vec_tracked;
     feat_status_ = features_status;
-    //e = clock();
-    //t_motion_propagation = (double)((double)(e - s) / CLOCKS_PER_SEC);
 
-    //printf("meshflow-feature extraction : %f(s)\n", t_feat_extraction);
-    //printf("meshflow-feature tracking : %f(s)\n", t_feat_tracking);
-    //printf("meshflow-motion propagation : %f(s)\n", t_motion_propagation);
+    Statistics::endInterval(stats, "Finishing");
 }
 
 void MeshFlow::ComputeMeshVertices ( Mat& mesh_vertex_y,
@@ -819,7 +823,7 @@ inline float MeshFlow::GemanMcLureEstimator ( const float error,
 }
 
 //Result
-Mat MeshFlow::GetFeatureMatchingResult () {
+Mat MeshFlow::getFeatureMatchingResult () {
     //See all grid-feature together
     Mat img;
     image_cur_.copyTo ( img );
