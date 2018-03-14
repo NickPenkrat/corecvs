@@ -71,6 +71,20 @@ public:
         return "";
     }
 
+    vector<string> nonPrefix()
+    {
+        vector<string> result;
+
+        for (unsigned i = 0; i < mArgs.size(); i++)
+        {
+            if (mArgs[i].compare(0, mArgPrefix.length(), mArgPrefix) != 0)
+            {
+                result.push_back(mArgs[i]);
+            }
+        }
+        return result;
+    }
+
 
     int getInt(const string & option, int defaultInf = 0)
     {

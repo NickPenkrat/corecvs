@@ -31,10 +31,10 @@ HEADERS += \
     frames.h \
 #    framesources/imageCaptureInterface.h \
 #    framesources/cameraControlParameters.h \
-    framesources/decoders/mjpegDecoder.h \
-    framesources/decoders/mjpegDecoderLazy.h \
-    framesources/decoders/decoupleYUYV.h \
-    framesources/decoders/aLowCodec.h \
+#    framesources/decoders/mjpegDecoder.h \
+#    framesources/decoders/mjpegDecoderLazy.h \
+#    framesources/decoders/decoupleYUYV.h \
+#    framesources/decoders/aLowCodec.h \
     \
 #   framesources/file/core/framesources/file/imageFileCaptureInterface.h \
 #   framesources/file/abstractFileCapture.h \
@@ -120,10 +120,10 @@ SOURCES += \
     frames.cpp \
 #    framesources/imageCaptureInterface.cpp \        # it uses WITH_DIRECTSHOW, WITH_UEYE, WITH_OPENCV
 #    framesources/cameraControlParameters.cpp \
-    framesources/decoders/mjpegDecoder.cpp \
-    framesources/decoders/mjpegDecoderLazy.cpp \
-    framesources/decoders/decoupleYUYV.cpp \
-    framesources/decoders/aLowCodec.cpp \
+#    framesources/decoders/mjpegDecoder.cpp \
+#    framesources/decoders/mjpegDecoderLazy.cpp \
+#    framesources/decoders/decoupleYUYV.cpp \
+#    framesources/decoders/aLowCodec.cpp \
     \
 #    framesources/file/imageFileCaptureInterface.cpp \
 #    framesources/file/abstractFileCapture.cpp \

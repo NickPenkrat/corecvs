@@ -176,19 +176,24 @@ Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
         ransac(trySize, ransacParams);
 
     ransac.data = data;
-    ransac.trace = true;
+    ransac.trace = trace;
 
     ModelEssential8Point result = ransac.getModelRansac();
+    int fitcount = 0;
     for (unsigned i = 0; i < data->size(); i++)
     {
         bool fits = result.fits(*(data->operator[](i)), ransacParams.inlierThreshold());
         data->operator[](i)->flags |= (fits ? Correspondence::FLAG_PASSER : Correspondence::FLAG_FAILER);
+
+        if (fits) fitcount++;
     }
 
     for (unsigned i = 0; i < ransac.bestSamples.size(); i++)
     {
         ransac.bestSamples[i]->flags  |= Correspondence::FLAG_IS_BASED_ON;
     }
+
+    SYNC_PRINT(("RansacEstimator::getEssentialRansac() fits %2.2lf%%\n", 100.0 * fitcount / data->size()));
 
     return result.model;
 }

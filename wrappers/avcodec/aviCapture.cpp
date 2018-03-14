@@ -39,7 +39,7 @@ ImageCaptureInterface::CapErrorCode AviCapture::initCapture()
     int res;
     res = avformat_open_input(&mFormatContext, mName.c_str(), NULL, NULL);
     if (res < 0) {
-        SYNC_PRINT(("AviCapture::initCapture(): failed to open file"));
+        SYNC_PRINT(("AviCapture::initCapture(): failed to open file\n"));
         return ImageCaptureInterface::FAILURE;
     }
 

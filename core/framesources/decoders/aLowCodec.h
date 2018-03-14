@@ -21,11 +21,11 @@ namespace corecvs
      */
     inline uint8_t code12to8(uint16_t value)
     {
-        /*if (value <   32) return value; */                      // 0 0 0 0 0 0 0 a b c d e => 000abcde
-        if (value < 64) return value;                         // 0 0 0 0 0 0 1 a b c d e => 001abcde
-        if (value < 128) return ((value >> 1) & 0x1f) | 0x40;  // 0 0 0 0 0 1 a b c d e X => 010abcde
-        if (value < 256) return ((value >> 2) & 0x1f) | 0x60;  // 0 0 0 0 1 a b c d e X X => 011abcde
-        if (value < 512) return ((value >> 3) & 0x1f) | 0x80;  // 0 0 0 1 a b c d e X X X => 100abcde
+        /*if (value <   32) return value; */                    // 0 0 0 0 0 0 0 a b c d e => 000abcde
+        if (value < 64)   return value;                         // 0 0 0 0 0 0 1 a b c d e => 001abcde
+        if (value < 128)  return ((value >> 1) & 0x1f) | 0x40;  // 0 0 0 0 0 1 a b c d e X => 010abcde
+        if (value < 256 ) return ((value >> 2) & 0x1f) | 0x60;  // 0 0 0 0 1 a b c d e X X => 011abcde
+        if (value < 512 ) return ((value >> 3) & 0x1f) | 0x80;  // 0 0 0 1 a b c d e X X X => 100abcde
         if (value < 1024) return ((value >> 4) & 0x1f) | 0xA0;  // 0 0 1 a b c d e X X X X => 101abcde
         if (value < 2048) return ((value >> 5) & 0x1f) | 0xC0;  // 0 1 a b c d e X X X X X => 110abcde
         if (value < 4096) return ((value >> 6) & 0x1f) | 0xE0;  // 1 a b c d e X X X X X X => 111abcde

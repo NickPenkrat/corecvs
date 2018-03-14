@@ -25,7 +25,7 @@ extern "C" {
 class RTSPCapture : public virtual ImageCaptureInterface
 {
 public:
-    RTSPCapture(const QString &params);
+    RTSPCapture(const std::string &params);
     ~RTSPCapture();
 
     virtual ImageCaptureInterface::CapErrorCode initCapture() override;

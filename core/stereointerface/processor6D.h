@@ -15,6 +15,7 @@
 #include "core/reflection/dynamicObject.h"
 
 #include "core/buffers/g12Buffer.h"
+#include "core/buffers/rgb24/rgb24Buffer.h"
 #include "core/buffers/flow/flowBuffer.h"
 #include "core/buffers/flow/sixDBuffer.h"
 #include "core/stats/calculationStats.h"
@@ -36,7 +37,8 @@ public:
        RESULT_STEREO = 0x02,
        RESULT_6D = 0x04,
        RESULT_FLOAT_FLOW   = 0x08,
-       RESULT_FLOAT_STEREO = 0x10
+       RESULT_FLOAT_STEREO = 0x10,
+       RESULT_FLOAT_FLOW_LIST = 0x20
     };
 
     enum FrameNames {
@@ -47,7 +49,8 @@ public:
 
     virtual int beginFrame() = 0;
     virtual int clean(int mask) = 0;
-    virtual int setFrameG12(FrameNames frameType, G12Buffer *frame) = 0;
+    virtual int setFrameG12  (FrameNames frameType, G12Buffer   *frame) = 0;
+    virtual int setFrameRGB24(FrameNames frameType, RGB24Buffer *frame) = 0;
 
     virtual int setDisparityBufferS16(FrameNames frameType, FlowBuffer *frame) = 0;
 
@@ -60,11 +63,12 @@ public:
 
     virtual int setParameteri(int parameterName, int parameterValue) = 0;
 
-    virtual int requestResultsi(int parameterValue) = 0;
+    virtual int requestResultsi(int parameterName) = 0;
 
     /* This method computes flow form current frame to previous */
     virtual FlowBuffer *getFlow() = 0;
     virtual FlowBuffer *getStereo() = 0;
+    virtual CorrespondenceList *getFlowList() = 0;
 
     virtual int getError(std::string *errorString) = 0;
 

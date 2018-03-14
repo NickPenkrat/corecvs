@@ -23,7 +23,7 @@ public:
 
     ~Waiter()
     {
-        delete mCaptureMapper;
+        delete_safe(mCaptureMapper);
     }
 
     struct CameraDescriptor {
@@ -40,6 +40,7 @@ public:
 
 void finilizeCapture()
 {
+    SYNC_PRINT(("Waiter::finilizeCapture(): called"));
     /* Save images here */
     for (int i = 0; i < mCaptureInterfaces.count(); i++)
     {
@@ -53,16 +54,18 @@ void finilizeCapture()
     }
 
     mCaptureInterfaces.clear();
+    qApp->exit();
 }
 
 public slots:
     void onFrameReady(int camId)
     {
-         qDebug() << "Frame ready for cam " << camId;
+         SYNC_PRINT(("Waiter:onFrameReady(%d):called\n", camId));
 
         /* This protects the events from flooding input queue */
         static bool flushEvents = false;
         if (flushEvents) {
+            SYNC_PRINT(("Event flushing\n"));
             return;
         }
         flushEvents = true;
@@ -70,33 +73,39 @@ public slots:
         QCoreApplication::processEvents();
         flushEvents = false;
 
+        SYNC_PRINT(("Waiter:Checking data\n"));
+
         if (camId != mCurrentCam) {
+            SYNC_PRINT(("Data form unexpected camera\n"));
             return;
         }
 
-        /* Add frame skip */
-        if (mCaptureInterfaces[mCurrentCam].toSkip > 0)
-        {
-            mCaptureInterfaces[mCurrentCam].toSkip--;
-            return;
-        }
 
         if (mCurrentCam >= mCaptureInterfaces.count())
         {
-            SYNC_PRINT(("Internal problem"));
+            SYNC_PRINT(("Internal problem\n"));
         }
 
         CameraDescriptor &descr = mCaptureInterfaces[mCurrentCam];
         /* This could happen beacause of the old notifications */
         if (descr.input == NULL)
         {
-            L_INFO_P("Frame arrived after camera shutdown from %d", camId);
+            SYNC_PRINT(("Frame arrived after camera shutdown from %d", camId));
             return;
         }
 
         ImageCaptureInterface::FramePair pair =  descr.input->getFrameRGB24();
+
+        /* Add frame skip */
+        if (mCaptureInterfaces[mCurrentCam].toSkip > 0)
+        {
+            mCaptureInterfaces[mCurrentCam].toSkip--;
+            SYNC_PRINT(("Skipping frame\n"));
+            return;
+        }
+
         if (pair.rgbBufferLeft() == NULL) {
-            L_ERROR_P("Unexpected zero buffer form camera %d", camId);
+            SYNC_PRINT(("Unexpected zero buffer form camera %d", camId));
             pair.freeBuffers();
             return;
         }
@@ -109,11 +118,13 @@ public slots:
         /* Last camera */
         if (mCurrentCam == mCaptureInterfaces.size() - 1)
         {
+            SYNC_PRINT(("All cameras captured\n"));
             finilizeCapture();
             return;
         }
 
         mCurrentCam++;
+        SYNC_PRINT(("Starting %d capture \n", mCurrentCam));
         mCaptureInterfaces[mCurrentCam].input->startCapture();
     }
 };

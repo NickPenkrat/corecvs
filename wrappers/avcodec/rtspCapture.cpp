@@ -6,8 +6,8 @@
 
 #include "rtspCapture.h"
 
-RTSPCapture::RTSPCapture(QString const &params):
-       mName(params.toStdString())
+RTSPCapture::RTSPCapture(const std::string &params):
+       mName(params)
      , mFormatContext(NULL)
      , mCodecContext(NULL)
      , mCodec(NULL)
@@ -15,7 +15,7 @@ RTSPCapture::RTSPCapture(QString const &params):
      , mFrame(NULL)
      , count(1)
 {
-    SYNC_PRINT(("RTSPCapture::RTSPCapture(%s): called\n", params.toLatin1().constData()));
+    SYNC_PRINT(("RTSPCapture::RTSPCapture(%s): called\n", params.c_str()));
     SYNC_PRINT(("Registering the codecs...\n"));
 
     av_register_all();

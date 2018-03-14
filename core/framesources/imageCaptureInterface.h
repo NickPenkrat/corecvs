@@ -126,16 +126,20 @@ public:
 
         FrameData buffers[MAX_INPUTS_NUMBER];
 
-        G12Buffer   *bufferLeft()     const { return buffers[LEFT_FRAME  ].g12Buffer;} /**< Pointer to left  gray scale buffer*/
-        G12Buffer   *bufferRight()    const { return buffers[RIGHT_FRAME ].g12Buffer;} /**< Pointer to right gray scale buffer*/
-        RGB24Buffer *rgbBufferLeft()  const { return buffers[LEFT_FRAME  ].rgbBuffer;}
-        RGB24Buffer *rgbBufferRight() const { return buffers[RIGHT_FRAME ].rgbBuffer;}
+        G12Buffer   *bufferLeft()     const { return buffers[LEFT_FRAME ].g12Buffer;} /**< Pointer to left  gray scale buffer*/
+        G12Buffer   *bufferRight()    const { return buffers[RIGHT_FRAME].g12Buffer;} /**< Pointer to right gray scale buffer*/
+        RGB24Buffer *rgbBufferLeft()  const { return buffers[LEFT_FRAME ].rgbBuffer;}
+        RGB24Buffer *rgbBufferRight() const { return buffers[RIGHT_FRAME].rgbBuffer;}
+
+        RGB24Buffer *rgbBufferDefault() const { return buffers[DEFAULT_FRAME].rgbBuffer;}
 
 
-        void setBufferLeft    (G12Buffer   *buf)  {  buffers[LEFT_FRAME  ].g12Buffer = buf;} /**< Pointer to left  gray scale buffer*/
-        void setBufferRight   (G12Buffer   *buf)  {  buffers[RIGHT_FRAME ].g12Buffer = buf;} /**< Pointer to right gray scale buffer*/
-        void setRgbBufferLeft (RGB24Buffer *buf)  {  buffers[LEFT_FRAME  ].rgbBuffer = buf;}
-        void setRgbBufferRight(RGB24Buffer *buf)  {  buffers[RIGHT_FRAME ].rgbBuffer = buf;}
+        void setBufferLeft      (G12Buffer   *buf)  {  buffers[LEFT_FRAME  ].g12Buffer = buf;} /**< Pointer to left  gray scale buffer*/
+        void setBufferRight     (G12Buffer   *buf)  {  buffers[RIGHT_FRAME ].g12Buffer = buf;} /**< Pointer to right gray scale buffer*/
+        void setRgbBufferLeft   (RGB24Buffer *buf)  {  buffers[LEFT_FRAME  ].rgbBuffer = buf;}
+        void setRgbBufferRight  (RGB24Buffer *buf)  {  buffers[RIGHT_FRAME ].rgbBuffer = buf;}
+
+        void setRgbBufferDefault(RGB24Buffer *buf)  {  buffers[DEFAULT_FRAME].rgbBuffer = buf;}
 
 
         uint64_t     timeStampLeft()  { return buffers[LEFT_FRAME  ].timeStamp;}

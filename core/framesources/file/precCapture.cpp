@@ -28,7 +28,7 @@ FilePreciseCapture::FilePreciseCapture(const std::string &params, bool isVerbose
 
     mSpin = new FileSpinThread(this, mDelay, mCurrent);
 
-    SYNC_PRINT(( "FilePreciseCapture::FilePreciseCapture(%s, %s, rgb=%s): capture form pattern:%s",
+    SYNC_PRINT(( "FilePreciseCapture::FilePreciseCapture(%s, %s, rgb=%s): capture form pattern:%s\n",
                  params.c_str(),
                  isVerbose ? "true" : "false",
                  isRGB ? "true" : "false",
@@ -48,7 +48,7 @@ FilePreciseCapture::FramePair FilePreciseCapture::getFrame()
 
     if (mVerbose)
     {
-        printf("prec: Will load (%s)", mIsRgb ? "rgb" : "gray");
+        printf("prec: Will load (%s)\n", mIsRgb ? "rgb" : "gray");
     }
 
     mProtectFrame.lock();

@@ -72,9 +72,11 @@ INCLUDEPATH += $$PWD/moc-flow
 
 HEADERS += \
     $$PWD/moc-flow/openCVMovingObjectFlow.h \
-    $$PWD/xml/generated/*.h
+    $$PWD/xml/generated/*.h \
+    $$PWD/moc-flow/meshFlowAlgo.h
 
 SOURCES += \
     $$PWD/moc-flow/openCVMovingObjectFlow.cpp \
-    $$PWD/xml/generated/*.cpp
+    $$PWD/xml/generated/*.cpp \
+    $$PWD/moc-flow/meshFlowAlgo.cpp
 
