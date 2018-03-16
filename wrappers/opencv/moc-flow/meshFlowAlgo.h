@@ -31,7 +31,7 @@ enum _MOTION_PROPAGATION { NORMAL, REGIONWISE };
 
 
 
-class MeshFlow : MeshFlowDrawParameters {
+class MeshFlow : public MeshFlowDrawParameters {
     //Function
   public:
     enum FlowClass {
@@ -55,6 +55,10 @@ class MeshFlow : MeshFlowDrawParameters {
               const int median_filter_size_x = 5,
               const int num_max_feature = 50,
               const float th_feature = 10.0f);
+
+    void init( const int image_height,
+               const int image_width,
+               const MeshFlowDrawParameters &params);
 
     void computeMeshFlow (const Mat image_prev,
                           const Mat image_cur);
@@ -224,10 +228,6 @@ class MeshFlow : MeshFlowDrawParameters {
 
     float mesh_ransac_width_;
     float mesh_ransac_height_;
-    int median_filter_size_x_;
-    int median_filter_size_y_;
-    int num_max_feature_;
-    float threshold_features_;
 
     //mesh-RANSAC homography, same size with mesh_ransac_row_ x mesh_ransac_col_
     vector<Mat> mesh_homography_;
@@ -236,7 +236,8 @@ class MeshFlow : MeshFlowDrawParameters {
     Mat mesh_flow_local_x_;
     Mat mesh_flow_local_y_;
 
-   public:
+    void initInternal();
+public:
     corecvs::Statistics *stats = NULL;
 
 };

@@ -46,7 +46,7 @@ int MeshFlowDrawParameters::staticInit()
         (
           MeshFlowDrawParameters::GRID_ROWS_ID,
           offsetof(MeshFlowDrawParameters, mGridRows),
-          10,
+          16,
           "Grid Rows",
           "Grid Rows",
           "Grid Rows",
@@ -61,7 +61,7 @@ int MeshFlowDrawParameters::staticInit()
         (
           MeshFlowDrawParameters::GRID_COLUMNS_ID,
           offsetof(MeshFlowDrawParameters, mGridColumns),
-          10,
+          16,
           "Grid Columns",
           "Grid Columns",
           "Grid Columns",
@@ -76,7 +76,7 @@ int MeshFlowDrawParameters::staticInit()
         (
           MeshFlowDrawParameters::RANSAC_GRID_ROWS_ID,
           offsetof(MeshFlowDrawParameters, mRansacGridRows),
-          10,
+          4,
           "Ransac Grid Rows",
           "Ransac Grid Rows",
           "Ransac Grid Rows",
@@ -91,7 +91,7 @@ int MeshFlowDrawParameters::staticInit()
         (
           MeshFlowDrawParameters::RANSAC_GRID_COLUMNS_ID,
           offsetof(MeshFlowDrawParameters, mRansacGridColumns),
-          10,
+          4,
           "Ransac Grid Columns",
           "Ransac Grid Columns",
           "Ransac Grid Columns",
@@ -106,7 +106,7 @@ int MeshFlowDrawParameters::staticInit()
         (
           MeshFlowDrawParameters::MEDIAN_FILTER_SIZE_H_ID,
           offsetof(MeshFlowDrawParameters, mMedianFilterSizeH),
-          10,
+          5,
           "Median Filter Size H",
           "Median Filter Size H",
           "Median Filter Size H",
@@ -121,7 +121,7 @@ int MeshFlowDrawParameters::staticInit()
         (
           MeshFlowDrawParameters::MEDIAN_FILTER_SIZE_W_ID,
           offsetof(MeshFlowDrawParameters, mMedianFilterSizeW),
-          10,
+          5,
           "Median Filter Size W",
           "Median Filter Size W",
           "Median Filter Size W",
@@ -136,7 +136,7 @@ int MeshFlowDrawParameters::staticInit()
         (
           MeshFlowDrawParameters::MAX_FEATURE_NUMBER_ID,
           offsetof(MeshFlowDrawParameters, mMaxFeatureNumber),
-          100,
+          50,
           "Max Feature Number",
           "Max Feature Number",
           "Max Feature Number",
@@ -151,14 +151,14 @@ int MeshFlowDrawParameters::staticInit()
         (
           MeshFlowDrawParameters::FEATURE_TRESHOLD_ID,
           offsetof(MeshFlowDrawParameters, mFeatureTreshold),
-          950,
+          10,
           "Feature Treshold",
           "Feature Treshold",
           "Feature Treshold",
           true,
          0,
-         100000,
-         1
+         10000,
+         0.1
         );
     field7->widgetHint=BaseField::SPIN_BOX;
     field7->precision=2;

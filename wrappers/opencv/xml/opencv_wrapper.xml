@@ -11,8 +11,8 @@
      <field type="int"    name="Median Filter Size H" defaultValue="5"  min="0" max="1000" />
      <field type="int"    name="Median Filter Size W" defaultValue="5"  min="0" max="1000" />
 
-     <field type="int"    name="Max Feature Number"   defaultValue="100" min="0" max="10000" />
+     <field type="int"    name="Max Feature Number"   defaultValue="50" min="0" max="10000" />
 
-     <field type="double" name="Feature Treshold"     defaultValue="950" min="0" max="100000"    step="1"/>
+     <field type="double" name="Feature Treshold"     defaultValue="10.0" min="0" max="10000"    step="0.1"/>
   </class>
 </poco>

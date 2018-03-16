@@ -731,6 +731,7 @@ template<typename ResultType>
 
     void checkerBoard(IndexType square, ElementType valueMax /*= ElementType::max()*/, ElementType valueMin = ElementType(0))
     {
+        if (square <= 0) square = 1;
         for (IndexType i = 0; i < this->h; i++)
         {
             for (IndexType j = 0; j < this->w; j++)

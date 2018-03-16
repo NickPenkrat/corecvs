@@ -31,3 +31,15 @@ DESTDIR  = $$ROOT_DIR/bin
 SOURCES += \ 
     main_fisheye_egomotion.cpp
 
+!win32 {
+    # Linux version
+    exists($$ROOT_DIR/bin/libcvs_res_interface.a): exists($$ROOT_DIR/bin/libcvs_core_restricted.a) {
+        !build_pass: message(Switching on CVS featuring)
+        LIBS            = -L$$ROOT_DIR/bin -lcvs_res_interface -lcvs_core_restricted $$LIBS
+        PRE_TARGETDEPS += $$ROOT_DIR/bin/libcvs_res_interface.a $$ROOT_DIR/bin/libcvs_core_restricted.a
+        DEFINES += WITH_CVS_FEATURES
+    } else {
+        !build_pass: message(no bin/libcvs_res_interface(|libcvs_core_restricted).a. No CVS features!)
+    }
+
+}

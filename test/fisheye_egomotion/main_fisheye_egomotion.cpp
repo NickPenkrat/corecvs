@@ -4,6 +4,7 @@
 
 #include <OpenCVTools.h>
 #include <QApplication>
+#include <avEncoder.h>
 #include <iostream>
 #include <time.h>
 
@@ -12,6 +13,8 @@
 #include <core/geometry/mesh3d.h>
 
 #include <core/cameracalibration/calibrationDrawHelpers.h>
+
+#include <core/buffers/rgb24/abstractPainter.h>
 
 #include "core/buffers/bufferFactory.h"
 #include "core/cameracalibration/cameraModel.h"
@@ -31,6 +34,17 @@
 using namespace std;
 using namespace corecvs;
 
+
+
+#ifdef WITH_CVS_FEATURES
+extern "C"
+{
+    extern void init_cvs_stereo_provider();
+    extern void init_cvs_detectors_provider();
+    extern void init_cvs_descriptors_provider();
+    extern void init_cvs_matchers_provider();
+}
+#endif
 
 class MOCProcessor : public ImageInterfaceReceiver
 {
@@ -56,6 +70,24 @@ public:
     }
 };
 
+int main1(int argc, char **argv)
+{
+    AVEncoder encoder;
+    RGB24Buffer buffer(100,100);
+
+    AVEncoder::printCaps();
+
+    encoder.startEncoding("out.avi", buffer.h, buffer.w);
+    for (int i = 0; i < 250; i++)
+    {
+        buffer.checkerBoard(i % 99, RGBColor::Yellow(), RGBColor::Brown());
+        AbstractPainter<RGB24Buffer> p(&buffer);
+        p.drawFormat(0,0, RGBColor::Navy(), 2, "%d", i);
+        encoder.addFrame(&buffer);
+    }
+    encoder.endEncoding();
+    SYNC_PRINT(("Done."));
+}
 
 int main(int argc, char **argv)
 {
@@ -70,18 +102,37 @@ int main(int argc, char **argv)
 #endif
     QTG12Loader::registerMyself();
     QTRGB24Loader::registerMyself();
+    QTRGB24Saver::registerMyself();
+
+#ifdef WITH_CVS_FEATURES
+    init_cvs_stereo_provider();
+#endif
+    corecvs::Processor6DFactoryHolder::getInstance()->registerProcessor(new OpenCVMovingObjectFlowImplFactory);
 
     if (argc <= 1) {
-        SYNC_PRINT(("Give me input\n"));
+        SYNC_PRINT(("Give me input\n"));       
+        SYNC_PRINT((" fisheye_egomotion --caps\n"));
+        SYNC_PRINT((" fisheye_egomotion [--provider=<flow name>] [frames=<n>] [--unwrap] [] <aviname>\n"));
         return 0;
     }
 
-    /*Prepare geometry*/
+    /*Process command line */
+    CommandLineSetter s(argc, argv);
+    int maxFrame = s.getInt("frames", 10);
 
+    if (s.getBool("caps"))
+    {
+        BufferFactory::getInstance()->printCaps();
+        Processor6DFactoryHolder::printCaps();
+        return 0;
+    }
 
+    std::string provider = s.getString("provider", "MeshFlow");
+    bool produceUnwarp = s.getBool("unwarp");
 
     /*Prepare input */
-    ImageCaptureInterface *cam = new AviCapture(argv[1]);
+    vector<string> stream = s.nonPrefix();
+    ImageCaptureInterface *cam = new AviCapture(stream.back());
 
     MOCProcessor processor;
 
@@ -95,8 +146,13 @@ int main(int argc, char **argv)
     ImageCaptureInterface::FramePair images;
 
 
-    while (framecount < 1)
+    AVEncoder newOut;
+    AVEncoder rawOut;
+
+    while (framecount < maxFrame)
     {
+        Statistics stats;
+        stats.setValue("Frame Number", framecount);
         framecount++;
 
         images.freeBuffers();
@@ -111,19 +167,46 @@ int main(int argc, char **argv)
             continue;
         }
 
-        cv::Mat mInput1 = OpenCVTools::getCVMatFromRGB24Buffer(prevFrame);
-        cv::Mat mInput2 = OpenCVTools::getCVMatFromRGB24Buffer(curFrame);
+        //cv::Mat mInput1 = OpenCVTools::getCVMatFromRGB24Buffer(prevFrame);
+        //cv::Mat mInput2 = OpenCVTools::getCVMatFromRGB24Buffer(curFrame);
 
-        Statistics stats;
-        MeshFlow processor;
-        processor.stats = &stats;
-        processor.init(mInput1.rows, mInput1.cols);
+        if (!newOut.open) {
+            newOut.startEncoding("new.avi", curFrame->h, curFrame->w);
+        }
+
+
+        Processor6D *flowGen = Processor6DFactoryHolder::getProcessor(provider);
+        if (flowGen != NULL)
+        {
+            SYNC_PRINT(("Creating %s provider. Success\n", provider.c_str()));
+        }
+
         stats.enterContext("Mesh Flow->");
-        processor.computeMeshFlow(mInput1, mInput2);
+        flowGen->requestResultsi(Processor6D::RESULT_FLOW | Processor6D::RESULT_FLOAT_FLOW_LIST);
+        flowGen->setStats(&stats);
+        flowGen->beginFrame();
+        flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, prevFrame);
+        flowGen->endFrame();
+        flowGen->beginFrame();
+        flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, curFrame);
+        flowGen->endFrame();
+
+        CorrespondenceList *flowList = flowGen->getFlowList();
+        SYNC_PRINT(("Flow density %d\n", flowList->size()));
+
+        if (flowList == NULL)
+        {
+            SYNC_PRINT(("Flow not generated\n "
+                        "Exiting\n"));
+            return 4;
+        }
+
         stats.leaveContext();
 
-        unique_ptr<RGB24Buffer> output1(OpenCVTools::getRGB24BufferFromCVMat(mInput1));
-        unique_ptr<RGB24Buffer> output2(OpenCVTools::getRGB24BufferFromCVMat(mInput2));
+
+        unique_ptr<RGB24Buffer> outputPrev(new RGB24Buffer(prevFrame));
+        unique_ptr<RGB24Buffer> outputRaw(new RGB24Buffer(curFrame));
+        unique_ptr<RGB24Buffer> outputNew(new RGB24Buffer(curFrame));
 
 
         /*std::string input =
@@ -162,53 +245,59 @@ int main(int argc, char **argv)
         //cout << model << endl;
 
         /* Unwrap */
-        Mesh3D mesh;
+        Vector2dd unwrapSize(800, 800);
 
-        CalibrationDrawHelpers helpers;
-        helpers.drawCamera(mesh, model, 1.0);
-
-        stats.startInterval();
-        unique_ptr<RGB24Buffer> unwarpOrig(new RGB24Buffer(1500, 1500));
-
-        Vector2dd unwrapSize(unwarpOrig->w, unwarpOrig->h);
-        unwarpOrig->checkerBoard(20, RGBColor::White(), RGBColor::Black());
         PlaneFrame frame;
         frame.e1 = Vector3dd::OrtX() * 3;
         frame.e2 = Vector3dd::OrtY() * 3;
         frame.p1 = Vector3dd(-1.5, -1.5, 1.0);
 
-        mesh.addPlaneFrame(frame);
-        for (int i = 0; i < unwarpOrig->h; i++)
-        {
-            for (int j = 0; j < unwarpOrig->w; j++)
-            {
-                Vector2dd c((double)j / unwarpOrig->w, (double)i / unwarpOrig->h);
-                Vector3dd r = frame.getPoint(c);
-                //cout << "R" << r << endl;
-                Vector2dd p = model.intrinsics->project(r) /** inSize*/;
+        unique_ptr<RGB24Buffer> unwarpOrig;
+        unique_ptr<RGB24Buffer> unwarpRaw;
+        unique_ptr<RGB24Buffer> unwarpNew;
 
-                if (curFrame->isValidCoordBl(p)) {
-                    unwarpOrig->element(i,j) = curFrame->elementBl(p);
-                } else {
+
+        if (produceUnwarp)
+        {
+            Mesh3D mesh;
+
+            CalibrationDrawHelpers helpers;
+            helpers.drawCamera(mesh, model, 1.0);
+
+            stats.startInterval();
+            unwarpOrig.reset(new RGB24Buffer(unwrapSize.y(), unwrapSize.x()));
+
+            unwarpOrig->checkerBoard(20, RGBColor::White(), RGBColor::Black());
+
+            mesh.addPlaneFrame(frame);
+            for (int i = 0; i < unwarpOrig->h; i++)
+            {
+                for (int j = 0; j < unwarpOrig->w; j++)
+                {
+                    Vector2dd c((double)j / unwarpOrig->w, (double)i / unwarpOrig->h);
+                    Vector3dd r = frame.getPoint(c);
+                    //cout << "R" << r << endl;
+                    Vector2dd p = model.intrinsics->project(r) /** inSize*/;
+
+                    if (curFrame->isValidCoordBl(p)) {
+                        unwarpOrig->element(i,j) = curFrame->elementBl(p);
+                    } else {
+                    }
                 }
             }
+            mesh.dumpPLY("unwrap.ply");
+            unwarpRaw.reset(new RGB24Buffer(unwarpOrig.get()));
+            unwarpNew.reset(new RGB24Buffer(unwarpOrig.get()));
         }
-        mesh.dumpPLY("unwrap.ply");
-        unique_ptr<RGB24Buffer> unwarpRaw(new RGB24Buffer(unwarpOrig.get()));
-        unique_ptr<RGB24Buffer> unwarpNew(new RGB24Buffer(unwarpOrig.get()));
-
         stats.resetInterval("Created Unwrapped Image");
 
         /* Debug draw */
-        for (size_t i = 0; i < processor.feat_cur_.size(); i++)
+        for (size_t i = 0; i < flowList->size(); i++)
         {
-            Point2f &cvData0  = processor.feat_prev_[i];
-            Point2f &cvData1  = processor.feat_cur_ [i];
+            Vector2dd data0 = flowList->at(i).start;
+            Vector2dd data1 = flowList->at(i).end;
 
-            Vector2dd data0(cvData0.x, cvData0.y);
-            Vector2dd data1(cvData1.x, cvData1.y);
-
-            uint8_t status = processor.feat_status_[i];
+            uint8_t status = flowList->at(i).value;
 
             RGBColor color = RGBColor::Red();
             switch (status) {
@@ -219,18 +308,21 @@ int main(int argc, char **argv)
                 break;
             }
 
-            output1->drawLine(data0, data1, color);
-            output1->drawCrosshare1(data1, color);
+            outputRaw->drawLine(data0, data1, color);
+            outputRaw->drawCrosshare1(data1, color);
 
 
-            Vector3dd rd0 = model.intrinsics->reverse(data0);
-            Vector3dd rd1 = model.intrinsics->reverse(data1);
 
-            Vector2dd pf0 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd0, Vector3dd::Zero())) * unwrapSize;
-            Vector2dd pf1 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd1, Vector3dd::Zero())) * unwrapSize;
+            if (produceUnwarp) {
+                Vector3dd rd0 = model.intrinsics->reverse(data0);
+                Vector3dd rd1 = model.intrinsics->reverse(data1);
 
-            unwarpRaw->drawLine(pf0, pf1, color);
-            unwarpRaw->drawCrosshare1(pf1, color);
+                Vector2dd pf0 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd0, Vector3dd::Zero())) * unwrapSize;
+                Vector2dd pf1 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd1, Vector3dd::Zero())) * unwrapSize;
+
+                unwarpRaw->drawLine(pf0, pf1, color);
+                unwarpRaw->drawCrosshare1(pf1, color);
+            }
 
         }
 
@@ -240,13 +332,10 @@ int main(int argc, char **argv)
 
         CorrespondenceList list;
 
-        for (size_t i = 0; i < processor.feat_cur_.size(); i++)
+        for (size_t i = 0; i < flowList->size(); i++)
         {
-            Point2f &cvData0  = processor.feat_prev_[i];
-            Point2f &cvData1  = processor.feat_cur_ [i];
-
-            Vector2dd data0(cvData0.x, cvData0.y);
-            Vector2dd data1(cvData1.x, cvData1.y);
+            Vector2dd data0 = flowList->at(i).start;
+            Vector2dd data1 = flowList->at(i).end;
 
             Vector3dd ray0 = model.intrinsics->reverse(data0);
             Vector3dd ray1 = model.intrinsics->reverse(data1);
@@ -279,6 +368,7 @@ int main(int argc, char **argv)
         }
 
         EssentialMatrix matrix = estimator.getEssentialRansac(&listPtr);
+        stats.setValue("Ransac inliers %", estimator.fitPercent);
         cout << matrix << endl;
 
         EssentialDecomposition decomposition[4];
@@ -299,16 +389,13 @@ int main(int argc, char **argv)
         cout << "Vanish point: "  << vanish << endl;
 
         for (int r = 4; r < 20; r++) {
-            output2->drawArc(Circle2d(vanish, r), RGBColor::Yellow());
+            outputNew->drawArc(Circle2d(vanish, r), RGBColor::Yellow());
         }
 
-        for (size_t i = 0; i < processor.feat_cur_.size(); i++)
+        for (size_t i = 0; i < flowList->size(); i++)
         {
-            Point2f &cvData0  = processor.feat_prev_[i];
-            Point2f &cvData1  = processor.feat_cur_ [i];
-
-            Vector2dd data0(cvData0.x, cvData0.y);
-            Vector2dd data1(cvData1.x, cvData1.y);
+            Vector2dd data0 = flowList->at(i).start;
+            Vector2dd data1 = flowList->at(i).end;
 
             Vector3dd ray0 = model.intrinsics->reverse(data0);
             Vector3dd ray1 = model.intrinsics->reverse(data1);
@@ -320,44 +407,64 @@ int main(int argc, char **argv)
 
             RGBColor color = RGBColor::rainbow1(outlay * 100);
 
-            output2->drawLine(data0, data1, color);
-            output2->drawCrosshare1(data1, color);
+            outputNew->drawLine(data0, data1, color);
+            outputNew->drawCrosshare1(data1, color);
 
-            Vector3dd rd0 = model.intrinsics->reverse(data0);
-            Vector3dd rd1 = model.intrinsics->reverse(data1);
+            if (produceUnwarp) {
+                Vector3dd rd0 = model.intrinsics->reverse(data0);
+                Vector3dd rd1 = model.intrinsics->reverse(data1);
 
-            Vector2dd pf0 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd0, Vector3dd::Zero())) * unwrapSize;
-            Vector2dd pf1 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd1, Vector3dd::Zero())) * unwrapSize;
+                Vector2dd pf0 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd0, Vector3dd::Zero())) * unwrapSize;
+                Vector2dd pf1 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd1, Vector3dd::Zero())) * unwrapSize;
 
-            unwarpNew->drawLine(pf0, pf1, color);
-            unwarpNew->drawCrosshare1(pf1, color);
+                unwarpNew->drawLine(pf0, pf1, color);
+                unwarpNew->drawCrosshare1(pf1, color);
+            }
         }
 
          stats.resetInterval("Debug output");
 
+        std::string extention = ".jpg";
         std::stringstream oname;
+#if 0
         oname.str("");
-        oname << "prev" << framecount << ".bmp";
-        BufferFactory::getInstance()->saveRGB24Bitmap(output1.get(), oname.str());
+        oname << "prev" << framecount << extention;
+        BufferFactory::getInstance()->saveRGB24Bitmap(outputPrev.get(), oname.str());
+#endif
+        /*
+        oname.str("");
+        oname << "raw" << framecount << extention;
+        BufferFactory::getInstance()->saveRGB24Bitmap(outputRaw.get(), oname.str());
+        */
 
-        oname.str("");
-        oname << "cur" << framecount << ".bmp";
-        BufferFactory::getInstance()->saveRGB24Bitmap(output2.get(), oname.str());
+       /* oname.str("");
+        oname << "new" << framecount << extention;
+        BufferFactory::getInstance()->saveRGB24Bitmap(outputNew.get(), oname.str());*/
+        newOut.addFrame(outputNew.get());
 
-        oname.str("");
-        oname << "unwarp-raw" << framecount << ".bmp";
-        BufferFactory::getInstance()->saveRGB24Bitmap(unwarpRaw.get(),  oname.str());
+        if (produceUnwarp)
+        {
+            oname.str("");
+            oname << "unwarp-raw" << framecount << extention;
+            BufferFactory::getInstance()->saveRGB24Bitmap(unwarpRaw.get(),  oname.str());
 
-        oname.str("");
-        oname << "unwarp-new" << framecount << ".bmp";
-        BufferFactory::getInstance()->saveRGB24Bitmap(unwarpNew.get(),  oname.str());
+            oname.str("");
+            oname << "unwarp-new" << framecount << extention;
+            BufferFactory::getInstance()->saveRGB24Bitmap(unwarpNew.get(),  oname.str());
+        }
 
         BaseTimeStatisticsCollector collector;
         collector.addStatistics(stats);
         collector.printAdvanced();
 
+        delete_safe(flowGen);
         prevFrame = curFrame;
     }
+
+     if (newOut.open)
+     {
+         newOut.endEncoding();
+     }
 
 
     //system("ls -all");

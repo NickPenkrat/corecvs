@@ -14,9 +14,9 @@ SUBDIRS +=       \
 #   grab         \
     grab_N_captures \
     serialize1   \
-#    fileloader \  # it can what rawconverter is able to do as well!
+    fileloader \  # it can what rawconverter is able to do as well!
 #   adoptcolor   \
-#    avigrab     \
+#    avigrab     \  // Depricated
 #    decodebayer \
 #    genvectorui  \
 #    aLowCodec \

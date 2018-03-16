@@ -7,6 +7,23 @@ using namespace corecvs;
 MeshFlow::MeshFlow() {
 }
 
+void MeshFlow::initInternal()
+{
+    //mesh-flow
+    mesh_width_ =  ((float)image_width_ / (float)mGridColumns);
+    mesh_height_ =  ((float)image_height_ / (float)mGridRows);
+
+
+    mesh_ransac_height_ = ((float) image_height_ / (float)mRansacGridRows);
+    mesh_ransac_width_ =  ((float) image_width_ / (float)mRansacGridColumns);
+    mesh_vertex_x_ = Mat::zeros(mGridRows + 1, mGridColumns + 1, DataType<float>::type);
+    mesh_vertex_y_ = Mat::zeros(mGridRows + 1, mGridColumns + 1, DataType<float>::type);
+
+    ComputeMeshVertices(mesh_vertex_y_, mesh_vertex_x_,
+                          mGridRows, mGridColumns,
+                          mesh_height_, mesh_width_);
+}
+
 void MeshFlow::init( const int image_height,
                      const int image_width,
                      const int mesh_row,
@@ -16,32 +33,27 @@ void MeshFlow::init( const int image_height,
                      const int median_filter_size_y,
                      const int median_filter_size_x,
                      const int num_max_feature,
-                     const float th_feature) {
+                     const float th_feature)
+{
+    image_height_ = image_height;
+    image_width_  = image_width;
+
+    *static_cast<MeshFlowDrawParameters *>(this) = MeshFlowDrawParameters(mesh_row, mesh_col,
+                           mesh_ransac_row, mesh_ransac_col,
+                           median_filter_size_y, median_filter_size_x,
+                           num_max_feature,
+                           th_feature);
+    initInternal();
+}
+
+void MeshFlow::init( const int image_height,
+                     const int image_width,
+                     const MeshFlowDrawParameters &params)
+{
     image_height_ = image_height;
     image_width_ = image_width;
-    threshold_features_ = th_feature;
-
-    //mesh-flow
-    mGridRows    = mesh_row;
-    mGridColumns = mesh_col;
-
-    mesh_width_ =  ((float)image_width_ / (float)mGridColumns);
-    mesh_height_ =  ((float)image_height_ / (float)mGridRows);
-
-    mRansacGridRows    = mesh_ransac_row;
-    mRansacGridColumns = mesh_ransac_col;
-
-    mesh_ransac_height_ = ((float) image_height_ / (float)mRansacGridRows);
-    mesh_ransac_width_ =  ((float) image_width_ / (float)mRansacGridColumns);
-    median_filter_size_x_ = median_filter_size_x;
-    median_filter_size_y_ = median_filter_size_y;
-    mesh_vertex_x_ = Mat::zeros(mGridRows + 1, mGridColumns + 1, DataType<float>::type);
-    mesh_vertex_y_ = Mat::zeros(mGridRows + 1, mGridColumns + 1, DataType<float>::type);
-    num_max_feature_ = num_max_feature;
-
-    ComputeMeshVertices(mesh_vertex_y_, mesh_vertex_x_,
-                          mGridRows, mGridColumns,
-                          mesh_height_, mesh_width_);
+    *static_cast<MeshFlowDrawParameters *>(this) = params;
+    initInternal();
 }
 
 
@@ -102,7 +114,7 @@ void MeshFlow::computeMeshFlow(const Mat image_prev,
             Mat image_vertex = gray_prev(Rect(tlx, tly, w, h)); //mesh-grid image patch
             //Detecting features
             vector<KeyPoint> kp;
-            cv::FAST (image_vertex, kp,(int) threshold_features_, true);
+            cv::FAST (image_vertex, kp,(int) mFeatureTreshold, true);
 
             for(int p = 0; p < (int)kp.size(); ++p) {
                 features_vec.push_back(Point2f( tlx + kp[p].pt.x, tly + kp[p].pt.y));
@@ -232,8 +244,8 @@ void MeshFlow::computeMeshFlow(const Mat image_prev,
     mesh_flow_global_x_ = mesh_flow_global_x_ + mesh_flow_local_x_;
     mesh_flow_global_y_ = mesh_flow_global_y_ + mesh_flow_local_y_;
 
-    medianBlur(mesh_flow_global_x_, mesh_flow_global_x_, median_filter_size_x_);
-    medianBlur(mesh_flow_global_y_, mesh_flow_global_y_, median_filter_size_y_);
+    medianBlur(mesh_flow_global_x_, mesh_flow_global_x_, mMedianFilterSizeW);
+    medianBlur(mesh_flow_global_y_, mesh_flow_global_y_, mMedianFilterSizeH);
 
     feat_prev_ = features_vec;
     feat_cur_ = features_vec_tracked;
@@ -601,8 +613,8 @@ void MeshFlow::InitializeGlobalMeshFlow(const Mat H) {
         }
     }
 
-    medianBlur(mesh_flow_global_x_, mesh_flow_global_x_, median_filter_size_x_);
-    medianBlur(mesh_flow_global_y_, mesh_flow_global_y_, median_filter_size_y_);
+    medianBlur(mesh_flow_global_x_, mesh_flow_global_x_, mMedianFilterSizeW);
+    medianBlur(mesh_flow_global_y_, mesh_flow_global_y_, mMedianFilterSizeH);
 }
 
 void MeshFlow::SuppressingMotionNoise(const vector<Point2f> refined_feat_vec,

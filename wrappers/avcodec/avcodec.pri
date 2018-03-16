@@ -17,3 +17,9 @@ contains(DEFINES, WITH_AVCODEC) {                    # if it's installed properl
         $$AVCODEC_WRAPPER_DIR/rtspCapture.cpp \
 }
 
+HEADERS += \
+    $$PWD/avEncoder.h
+
+SOURCES += \
+    $$PWD/avEncoder.cpp
+

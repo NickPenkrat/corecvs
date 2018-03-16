@@ -41,10 +41,10 @@ public:
     uint16_t flags;   /**< \brief Some flags */
 
     PrimitiveCorrespondence() {}
-    PrimitiveCorrespondence(FirstType _start, SecondType _end) :
+    PrimitiveCorrespondence(FirstType _start, SecondType _end, int _value = 0) :
         start(_start),
         end(_end),
-        value(0),
+        value(_value),
         flags(FLAG_NONE)
     {}
 

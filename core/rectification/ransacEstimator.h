@@ -24,6 +24,9 @@ public:
     unsigned trySize;
     RansacParameters ransacParams;
 
+    /*Addintional outputs*/
+    double fitPercent = 0.0;
+
     RansacEstimator(
             unsigned  _trySize,
             unsigned _maxIterations,

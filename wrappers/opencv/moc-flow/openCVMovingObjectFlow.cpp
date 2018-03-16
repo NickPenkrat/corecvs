@@ -1,5 +1,8 @@
+#include "OpenCVTools.h"
 #include "core/xml/generated/rgbColorParameters.h"
 #include "openCVMovingObjectFlow.h"
+
+#include <opencv2/opencv.hpp>
 
 using namespace corecvs;
 
@@ -10,7 +13,7 @@ OpenCVMovingObjectFlow::OpenCVMovingObjectFlow()
 
 int OpenCVMovingObjectFlow::beginFrame()
 {
-    SYNC_PRINT(("OpenCVMovingObjectFlow::beginFrame():called/n"));
+    SYNC_PRINT(("OpenCVMovingObjectFlow::beginFrame():called\n"));
     return 0;
 }
 
@@ -22,20 +25,25 @@ int OpenCVMovingObjectFlow::clean(int mask)
 
 int OpenCVMovingObjectFlow::setFrameG12(Processor6D::FrameNames frameType, G12Buffer *frame)
 {
-    SYNC_PRINT(("OpenCVMovingObjectFlow::setFrameG12():called/n"));
-    return 0;
+    /*if (frameType == FRAME_LEFT_ID)
+        return 1;
+    first = frame;*/
+    SYNC_PRINT(("OpenCVMovingObjectFlow::setFrameG12():called\n"));
+    return 1;
 }
 
 int OpenCVMovingObjectFlow::setFrameRGB24(Processor6D::FrameNames frameType, RGB24Buffer *frame)
 {
-
-    SYNC_PRINT(("OpenCVMovingObjectFlow::setFrameRGB24():called/n"));
+    if (frameType == FRAME_LEFT_ID)
+        return 1;
+    first = OpenCVTools::getCVMatFromRGB24Buffer(frame);
+    SYNC_PRINT(("OpenCVMovingObjectFlow::setFrameRGB24():called [%dx%d]\n", first.rows, first.cols));
     return 0;
 }
 
 int OpenCVMovingObjectFlow::setDisparityBufferS16(Processor6D::FrameNames frameType, FlowBuffer *frame)
 {
-    SYNC_PRINT(("OpenCVMovingObjectFlow::setDisparityBufferS16():called/n"));
+    SYNC_PRINT(("OpenCVMovingObjectFlow::setDisparityBufferS16():called\n"));
     return 0;
 }
 
@@ -48,25 +56,31 @@ int OpenCVMovingObjectFlow::setStats(corecvs::Statistics *stats)
 /* Main computation is done here */
 int OpenCVMovingObjectFlow::endFrame()
 {
+    if (!first.empty() && !second.empty())
+    {
+        delete_safe(meshFlow);
+        meshFlow = new MeshFlow;
+        meshFlow->stats = stats;
 
-    delete_safe(meshFlow);
-    meshFlow = new MeshFlow;
-    meshFlow->stats = stats;
+        meshFlow->init(
+            first.rows,
+            first.cols);
 
-    meshFlow->init(
-        first.rows,
-        first.cols,
-        params.gridRows(),
-        params.gridColumns(),
-        params.ransacGridRows(),
-        params.ransacGridColumns(),
-        params.medianFilterSizeH(),
-        params.medianFilterSizeW(),
-        params.maxFeatureNumber(),
-        params.featureTreshold()
-                );
+        cout << params << endl;
 
-    meshFlow->computeMeshFlow(first, second);
+        SYNC_PRINT(("OpenCVMovingObjectFlow::endFrame():Will match [%dx%d] and [%dx%d]\n", second.rows, second.cols, first.rows, first.cols));
+
+        meshFlow->computeMeshFlow(second, first);
+
+//        cv::imwrite("first.bmp", first);
+//        cv::imwrite("second.bmp", second);
+
+        Statistics::setValue(stats, "Flow density", meshFlow->feat_cur_.size());
+    } else {
+        SYNC_PRINT(("OpenCVMovingObjectFlow::endFrame():Not enought inputs\n"));
+    }
+
+    second = cv::Mat(first);
 
     return 0;
 }
@@ -127,7 +141,7 @@ CorrespondenceList *OpenCVMovingObjectFlow::getFlowList()
 
         Vector2dd data0(cvData0.x, cvData0.y);
         Vector2dd data1(cvData1.x, cvData1.y);
-        list->push_back(Correspondence(data0, data1));
+        list->push_back(Correspondence(data0, data1, meshFlow->feat_status_[i]));
 
     }
     return list;

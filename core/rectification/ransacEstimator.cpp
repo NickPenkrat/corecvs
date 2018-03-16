@@ -193,8 +193,8 @@ Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
         ransac.bestSamples[i]->flags  |= Correspondence::FLAG_IS_BASED_ON;
     }
 
-    SYNC_PRINT(("RansacEstimator::getEssentialRansac() fits %2.2lf%%\n", 100.0 * fitcount / data->size()));
-
+    fitPercent = 100.0 * fitcount / data->size();
+    SYNC_PRINT(("RansacEstimator::getEssentialRansac() fits %2.2lf%%\n", fitPercent));
     return result.model;
 }
 
