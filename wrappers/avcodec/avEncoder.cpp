@@ -14,53 +14,84 @@ AVEncoder::AVEncoder()
 
 int AVEncoder::startEncoding(const std::string &name, int h, int w, int codec_id )
 {
+    printf("AVEncoder::startEncoding(%s):called\n", name.c_str());
+
+    int ret;
+    av_register_all();
     avcodec_register_all();
 
     if (codec_id == -1) {
         codec_id = AV_CODEC_ID_MPEG4;
     }
 
-    AVCodec *codec = NULL;
-    int ret;
 
-    printf("AVEncoder::startEncoding(%s):called\n", name.c_str());
+    /* allocate the output media context */
+    avformat_alloc_output_context2(&formatContext, NULL, NULL, name.c_str());
+    if (formatContext == NULL) {
+        SYNC_PRINT(("Could not deduce output format from file extension: using MPEG.\n"));
+        avformat_alloc_output_context2(&formatContext, NULL, "mpeg", name.c_str());
+    }
+    if (formatContext == NULL) {
+        SYNC_PRINT(("formatContext is NULL.\n"));
+        return 1;
+    }
+    outputFormat = formatContext->oformat;
 
-    /* find the mpeg1 video encoder */
-    codec = avcodec_find_encoder((AVCodecID)codec_id);
-     if (!codec) {
+
+     /* find video encoder */
+     codec = avcodec_find_encoder((AVCodecID)codec_id);
+     if (codec == NULL) {
          fprintf(stderr, "Codec not found\n");
          return 1;
      }
 
-     context = avcodec_alloc_context3(codec);
-     if (!context) {
+     outStream = avformat_new_stream(formatContext, codec);
+     if (outStream == NULL) {
+         fprintf(stderr, "Could not allocate stream\n");
+         return 1;
+     }
+
+     outStream->id = formatContext->nb_streams - 1;
+     SYNC_PRINT(("Stream id %d\n", outStream->id));
+
+     codecContext = outStream->codec;
+     codecContext->codec_id = codec->id;
+
+     if (codecContext == NULL) {
          fprintf(stderr, "Could not allocate video codec context\n");
          return 1;
      }
 
      /* put sample parameters */
-     context->bit_rate = 400000;
+     codecContext->bit_rate = 12400000;
      /* resolution must be a multiple of two */
-     context->width = w;
-     context->height = h;
+     codecContext->width = w;
+     codecContext->height = h;
      /* frames per second */
-     context->time_base= (AVRational){1,25};
-     context->gop_size = 10; /* emit one intra frame every ten frames */
-     context->max_b_frames=1;
-     context->pix_fmt = AV_PIX_FMT_YUV420P;
+     codecContext->time_base= AVRational({1,25});
+     codecContext->gop_size = 10; /* emit one intra frame every ten frames */
+     codecContext->max_b_frames=1;
+     codecContext->pix_fmt = AV_PIX_FMT_YUV420P;
 
-     if(codec_id == AV_CODEC_ID_H264)
-         av_opt_set(context->priv_data, "preset", "slow", 0);
-
-     /* open it */
-     if (avcodec_open2(context, codec, NULL) < 0) {
-         fprintf(stderr, "Could not open codec\n");
-         return 1;
+     if(codec_id == AV_CODEC_ID_H264) {
+         av_opt_set(codecContext->priv_data, "preset", "slow", 0);
      }
 
-     outFile = fopen(name.c_str(), "wb");
-     if (outFile == NULL) {
-         fprintf(stderr, "Could not open %s\n", name.c_str());
+     /* Muxing */
+     av_dump_format(formatContext, 0, name.c_str(), 1);
+
+     if (!(outputFormat->flags & AVFMT_NOFILE)) {
+         ret = avio_open(&formatContext->pb, name.c_str(), AVIO_FLAG_WRITE);
+         if (ret < 0) {
+             fprintf(stderr, "Could not open '%s': %d\n", name.c_str(), ret);
+             return 1;
+         }
+     }
+
+
+     /* open codec */
+     if (avcodec_open2(codecContext, codec, NULL) < 0) {
+         fprintf(stderr, "Could not open codec\n");
          return 1;
      }
 
@@ -69,17 +100,27 @@ int AVEncoder::startEncoding(const std::string &name, int h, int w, int codec_id
          fprintf(stderr, "Could not allocate video frame\n");
          return 1;
      }
-     frame->format = context->pix_fmt;
-     frame->width  = context->width;
-     frame->height = context->height;
+     frame->format = codecContext->pix_fmt;
+     frame->width  = codecContext->width;
+     frame->height = codecContext->height;
 
      /* the image can be allocated by any means and av_image_alloc() is
       * just the most convenient way if av_malloc() is to be used */
-     ret = av_image_alloc(frame->data, frame->linesize, context->width, context->height,
-                          context->pix_fmt, 32);
+     ret = av_image_alloc(frame->data, frame->linesize, codecContext->width, codecContext->height,
+                          codecContext->pix_fmt, 32);
      if (ret < 0) {
          fprintf(stderr, "Could not allocate raw picture buffer\n");
          exit(1);
+     }
+
+
+     SYNC_PRINT(("Writing header\n"));
+     AVDictionary *options = NULL;
+
+     ret = avformat_write_header(formatContext, NULL);
+     if (ret < 0) {
+         SYNC_PRINT(("Writing format problem"));
+         return ret;
      }
 
      open = true;
@@ -101,28 +142,28 @@ void AVEncoder::addFrame(corecvs::RGB24Buffer *input)
      fflush(stdout);
      /* prepare a dummy image */
      /* Y */
-     for(int  y = 0; y < context->height; y++) {
-         for(int x = 0; x < context->width; x++) {
+     for(int  y = 0; y < codecContext->height; y++) {
+         for(int x = 0; x < codecContext->width; x++) {
              frame->data[0][y * frame->linesize[0] + x] = input->element(y,x).y();
          }
      }
 
      /* Cb and Cr */
-     for(int y = 0; y < context->height / 2; y++) {
-         for(int x = 0; x < context->width / 2; x++) {
+     for(int y = 0; y < codecContext->height / 2; y++) {
+         for(int x = 0; x < codecContext->width / 2; x++) {
              int x2 = x * 2;
              int y2 = y * 2;
 
-             int cb = input->element(y2    , x2    ).cb() +
-                      input->element(y2 + 1, x2    ).cb() +
-                      input->element(y2    , x2 + 1).cb() +
-                      input->element(y2 + 1, x2 + 1).cb();
+             int cb = input->element(y2    , x2    ).u() +
+                      input->element(y2 + 1, x2    ).u() +
+                      input->element(y2    , x2 + 1).u() +
+                      input->element(y2 + 1, x2 + 1).u();
              cb = cb / 4;
 
-             int cr = input->element(y2    , x2    ).cr() +
-                      input->element(y2 + 1, x2    ).cr() +
-                      input->element(y2    , x2 + 1).cr() +
-                      input->element(y2 + 1, x2 + 1).cr();
+             int cr = input->element(y2    , x2    ).v() +
+                      input->element(y2 + 1, x2    ).v() +
+                      input->element(y2    , x2 + 1).v() +
+                      input->element(y2 + 1, x2 + 1).v();
              cr = cr / 4;
 
              frame->data[1][y * frame->linesize[1] + x] = cr;
@@ -133,7 +174,7 @@ void AVEncoder::addFrame(corecvs::RGB24Buffer *input)
      frame->pts = frame_number;
 
      /* encode the image */
-     ret = avcodec_encode_video2(context, &pkt, frame, &got_output);
+     ret = avcodec_encode_video2(codecContext, &pkt, frame, &got_output);
      if (ret < 0) {
          fprintf(stderr, "Error encoding frame\n");
          exit(1);
@@ -149,35 +190,42 @@ void AVEncoder::addFrame(corecvs::RGB24Buffer *input)
      for (got_output = 1; got_output; frame_number++) {
          fflush(stdout);
 
-         ret = avcodec_encode_video2(context, &pkt, NULL, &got_output);
+         ret = avcodec_encode_video2(codecContext, &pkt, NULL, &got_output);
          if (ret < 0) {
              fprintf(stderr, "Error encoding frame\n");
-             exit(1);
+             return;
          }
 
          if (got_output) {
              printf("Write frame %3d (size=%5d)\n", frame_number, pkt.size);
-             fwrite(pkt.data, 1, pkt.size, outFile);
-             av_free_packet(&pkt);
+             //fwrite(pkt.data, 1, pkt.size, outFile);
+             if ((ret = av_interleaved_write_frame(formatContext, &pkt)) < 0) {
+                 fprintf(stderr, "Failed to write packet\n");
+                 return;
+             }
          }
+         av_free_packet(&pkt);
+
      }
 
 }
 
 void AVEncoder::endEncoding()
 {
-    int ret;
-    uint8_t endcode[] = { 0, 0, 1, 0xb7 };
+    //int ret;
+    //uint8_t endcode[] = { 0, 0, 1, 0xb7 };
 
 
 
     /* add sequence end code to have a real mpeg file */
-    fwrite(endcode, 1, sizeof(endcode), outFile);
-    fclose(outFile);
+    //fwrite(endcode, 1, sizeof(endcode), outFile);
+    av_write_trailer(formatContext);
+
+    //fclose(outFile);
     outFile = NULL;
 
-    avcodec_close(context);
-    av_free(context);
+    avcodec_close(codecContext);
+    av_free(codecContext);
     av_freep(&frame->data[0]);
     av_frame_free(&frame);
     printf("\n");
@@ -186,8 +234,21 @@ void AVEncoder::endEncoding()
 
 void AVEncoder::printCaps()
 {
-    SYNC_PRINT(("AVEncoder::printCaps():codec list\n"));
+    av_register_all();
     avcodec_register_all();
+
+
+    SYNC_PRINT(("AVEncoder::printCaps():format list\n"));
+    AVOutputFormat * oformat = av_oformat_next(NULL);
+    while(oformat != NULL)
+    {
+        SYNC_PRINT(("%s %s\n", oformat->name, oformat->long_name));
+        oformat = av_oformat_next(oformat);
+    }
+
+    SYNC_PRINT(("=============\n"));
+
+    SYNC_PRINT(("AVEncoder::printCaps():codec list\n"));
 
     AVCodec *codec = NULL;
     while (true)
@@ -197,7 +258,7 @@ void AVEncoder::printCaps()
         {
             break;
         }
-        SYNC_PRINT(("0x%X %s %s\n", codec->id, codec->name, codec->long_name));
+        SYNC_PRINT(("0x%04.4X %s %s\n", codec->id, codec->name, codec->long_name));
     }
     SYNC_PRINT(("=============\n"));
 

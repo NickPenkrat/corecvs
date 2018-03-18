@@ -20,16 +20,16 @@
 
 namespace corecvs {
 
-typedef AbstractBuffer<BilinearMapPoint, int32_t> FixedPointDisplaceBase;
+typedef AbstractBuffer<BilinearMapPoint, int32_t> FixedPointRemapperBase;
 
-class FixedPointDisplace : public FixedPointDisplaceBase /*, public DeformMap<int32_t, BilinearMapPoint>*/
+class FixedPointRemapper : public FixedPointRemapperBase /*, public DeformMap<int32_t, BilinearMapPoint>*/
 {
 public:
 
-    FixedPointDisplace(int32_t h, int32_t w) : FixedPointDisplaceBase (h,w) {}
+    FixedPointRemapper(int32_t h, int32_t w) : FixedPointRemapperBase (h,w) {}
 
     template<class Mapper>
-    inline FixedPointDisplace (const Mapper &proj, int h, int w) : FixedPointDisplaceBase (h,w, false)
+    inline FixedPointRemapper (const Mapper &proj, int h, int w) : FixedPointRemapperBase (h,w, false)
     {
         int i,j;
         for (i = 0; i < h; i++)

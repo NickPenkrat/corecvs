@@ -43,7 +43,6 @@ HEADERS += \
     buffers/rgb24/hersheyVectorFont.h \
     buffers/rgb24/abstractPainter.h \
     buffers/voxels/voxelBuffer.h \
-    buffers/fixeddisp/fixedPointDisplace.h \
     buffers/fixeddisp/bilinearMapPoint.h \
     buffers/fixeddisp/fixedPointBlMapper.h \
     buffers/interpolator.h \
@@ -64,7 +63,9 @@ HEADERS += \
     buffers/rgb24/wuRasterizer.h \
     buffers/abstractBufferParams.h \
     buffers/focusEstimator1.h \
-    buffers/rgb24/bresenhamRasterizer.h
+    buffers/rgb24/bresenhamRasterizer.h \
+    $$PWD/fixeddisp/fixedPointRemapper.h \
+    $$PWD/remapBuffer.h
 
 
 SOURCES += \
@@ -110,7 +111,8 @@ SOURCES += \
     buffers/nonMaximalSuperssor.cpp \
     buffers/focusEstimator1.cpp \
     buffers/rgb24/wuRasterizer.cpp \
-    $$PWD/rgb24/bresenhamRasterizer.cpp
+    $$PWD/rgb24/bresenhamRasterizer.cpp \
+    $$PWD/remapBuffer.cpp
 
 
 

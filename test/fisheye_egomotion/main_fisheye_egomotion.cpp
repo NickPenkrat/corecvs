@@ -23,6 +23,7 @@
 #include "core/utils/utils.h"
 #include "qtFileLoader.h"
 #include "core/cameracalibration/ilFormat.h"
+#include "core/buffers/remapBuffer.h"
 
 
 #include "core/framesources/imageCaptureInterface.h"
@@ -70,6 +71,9 @@ public:
     }
 };
 
+
+
+
 int main1(int argc, char **argv)
 {
     AVEncoder encoder;
@@ -88,6 +92,121 @@ int main1(int argc, char **argv)
     encoder.endEncoding();
     SYNC_PRINT(("Done."));
 }
+
+CameraModel getModel(int h, int w, std::string filename)
+{
+    std::string input =
+    "omnidirectional\n"
+    "604 1.58474 1.07055 3 1.14549 -0.233596 -0.125904\n";
+
+    std::istringstream ss(input);
+
+    OmnidirectionalProjection projection;
+
+    projection.setSizeX(w);
+    projection.setSizeY(h);
+    projection.setDistortedSizeX(w);
+    projection.setDistortedSizeY(h);
+
+    projection.setPrincipalX(957.28999999999996);
+    projection.setPrincipalY(648.84000000000003);
+    projection.setFocal(689.58076000000005);
+    projection.setN({
+         -0.23202500000000001,
+         -0.472026,
+          0.52235399999999998,
+          -0.25007699999999999});
+
+
+    CameraModel model;
+    if (filename.empty()) {
+        model.intrinsics.reset(ILFormat::loadIntrisics(ss));
+    } else {
+        model.intrinsics.reset(ILFormat::loadIntrisics(filename));
+    }
+    model.setLocation(Affine3DQ::Identity());
+
+    return model;
+}
+
+class Unwrapper {
+public:
+    PlaneFrame frame;
+    Vector2dd unwrapSize;
+    CameraModel model;
+
+    RemapBuffer *remapCache = NULL;
+
+    Unwrapper() {
+        frame.e1 = Vector3dd::OrtX() * 3;
+        frame.e2 = Vector3dd::OrtY() * 3;
+        frame.p1 = Vector3dd(-1.5, -1.5, 1.0);
+
+        unwrapSize = Vector2dd(1000, 1000);
+
+    }
+
+    RGB24Buffer* unwrap(RGB24Buffer* input, bool cache = true)
+    {
+        RGB24Buffer* unwrap = new RGB24Buffer(unwrapSize.y(), unwrapSize.x());
+
+        if (cache && remapCache != NULL)
+        {
+            SYNC_PRINT(("RGB24Buffer* unwrap(): using cache\n"));
+            for (int i = 0; i < unwrap->h; i++)
+            {
+                for (int j = 0; j < unwrap->w; j++)
+                {
+                    Vector2dd p = remapCache->element(i,j);
+
+                    if (input->isValidCoordBl(p)) {
+                        unwrap->element(i,j) = input->elementBl(p);
+                    }
+                }
+            }
+            return unwrap;
+        }
+
+        if (cache && (remapCache == NULL))
+        {
+            SYNC_PRINT(("RGB24Buffer* unwrap(): Creating cache buffer\n"));
+            remapCache = new RemapBuffer(unwrap->getSize());
+        }
+
+        for (int i = 0; i < unwrap->h; i++)
+        {
+            for (int j = 0; j < unwrap->w; j++)
+            {
+                Vector2dd c((double)j / unwrap->w, (double)i / unwrap->h);
+                Vector3dd r = frame.getPoint(c);
+                Vector2dd p = model.intrinsics->project(r);
+
+                if (input->isValidCoordBl(p)) {
+                    unwrap->element(i,j) = input->elementBl(p);
+                    if (cache)
+                    {
+                        remapCache->element(i, j) = p;
+                    }
+                }
+            }
+        }
+
+        return unwrap;
+    }
+
+    void drawUnwrap(RGB24Buffer *canvas, const Vector2dd &p0, const Vector2dd &p1, const RGBColor &color)
+    {
+        Vector3dd rd0 = model.intrinsics->reverse(p0);
+        Vector3dd rd1 = model.intrinsics->reverse(p1);
+
+        Vector2dd pf0 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd0, Vector3dd::Zero())) * unwrapSize;
+        Vector2dd pf1 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd1, Vector3dd::Zero())) * unwrapSize;
+
+        canvas->drawLine(pf0, pf1, color);
+        canvas->drawCrosshare1(pf1, color);
+    }
+
+};
 
 int main(int argc, char **argv)
 {
@@ -112,13 +231,14 @@ int main(int argc, char **argv)
     if (argc <= 1) {
         SYNC_PRINT(("Give me input\n"));       
         SYNC_PRINT((" fisheye_egomotion --caps\n"));
-        SYNC_PRINT((" fisheye_egomotion [--provider=<flow name>] [frames=<n>] [--unwrap] [] <aviname>\n"));
+        SYNC_PRINT((" fisheye_egomotion [--provider=<flow name>] [--frames=<n>] [--skipf=<n>] [--unwrap] [--intrinsics=<filename>] <aviname>\n"));
         return 0;
     }
 
     /*Process command line */
     CommandLineSetter s(argc, argv);
-    int maxFrame = s.getInt("frames", 10);
+    int maxFrame   = s.getInt("frames", 10);
+    int skipFrames = s.getInt("skipf", 1);
 
     if (s.getBool("caps"))
     {
@@ -129,25 +249,33 @@ int main(int argc, char **argv)
 
     std::string provider = s.getString("provider", "MeshFlow");
     bool produceUnwarp = s.getBool("unwarp");
+    std::string intrName = s.getString("intrinsics", "");
 
-    /*Prepare input */
+    /* Prepare input */
     vector<string> stream = s.nonPrefix();
     ImageCaptureInterface *cam = new AviCapture(stream.back());
 
+    /* Open input device */
     MOCProcessor processor;
-
     cam->imageInterfaceReceiver = &processor;
     cam->initCapture();
     cam->startCapture();
 
 
     int framecount = 0;
-    RGB24Buffer *prevFrame = NULL;
+    unique_ptr<RGB24Buffer> prevFrame;
     ImageCaptureInterface::FramePair images;
 
 
     AVEncoder newOut;
-    AVEncoder rawOut;
+    AVEncoder unwarpOut;
+
+    Unwrapper unwrapper;
+    bool modelLoaded = false;
+
+    /* This need to be stabilised */
+    Mesh3D trajectory;
+    Affine3DQ position = Affine3DQ::Identity();
 
     while (framecount < maxFrame)
     {
@@ -155,20 +283,19 @@ int main(int argc, char **argv)
         stats.setValue("Frame Number", framecount);
         framecount++;
 
-        images.freeBuffers();
-        images = cam->getFrameRGB24();
-
-        RGB24Buffer *curFrame = images.rgbBufferDefault();
+        for (int i=0; i < skipFrames; i++)
+        {
+            images.freeBuffers();
+            images = cam->getFrameRGB24();
+        }
+        unique_ptr<RGB24Buffer> curFrame(images.rgbBufferDefault());
         images.setRgbBufferDefault(NULL); // Unlink from images
 
         if (prevFrame == NULL)
-        {
-            prevFrame = curFrame;
+        {            
+            prevFrame = std::move(curFrame);
             continue;
         }
-
-        //cv::Mat mInput1 = OpenCVTools::getCVMatFromRGB24Buffer(prevFrame);
-        //cv::Mat mInput2 = OpenCVTools::getCVMatFromRGB24Buffer(curFrame);
 
         if (!newOut.open) {
             newOut.startEncoding("new.avi", curFrame->h, curFrame->w);
@@ -185,10 +312,10 @@ int main(int argc, char **argv)
         flowGen->requestResultsi(Processor6D::RESULT_FLOW | Processor6D::RESULT_FLOAT_FLOW_LIST);
         flowGen->setStats(&stats);
         flowGen->beginFrame();
-        flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, prevFrame);
+        flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, prevFrame.get());
         flowGen->endFrame();
         flowGen->beginFrame();
-        flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, curFrame);
+        flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, curFrame.get());
         flowGen->endFrame();
 
         CorrespondenceList *flowList = flowGen->getFlowList();
@@ -204,87 +331,36 @@ int main(int argc, char **argv)
         stats.leaveContext();
 
 
-        unique_ptr<RGB24Buffer> outputPrev(new RGB24Buffer(prevFrame));
-        unique_ptr<RGB24Buffer> outputRaw(new RGB24Buffer(curFrame));
-        unique_ptr<RGB24Buffer> outputNew(new RGB24Buffer(curFrame));
+        unique_ptr<RGB24Buffer> outputPrev(new RGB24Buffer(prevFrame.get()));
+        unique_ptr<RGB24Buffer> outputRaw (new RGB24Buffer(curFrame.get() ));
+        unique_ptr<RGB24Buffer> outputNew (new RGB24Buffer(curFrame.get() ));
 
-
-        /*std::string input =
-        "omnidirectional\n"
-        "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
-        */
-
-        std::string input =
-        "omnidirectional\n"
-        "604 1.58492 1.07424 5 1.14169 -0.203229 -0.362134 0.351011 -0.147191";
-        std::istringstream ss(input);
-
-
-        Vector2dd inSize(curFrame->w, curFrame->h);
-        OmnidirectionalProjection projection;
-
-        projection.setSizeX(curFrame->w);
-        projection.setSizeY(curFrame->h);
-        projection.setDistortedSizeX(curFrame->w);
-        projection.setDistortedSizeY(curFrame->h);
-
-        projection.setPrincipalX(957.28999999999996);
-        projection.setPrincipalY(648.84000000000003);
-        projection.setFocal(689.58076000000005);
-        projection.setN({
-             -0.23202500000000001,
-             -0.472026,
-              0.52235399999999998,
-              -0.25007699999999999});
-
-
-        CameraModel model;
-        //model.intrinsics.reset(projection.clone());
-        model.intrinsics.reset(ILFormat::loadIntrisics(ss));
-        model.setLocation(Affine3DQ::Identity());
-        //cout << model << endl;
-
+        if (!modelLoaded) {
+            unwrapper.model = getModel(curFrame->h, curFrame->w, intrName);
+            modelLoaded = true;
+        }
         /* Unwrap */
-        Vector2dd unwrapSize(800, 800);
 
-        PlaneFrame frame;
-        frame.e1 = Vector3dd::OrtX() * 3;
-        frame.e2 = Vector3dd::OrtY() * 3;
-        frame.p1 = Vector3dd(-1.5, -1.5, 1.0);
+        if (!unwarpOut.open) {
+            unwarpOut.startEncoding("unwrap.avi", unwrapper.unwrapSize.y(), unwrapper.unwrapSize.x());
+        }
 
         unique_ptr<RGB24Buffer> unwarpOrig;
         unique_ptr<RGB24Buffer> unwarpRaw;
         unique_ptr<RGB24Buffer> unwarpNew;
-
 
         if (produceUnwarp)
         {
             Mesh3D mesh;
 
             CalibrationDrawHelpers helpers;
-            helpers.drawCamera(mesh, model, 1.0);
+            helpers.drawCamera(mesh, unwrapper.model, 1.0);
 
             stats.startInterval();
-            unwarpOrig.reset(new RGB24Buffer(unwrapSize.y(), unwrapSize.x()));
+            unwarpOrig.reset(unwrapper.unwrap(curFrame.get()));
 
-            unwarpOrig->checkerBoard(20, RGBColor::White(), RGBColor::Black());
+            mesh.addPlaneFrame(unwrapper.frame);
 
-            mesh.addPlaneFrame(frame);
-            for (int i = 0; i < unwarpOrig->h; i++)
-            {
-                for (int j = 0; j < unwarpOrig->w; j++)
-                {
-                    Vector2dd c((double)j / unwarpOrig->w, (double)i / unwarpOrig->h);
-                    Vector3dd r = frame.getPoint(c);
-                    //cout << "R" << r << endl;
-                    Vector2dd p = model.intrinsics->project(r) /** inSize*/;
-
-                    if (curFrame->isValidCoordBl(p)) {
-                        unwarpOrig->element(i,j) = curFrame->elementBl(p);
-                    } else {
-                    }
-                }
-            }
             mesh.dumpPLY("unwrap.ply");
             unwarpRaw.reset(new RGB24Buffer(unwarpOrig.get()));
             unwarpNew.reset(new RGB24Buffer(unwarpOrig.get()));
@@ -311,17 +387,8 @@ int main(int argc, char **argv)
             outputRaw->drawLine(data0, data1, color);
             outputRaw->drawCrosshare1(data1, color);
 
-
-
             if (produceUnwarp) {
-                Vector3dd rd0 = model.intrinsics->reverse(data0);
-                Vector3dd rd1 = model.intrinsics->reverse(data1);
-
-                Vector2dd pf0 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd0, Vector3dd::Zero())) * unwrapSize;
-                Vector2dd pf1 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd1, Vector3dd::Zero())) * unwrapSize;
-
-                unwarpRaw->drawLine(pf0, pf1, color);
-                unwarpRaw->drawCrosshare1(pf1, color);
+                unwrapper.drawUnwrap(unwarpRaw.get(), data0, data1, color);
             }
 
         }
@@ -337,8 +404,8 @@ int main(int argc, char **argv)
             Vector2dd data0 = flowList->at(i).start;
             Vector2dd data1 = flowList->at(i).end;
 
-            Vector3dd ray0 = model.intrinsics->reverse(data0);
-            Vector3dd ray1 = model.intrinsics->reverse(data1);
+            Vector3dd ray0 = unwrapper.model.intrinsics->reverse(data0);
+            Vector3dd ray1 = unwrapper.model.intrinsics->reverse(data1);
 
             if (ray0.z() < 0.15) {
                 continue;
@@ -358,7 +425,7 @@ int main(int argc, char **argv)
 
         stats.resetInterval("Created estimator input");
 
-        RansacEstimator estimator(8, 500, 0.009);
+        RansacEstimator estimator(8, 100, 0.005);
 
         vector<Correspondence *> listPtr;
         listPtr.reserve(list.size());
@@ -374,21 +441,22 @@ int main(int argc, char **argv)
         EssentialDecomposition decomposition[4];
         matrix.decompose(decomposition);
 
-        /*cout << decomposition[0] << endl;
-        cout << decomposition[1] << endl;
-        cout << decomposition[2] << endl;
-        cout << decomposition[3] << endl;*/
-
         EssentialDecomposition decomp = matrix.decompose(&listPtr,decomposition);
         cout << decomp << endl;
 
         stats.resetInterval("Estimator and decompostion");
 
+        Affine3DQ move = decomp.toSecondCameraAffine();
+        position = move * position;
+        trajectory.mulTransform(position);
+        trajectory.addOrts(0.5);
+        trajectory.popTransform();
 
-        Vector2dd vanish = model.intrinsics->project(decomp.direction);
+
+        Vector2dd vanish = unwrapper.model.intrinsics->project(decomp.direction);
         cout << "Vanish point: "  << vanish << endl;
 
-        for (int r = 4; r < 20; r++) {
+        for (int r = 4; r < 10; r++) {
             outputNew->drawArc(Circle2d(vanish, r), RGBColor::Yellow());
         }
 
@@ -397,8 +465,8 @@ int main(int argc, char **argv)
             Vector2dd data0 = flowList->at(i).start;
             Vector2dd data1 = flowList->at(i).end;
 
-            Vector3dd ray0 = model.intrinsics->reverse(data0);
-            Vector3dd ray1 = model.intrinsics->reverse(data1);
+            Vector3dd ray0 = unwrapper.model.intrinsics->reverse(data0);
+            Vector3dd ray1 = unwrapper.model.intrinsics->reverse(data1);
 
             ray0.normalizeProjective();
             ray1.normalizeProjective();
@@ -411,18 +479,18 @@ int main(int argc, char **argv)
             outputNew->drawCrosshare1(data1, color);
 
             if (produceUnwarp) {
-                Vector3dd rd0 = model.intrinsics->reverse(data0);
-                Vector3dd rd1 = model.intrinsics->reverse(data1);
-
-                Vector2dd pf0 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd0, Vector3dd::Zero())) * unwrapSize;
-                Vector2dd pf1 = frame.intersectWithRayPoint(Ray3d::FromDirectionAndOrigin(rd1, Vector3dd::Zero())) * unwrapSize;
-
-                unwarpNew->drawLine(pf0, pf1, color);
-                unwarpNew->drawCrosshare1(pf1, color);
+                unwrapper.drawUnwrap(unwarpNew.get(), data0, data1, color);
             }
         }
 
          stats.resetInterval("Debug output");
+
+
+        BaseTimeStatisticsCollector collector;
+        collector.addStatistics(stats);
+        collector.printAdvanced();
+
+        collector.drawOSD(outputNew.get());
 
         std::string extention = ".jpg";
         std::stringstream oname;
@@ -437,34 +505,41 @@ int main(int argc, char **argv)
         BufferFactory::getInstance()->saveRGB24Bitmap(outputRaw.get(), oname.str());
         */
 
-       /* oname.str("");
+        oname.str("");
         oname << "new" << framecount << extention;
-        BufferFactory::getInstance()->saveRGB24Bitmap(outputNew.get(), oname.str());*/
+        BufferFactory::getInstance()->saveRGB24Bitmap(outputNew.get(), oname.str());
         newOut.addFrame(outputNew.get());
 
         if (produceUnwarp)
         {
+            /*
             oname.str("");
             oname << "unwarp-raw" << framecount << extention;
             BufferFactory::getInstance()->saveRGB24Bitmap(unwarpRaw.get(),  oname.str());
+            */
 
             oname.str("");
             oname << "unwarp-new" << framecount << extention;
             BufferFactory::getInstance()->saveRGB24Bitmap(unwarpNew.get(),  oname.str());
+            unwarpOut.addFrame(unwarpNew.get());
         }
 
-        BaseTimeStatisticsCollector collector;
-        collector.addStatistics(stats);
-        collector.printAdvanced();
+
 
         delete_safe(flowGen);
-        prevFrame = curFrame;
+        prevFrame = std::move(curFrame);
     }
 
      if (newOut.open)
      {
          newOut.endEncoding();
      }
+     if (unwarpOut.open)
+     {
+         unwarpOut.endEncoding();
+     }
+
+     trajectory.dumpPLY("trajectory.ply");
 
 
     //system("ls -all");

@@ -29,7 +29,8 @@ RCC_DIR  = $$OBJECTS_DIR
 DESTDIR  = $$ROOT_DIR/bin
 
 SOURCES += \ 
-    main_fisheye_egomotion.cpp
+    main_fisheye_egomotion.cpp \
+    modCostFunction.cpp
 
 !win32 {
     # Linux version
@@ -43,3 +44,6 @@ SOURCES += \
     }
 
 }
+
+HEADERS += \
+    modCostFunction.h

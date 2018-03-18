@@ -294,7 +294,7 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
         SYNC_PRINT(("Saving ideal images\n"));
 
     } else {
-        FixedPointDisplace displacer(model.distortion, model.intrinsics->h(), model.intrinsics->w());
+        FixedPointRemapper displacer(model.distortion, model.intrinsics->h(), model.intrinsics->w());
         RGB24Buffer *dist1 = image1->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
         RGB24Buffer *dist2 = image2->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);
         RGB24Buffer *dist3 = image3->doReverseDeformationBlPrecomp(&displacer, displacer.h, displacer.w);

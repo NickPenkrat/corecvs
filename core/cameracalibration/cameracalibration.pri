@@ -23,9 +23,9 @@ SOURCES += \
         cameracalibration/projection/projectionModels.cpp         \
         cameracalibration/projection/pinholeCameraIntrinsics.cpp  \
         cameracalibration/projection/equidistantProjection.cpp    \
-        cameracalibration/projection/catadioptricProjection.cpp   \
         cameracalibration/projection/equisolidAngleProjection.cpp \
     $$PWD/projection/stereographicProjection.cpp \
     $$PWD/projection/projectionFactory.cpp \
-    $$PWD/ilFormat.cpp
+    $$PWD/ilFormat.cpp \
+    $$PWD/projection/omnidirectionalProjection.cpp
 

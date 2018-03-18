@@ -6,6 +6,7 @@
 extern "C" {
 #include <libavutil/frame.h>
 #include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
 }
 
 class AVEncoder
@@ -24,8 +25,16 @@ protected:
     int got_output = 0;
     int frame_number = 0;
 
+    AVFormatContext *formatContext = NULL;
+    AVOutputFormat  *outputFormat = NULL;
+
     AVFrame *frame = NULL;
-    AVCodecContext *context = NULL;
+
+    AVCodecParameters *params = NULL;
+    AVCodec *codec = NULL;
+    AVCodecContext    *codecContext = NULL;
+
+    AVStream *outStream = NULL;
 
     FILE *outFile = NULL;
 };

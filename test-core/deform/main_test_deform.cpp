@@ -13,7 +13,7 @@
 
 #include "core/utils/global.h"
 
-#include "core/buffers/fixeddisp/fixedPointDisplace.h"
+#include "core/buffers/fixeddisp/fixedPointRemapper.h"
 #include "core/math/matrix/matrix33.h"
 #include "core/math/projectiveTransform.h"
 #include "core/buffers/g12Buffer.h"
@@ -27,7 +27,7 @@ using corecvs::Matrix33;
 using corecvs::ProjectiveTransform;
 using corecvs::G12Buffer;
 using corecvs::BufferFactory;
-using corecvs::FixedPointDisplace;
+using corecvs::FixedPointRemapper;
 using corecvs::BMPLoader;
 using corecvs::RGB24Buffer;
 
@@ -52,7 +52,7 @@ TEST(Deform, testFastDeform)
     G12Buffer *buffer1Transformed = image->doReverseTransform<ProjectiveTransform>(&inverseLeft, image->h, image->w);
     CORE_ASSERT_TRUE(buffer1Transformed->verify(), "Result image is corrupted");
 
-    FixedPointDisplace *displace = new FixedPointDisplace (inverseLeft, image->h, image->w);
+    FixedPointRemapper *displace = new FixedPointRemapper (inverseLeft, image->h, image->w);
     G12Buffer *buffer2Transformed = image->doReverseDeformationBlPrecomp(displace, image->h, image->w);
 
     BMPLoader().save("proc.bmp",  buffer1Transformed);
@@ -138,7 +138,7 @@ TEST(Deform, DISABLED_testFastDeform24)
     RGB24Buffer *buffer2Transformed = image->doReverseDeformationBl<RGB24Buffer, ProjectiveTransform>(&inverseLeft);
     RGB24Buffer *buffer3Transformed = image->doReverseDeformationBlTyped<ProjectiveTransform>(&inverseLeft);
 
-    FixedPointDisplace *displace = new FixedPointDisplace (inverseLeft, image->h, image->w);
+    FixedPointRemapper *displace = new FixedPointRemapper (inverseLeft, image->h, image->w);
     RGB24Buffer *buffer4Transformed = image->doReverseDeformationBlPrecomp(displace, image->h, image->w);
 
 
