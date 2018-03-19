@@ -51,6 +51,7 @@ public:
 
 class MODCostFunctionNormalise : public FunctionArgs
 {
+public:
     MODCostFunctionData *data = NULL;
 
     MODCostFunctionNormalise(MODCostFunctionData *data) :

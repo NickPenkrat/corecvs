@@ -28,6 +28,7 @@
 
 #include "core/framesources/imageCaptureInterface.h"
 #include "aviCapture.h"
+#include "modCostFunction.h"
 
 
 #include "moc-flow/openCVMovingObjectFlow.h"
@@ -231,14 +232,19 @@ int main(int argc, char **argv)
     if (argc <= 1) {
         SYNC_PRINT(("Give me input\n"));       
         SYNC_PRINT((" fisheye_egomotion --caps\n"));
-        SYNC_PRINT((" fisheye_egomotion [--provider=<flow name>] [--frames=<n>] [--skipf=<n>] [--unwrap] [--intrinsics=<filename>] <aviname>\n"));
+        SYNC_PRINT((" fisheye_egomotion [--provider=<flow name>] [--frames=<n>] [--joint] [--skipf=<n>] [--unwrap] [--intrinsics=<filename>] <aviname>\n"));
+        SYNC_PRINT(("   --provider which flow provider to use. For options see --caps \n"));
+        SYNC_PRINT(("   --frames   how many frames to process \n"));
+        SYNC_PRINT(("   --joint    try to optimise projection with flow\n"));
+        SYNC_PRINT(("Give me input\n"));
+
         return 0;
     }
 
     /*Process command line */
     CommandLineSetter s(argc, argv);
-    int maxFrame   = s.getInt("frames", 10);
-    int skipFrames = s.getInt("skipf", 1);
+    int    maxFrame   = s.getInt("frames", 10);
+    int    skipFrames = s.getInt("skipf", 1);
 
     if (s.getBool("caps"))
     {
@@ -248,7 +254,8 @@ int main(int argc, char **argv)
     }
 
     std::string provider = s.getString("provider", "MeshFlow");
-    bool produceUnwarp = s.getBool("unwarp");
+    bool produceUnwarp   = s.getBool("unwarp");
+    bool jointCost       = s.getBool("joint");
     std::string intrName = s.getString("intrinsics", "");
 
     /* Prepare input */
@@ -330,9 +337,8 @@ int main(int argc, char **argv)
 
         stats.leaveContext();
 
-
-        unique_ptr<RGB24Buffer> outputPrev(new RGB24Buffer(prevFrame.get()));
         unique_ptr<RGB24Buffer> outputRaw (new RGB24Buffer(curFrame.get() ));
+        unique_ptr<RGB24Buffer> outputEsse(new RGB24Buffer(curFrame.get() ));
         unique_ptr<RGB24Buffer> outputNew (new RGB24Buffer(curFrame.get() ));
 
         if (!modelLoaded) {
@@ -425,6 +431,7 @@ int main(int argc, char **argv)
 
         stats.resetInterval("Created estimator input");
 
+        /* Estimator */
         RansacEstimator estimator(8, 100, 0.005);
 
         vector<Correspondence *> listPtr;
@@ -438,12 +445,89 @@ int main(int argc, char **argv)
         stats.setValue("Ransac inliers %", estimator.fitPercent);
         cout << matrix << endl;
 
+        {
+            for (size_t i = 0; i < listPtr.size(); i++)
+            {
+                Correspondence c = *listPtr[i];
+
+                RGBColor color = RGBColor::Red();
+                if (c.flags | Correspondence::FLAG_FAILER) {
+                    color = RGBColor::Red(); break;
+                }
+                if (c.flags | Correspondence::FLAG_PASSER) {
+                    color = RGBColor::Green(); break;
+                }
+                if (c.flags | Correspondence::FLAG_IS_BASED_ON) {
+                    color.b() = 255; break;
+                }
+
+
+                outputEsse->drawLine(c.start, c.end, color);
+                outputEsse->drawCrosshare1(c.end, color);
+            }
+        }
+
         EssentialDecomposition decomposition[4];
         matrix.decompose(decomposition);
 
         EssentialDecomposition decomp = matrix.decompose(&listPtr,decomposition);
         cout << decomp << endl;
 
+        /* Joint cost function */
+        if (jointCost)
+        {
+            Affine3DQ guess = decomp.toSecondCameraAffine();
+
+            MODCostFunctionData      data;
+            data.transform.push_back(Affine3DQ::Identity());
+            data.obseravtions.reserve(flowList->size());
+            for(size_t i = 0; i < flowList->size(); i++)
+            {
+                data.obseravtions.push_back(flowList->at(i));
+                data.obseravtions.back().value = 0;
+            }
+            data.projection = *unwrapper.model.getOmnidirectional();
+            MODCostFunction          cost(&data);
+            MODCostFunctionNormalise normalise(&data);
+
+            LevenbergMarquardt LMfit;
+            LMfit.f = &cost;
+            LMfit.normalisation = &normalise;
+            LMfit.maxIterations = 250;
+            LMfit.trace = true;
+            LMfit.traceProgress = true;
+            vector<double> input;
+            vector<double> output;
+            vector<double> result;
+
+            input.resize (cost.inputs);
+            output.resize(cost.outputs, 0);
+
+            for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
+                input[i] = data.projection.mN[i];
+
+            guess.shift.storeTo(&input[MODCostFunctionData::OMNIDIR_POWER]);
+            guess.rotor.storeTo(&input[MODCostFunctionData::OMNIDIR_POWER + 3]);
+
+            result = LMfit.fit(input, output);
+
+            for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
+            {
+                cout << "res " << result[i] << " <-> " << data.projection.mN[i] << endl;
+            }
+
+            Affine3DQ rguess;
+            rguess.shift.loadFrom(&result[MODCostFunctionData::OMNIDIR_POWER]);
+            rguess.shift.loadFrom(&result[MODCostFunctionData::OMNIDIR_POWER + 3]);
+
+            cout << result;
+        }
+
+
+
+
+
+        /* Draw result */
         stats.resetInterval("Estimator and decompostion");
 
         Affine3DQ move = decomp.toSecondCameraAffine();
@@ -509,6 +593,11 @@ int main(int argc, char **argv)
         oname << "new" << framecount << extention;
         BufferFactory::getInstance()->saveRGB24Bitmap(outputNew.get(), oname.str());
         newOut.addFrame(outputNew.get());
+
+        oname.str("");
+        oname << "esse" << framecount << extention;
+        BufferFactory::getInstance()->saveRGB24Bitmap(outputEsse.get(), oname.str());
+
 
         if (produceUnwarp)
         {

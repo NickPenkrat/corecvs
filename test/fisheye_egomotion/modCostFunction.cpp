@@ -58,3 +58,8 @@ void MODCostFunctionNormalise::operator()(const double in[], double out[])
 
 
 }
+
+MODCostFunctionData::MODCostFunctionData()
+{
+
+}
