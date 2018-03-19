@@ -21,7 +21,7 @@
 #include "core/math/vector/vector2d.h"
 #include "KLTFlow.h"
 #include "core/math/mathUtils.h"
-#include "OpenCVTools.h"
+#include "openCVTools.h"
 
 using namespace corecvs;
 

@@ -1,4 +1,4 @@
-#include "OpenCVTools.h"
+#include "openCVTools.h"
 #include "core/xml/generated/rgbColorParameters.h"
 #include "openCVMovingObjectFlow.h"
 

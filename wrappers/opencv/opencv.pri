@@ -16,7 +16,7 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
 		$$OPENCV_WRAPPER_DIR/openCvFeatureDetectorWrapper.h \
 		$$OPENCV_WRAPPER_DIR/openCvFileReader.h \
 		$$OPENCV_WRAPPER_DIR/openCvKeyPointsWrapper.h \
-		$$OPENCV_WRAPPER_DIR/OpenCVTools.h \
+                $$OPENCV_WRAPPER_DIR/openCVTools.h \
 		$$OPENCV_WRAPPER_DIR/semiGlobalBlockMatching.h \
 		$$OPENCV_WRAPPER_DIR/openCvCheckerboardDetector.h \
                 $$OPENCV_WRAPPER_DIR/openCvImageRemapper.h \
@@ -34,7 +34,7 @@ contains(DEFINES, WITH_OPENCV) {                    # if it's installed properly
     SOURCES += \
 		$$OPENCV_WRAPPER_DIR/openCvFeatureDetectorWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/featureDetectorCV.cpp \
-		$$OPENCV_WRAPPER_DIR/OpenCVTools.cpp \
+                $$OPENCV_WRAPPER_DIR/openCVTools.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvDescriptorMatcherWrapper.cpp \
 		$$OPENCV_WRAPPER_DIR/openCvFileReader.cpp \
 		$$OPENCV_WRAPPER_DIR/KLTFlow.cpp \

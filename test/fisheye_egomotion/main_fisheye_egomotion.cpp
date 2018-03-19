@@ -2,7 +2,7 @@
     Bayer to PPM converter
  */
 
-#include <OpenCVTools.h>
+#include <openCVTools.h>
 #include <QApplication>
 #include <avEncoder.h>
 #include <iostream>
