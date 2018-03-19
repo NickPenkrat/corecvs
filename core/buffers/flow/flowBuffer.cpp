@@ -41,6 +41,7 @@ std::vector<FloatFlowVector> *FlowBuffer::toVectorForm()
     return result;
 }
 
+
 FlowBuffer *FlowBuffer::invert()
 {
     FlowBuffer *result = new FlowBuffer(this->h, this->w);

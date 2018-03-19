@@ -49,6 +49,16 @@ public:
 
     virtual int beginFrame() = 0;
     virtual int clean(int mask) = 0;
+
+    /**
+     * You are responisble to delete the frame sometime after endFrame() is called
+     * Implemetation may (and will) store additinal views (pointers) to actual image data
+     * for as long as implementation need them.
+     *
+     * see AbstractBuffer::createViewPtr<> for details on this mechanism
+     *
+     * To get consistent result don't modify frame data after the call to setFrame*
+     **/
     virtual int setFrameG12  (FrameNames frameType, G12Buffer   *frame) = 0;
     virtual int setFrameRGB24(FrameNames frameType, RGB24Buffer *frame) = 0;
 
@@ -64,6 +74,11 @@ public:
     virtual int setParameteri(int parameterName, int parameterValue) = 0;
 
     virtual int requestResultsi(int parameterName) = 0;
+
+    /**
+     * Methods below return the pointers to the internal data structures that are only valid
+     * untill next beginFrame() is called. If you want them to persist - make a copy
+     **/
 
     /* This method computes flow form current frame to previous */
     virtual FlowBuffer *getFlow() = 0;
