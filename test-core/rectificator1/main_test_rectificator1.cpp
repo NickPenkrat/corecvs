@@ -130,8 +130,8 @@ TEST(Rectification1, __testUnDistortion)
         Vector3dd w1 = z ^ E1;
         Vector3dd w2 = F * z;
 
-        w1 = w1.normalizeProjective();
-        w2 = w2.normalizeProjective();
+        w1 = w1.normalisedProjective();
+        w2 = w2.normalisedProjective();
 
         dist[i][0] = StereoAligner::getDistortion(w1, Vector2dd(100.0,100.0));
         dist[i][1] = StereoAligner::getDistortion(w2, Vector2dd(100.0,100.0));

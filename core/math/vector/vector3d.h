@@ -235,13 +235,22 @@ public:
         return Vector2d<ElementType>(this->x() / this->z(), this->y() / this->z());
     }
 
-    inline Vector3d<ElementType> normalizeProjective()
+    inline Vector3d<ElementType> normalisedProjective()
     {
         if (this->z() == 0.0)
         {
             return Vector3d<ElementType>(0.0);
         }
         return Vector3d<ElementType>(this->x() / this->z(), this->y() / this->z(), ElementType(1.0));
+    }
+
+    inline void normaliseProjective()
+    {
+        if (this->z() == 0.0)
+        {
+            *this = Vector3d<ElementType>(0.0);
+        }
+        *this = Vector3d<ElementType>(this->x() / this->z(), this->y() / this->z(), ElementType(1.0));
     }
 
     inline static Vector3d<ElementType> FromProjective(const Vector2d<ElementType> &projected)

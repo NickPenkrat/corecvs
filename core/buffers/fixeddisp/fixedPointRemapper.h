@@ -1,8 +1,8 @@
 #ifndef FIXEDPOINTDISPLACE_H_
 #define FIXEDPOINTDISPLACE_H_
 /**
- * \file fixedPointDisplace.h
- * \brief A header for fixedPointDisplace.c
+ * \file fixedPointRemapper.h
+ * \brief A header for fixedPointRemapper.cpp
  *
  *
  *

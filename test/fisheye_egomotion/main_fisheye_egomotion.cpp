@@ -282,6 +282,7 @@ int main(int argc, char **argv)
 
     /* This need to be stabilised */
     Mesh3D trajectory;
+    trajectory.switchColor();
     Affine3DQ position = Affine3DQ::Identity();
 
     while (framecount < maxFrame)
@@ -420,10 +421,14 @@ int main(int argc, char **argv)
                 continue;
             }
 
-            ray0.normalizeProjective();
-            ray1.normalizeProjective();
+            ray0 = ray0.normalisedProjective();
+            ray1 = ray1.normalisedProjective();
 
             list.push_back(Correspondence(ray0.xy(), ray1.xy()));
+
+            Vector2dd rr0 = unwrapper.model.intrinsics->project(Vector3dd(ray0.xy(), 1.0));
+
+            //cout << data0 << " " << rr0 << " " << ray0.z() << endl;
             //cout << list.back() << endl;
         }
 
@@ -446,24 +451,31 @@ int main(int argc, char **argv)
         cout << matrix << endl;
 
         {
-            for (size_t i = 0; i < listPtr.size(); i++)
+            cout << "List size:" << list.size() << endl;
+            for (size_t count = 0; count < list.size(); count++)
             {
-                Correspondence c = *listPtr[i];
+                Correspondence &c = list[count];
 
                 RGBColor color = RGBColor::Red();
-                if (c.flags | Correspondence::FLAG_FAILER) {
-                    color = RGBColor::Red(); break;
+                if (c.flags & Correspondence::FLAG_FAILER) {
+                    color = RGBColor::Red();
                 }
-                if (c.flags | Correspondence::FLAG_PASSER) {
-                    color = RGBColor::Green(); break;
+                if (c.flags & Correspondence::FLAG_PASSER) {
+                    color = RGBColor::Green();
                 }
-                if (c.flags | Correspondence::FLAG_IS_BASED_ON) {
-                    color.b() = 255; break;
+                if (c.flags & Correspondence::FLAG_IS_BASED_ON) {
+                    color.b() = 255;
                 }
 
+                Vector3dd r0(c.start.x(), c.start.y(), 1.0);
+                Vector3dd r1(c.end  .x(), c.end  .y(), 1.0);
 
-                outputEsse->drawLine(c.start, c.end, color);
-                outputEsse->drawCrosshare1(c.end, color);
+
+                Vector2dd p0 = unwrapper.model.intrinsics->project(r0.normalised());
+                Vector2dd p1 = unwrapper.model.intrinsics->project(r1.normalised());
+
+                outputEsse->drawLine      (p0, p1, color);
+                outputEsse->drawCrosshare1(p1, color);
             }
         }
 
@@ -552,8 +564,8 @@ int main(int argc, char **argv)
             Vector3dd ray0 = unwrapper.model.intrinsics->reverse(data0);
             Vector3dd ray1 = unwrapper.model.intrinsics->reverse(data1);
 
-            ray0.normalizeProjective();
-            ray1.normalizeProjective();
+            ray0 = ray0.normalisedProjective();
+            ray1 = ray1.normalisedProjective();
 
             double outlay = matrix.epipolarDistance(ray0.xy(), ray1.xy());
 

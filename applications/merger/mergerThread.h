@@ -24,7 +24,7 @@
 #include "core/camerafixture/fixtureScene.h"
 
 #include "baseCalculationThread.h"
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 
 #include "generatedParameters/merger.h"
 
