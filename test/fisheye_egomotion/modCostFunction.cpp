@@ -63,3 +63,22 @@ MODCostFunctionData::MODCostFunctionData()
 {
 
 }
+
+double MODModel::getCost(const Correspondence &corr)
+{
+    if (context == NULL) {
+        SYNC_PRINT(("MODModel():getCost Internal Error\m"));
+    }
+
+    OmnidirectionalProjection projecton = context->projection;
+    projecton.mN = projectionN;
+    Affine3DQ T = transform[corr.value];
+
+    Ray3d r1(projecton.reverse(corr.start), Vector3dd::Zero());
+    Ray3d r2(projecton.reverse(corr.end), Vector3dd::Zero());
+    r2.a = T.rotor * r2.a;
+    r2.p = T.shift + r2.p;
+
+    Vector3dd e = r1.intersectCoef(r2);
+    return 2 * e.z() / (e.x() * e.y());
+}

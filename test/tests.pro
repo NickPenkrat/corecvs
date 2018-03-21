@@ -25,7 +25,6 @@ SUBDIRS +=       \
 #    cr2reader           \
 #    debayer          \
     deproject        \
-    fisheye_egomotion \
     softrender        \
     raytracerender    \
     stereo_generator  \
@@ -34,6 +33,9 @@ SUBDIRS +=       \
 #    command_harness  \
     example_scene     \
 
+with_avcodec {
+     SUBDIRS += fisheye_egomotion
+}
 
 with_ceres {
     SUBDIRS += ceres_playground

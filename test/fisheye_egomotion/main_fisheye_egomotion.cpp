@@ -2,20 +2,19 @@
     Bayer to PPM converter
  */
 
-#include <openCVTools.h>
+
 #include <QApplication>
 #include <avEncoder.h>
 #include <iostream>
 #include <time.h>
 
-#include <core/rectification/ransacEstimator.h>
-
-#include <core/geometry/mesh3d.h>
-
-#include <core/cameracalibration/calibrationDrawHelpers.h>
+#include "core/rectification/ransacEstimator.h"
+#include "core/geometry/mesh3d.h"
+#include "core/cameracalibration/calibrationDrawHelpers.h"
 
 #include <core/buffers/rgb24/abstractPainter.h>
 
+#include "core/stereointerface/processor6D.h"
 #include "core/buffers/bufferFactory.h"
 #include "core/cameracalibration/cameraModel.h"
 #include "core/buffers/converters/errorMetrics.h"
@@ -25,13 +24,21 @@
 #include "core/cameracalibration/ilFormat.h"
 #include "core/buffers/remapBuffer.h"
 
+#include "core/camerafixture/fixtureScene.h"
+#include "core/camerafixture/cameraFixture.h"
 
+#ifdef WITH_OPENCV
+#include "openCVTools.h"
+#include "moc-flow/openCVMovingObjectFlow.h"
+#endif
 #include "core/framesources/imageCaptureInterface.h"
+
+
 #include "aviCapture.h"
 #include "modCostFunction.h"
 
+#include <core/reflection/jsonPrinter.h>
 
-#include "moc-flow/openCVMovingObjectFlow.h"
 
 using namespace std;
 using namespace corecvs;
@@ -74,7 +81,7 @@ public:
 
 
 
-
+#if 0
 int main1(int argc, char **argv)
 {
     AVEncoder encoder;
@@ -93,6 +100,7 @@ int main1(int argc, char **argv)
     encoder.endEncoding();
     SYNC_PRINT(("Done."));
 }
+#endif
 
 CameraModel getModel(int h, int w, std::string filename)
 {
@@ -209,6 +217,85 @@ public:
 
 };
 
+/* RANSAC*/
+void jointOptimisationRANSAC(MODCostFunctionData &data)
+{
+    RansacParameters ransacParams;
+    MODJointOptimisation context;
+
+    Ransac<MODJointOptimisation> ransac(100, ransacParams);
+    context.baseData = &data;
+    vector<Correspondence *> dataPtr;
+    ransac.data = &dataPtr;
+    ransac.data->reserve(data.obseravtions.size());
+    for (size_t i = 0; i < data.obseravtions.size(); i++)
+    {
+        ransac.data->push_back(&data.obseravtions[i]);
+    }
+    ransac.trace = true;
+    ransac.setUseMedian(true);
+    ransac.setInlierThreshold(0.0001);
+    ransac.setIterationsNumber(40);
+
+    MODModel result = ransac.getModelRansac(&context);
+
+    cout << "jointOptimisationRANSAC() finishing" << result.transform[0] << endl;
+    cout << "Polinom after before" << endl;
+    for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
+    {
+        cout << "res " << result.projectionN[i] << " <-> " << data.projection.mN[i] << endl;
+        data.projection.mN[i] = result.projectionN[i];
+    }
+
+
+
+}
+
+void jointOptimisation(MODCostFunctionData &data)
+{
+
+    MODCostFunction          cost(&data);
+    MODCostFunctionNormalise normalise(&data);
+
+
+    LevenbergMarquardt LMfit;
+    LMfit.f = &cost;
+    LMfit.normalisation = &normalise;
+    LMfit.maxIterations = 250;
+    LMfit.trace = true;
+    LMfit.traceProgress = true;
+    vector<double> input;
+    vector<double> output;
+    vector<double> result;
+
+
+    input.resize (cost.inputs);
+    output.resize(cost.outputs, 0);
+
+    for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
+        input[i] = data.projection.mN[i];
+
+    for (size_t i = 0; i < data.transform.size(); i++)
+    {
+        Affine3DQ guess = data.transform[i];
+        guess.shift.storeTo(&input[i * MODCostFunctionData::MOVE_MODEL + MODCostFunctionData::OMNIDIR_POWER]);
+        guess.rotor.storeTo(&input[i * MODCostFunctionData::MOVE_MODEL + MODCostFunctionData::OMNIDIR_POWER + 3]);
+    }
+
+    result = LMfit.fit(input, output);
+
+    for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
+    {
+        cout << "res " << result[i] << " <-> " << data.projection.mN[i] << endl;
+    }
+
+    Affine3DQ rguess;
+    rguess.shift.loadFrom(&result[MODCostFunctionData::OMNIDIR_POWER]);
+    rguess.shift.loadFrom(&result[MODCostFunctionData::OMNIDIR_POWER + 3]);
+
+    cout << result;
+}
+
 int main(int argc, char **argv)
 {
 
@@ -224,17 +311,24 @@ int main(int argc, char **argv)
     QTRGB24Loader::registerMyself();
     QTRGB24Saver::registerMyself();
 
+    std::string defaultProvider = "";
+
 #ifdef WITH_CVS_FEATURES
     init_cvs_stereo_provider();
+    defaultProvider = "CVS";
 #endif
+#ifdef WITH_OPENCV
     corecvs::Processor6DFactoryHolder::getInstance()->registerProcessor(new OpenCVMovingObjectFlowImplFactory);
+    defaultProvider = "MeshFlow";
+#endif
 
     if (argc <= 1) {
         SYNC_PRINT(("Give me input\n"));       
         SYNC_PRINT((" fisheye_egomotion --caps\n"));
-        SYNC_PRINT((" fisheye_egomotion [--provider=<flow name>] [--frames=<n>] [--joint] [--skipf=<n>] [--unwrap] [--intrinsics=<filename>] <aviname>\n"));
+        SYNC_PRINT((" fisheye_egomotion [--provider=<flow name>] [--frames=<n>] [--joint] [--scene] [--skipf=<n>] [--unwrap] [--intrinsics=<filename>] <aviname>\n"));
         SYNC_PRINT(("   --provider which flow provider to use. For options see --caps \n"));
         SYNC_PRINT(("   --frames   how many frames to process \n"));
+        SYNC_PRINT(("   --scene    create scene to deeply analise data \n"));
         SYNC_PRINT(("   --joint    try to optimise projection with flow\n"));
         SYNC_PRINT(("Give me input\n"));
 
@@ -253,10 +347,15 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    std::string provider = s.getString("provider", "MeshFlow");
+    std::string provider = s.getString("provider", defaultProvider);
     bool produceUnwarp   = s.getBool("unwarp");
     bool jointCost       = s.getBool("joint");
+    bool createScene     = s.getBool("scene");
     std::string intrName = s.getString("intrinsics", "");
+
+    double ransacThreshold     = s.getDouble("rthreshold", 0.009);
+    double detectThreshold     = s.getDouble("dthreshold", 0.009);
+
 
     /* Prepare input */
     vector<string> stream = s.nonPrefix();
@@ -274,8 +373,9 @@ int main(int argc, char **argv)
     ImageCaptureInterface::FramePair images;
 
 
-    AVEncoder newOut;
-    AVEncoder unwarpOut;
+    AVEncoder newOutVideo;
+    AVEncoder newEsseVideo;
+    AVEncoder unwarpOutVideo;
 
     Unwrapper unwrapper;
     bool modelLoaded = false;
@@ -284,6 +384,9 @@ int main(int argc, char **argv)
     Mesh3D trajectory;
     trajectory.switchColor();
     Affine3DQ position = Affine3DQ::Identity();
+
+    /* Collect data */
+    MODCostFunctionData dataForOpt;
 
     while (framecount < maxFrame)
     {
@@ -305,8 +408,12 @@ int main(int argc, char **argv)
             continue;
         }
 
-        if (!newOut.open) {
-            newOut.startEncoding("new.avi", curFrame->h, curFrame->w);
+        if (!newOutVideo.open) {
+            newOutVideo.startEncoding("new.avi", curFrame->h, curFrame->w);
+        }
+
+        if (!newEsseVideo.open) {
+            newEsseVideo.startEncoding("esse.avi", curFrame->h, curFrame->w);
         }
 
 
@@ -348,8 +455,8 @@ int main(int argc, char **argv)
         }
         /* Unwrap */
 
-        if (!unwarpOut.open) {
-            unwarpOut.startEncoding("unwrap.avi", unwrapper.unwrapSize.y(), unwrapper.unwrapSize.x());
+        if (!unwarpOutVideo.open) {
+            unwarpOutVideo.startEncoding("unwrap.avi", unwrapper.unwrapSize.y(), unwrapper.unwrapSize.x());
         }
 
         unique_ptr<RGB24Buffer> unwarpOrig;
@@ -384,11 +491,11 @@ int main(int argc, char **argv)
 
             RGBColor color = RGBColor::Red();
             switch (status) {
-            case 0: color = RGBColor::Green(); break;
-            case 1: color = RGBColor::Red(); break;
-            case 2: color = RGBColor::Blue(); break;
-            default:
-                break;
+                case 0: color = RGBColor::Green(); break;
+                case 1: color = RGBColor::Red(); break;
+                case 2: color = RGBColor::Blue(); break;
+                default:
+                    break;
             }
 
             outputRaw->drawLine(data0, data1, color);
@@ -425,11 +532,6 @@ int main(int argc, char **argv)
             ray1 = ray1.normalisedProjective();
 
             list.push_back(Correspondence(ray0.xy(), ray1.xy()));
-
-            Vector2dd rr0 = unwrapper.model.intrinsics->project(Vector3dd(ray0.xy(), 1.0));
-
-            //cout << data0 << " " << rr0 << " " << ray0.z() << endl;
-            //cout << list.back() << endl;
         }
 
         cout << "Starting list size:" <<  list.size() << endl;
@@ -437,18 +539,21 @@ int main(int argc, char **argv)
         stats.resetInterval("Created estimator input");
 
         /* Estimator */
-        RansacEstimator estimator(8, 100, 0.005);
+        RansacEstimator estimator(8, 100, ransacThreshold);
+        estimator.ransacParams.setUseMedian(true);
+        estimator.trace = true;
 
-        vector<Correspondence *> listPtr;
-        listPtr.reserve(list.size());
+        vector<Correspondence *> flowInput;
+        flowInput.reserve(list.size());
         for (size_t d = 0 ; d < list.size(); d++)
         {
-            listPtr.push_back(&list[d]);
+            flowInput.push_back(&list[d]);
         }
 
-        EssentialMatrix matrix = estimator.getEssentialRansac(&listPtr);
+        EssentialMatrix matrix = estimator.getEssentialRansac(&flowInput);
         stats.setValue("Ransac inliers %", estimator.fitPercent);
         cout << matrix << endl;
+
 
         {
             cout << "List size:" << list.size() << endl;
@@ -466,10 +571,8 @@ int main(int argc, char **argv)
                 if (c.flags & Correspondence::FLAG_IS_BASED_ON) {
                     color.b() = 255;
                 }
-
                 Vector3dd r0(c.start.x(), c.start.y(), 1.0);
                 Vector3dd r1(c.end  .x(), c.end  .y(), 1.0);
-
 
                 Vector2dd p0 = unwrapper.model.intrinsics->project(r0.normalised());
                 Vector2dd p1 = unwrapper.model.intrinsics->project(r1.normalised());
@@ -477,67 +580,33 @@ int main(int argc, char **argv)
                 outputEsse->drawLine      (p0, p1, color);
                 outputEsse->drawCrosshare1(p1, color);
             }
+
+            for (size_t count = 0; count < list.size(); count++)
+            {
+                Correspondence &c = list[count];
+
+                bool base = false;
+                if (c.flags & Correspondence::FLAG_IS_BASED_ON) {
+                    base = true;
+                }
+
+                Vector3dd r1(c.end  .x(), c.end  .y(), 1.0);
+                Vector2dd p1 = unwrapper.model.intrinsics->project(r1.normalised());
+
+                if (base) {
+                     outputEsse->drawArc(p1.x(), p1.y(), 10, RGBColor::Magenta());
+                     outputEsse->drawArc(p1.x(), p1.y(), 12, RGBColor::Amber());
+                     outputEsse->drawArc(p1.x(), p1.y(), 8 , RGBColor::Blue());
+
+                }
+            }
         }
 
         EssentialDecomposition decomposition[4];
         matrix.decompose(decomposition);
 
-        EssentialDecomposition decomp = matrix.decompose(&listPtr,decomposition);
+        EssentialDecomposition decomp = matrix.decompose(&flowInput,decomposition);
         cout << decomp << endl;
-
-        /* Joint cost function */
-        if (jointCost)
-        {
-            Affine3DQ guess = decomp.toSecondCameraAffine();
-
-            MODCostFunctionData      data;
-            data.transform.push_back(Affine3DQ::Identity());
-            data.obseravtions.reserve(flowList->size());
-            for(size_t i = 0; i < flowList->size(); i++)
-            {
-                data.obseravtions.push_back(flowList->at(i));
-                data.obseravtions.back().value = 0;
-            }
-            data.projection = *unwrapper.model.getOmnidirectional();
-            MODCostFunction          cost(&data);
-            MODCostFunctionNormalise normalise(&data);
-
-            LevenbergMarquardt LMfit;
-            LMfit.f = &cost;
-            LMfit.normalisation = &normalise;
-            LMfit.maxIterations = 250;
-            LMfit.trace = true;
-            LMfit.traceProgress = true;
-            vector<double> input;
-            vector<double> output;
-            vector<double> result;
-
-            input.resize (cost.inputs);
-            output.resize(cost.outputs, 0);
-
-            for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
-                input[i] = data.projection.mN[i];
-
-            guess.shift.storeTo(&input[MODCostFunctionData::OMNIDIR_POWER]);
-            guess.rotor.storeTo(&input[MODCostFunctionData::OMNIDIR_POWER + 3]);
-
-            result = LMfit.fit(input, output);
-
-            for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
-            {
-                cout << "res " << result[i] << " <-> " << data.projection.mN[i] << endl;
-            }
-
-            Affine3DQ rguess;
-            rguess.shift.loadFrom(&result[MODCostFunctionData::OMNIDIR_POWER]);
-            rguess.shift.loadFrom(&result[MODCostFunctionData::OMNIDIR_POWER + 3]);
-
-            cout << result;
-        }
-
-
-
-
 
         /* Draw result */
         stats.resetInterval("Estimator and decompostion");
@@ -548,13 +617,14 @@ int main(int argc, char **argv)
         trajectory.addOrts(0.5);
         trajectory.popTransform();
 
+        /**
+         *    Draw debug for essential estimation
+         **/
 
-        Vector2dd vanish = unwrapper.model.intrinsics->project(decomp.direction);
+        Vector3dd direction = decomp.direction;
+        if (direction.z() < 0) direction = - direction;
+        Vector2dd vanish = unwrapper.model.intrinsics->project(direction);
         cout << "Vanish point: "  << vanish << endl;
-
-        for (int r = 4; r < 10; r++) {
-            outputNew->drawArc(Circle2d(vanish, r), RGBColor::Yellow());
-        }
 
         for (size_t i = 0; i < flowList->size(); i++)
         {
@@ -569,7 +639,11 @@ int main(int argc, char **argv)
 
             double outlay = matrix.epipolarDistance(ray0.xy(), ray1.xy());
 
-            RGBColor color = RGBColor::rainbow1(outlay * 100);
+            RGBColor color = RGBColor::Gray();
+
+            if (outlay > detectThreshold) {
+                color = RGBColor::rainbow1((outlay - detectThreshold) * 100);
+            }
 
             outputNew->drawLine(data0, data1, color);
             outputNew->drawCrosshare1(data1, color);
@@ -579,7 +653,60 @@ int main(int argc, char **argv)
             }
         }
 
-         stats.resetInterval("Debug output");
+        for (int r = 4; r < 10; r++) {
+            outputNew->drawArc(Circle2d(vanish, r), RGBColor::Yellow());
+        }
+
+        if (createScene && framecount == 2)
+        {
+            FixtureScene scene;
+
+            CameraFixture *frameFixture = scene.createCameraFixture();
+
+            FixtureCamera *cam1 = scene.createCamera();
+            FixtureCamera *cam2 = scene.createCamera();
+
+            cam1->copyModelFrom(unwrapper.model);
+            cam1->setLocation(Affine3DQ::Identity());
+
+            cam2->copyModelFrom(unwrapper.model);
+            cam2->setLocation(move);
+
+            scene.addCameraToFixture(cam1, frameFixture);
+            scene.addCameraToFixture(cam2, frameFixture);
+
+            ImageRelatedData *image1 = scene.createImageData();
+            image1->mImagePath = "prev.bmp";
+            cam1->addImageToCamera(image1);
+            BufferFactory::getInstance()->saveRGB24Bitmap(prevFrame.get(),  image1->mImagePath);
+
+            ImageRelatedData *image2 = scene.createImageData();
+            image2->mImagePath = "curr.bmp";
+            cam2->addImageToCamera(image2);
+            BufferFactory::getInstance()->saveRGB24Bitmap(curFrame.get(),  image2->mImagePath);
+
+
+            for (size_t corrId = 0; corrId < flowInput.size(); corrId++) {
+                SceneFeaturePoint *point = scene.createFeaturePoint();
+
+                SceneObservation observation1(cam1, point, Vector2dd::Zero());
+                point->observations[cam1] = observation1;
+                point->observations[cam1].setUndist(flowInput[corrId]->start);
+
+                SceneObservation observation2(cam2, point, Vector2dd::Zero());
+                point->observations[cam2] = observation2;
+                point->observations[cam2].setUndist(flowInput[corrId]->end);
+            }
+
+            {
+                JSONPrinter printer("testscene.json");
+                printer.visit(scene, "scene");
+            }
+        }
+
+
+
+        stats.resetInterval("Debug output");
 
 
         BaseTimeStatisticsCollector collector;
@@ -590,11 +717,6 @@ int main(int argc, char **argv)
 
         std::string extention = ".jpg";
         std::stringstream oname;
-#if 0
-        oname.str("");
-        oname << "prev" << framecount << extention;
-        BufferFactory::getInstance()->saveRGB24Bitmap(outputPrev.get(), oname.str());
-#endif
         /*
         oname.str("");
         oname << "raw" << framecount << extention;
@@ -604,43 +726,62 @@ int main(int argc, char **argv)
         oname.str("");
         oname << "new" << framecount << extention;
         BufferFactory::getInstance()->saveRGB24Bitmap(outputNew.get(), oname.str());
-        newOut.addFrame(outputNew.get());
+        newOutVideo.addFrame(outputNew.get());
 
         oname.str("");
         oname << "esse" << framecount << extention;
         BufferFactory::getInstance()->saveRGB24Bitmap(outputEsse.get(), oname.str());
-
+        newEsseVideo.addFrame(outputNew.get());
 
         if (produceUnwarp)
         {
-            /*
-            oname.str("");
-            oname << "unwarp-raw" << framecount << extention;
-            BufferFactory::getInstance()->saveRGB24Bitmap(unwarpRaw.get(),  oname.str());
-            */
-
             oname.str("");
             oname << "unwarp-new" << framecount << extention;
             BufferFactory::getInstance()->saveRGB24Bitmap(unwarpNew.get(),  oname.str());
-            unwarpOut.addFrame(unwarpNew.get());
+            unwarpOutVideo.addFrame(unwarpNew.get());
         }
 
+        /* Joint cost function */
+        if (jointCost)
+        {
+            Affine3DQ guess = decomp.toSecondCameraAffine();
 
+            dataForOpt.transform.push_back(guess);
+            dataForOpt.obseravtions.reserve(dataForOpt.obseravtions.size() + flowList->size());
+
+            for(size_t i = 0; i < flowList->size(); i++)
+            {
+                dataForOpt.obseravtions.push_back(flowList->at(i));
+                dataForOpt.obseravtions.back().value = dataForOpt.transform.size() - 1;
+            }
+        }
 
         delete_safe(flowGen);
         prevFrame = std::move(curFrame);
+
     }
 
-     if (newOut.open)
+     if (newOutVideo.open)
      {
-         newOut.endEncoding();
+         newOutVideo.endEncoding();
      }
-     if (unwarpOut.open)
+     if (unwarpOutVideo.open)
      {
-         unwarpOut.endEncoding();
+         unwarpOutVideo.endEncoding();
      }
 
      trajectory.dumpPLY("trajectory.ply");
+
+     if (jointCost)
+     {
+         dataForOpt.projection = *unwrapper.model.getOmnidirectional();
+         jointOptimisationRANSAC(dataForOpt);
+
+         cout << "New intrinsics" << endl;
+         ILFormat::saveIntrisics(dataForOpt.projection, cout);
+         ILFormat::saveIntrisics(dataForOpt.projection, "new-intr.txt");
+         cout << "======" << endl;
+     }
 
 
     //system("ls -all");

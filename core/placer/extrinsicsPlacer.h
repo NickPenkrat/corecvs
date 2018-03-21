@@ -83,7 +83,7 @@ struct SillyModel
                 (params.lockPositions()    ? 0 :  Vector3dd::LENGTH);
     }
 
-    static int getPointsOffset(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
+    static int getPointsOffset(const SimplifiedScene */*scene*/, ExtrinsicsPlacerParameters &/*params*/)
     {
         return 0;
     }

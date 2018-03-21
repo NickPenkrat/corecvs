@@ -169,6 +169,7 @@ int main(int argc, char **argv)
 
 
     for (CameraFixture* f: fs.fixtures())
+    {
         for (FixtureCamera *c: f->cameras)
 		{
             CORE_ASSERT_TRUE((c->getPinhole() != NULL), "Only Pinhole cameras are supported");
@@ -179,6 +180,8 @@ int main(int argc, char **argv)
             maxH = std::max(maxH, c->intrinsics->size()[1]);
             focals.push_back(c->getPinhole()->focal()[0]);
 		}
+    }
+
 	std::sort(focals.begin(), focals.end());
 	maxW *= 1.1;
 	maxH *= 1.1;

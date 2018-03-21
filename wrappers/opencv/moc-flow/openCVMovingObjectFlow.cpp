@@ -17,13 +17,13 @@ int OpenCVMovingObjectFlow::beginFrame()
     return 0;
 }
 
-int OpenCVMovingObjectFlow::clean(int mask)
+int OpenCVMovingObjectFlow::clean(int /*mask*/)
 {
     SYNC_PRINT(("OpenCVMovingObjectFlow::clean(int mask):called/n"));
     return 0;
 }
 
-int OpenCVMovingObjectFlow::setFrameG12(Processor6D::FrameNames frameType, G12Buffer *frame)
+int OpenCVMovingObjectFlow::setFrameG12(Processor6D::FrameNames /*frameType*/, G12Buffer */*frame*/)
 {
     /*if (frameType == FRAME_LEFT_ID)
         return 1;
@@ -41,7 +41,7 @@ int OpenCVMovingObjectFlow::setFrameRGB24(Processor6D::FrameNames frameType, RGB
     return 0;
 }
 
-int OpenCVMovingObjectFlow::setDisparityBufferS16(Processor6D::FrameNames frameType, FlowBuffer *frame)
+int OpenCVMovingObjectFlow::setDisparityBufferS16(Processor6D::FrameNames /*frameType*/, FlowBuffer */*frame*/)
 {
     SYNC_PRINT(("OpenCVMovingObjectFlow::setDisparityBufferS16():called\n"));
     return 0;

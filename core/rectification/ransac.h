@@ -35,9 +35,13 @@ public:
 };
 #endif
 
-template<typename SampleType, typename ModelType>
+template<typename ModelGeneratorType>
 class Ransac : public RansacParameters {
 public:
+    typedef typename ModelGeneratorType::SampleType SampleType;
+    typedef typename ModelGeneratorType::ModelType  ModelType;
+
+
     vector<SampleType *> *data;
     int dataLen;
 
@@ -55,7 +59,7 @@ public:
     /* */
     std::mt19937 rng;
 
-    Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters())
+    Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters(), ModelGeneratorType *generator = NULL)
         : RansacParameters(params)
         , sampleNumber(_sampleNumber)
     {
@@ -87,7 +91,7 @@ public:
         }
     }
 
-    ModelType getModelRansac()
+    ModelType getModelRansac(ModelGeneratorType *context = NULL)
     {
         bestInliers = 0;
         iteration = 0;
@@ -105,7 +109,7 @@ public:
         while (true)
         {
             randomSelect();
-            vector<ModelType> models = ModelType::getModels(samples);
+            vector<ModelType> models = ModelGeneratorType::getModels(samples, context);
 
 
             for (ModelType &model : models)
@@ -149,8 +153,7 @@ public:
                                    iteration, inliers, bestInliers, median, old_median, (int)data->size(), (double)100.0 * bestInliers / data->size() ));
 
                 if ((bestInliers >  data->size() * inliersPercent() / 100.0 && iteration >= iterationsNumber() * 0.3 )
-                    ||
-                    iteration >= iterationsNumber() )
+                    || iteration >= iterationsNumber() )
                 {
                     if (trace) {
                         std::cout << "Fininshing:" << std::endl;

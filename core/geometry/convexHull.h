@@ -41,7 +41,7 @@ public:
 
 class ConvexHull2D : public ConvexHullResult {
 public:
-    ConvexHull2D(const vector<Vector3dd> &points) {}
+    ConvexHull2D(const vector<Vector3dd> &/*points*/) {}
     virtual bool is3D() override { return false; }
     virtual void print() override {}
 };

@@ -22,6 +22,10 @@ namespace corecvs {
 
 class Model8Point {
 public:
+    typedef Correspondence SampleType;
+    typedef Model8Point    ModelType;
+
+
     EssentialMatrix model;
 
     Model8Point()
@@ -50,6 +54,10 @@ public:
 
 class Model5Point {
 public:
+    typedef Correspondence SampleType;
+    typedef Model5Point    ModelType;
+
+
     EssentialMatrix model;
 
     Model5Point(const EssentialMatrix &m) :
@@ -62,7 +70,7 @@ public:
         model = Matrix33(1.0);
     }
 
-    static vector<Model5Point> getModels(const vector<Correspondence *> &samples)
+    static vector<Model5Point> getModels(const vector<Correspondence *> &samples, Model5Point * /*context*/ = NULL)
     {
         EssentialEstimator estimator;
         vector<EssentialMatrix> ms = estimator.getEssential5point(samples);
@@ -91,6 +99,10 @@ public:
 class ModelFundamental8Point : public Model8Point
 {
 public:
+    typedef Correspondence           SampleType;
+    typedef ModelFundamental8Point   ModelType;
+
+
     ModelFundamental8Point() : Model8Point() {}
     ModelFundamental8Point(const vector<Correspondence *> &samples) :
                 Model8Point(samples)
@@ -98,7 +110,7 @@ public:
         model.assertRank2();
     }
 
-    static vector<ModelFundamental8Point> getModels(const vector<Correspondence *> &samples)
+    static vector<ModelFundamental8Point> getModels(const vector<Correspondence *> &samples, ModelFundamental8Point* /*context*/ = NULL)
     {
         vector<ModelFundamental8Point> result;
         result.push_back(ModelFundamental8Point(samples));
@@ -110,6 +122,9 @@ public:
 class ModelEssential8Point : public Model8Point
 {
 public:
+    typedef Correspondence         SampleType;
+    typedef ModelEssential8Point   ModelType;
+
     ModelEssential8Point() : Model8Point() {}
     ModelEssential8Point(const vector<Correspondence *> &samples) :
                 Model8Point(samples)
@@ -117,7 +132,7 @@ public:
         model.projectToEssential();
     }
 
-    static vector<ModelEssential8Point> getModels(const vector<Correspondence *> &samples)
+    static vector<ModelEssential8Point> getModels(const vector<Correspondence *> &samples, ModelEssential8Point * /*context*/ = NULL)
     {
         vector<ModelEssential8Point> result;
         result.push_back(ModelEssential8Point(samples));
@@ -138,8 +153,7 @@ Matrix33 RansacEstimator::getFundamentalRansac1(CorrespondenceList *list)
 
 Matrix33 RansacEstimator::getFundamentalRansac(vector<Correspondence *> *data)
 {
-    Ransac<Correspondence, ModelFundamental8Point>
-        ransac(trySize, ransacParams);
+    Ransac<ModelFundamental8Point> ransac(trySize, ransacParams);
 
     ransac.data = data;
 
@@ -172,13 +186,13 @@ Matrix33 RansacEstimator::getEssentialRansac1(CorrespondenceList *list)
 
 Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
 {
-    Ransac<Correspondence, ModelEssential8Point>
-        ransac(trySize, ransacParams);
+
+    Ransac<ModelEssential8Point> ransac(trySize, ransacParams);
 
     ransac.data = data;
     ransac.trace = trace;
 
-    ModelEssential8Point result = ransac.getModelRansac();
+    ModelEssential8Point result = ransac.getModelRansac();    
     int fitcount = 0;
     for (unsigned i = 0; i < data->size(); i++)
     {
@@ -237,7 +251,7 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
 
 
 #if 1
-    Ransac<Correspondence, Model5Point>  ransac(5, params);
+    Ransac<Model5Point>  ransac(5, params);
     ransac.rng.seed(1337);
     ransac.trace = trace;
     ransac.data = &dataPtr;

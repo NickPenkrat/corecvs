@@ -117,6 +117,12 @@ void ILFormat::saveIntrisics(const CameraProjection &projection, std::ostream &s
         stream << pinhole->size().x() << " " << pinhole->size().y()  << " ";
         return;
     }
+    if (projection.projection == IL_OMNIDIRECTIONAL)
+    {
+         stream << IL_OMNIDIRECTIONAL << endl;
+
+        return;
+    }
     stream << "unsupported" << endl;
 }
 

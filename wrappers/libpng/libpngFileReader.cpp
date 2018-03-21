@@ -104,11 +104,13 @@ RGB24Buffer *LibpngFileReader::load(string name)
 
 bool LibpngFileReader::save(const string &name, const RGB24Buffer *buffer, int quality, bool alpha)
 {
-    return savePNG(name, buffer, quality);
+    return savePNG(name, buffer, quality, alpha);
 }
 
 bool LibpngFileReader::savePNG(const string &name, const RGB24Buffer *buffer, int quality, bool alpha)
 {
+    CORE_UNUSED(quality);
+
     png_byte ** row_pointers;
     png_structp png_ptr = nullptr;
     png_infop info_ptr = nullptr;

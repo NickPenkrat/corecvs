@@ -504,6 +504,12 @@ public:
         return RGBColor(255, 191, 0);
     }
 
+    static RGBColor Purple()
+    {
+        return RGBColor(128, 0, 128);
+    }
+
+
 
     static RGBColor lerpColor(const RGBColor &first, const RGBColor &second, double alpha)
     {

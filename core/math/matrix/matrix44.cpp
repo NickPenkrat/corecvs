@@ -408,6 +408,9 @@ bool Matrix44::decomposeTRS(Vector3dd& scale, Vector3dd& translate, Matrix33& ro
 
 		RANKDECOMPOSE(aa, bb, cc, fAbsX, fAbsY, fAbsZ);
 
+        CORE_UNUSED(aa);
+        CORE_UNUSED(bb);
+
 		*ppvBasis[b] = Vector4dd(ppvBasis[a]->xyz() ^ pvCanonicalBasis[cc]->xyz(), 0);
 	}
 

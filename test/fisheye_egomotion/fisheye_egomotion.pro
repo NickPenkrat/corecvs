@@ -28,10 +28,6 @@ RCC_DIR  = $$OBJECTS_DIR
 
 DESTDIR  = $$ROOT_DIR/bin
 
-SOURCES += \ 
-    main_fisheye_egomotion.cpp \
-    modCostFunction.cpp
-
 !win32 {
     # Linux version
     exists($$ROOT_DIR/bin/libcvs_res_interface.a): exists($$ROOT_DIR/bin/libcvs_core_restricted.a) {
@@ -44,6 +40,12 @@ SOURCES += \
     }
 
 }
+
+SOURCES += \ 
+    main_fisheye_egomotion.cpp \
+    modCostFunction.cpp        \
+
+
 
 HEADERS += \
     modCostFunction.h
