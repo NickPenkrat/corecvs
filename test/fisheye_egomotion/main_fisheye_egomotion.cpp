@@ -241,12 +241,54 @@ void jointOptimisationRANSAC(MODCostFunctionData &data)
 
     cout << "jointOptimisationRANSAC() finishing" << result.transform[0] << endl;
     cout << "Polinom after before" << endl;
+    data.projection.mN.resize(MODCostFunctionData::OMNIDIR_POWER);
     for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
     {
         cout << "res " << result.projectionN[i] << " <-> " << data.projection.mN[i] << endl;
         data.projection.mN[i] = result.projectionN[i];
     }
 
+    /* Output test scene */
+    FixtureScene scene;
+
+    CameraFixture *frameFixture = scene.createCameraFixture();
+
+    FixtureCamera *zero = scene.createCamera();
+
+    zero->intrinsics.reset(data.projection.clone());
+    zero->setLocation(Affine3DQ::Identity());
+
+    scene.addCameraToFixture(zero, frameFixture);
+
+    for (size_t i = 0; i < data.transform.size(); i++)
+    {
+        FixtureCamera *cam = scene.createCamera();
+        cam->copyModelFrom(data.projection.clone());
+        cam->setLocation(data.transform[i]);
+
+        scene.addCameraToFixture(cam, frameFixture);
+
+    }
+
+#if 0
+    for (size_t corrId = 0; corrId < flowInput.size(); corrId++) {
+        SceneFeaturePoint *point = scene.createFeaturePoint();
+
+        SceneObservation observation1(zero, point, Vector2dd::Zero(), frameFixture);
+        point->observations[zero] = observation1;
+        point->observations[zero].setUndist(flowInput[corrId]->start);
+
+        SceneObservation observation2(cam2, point, Vector2dd::Zero(), frameFixture);
+        point->observations[cam2] = observation2;
+        point->observations[cam2].setUndist(flowInput[corrId]->end);
+    }
+#endif
+
+
+    {
+        JSONPrinter printer("joint.json");
+        printer.visit(scene, "scene");
+    }
 
 
 }
@@ -659,6 +701,7 @@ int main(int argc, char **argv)
 
         if (createScene && framecount == 2)
         {
+            SYNC_PRINT(("Outputting scene\n"));
             FixtureScene scene;
 
             CameraFixture *frameFixture = scene.createCameraFixture();
@@ -675,28 +718,64 @@ int main(int argc, char **argv)
             scene.addCameraToFixture(cam1, frameFixture);
             scene.addCameraToFixture(cam2, frameFixture);
 
-            ImageRelatedData *image1 = scene.createImageData();
-            image1->mImagePath = "prev.bmp";
-            cam1->addImageToCamera(image1);
+            ImageRelatedData *image1 = scene.addImageToCamera(cam1, "prev.bmp");
             BufferFactory::getInstance()->saveRGB24Bitmap(prevFrame.get(),  image1->mImagePath);
 
-            ImageRelatedData *image2 = scene.createImageData();
-            image2->mImagePath = "curr.bmp";
-            cam2->addImageToCamera(image2);
+            ImageRelatedData *image2 = scene.addImageToCamera(cam2, "curr.bmp");
             BufferFactory::getInstance()->saveRGB24Bitmap(curFrame.get(),  image2->mImagePath);
 
 
-            for (size_t corrId = 0; corrId < flowInput.size(); corrId++) {
+            for (size_t corrId = 0; corrId < flowList->size(); corrId++) {
                 SceneFeaturePoint *point = scene.createFeaturePoint();
 
-                SceneObservation observation1(cam1, point, Vector2dd::Zero());
-                point->observations[cam1] = observation1;
-                point->observations[cam1].setUndist(flowInput[corrId]->start);
+                Vector2dd start = flowList->operator [](corrId).start;
+                Vector2dd end   = flowList->operator [](corrId).end;
 
-                SceneObservation observation2(cam2, point, Vector2dd::Zero());
+                SceneObservation observation1(cam1, point, Vector2dd::Zero(), frameFixture);
+                point->observations[cam1] = observation1;
+                point->observations[cam1].setUndist(start);
+
+                SceneObservation observation2(cam2, point, Vector2dd::Zero(), frameFixture);
                 point->observations[cam2] = observation2;
-                point->observations[cam2].setUndist(flowInput[corrId]->end);
+                point->observations[cam2].setUndist(end);
+
+                /* Trigger cache calculation */
+                point->observations[cam1].getDist();
+                point->observations[cam2].getDist();
+                point->observations[cam1].getRay();
+                point->observations[cam2].getRay();
+
+                Vector2dd center = unwrapper.model.intrinsics->principal();
+                if ((start - center).l2Metric() > unwrapper.model.intrinsics->size().minimum() / 2)
+                {
+                    continue;
+                }
+
+                bool ok = false;
+                Vector3dd pos = point->triangulateByRays(&ok);
+                if (ok) {
+
+                    Vector3dd d1 = point->observations[cam1].getRay();
+                    Vector3dd d2 = point->observations[cam2].getRay();
+
+                    if (d1.angleTo(d2) < degToRad(0.1)) {
+                        point->color = RGBColor::Red();
+                    } else {
+                        point->color = RGBColor::FromFloat((prevFrame->elementBl(start).toFloat() + curFrame->elementBl(end).toFloat()) / 2);
+                    }
+                    point->reprojectedPosition = pos;
+                    point->hasKnownReprojectedPosition = true;
+                } else {
+                    point->observations.clear();
+                    //point->reprojectedPosition = Vector3dd(std::numeric_limits<double>::quiet_NaN());
+                    point->hasKnownReprojectedPosition = false;
+                }
+
+                if (corrId % 100 == 0) {
+                    SYNC_PRINT(("\r%2.2lf%%", 100.0 * corrId / flowList->size()));
+                }
             }
+            SYNC_PRINT(("\n"));
 
             {
                 JSONPrinter printer("testscene.json");

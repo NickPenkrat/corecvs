@@ -103,7 +103,7 @@ public:
 
         if (trace) {
              //SYNC_PRINT(("getModelRansac(): called with threshold %lf\n", ge));
-             std::cout << "getModelRansacMultimodel(): called with\n" << *this << std::endl;
+             //std::cout << "getModelRansacMultimodel(): called with\n" << *this << std::endl;
         }
 
         while (true)
@@ -120,9 +120,10 @@ public:
 
                 for (size_t i = 0; i < data->size(); i++)
                 {
-                    if (model.fits(*(data->at(i)), inlierThreshold()))
-                        inliers++;
-                    costs.push_back(model.getCost(*(data->at(i))));
+                    if (model.fits(*data->operator[](i), inlierThreshold())) {
+                       inliers++;
+                    }
+                    costs.push_back(std::abs(model.getCost(*data->operator[](i))));
                 }
 
                 auto it = costs.begin() + (costs.size() / 2);

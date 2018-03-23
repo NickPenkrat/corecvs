@@ -234,6 +234,11 @@ public:
      **/
     Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr, bool* succeeded = nullptr, bool trace = false, bool checkMinimalAngle = false, double thresholdCos = triangulatorCosAngleThreshold);
 
+    /** Triangulation that uses only ray geometry,  without taking in account any camera pixel properties **/
+    /** TODO: So far only two rays form two observations are used */
+    /** Use this to make it universal - https://math.stackexchange.com/questions/61719/finding-the-intersection-point-of-many-lines-in-3d-point-closest-to-all-lines **/
+    Vector3dd triangulateByRays(bool* succeeded = NULL);
+
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
 

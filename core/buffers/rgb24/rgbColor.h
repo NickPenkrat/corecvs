@@ -652,6 +652,13 @@ template<class VisitorType>
         return RGBColor((uint8_t)input1.x(), (uint8_t)input1.y(), (uint8_t)input1.z());
     }
 
+    static RGBColor FromFloat(const Vector3df &input)
+    {
+        Vector3df input1 = input;
+        input1.mapToHypercube(Vector3df(0.0, 0.0, 0.0), Vector3df(255.0, 255.0, 255.0));
+        return RGBColor((uint8_t)input1.x(), (uint8_t)input1.y(), (uint8_t)input1.z());
+    }
+
     static RGBColor FromHSV(uint16_t h, uint8_t s, uint8_t v)
     {
         int c = ((int)(s * v)) / 255;

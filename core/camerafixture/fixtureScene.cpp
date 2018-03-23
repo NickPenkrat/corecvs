@@ -680,6 +680,16 @@ void FixtureScene::addCameraToFixture(FixtureCamera *cam, CameraFixture *fixture
     cam->sequenceNumber = (int)fixture->cameras.size() - 1;
 }
 
+ImageRelatedData * FixtureScene::addImageToCamera(FixtureCamera *cam, std::string path)
+{
+    if (cam == NULL)
+        return NULL;
+    ImageRelatedData *image = createImageData();
+    image->mImagePath = path;
+    cam->addImageToCamera(image);
+    return image;
+}
+
 int FixtureScene::getObservationNumber(CameraFixture *fixture)
 {
     int count = 0;

@@ -367,7 +367,20 @@ public:
 
 
     /**
-     *   NYI
+     *   \f[
+     *     H=\frac{\|(\mathbf{c}-\mathbf{a})\times\mathbf{d}\|}{\|\mathbf{d}\|}
+     *     (\mathbf{a}\times\mathbf{b})\cdot(\mathbf{a}\times\mathbf{b})=\|\mathbf{a}\|^2\|\mathbf{b}\|^2-(\mathbf{a}\cdot\mathbf{b})^2
+     *     H^2=\frac{\|\mathbf{c}-\mathbf{a}\|^2\|\mathbf{d}\|^2-\|(\mathbf{c}-\mathbf{a})\cdot\mathbf{d}\|^2 }{\|\mathbf{d}\|^2}
+     *
+     *     H^2=\frac{\|\mathbf{c}-\mathbf{a}\|^2\|\mathbf{d}\|^2-\|(\mathbf{c}-\mathbf{a})\cdot\mathbf{d}\|^2 }{\|\mathbf{d}\|^2}
+     *
+     *
+     *     \frac{d(H^2)}{d\mathbf{c}}=2(\mathbf{c}-\mathbf{a})-2\mathbf{d}\frac{(\mathbf{c}-\mathbf{a})\cdot\mathbf{d}}{\|\mathbf{d}\|^2}
+     *
+     *     0=\sum_{i=0}^m{\mathbf{c}-\mathbf{a}^{(i)}-\mathbf{d}^{(i)}\frac{(\mathbf{c}-\mathbf{a}^{(i)})\cdot\mathbf{d}^{(i)}}{\|\mathbf{d}^{(i)}\|^2}}
+     *   \f]
+     *
+     *
      **/
     static Vector3dd bestFit(Ray3d * /*rays*/, unsigned /*number*/)
     {

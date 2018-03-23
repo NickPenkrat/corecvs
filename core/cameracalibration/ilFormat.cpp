@@ -117,11 +117,20 @@ void ILFormat::saveIntrisics(const CameraProjection &projection, std::ostream &s
         stream << pinhole->size().x() << " " << pinhole->size().y()  << " ";
         return;
     }
-    if (projection.projection == IL_OMNIDIRECTIONAL)
+    if (projection.projection == ProjectionType::OMNIDIRECTIONAL)
     {
-         stream << IL_OMNIDIRECTIONAL << endl;
+         const OmnidirectionalProjection *omni = static_cast<const OmnidirectionalProjection *>(&projection);
 
-        return;
+         stream << IL_OMNIDIRECTIONAL << endl;
+         stream << omni->focal() << " ";
+         stream << (omni->principalX() / omni->focal()) << " ";
+         stream << (omni->principalY() / omni->focal()) << " ";
+         stream << (omni->mN.size() + 1)  << " ";
+         stream << 1.0  << " ";
+         for (size_t i = 0; i < omni->mN.size(); i++)
+             stream << omni->mN[i]  << " ";
+         stream << endl;
+         return;
     }
     stream << "unsupported" << endl;
 }

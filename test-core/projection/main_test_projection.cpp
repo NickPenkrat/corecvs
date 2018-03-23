@@ -157,9 +157,43 @@ TEST(projection, testFormatLoad)
     "1578 1.35292 1.12018 5 0.520776 -0.561115 -0.560149 1.01397 -0.870155";
     std::istringstream ss(input);
 
-    CameraModel model;
-    model.intrinsics.reset(ILFormat::loadIntrisics(ss));
-    cout << model;
+    unique_ptr<CameraProjection> model;
+    model.reset(ILFormat::loadIntrisics(ss));
+
+    std::ostringstream so;
+    so.imbue(std::locale("C"));
+    so << std::setprecision(std::numeric_limits<double>::digits10 + 2);
+    ILFormat::saveIntrisics(*(model.get()), so);
+    cout << so.str();
+
+    std::istringstream ss1(so.str());
+
+    unique_ptr<CameraProjection>  model1;
+    model1.reset(ILFormat::loadIntrisics(ss1));
+
+    CORE_ASSERT_TRUE(model  != NULL, "Model is NULL");
+    CORE_ASSERT_TRUE(model1 != NULL, "Model1 is NULL");
+
+
+    CORE_ASSERT_TRUE(model ->projection == ProjectionType::OMNIDIRECTIONAL, "Failed to load");
+    CORE_ASSERT_TRUE(model1->projection == ProjectionType::OMNIDIRECTIONAL, "Failed to resave");
+
+    OmnidirectionalProjection *o1 = static_cast<OmnidirectionalProjection *>(model .get());
+    OmnidirectionalProjection *o2 = static_cast<OmnidirectionalProjection *>(model1.get());
+
+    cout << "Old:" << *o1 << endl;
+    cout << "New:" << *o2 << endl;
+
+
+    CORE_ASSERT_TRUE(o1->principal().notTooFar(o2->principal()), "Failed to resave pos");
+    CORE_ASSERT_DOUBLE_EQUAL_E(o1->focal(), o2->focal(), 1e-7, "Failed to resave focal");
+
+    CORE_ASSERT_TRUE(o1->mN.size() == o2->mN.size(), "Failed to load params");
+    for (size_t i = 0; i < o1->mN.size(); i++)
+    {
+        CORE_ASSERT_DOUBLE_EQUAL_E(o1->mN[i], o2->mN[i], 1e-7, "Failed to load polynom");
+    }
+
 }
 
 

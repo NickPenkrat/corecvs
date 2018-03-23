@@ -350,6 +350,9 @@ public:
     virtual void positionCameraInFixture(CameraFixture *station, FixtureCamera *camera, const Affine3DQ &location);
     virtual void addCameraToFixture     (FixtureCamera *cam, CameraFixture *fixture);
 
+    /** Helper function that creates new ImageRelatedData and adds it to given camera **/
+    virtual ImageRelatedData * addImageToCamera       (FixtureCamera *cam, std::string path);
+
     /**/
     virtual int getObservationNumber(CameraFixture *fixture);
     virtual int getObservationNumber(FixtureCamera *cam);

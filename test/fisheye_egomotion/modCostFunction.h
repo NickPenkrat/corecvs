@@ -156,7 +156,7 @@ public:
         {
             model.projectionN.push_back(result[i]);
         }
-        cout << result;
+        //cout << result;
         toReturn.push_back(model);
         return toReturn;
 

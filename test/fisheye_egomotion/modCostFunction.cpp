@@ -28,7 +28,7 @@ void MODCostFunction::operator()(const double in[], double out[])
         r2.p = T.shift + r2.p;
 
         Vector3dd e = r1.intersectCoef(r2);
-        double t = 2 * e.z() / (e.x() * e.y());
+        double t = 2 * e.z() / (e.x() + e.y());
         out[i] = t;
     }
 }
@@ -80,5 +80,5 @@ double MODModel::getCost(const Correspondence &corr)
     r2.p = T.shift + r2.p;
 
     Vector3dd e = r1.intersectCoef(r2);
-    return 2 * e.z() / (e.x() * e.y());
+    return 2 * e.z() / (e.x() + e.y());
 }
