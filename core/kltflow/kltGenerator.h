@@ -372,7 +372,7 @@ public:
     */
 
             //calculating mismatch vector
-            Vector2dd b = Vector2dd(0.0);
+            Vector2dd b   = Vector2dd(0.0);
             Vector3dd mSG = Vector3dd(0.0);
 
             DOTRACE(("\n"));
@@ -385,6 +385,13 @@ public:
                     double x =  point.x() + (double)j;
                     double y =  point.y() + (double)i;
 
+                    if (!first->isValidCoordBl(y, x)) {
+                        continue;
+                    }
+                    if (!second->isValidCoordBl(y + currentGuess.y(), x + currentGuess.x())) {
+                        continue;
+                    }
+
                     double dI = interpolator.interpolate(y, x, first) -
                                 interpolator.interpolate(y + currentGuess.y(), x + currentGuess.x(), second);
 
@@ -394,13 +401,14 @@ public:
                                 ) / (CORE_MIN(first->w - 1.0, x + 1.0) - CORE_MAX(0.0, x - 1.0));
 
                     double Iy = (double)(
-                                interpolator.interpolate(CORE_MIN(first->h - 1.0, y + 1.0), x, first) -
+                            interpolator.interpolate(CORE_MIN(first->h - 1.0, y + 1.0), x, first) -
                             interpolator.interpolate(CORE_MAX(0.0, y - 1.0), x, first)
                                 ) / (CORE_MIN(first->h - 1.0, y) - CORE_MAX(0.0, y - 1.0));
+
                     DOTRACE(("%d %d ( %lf %lf %lf)\n", i, j, dI, Ix, Iy));
 
                     mSG += Vector3dd(Ix * Ix, Ix * Iy, Iy * Iy);
-                    b += Vector2dd(Ix, Iy) * dI;
+                    b   += Vector2dd(Ix, Iy) * dI;
                 }
             }
 

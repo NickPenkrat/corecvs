@@ -202,9 +202,11 @@ public:
         int32_t i = (int32_t)floor(y);
         int32_t j = (int32_t)floor(x);
 
+#if 0
         CORE_ASSERT_TRUE_P(buffer->isValidCoordBl(y, x),
             ("Invalid coordinate in AbstractContiniousBuffer::elementBl(double y=%lf, double x=%lf) buffer sizes is [%dx%d]",
                y, x, buffer->w, buffer->h));
+#endif
 
         double a = (double)buffer->element(i    ,j    );
         double b = (double)buffer->element(i    ,j + 1);
