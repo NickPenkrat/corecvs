@@ -2,6 +2,7 @@
 #define DYNAMICOBJECT_H
 
 #include "core/reflection/reflection.h"
+#include "core/reflection/printerVisitor.h"
 
 namespace corecvs {
 
@@ -247,6 +248,14 @@ public:
     void printRawObject()
     {
          DynamicObjectWrapper(reflection, rawObject).printRawObject();
+    }
+
+    friend std::ostream & operator << (std::ostream &out, const DynamicObject &object)
+    {
+        corecvs::PrinterVisitor printer(out);
+        /* We can garantee that Printer maintains constness*/
+        (const_cast<DynamicObject &>(object)).accept<corecvs::PrinterVisitor>(printer);
+        return out;
     }
 
 private:
