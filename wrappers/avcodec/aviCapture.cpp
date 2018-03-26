@@ -87,7 +87,7 @@ ImageCaptureInterface::FramePair AviCapture::getFrame()
     CaptureStatistics  stats;
     PreciseTimer start = PreciseTimer::currentTime();
 
-//    SYNC_PRINT(("AviCapture::getFrame(): called\n"));
+    SYNC_PRINT(("AviCapture::getFrame(): called\n"));
     //mProtectFrame.lock();
         FramePair result(NULL, NULL);
         int res;
@@ -133,6 +133,8 @@ ImageCaptureInterface::FramePair AviCapture::getFrame()
 
             result.setRgbBufferRight (new RGB24Buffer(result.rgbBufferLeft()));
             result.setBufferRight    (new G12Buffer(result.bufferLeft()));
+        } else {
+            SYNC_PRINT(("AviCapture::getFrame(): av_read_frame failed with %d", res));
         }
 
 

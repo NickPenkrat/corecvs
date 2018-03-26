@@ -33,7 +33,7 @@ void PDOGenerator::enterFieldContext(int i)
 
     cppType = getCppTypeForType(field);
     fieldRefType = getFieldRefTypeForType(type);
-    descr = field->name.decription;
+    descr = field->name.description;
     comment = field->name.comment;
 
     defaultValue = getDefaultValue(field);
@@ -80,7 +80,7 @@ void PDOGenerator::generatePDOEnumSubH(const EnumReflectionGen *eref)
 
     QString enumName = toCamelCase(QString(eref->name.name), true);
     QString enumComment = eref->name.comment;
-    QString enumDescr   = eref->name.decription;
+    QString enumDescr   = eref->name.description;
 
 //    qDebug() << "Generating enum " << enumName;
 
@@ -120,7 +120,7 @@ void PDOGenerator::generatePDOEnumSubH(const EnumReflectionGen *eref)
         const EnumOption *option = eref->options[j];
         QString optionName = toEnumName(QString(option->name.name));
         QString optionComment = option->name.comment;
-        QString optionDescr   = option->name.decription;
+        QString optionDescr   = option->name.description;
         QString optionID   = QString::number(option->id);
 
     result+=
@@ -182,7 +182,7 @@ void PDOGenerator::generatePDOH()
     QString guardDefine = classCapitalName + "_H_";
     QString className   = toCamelCase(clazz->name.name, true);
     QString classComment = clazz->name.comment;
-    QString classDescr   = clazz->name.decription;
+    QString classDescr   = clazz->name.description;
 
     out.close();
     out.open(QString(getGenerateDir() + QDir::separator() + fileName).toLatin1(), ios::out);
@@ -441,7 +441,7 @@ void PDOGenerator::generatePDOH()
         const Reflection    *embedReflection = embed->subclass;
         name       = embed->name.name;
         comment    = embed->name.comment;
-        descr      = embed->name.decription;
+        descr      = embed->name.description;
         cppType    = toCamelCase(embedReflection->name.name, true);
         getterName = toCamelCase(name, false);
         setterName = QString("set") + toCamelCase(name, true);
@@ -590,7 +590,7 @@ void PDOGenerator::generatePDOCpp()
     QString className   = toCamelCase(clazz->name.name, true);
 
     QString classComment = clazz->name.comment;
-    QString classDescr   = clazz->name.decription;
+    QString classDescr   = clazz->name.description;
 
     out.close();
     out.open(QString(getGenerateDir() + QDir::separator() + fileName).toLatin1(), ios::out);
@@ -633,7 +633,7 @@ void PDOGenerator::generatePDOCpp()
     "    ReflectionNaming &nameing = naming();\n"
     "    nameing = ReflectionNaming(\n"
     "        \"" + clazz->name.name + "\",\n"
-    "        \"" + clazz->name.decription + "\",\n"
+    "        \"" + clazz->name.description + "\",\n"
     "        \"" /*+ clazz->name.comment +*/ "\"\n"  //  We need to decorate comment
     "    );\n"
     "\n"

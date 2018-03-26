@@ -59,7 +59,7 @@ ReflectionWidget::ReflectionWidget(const Reflection *reflection, FieldsType type
 
         QLabel *label = new QLabel(this);
         label->setText(QString(field->getSimpleName()));
-        label->setToolTip(mark + QString(field->name.decription));
+        label->setToolTip(mark + QString(field->name.description));
         gridLayout->addWidget(label, i, NAME_COLUMN, 1, 1);
         QWidget *widget = NULL;
 

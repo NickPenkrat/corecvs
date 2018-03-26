@@ -501,8 +501,8 @@ PointPath SceneFeaturePoint::getEpipath(FixtureCamera *camera1, FixtureCamera *c
         Vector3dd orgN = org.normalised();
         Vector3dd disN = dis.normalised();
 
-        cout << orgN << endl;
-        cout << disN << endl;
+        // cout << orgN << endl;
+        // cout << disN << endl;
 
         mesh.addPoint(spos);
         mesh.setColor(RGBColor::Red());
@@ -512,7 +512,7 @@ PointPath SceneFeaturePoint::getEpipath(FixtureCamera *camera1, FixtureCamera *c
 
         mesh.setColor(RGBColor::Blue());
 
-        for (int segm = 0; segm < 100; segm++)
+        for (int segm = 0; segm < segments; segm++)
         {
             double a = lerp(0.0, M_PI / 2, segm, 0, segments);
             Vector3dd inter = orgN * cos(a) + disN * sin (a);

@@ -11,13 +11,13 @@
 using namespace corecvs;
 
 
-class MODCostFunctionData
+class MODPointsCostFunctionData
 {
 public:
     CorrespondenceList obseravtions;
     vector<Affine3DQ> transform;
     OmnidirectionalProjection projection;
-    MODCostFunctionData();
+    MODPointsCostFunctionData();
 
     static const int OMNIDIR_POWER = 4;
     static const int MOVE_MODEL = 7;
@@ -39,12 +39,12 @@ public:
 
 };
 
-class MODModel
+class MODPointsModel
 {
 public:
     vector<Affine3DQ> transform;
     vector<double> projectionN;
-    MODCostFunctionData *context = NULL;
+    MODPointsCostFunctionData *context = NULL;
 
     double getCost(const Correspondence &corr);
 
@@ -55,12 +55,12 @@ public:
 };
 
 
-class MODCostFunction : public FunctionArgs
+class MODPointsCostFunction : public FunctionArgs
 {
 public:
-    MODCostFunctionData *data = NULL;
+    MODPointsCostFunctionData *data = NULL;
 
-    MODCostFunction(MODCostFunctionData *data) :
+    MODPointsCostFunction(MODPointsCostFunctionData *data) :
         FunctionArgs(data->getInputSize(), data->getOutputSize()),
         data(data)
     {
@@ -74,12 +74,12 @@ public:
 };
 
 
-class MODCostFunctionNormalise : public FunctionArgs
+class MODPointsCostFunctionNormalise : public FunctionArgs
 {
 public:
-    MODCostFunctionData *data = NULL;
+    MODPointsCostFunctionData *data = NULL;
 
-    MODCostFunctionNormalise(MODCostFunctionData *data) :
+    MODPointsCostFunctionNormalise(MODPointsCostFunctionData *data) :
         FunctionArgs(data->getInputSize(), data->getInputSize()),
         data(data)
     {
@@ -91,25 +91,25 @@ public:
 
 
 
-class MODJointOptimisation
+class MODPointsJointOptimisation
 {
 public:
     typedef Correspondence  SampleType;
-    typedef MODModel        ModelType;
+    typedef MODPointsModel        ModelType;
 
-    MODCostFunctionData *baseData = NULL;
+    MODPointsCostFunctionData *baseData = NULL;
 
-    MODJointOptimisation() {}
+    MODPointsJointOptimisation() {}
 
-    static vector<MODModel> getModels(const vector<Correspondence *> &samples, MODJointOptimisation *context)
+    static vector<MODPointsModel> getModels(const vector<Correspondence *> &samples, MODPointsJointOptimisation *context)
     {
-        vector<MODModel> toReturn;
+        vector<MODPointsModel> toReturn;
 
         if (context == NULL || context->baseData == NULL)
             return toReturn;
 
         /** Simplified vertion with less observations **/
-        MODCostFunctionData data;
+        MODPointsCostFunctionData data;
 
         data.projection = context->baseData->projection;
         data.transform  = context->baseData->transform;
@@ -120,8 +120,8 @@ public:
             data.obseravtions.push_back(*samples[i]);
         }
 
-        MODCostFunction          cost(&data);
-        MODCostFunctionNormalise normalise(&data);
+        MODPointsCostFunction          cost(&data);
+        MODPointsCostFunctionNormalise normalise(&data);
 
         LevenbergMarquardt LMfit;
         LMfit.f = &cost;
@@ -137,29 +137,29 @@ public:
         input.resize (cost.inputs);
         output.resize(cost.outputs, 0);
 
-        for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
+        for (int i = 0; i < MODPointsCostFunctionData::OMNIDIR_POWER; i++)
             input[i] = data.projection.mN[i];
 
         for (size_t i = 0; i < data.transform.size(); i++)
         {
             Affine3DQ guess = data.transform[i];
-            guess.shift.storeTo(&input[i * MODCostFunctionData::MOVE_MODEL + MODCostFunctionData::OMNIDIR_POWER]);
-            guess.rotor.storeTo(&input[i * MODCostFunctionData::MOVE_MODEL + MODCostFunctionData::OMNIDIR_POWER + 3]);
+            guess.shift.storeTo(&input[i * MODPointsCostFunctionData::MOVE_MODEL + MODPointsCostFunctionData::OMNIDIR_POWER]);
+            guess.rotor.storeTo(&input[i * MODPointsCostFunctionData::MOVE_MODEL + MODPointsCostFunctionData::OMNIDIR_POWER + 3]);
         }
 
         result = LMfit.fit(input, output);
 
-        MODModel model;
+        MODPointsModel model;
         model.context = context->baseData;
         model.transform.resize(data.transform.size());
 
         for (size_t i = 0; i < data.transform.size(); i++)
         {
-            model.transform[i].shift.loadFrom(&result[MODCostFunctionData::OMNIDIR_POWER]);
-            model.transform[i].rotor.loadFrom(&result[MODCostFunctionData::OMNIDIR_POWER + 3]);
+            model.transform[i].shift.loadFrom(&result[MODPointsCostFunctionData::OMNIDIR_POWER]);
+            model.transform[i].rotor.loadFrom(&result[MODPointsCostFunctionData::OMNIDIR_POWER + 3]);
         }
 
-        for (int i = 0; i < MODCostFunctionData::OMNIDIR_POWER; i++)
+        for (int i = 0; i < MODPointsCostFunctionData::OMNIDIR_POWER; i++)
         {
             model.projectionN.push_back(result[i]);
         }

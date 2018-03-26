@@ -113,7 +113,7 @@ void WidgetUiGenerator::enterFieldContext(int i)
     type = field->type;
     ui = getUiWidgetForType(type);
     boxSignal = getSignalForType(type);
-    descr = field->name.decription;
+    descr = field->name.description;
     comment = field->name.comment;
     pos = QString::number(i);
     boxName = toCamelCase(name, false) + getWidgetSuffixForType(type);;
@@ -287,7 +287,7 @@ QString WidgetUiGenerator::getEnumWidgetProperties(const BaseField* field)
         const EnumOptionGen *option = static_cast<const EnumOptionGen *>(eref->options[j]);
 
         const QString name = option->name.name;
-        const QString descr = option->name.decription;
+        const QString descr = option->name.description;
 
         result += ITEM_HEADER_TEMPLATE.arg(descr);
 
