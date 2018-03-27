@@ -33,6 +33,9 @@ public:
     FloatFlow(int    val)               : isKnown(val != 0), vector(0.0) {}
     FloatFlow(bool  _isKnown)           : isKnown(_isKnown), vector(0.0) {}
     FloatFlow(const Vector2dd &_vector) : isKnown(true), vector(_vector) {}
+    FloatFlow(const double &vx, const double &vy)
+                                        : isKnown(true), vector(vx,vy)   {}
+
 
     FloatFlow& operator=(const FloatFlow &other) { isKnown = other.isKnown; vector = other.vector; return *this; }
 };
@@ -61,7 +64,6 @@ public:
     /**
      *  Depricated. Ready for removal
      **/
-    //FloatFlowBuffer(int32_t h, int32_t w, uint16_t *data) : FloatFlowBufferBase(h, w, data) {}
 
     inline bool isElementKnown(const int32_t y, const int32_t x) const
     {
@@ -82,6 +84,8 @@ public:
     {
 //    	printf("FloatFlowBuffer::preciseFlow() called\n");
         FloatFlowBuffer *toReturn = NULL;
+        if (flow == NULL || first == NULL || second == NULL )
+            return toReturn;
 
         SpatialGradient *sg = new SpatialGradient(first);
         SpatialGradientIntegralBuffer *gradient = new SpatialGradientIntegralBuffer(sg);
@@ -125,6 +129,7 @@ public:
         KLTGenerator<InterpolationType> kltGenerator(
                 Vector2d32(params.kLTRadiusW(), params.kLTRadiusH()),
                 params.kLTIterations());
+
         for (int i = 0; i < first->h; i++)
         {
             for (int j = 0; j < first->w; j++)

@@ -166,6 +166,26 @@ TEST(Rectification, testFundamentalEstimator)
 
 }
 
+
+TEST(CorrespondenceList, fromFloat)
+{
+    FloatFlowBuffer buffer(4,4);
+    for (int i = 0; i < buffer.h; i++)
+        for (int j = 0; j < buffer.w; j++)
+            buffer.element(i,j) = FloatFlow(1.1, 1.1);
+
+
+    CorrespondenceList list(&buffer);
+
+    for (int i = 0; i < list.size(); i++ )
+        cout << i << " " << list[i] << endl;
+
+    ASSERT_TRUE((list[0].end.notTooFar(Vector2dd(1.1, 1.1)), "First element fail"));
+    ASSERT_TRUE((list[15].end.notTooFar(Vector2dd(4.1, 4.1)), "Last element fail"));
+
+}
+
+
 #define GRID_STEP1 4
 
 TEST(Rectification, testIterativeEstimator)

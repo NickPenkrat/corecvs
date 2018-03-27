@@ -235,7 +235,7 @@ public:
             SYNC_PRINT(("Seem to copyTo object of the wrong type"));
             return false;
         }
-        target = static_cast<Type *>(rawObject);
+        *target = *static_cast<Type *>(rawObject);
         return true;
     }
 
