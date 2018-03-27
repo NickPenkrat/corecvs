@@ -8,6 +8,7 @@
 #include <iostream>
 #include <time.h>
 
+#include "core/utils/global.h"
 #include "core/rectification/ransacEstimator.h"
 #include "core/geometry/mesh3d.h"
 #include "core/cameracalibration/calibrationDrawHelpers.h"
@@ -26,6 +27,7 @@
 
 #include "core/camerafixture/fixtureScene.h"
 #include "core/camerafixture/cameraFixture.h"
+#include "xml/generated/fisheyeEgomotionParameters.h"
 
 #ifdef WITH_OPENCV
 #include "openCVTools.h"
@@ -38,6 +40,7 @@
 #include "modCostFunction.h"
 
 #include <core/reflection/jsonPrinter.h>
+#include <core/reflection/usageVisitor.h>
 
 
 using namespace std;
@@ -152,7 +155,10 @@ public:
         frame.p1 = Vector3dd(-1.5, -1.5, 1.0);
 
         unwrapSize = Vector2dd(1000, 1000);
+    }
 
+    ~Unwrapper() {
+        delete_safe(remapCache);
     }
 
     RGB24Buffer* unwrap(RGB24Buffer* input, bool cache = true)
@@ -260,14 +266,15 @@ void jointOptimisationRANSAC(MODCostFunctionData &data)
 
     scene.addCameraToFixture(zero, frameFixture);
 
+    Affine3DQ totalTransform = Affine3DQ::Identity();
+
     for (size_t i = 0; i < data.transform.size(); i++)
     {
+        totalTransform = data.transform[i] * totalTransform;
         FixtureCamera *cam = scene.createCamera();
         cam->copyModelFrom(data.projection.clone());
-        cam->setLocation(data.transform[i]);
-
+        cam->setLocation(totalTransform);
         scene.addCameraToFixture(cam, frameFixture);
-
     }
 
 #if 0
@@ -365,42 +372,33 @@ int main(int argc, char **argv)
 #endif
 
     if (argc <= 1) {
-        SYNC_PRINT(("Give me input\n"));       
-        SYNC_PRINT((" fisheye_egomotion --caps\n"));
-        SYNC_PRINT((" fisheye_egomotion [--provider=<flow name>] [--frames=<n>] [--joint] [--scene] [--skipf=<n>] [--unwrap] [--intrinsics=<filename>] <aviname>\n"));
-        SYNC_PRINT(("   --provider which flow provider to use. For options see --caps \n"));
-        SYNC_PRINT(("   --frames   how many frames to process \n"));
-        SYNC_PRINT(("   --scene    create scene to deeply analise data \n"));
-        SYNC_PRINT(("   --joint    try to optimise projection with flow\n"));
-        SYNC_PRINT(("Give me input\n"));
-
+        printf(("Usage:\n"));
+        printf((" fisheye_egomotion [<options>]\n"));
+        UsagePrinter::printUsage(&FisheyeEgomotionParameters::reflection);
+        printf(("\n"));
+        printf(("Example\n"));
+        printf((" fisheye_egomotion --frames=30 --skipf=0 --intrinsics=new-intr.txt --rthreshold=0.0032 --dthreshold=0.0034 --scene --unwarp --subpixel --provider=CVS /media/workarea/work/ADAS/mod2/video_svm_ab_front.h264"));
         return 0;
     }
 
     /*Process command line */
-    CommandLineSetter s(argc, argv);
-    int    maxFrame   = s.getInt("frames", 10);
-    int    skipFrames = s.getInt("skipf", 1);
+    CommandLineSetter s(argc, argv);\
+    FisheyeEgomotionParameters params;
+    params.accept(s);
 
-    if (s.getBool("caps"))
+    cout << "We will use following parameters" << endl;
+    cout << params << endl;
+
+    if (params.caps())
     {
         BufferFactory::getInstance()->printCaps();
         Processor6DFactoryHolder::printCaps();
         return 0;
     }
 
-    std::string provider = s.getString("provider", defaultProvider);
-    bool produceUnwarp   = s.getBool("unwarp");
-    bool jointCost       = s.getBool("joint");
-    bool createScene     = s.getBool("scene");
-    std::string intrName = s.getString("intrinsics", "");
-
-    double ransacThreshold     = s.getDouble("rthreshold", 0.009);
-    double detectThreshold     = s.getDouble("dthreshold", 0.009);
-
-
     /* Prepare input */
     vector<string> stream = s.nonPrefix();
+    cout << "We would open file:" << stream.back() << endl;
     ImageCaptureInterface *cam = new AviCapture(stream.back());
 
     /* Open input device */
@@ -430,13 +428,13 @@ int main(int argc, char **argv)
     /* Collect data */
     MODCostFunctionData dataForOpt;
 
-    while (framecount < maxFrame)
+    while (framecount < params.frames())
     {
         Statistics stats;
         stats.setValue("Frame Number", framecount);
         framecount++;
 
-        for (int i=0; i < skipFrames; i++)
+        for (int i=0; i <= params.skipf(); i++)
         {
             images.freeBuffers();
             images = cam->getFrameRGB24();
@@ -445,7 +443,8 @@ int main(int argc, char **argv)
         images.setRgbBufferDefault(NULL); // Unlink from images
 
         if (prevFrame == NULL)
-        {            
+        {
+            cout << "No previous frame" << endl;
             prevFrame = std::move(curFrame);
             continue;
         }
@@ -459,14 +458,20 @@ int main(int argc, char **argv)
         }
 
 
-        Processor6D *flowGen = Processor6DFactoryHolder::getProcessor(provider);
+        unique_ptr<Processor6D> flowGen(Processor6DFactoryHolder::getProcessor(params.provider()));
         if (flowGen != NULL)
         {
-            SYNC_PRINT(("Creating %s provider. Success\n", provider.c_str()));
+            SYNC_PRINT(("Creating %s provider. Success\n", params.provider().c_str()));
         }
 
         stats.enterContext("Mesh Flow->");
-        flowGen->requestResultsi(Processor6D::RESULT_FLOW | Processor6D::RESULT_FLOAT_FLOW_LIST);
+
+        int requestedResults = Processor6D::RESULT_FLOW | Processor6D::RESULT_FLOAT_FLOW_LIST;
+        if (params.subpixel()) {
+            requestedResults |= Processor6D::RESULT_FLOAT_FLOW;
+        }
+
+        flowGen->requestResultsi(requestedResults);
         flowGen->setStats(&stats);
         flowGen->beginFrame();
         flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, prevFrame.get());
@@ -476,7 +481,7 @@ int main(int argc, char **argv)
         flowGen->endFrame();
 
         CorrespondenceList *flowList = flowGen->getFlowList();
-        SYNC_PRINT(("Flow density %d\n", flowList->size()));
+        SYNC_PRINT(("Flow density %d\n", (int)flowList->size()));
 
         if (flowList == NULL)
         {
@@ -492,7 +497,7 @@ int main(int argc, char **argv)
         unique_ptr<RGB24Buffer> outputNew (new RGB24Buffer(curFrame.get() ));
 
         if (!modelLoaded) {
-            unwrapper.model = getModel(curFrame->h, curFrame->w, intrName);
+            unwrapper.model = getModel(curFrame->h, curFrame->w, params.intrinsics());
             modelLoaded = true;
         }
         /* Unwrap */
@@ -505,7 +510,7 @@ int main(int argc, char **argv)
         unique_ptr<RGB24Buffer> unwarpRaw;
         unique_ptr<RGB24Buffer> unwarpNew;
 
-        if (produceUnwarp)
+        if (params.unwarp())
         {
             Mesh3D mesh;
 
@@ -543,7 +548,7 @@ int main(int argc, char **argv)
             outputRaw->drawLine(data0, data1, color);
             outputRaw->drawCrosshare1(data1, color);
 
-            if (produceUnwarp) {
+            if (params.unwarp()) {
                 unwrapper.drawUnwrap(unwarpRaw.get(), data0, data1, color);
             }
 
@@ -555,6 +560,7 @@ int main(int argc, char **argv)
 
         CorrespondenceList list;
 
+        int skipped = 0;
         for (size_t i = 0; i < flowList->size(); i++)
         {
             Vector2dd data0 = flowList->at(i).start;
@@ -563,25 +569,22 @@ int main(int argc, char **argv)
             Vector3dd ray0 = unwrapper.model.intrinsics->reverse(data0);
             Vector3dd ray1 = unwrapper.model.intrinsics->reverse(data1);
 
-            if (ray0.z() < 0.15) {
+            if (ray0.z() < 0.15 && ray1.z() < 0.15) {
+                skipped++;
                 continue;
             }
-            if (ray1.z() < 0.15) {
-                continue;
-            }
-
             ray0 = ray0.normalisedProjective();
             ray1 = ray1.normalisedProjective();
 
             list.push_back(Correspondence(ray0.xy(), ray1.xy()));
         }
 
-        cout << "Starting list size:" <<  list.size() << endl;
+        cout << "Starting list size:" <<  list.size() << " we skipped" << skipped << endl;
 
         stats.resetInterval("Created estimator input");
 
         /* Estimator */
-        RansacEstimator estimator(8, 100, ransacThreshold);
+        RansacEstimator estimator(8, 100, params.rthreshold());
         estimator.ransacParams.setUseMedian(true);
         estimator.trace = true;
 
@@ -683,14 +686,14 @@ int main(int argc, char **argv)
 
             RGBColor color = RGBColor::Gray();
 
-            if (outlay > detectThreshold) {
-                color = RGBColor::rainbow1((outlay - detectThreshold) * 100);
+            if (outlay > params.dthreshold()) {
+                color = RGBColor::rainbow1((outlay - params.dthreshold()) * 100);
             }
 
             outputNew->drawLine(data0, data1, color);
             outputNew->drawCrosshare1(data1, color);
 
-            if (produceUnwarp) {
+            if (params.unwarp()) {
                 unwrapper.drawUnwrap(unwarpNew.get(), data0, data1, color);
             }
         }
@@ -699,7 +702,7 @@ int main(int argc, char **argv)
             outputNew->drawArc(Circle2d(vanish, r), RGBColor::Yellow());
         }
 
-        if (createScene && framecount == 2)
+        if (params.scene() && framecount == 2)
         {
             SYNC_PRINT(("Outputting scene\n"));
             FixtureScene scene;
@@ -812,7 +815,7 @@ int main(int argc, char **argv)
         BufferFactory::getInstance()->saveRGB24Bitmap(outputEsse.get(), oname.str());
         newEsseVideo.addFrame(outputNew.get());
 
-        if (produceUnwarp)
+        if (params.unwarp())
         {
             oname.str("");
             oname << "unwarp-new" << framecount << extention;
@@ -821,7 +824,7 @@ int main(int argc, char **argv)
         }
 
         /* Joint cost function */
-        if (jointCost)
+        if (params.joint())
         {
             Affine3DQ guess = decomp.toSecondCameraAffine();
 
@@ -835,7 +838,6 @@ int main(int argc, char **argv)
             }
         }
 
-        delete_safe(flowGen);
         prevFrame = std::move(curFrame);
 
     }
@@ -851,7 +853,7 @@ int main(int argc, char **argv)
 
      trajectory.dumpPLY("trajectory.ply");
 
-     if (jointCost)
+     if (params.joint())
      {
          dataForOpt.projection = *unwrapper.model.getOmnidirectional();
          jointOptimisationRANSAC(dataForOpt);

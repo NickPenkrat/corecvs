@@ -1,6 +1,6 @@
-#include "modCostFunction.h"
+#include "modPointsCostFunction.h"
 
-double MODCostFunction::cost(const Affine3DQ &T, const CameraProjection &projection, const Correspondence &corr)
+double MODPointsCostFunction::cost(const Affine3DQ &T, const CameraProjection &projection, const Correspondence &corr)
 {
 
     Ray3d r1(projection.reverse(corr.start), Vector3dd::Zero());
@@ -12,7 +12,7 @@ double MODCostFunction::cost(const Affine3DQ &T, const CameraProjection &project
     return 2 * e.z() / (e.x() + e.y());
 }
 
-void MODCostFunction::operator()(const double in[], double out[])
+void MODPointsCostFunction::operator()(const double in[], double out[])
 {
     if (data == NULL) {
         return;
@@ -20,22 +20,22 @@ void MODCostFunction::operator()(const double in[], double out[])
 
     /* Prepare */
     OmnidirectionalProjection model = data->projection;
-    model.mN.resize(MODCostFunctionData::OMNIDIR_POWER);
-    memcpy(model.mN.data(), in, sizeof(double) * MODCostFunctionData::OMNIDIR_POWER);
+    model.mN.resize(MODPointsCostFunctionData::OMNIDIR_POWER);
+    memcpy(model.mN.data(), in, sizeof(double) * MODPointsCostFunctionData::OMNIDIR_POWER);
 
     for (size_t i = 0; i < data->obseravtions.size(); i++)
     {
         Correspondence &corr = data->obseravtions[i];
         int tNum = corr.value;
 
-        Affine3DQ T = MODCostFunctionData::load(&in[MODCostFunctionData::MOVE_MODEL * tNum + MODCostFunctionData::OMNIDIR_POWER]);
+        Affine3DQ T = MODPointsCostFunctionData::load(&in[MODPointsCostFunctionData::MOVE_MODEL * tNum + MODPointsCostFunctionData::OMNIDIR_POWER]);
         T.shift.normalise();
         T.rotor.normalise();
         out[i] = cost(T, model, corr);
     }
 }
 
-void MODCostFunctionNormalise::operator()(const double in[], double out[])
+void MODPointsCostFunctionNormalise::operator()(const double in[], double out[])
 {
     if (data == NULL) {
         return;
@@ -43,24 +43,24 @@ void MODCostFunctionNormalise::operator()(const double in[], double out[])
 
     memcpy(out, in, sizeof(double) * inputs);
 
-    int affineOffset = MODCostFunctionData::OMNIDIR_POWER;
+    int affineOffset = MODPointsCostFunctionData::OMNIDIR_POWER;
 
     for (size_t i = 0; i < data->transform.size(); i++)
     {
-        int offset = MODCostFunctionData::MOVE_MODEL * i + affineOffset;
-        Affine3DQ T = MODCostFunctionData::load(&out[offset]);
+        int offset = MODPointsCostFunctionData::MOVE_MODEL * i + affineOffset;
+        Affine3DQ T = MODPointsCostFunctionData::load(&out[offset]);
         T.shift.normalise();
         T.rotor.normalise();
-        MODCostFunctionData::store(T, &out[offset]);
+        MODPointsCostFunctionData::store(T, &out[offset]);
     }
 }
 
-MODCostFunctionData::MODCostFunctionData()
+MODPointsCostFunctionData::MODPointsCostFunctionData()
 {
 
 }
 
-Affine3DQ MODCostFunctionData::load(const double *in)
+Affine3DQ MODPointsCostFunctionData::load(const double *in)
 {
     Affine3DQ toReturn;
     toReturn.shift.loadFrom(in    );
@@ -68,13 +68,13 @@ Affine3DQ MODCostFunctionData::load(const double *in)
     return toReturn;
 }
 
-void MODCostFunctionData::store(const Affine3DQ &input, double *out)
+void MODPointsCostFunctionData::store(const Affine3DQ &input, double *out)
 {
     input.shift.storeTo(out    );
     input.rotor.storeTo(out + 3);
 }
 
-double MODModel::getCost(const Correspondence &corr)
+double MODPointsModel::getCost(const Correspondence &corr)
 {
     if (context == NULL) {
         SYNC_PRINT(("MODModel():getCost Internal Error\n"));
@@ -82,5 +82,5 @@ double MODModel::getCost(const Correspondence &corr)
     OmnidirectionalProjection projection = context->projection;
     projection.mN = projectionN;
     Affine3DQ T = transform[corr.value];
-    return MODCostFunction::cost(T, projection, corr);
+    return MODPointsCostFunction::cost(T, projection, corr);
 }

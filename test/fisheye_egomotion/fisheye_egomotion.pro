@@ -44,8 +44,16 @@ DESTDIR  = $$ROOT_DIR/bin
 SOURCES += \ 
     main_fisheye_egomotion.cpp \
     modCostFunction.cpp        \
-
-
+    modPointsCostFunction.cpp   \
+    xml/generated/*.cpp        \
 
 HEADERS += \
-    modCostFunction.h
+    modCostFunction.h          \
+    modPointsCostFunction.h     \
+    xml/generated/*.h          \
+
+
+INCLUDEPATH += xml/generated/
+
+OTHER_FILES += $$PWD/xml/*.xml
+OTHER_FILES += $$PWD/../../tools/generator/regen-fisheye.sh

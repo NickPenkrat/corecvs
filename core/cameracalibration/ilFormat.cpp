@@ -51,6 +51,7 @@ CameraProjection *ILFormat::loadIntrisics(std::istream &filename)
             n.push_back(v);
         }
 
+#if 0
         cout << "Type: " << cameraType << endl;
         cout << "s: " << s << endl;
         cout << "c: " << c << endl;
@@ -60,8 +61,8 @@ CameraProjection *ILFormat::loadIntrisics(std::istream &filename)
         for (int i = 0; i < imax-1; i++)
         {
             cout << "n" << i+2 << " " << n[i] << endl;
-
         }
+#endif
 
         OmnidirectionalProjection *projection = new OmnidirectionalProjection;
         projection->setFocal(s * n0);

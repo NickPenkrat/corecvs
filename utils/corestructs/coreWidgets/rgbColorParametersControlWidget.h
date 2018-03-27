@@ -12,9 +12,12 @@
 #include "ui_rgbColorParametersControlWidget.h"
 #include "parametersControlWidgetBase.h"
 
-#ifndef WIN32  //EM: said that it crashes on her Linux //TODO: clarify and fix it
-#define DISABLE_COLOR_PICKER
-#endif
+//#ifndef WIN32
+//EM: said that it crashes on her Linux
+//TODO: clarify and fix it
+//AP: Uncommented. Need this function. Most probably Xwindow/GTK/QT issue
+//#define DISABLE_COLOR_PICKER
+//#endif
 
 namespace Ui {
     class RgbColorParametersControlWidget;
