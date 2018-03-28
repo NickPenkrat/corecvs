@@ -308,3 +308,34 @@ protected:
 };
 
 
+class ImageCaptureInterfaceProducer
+{
+public:
+    virtual std::string getPrefix() = 0;
+    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) = 0;
+
+};
+
+
+template<class Target>
+class ImageCaptureInterfaceProducerWrapper : ImageCaptureInterfaceProducer
+{
+public:
+    std::string prefix;
+
+    virtual std::string getPrefix() override;
+    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
+    {
+        return new Target(name, isRGB);
+    }
+};
+
+class ImageCaptureInterfaceFabric
+{
+    std::vector<ImageCaptureInterfaceProducer *> producers;
+
+
+
+};
+
+

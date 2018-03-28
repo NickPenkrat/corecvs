@@ -49,6 +49,7 @@ public:
         PROVIDER_ID,
         FRAMES_ID,
         SKIPF_ID,
+        SCALER_ID,
         RTHRESHOLD_ID,
         DTHRESHOLD_ID,
         RSTHRESHOLD_ID,
@@ -109,10 +110,16 @@ public:
     int mFrames;
 
     /** 
-     * \brief skipf 
-     * skipf 
+     * \brief Skip n frames every frame 
+     * Skip n frames every frame 
      */
     int mSkipf;
+
+    /** 
+     * \brief Scale image before processing 
+     * Scale image before processing 
+     */
+    double mScaler;
 
     /** 
      * \brief Threshold for RANSAC during model estimation 
@@ -205,6 +212,11 @@ public:
         return mSkipf;
     }
 
+    double scaler() const
+    {
+        return mScaler;
+    }
+
     double rthreshold() const
     {
         return mRthreshold;
@@ -281,6 +293,11 @@ public:
         mSkipf = skipf;
     }
 
+    void setScaler(double scaler)
+    {
+        mScaler = scaler;
+    }
+
     void setRthreshold(double rthreshold)
     {
         mRthreshold = rthreshold;
@@ -325,6 +342,7 @@ template<class VisitorType>
         visitor.visit(mProvider,                  static_cast<const corecvs::StringField *>(fields()[PROVIDER_ID]));
         visitor.visit(mFrames,                    static_cast<const corecvs::IntField *>(fields()[FRAMES_ID]));
         visitor.visit(mSkipf,                     static_cast<const corecvs::IntField *>(fields()[SKIPF_ID]));
+        visitor.visit(mScaler,                    static_cast<const corecvs::DoubleField *>(fields()[SCALER_ID]));
         visitor.visit(mRthreshold,                static_cast<const corecvs::DoubleField *>(fields()[RTHRESHOLD_ID]));
         visitor.visit(mDthreshold,                static_cast<const corecvs::DoubleField *>(fields()[DTHRESHOLD_ID]));
         visitor.visit(mRsthreshold,               static_cast<const corecvs::DoubleField *>(fields()[RSTHRESHOLD_ID]));
@@ -349,6 +367,7 @@ template<class VisitorType>
         , std::string provider
         , int frames
         , int skipf
+        , double scaler
         , double rthreshold
         , double dthreshold
         , double rsthreshold
@@ -366,6 +385,7 @@ template<class VisitorType>
         mProvider = provider;
         mFrames = frames;
         mSkipf = skipf;
+        mScaler = scaler;
         mRthreshold = rthreshold;
         mDthreshold = dthreshold;
         mRsthreshold = rsthreshold;
@@ -385,6 +405,7 @@ template<class VisitorType>
         if ( !(this->mProvider == other.mProvider)) return false;
         if ( !(this->mFrames == other.mFrames)) return false;
         if ( !(this->mSkipf == other.mSkipf)) return false;
+        if ( !(this->mScaler == other.mScaler)) return false;
         if ( !(this->mRthreshold == other.mRthreshold)) return false;
         if ( !(this->mDthreshold == other.mDthreshold)) return false;
         if ( !(this->mRsthreshold == other.mRsthreshold)) return false;

@@ -402,7 +402,7 @@ int main(int argc, char **argv)
     }
 
     /*Process command line */
-    CommandLineSetter s(argc, argv);\
+    CommandLineSetter s(argc, argv);
     FisheyeEgomotionParameters params;
     params.accept(s);
 
@@ -468,6 +468,7 @@ int main(int argc, char **argv)
     if (params.subpixel()) {
         requestedResults |= Processor6D::RESULT_FLOAT_FLOW;
     }
+    flowGen->requestResultsi(requestedResults);
 
     while (framecount < params.frames())
     {
@@ -498,17 +499,14 @@ int main(int argc, char **argv)
             newEsseVideo.startEncoding("esse.avi", curFrame->h, curFrame->w);
         }
 
-
-
         stats.enterContext("Mesh Flow->");
 
-
-
-        flowGen->requestResultsi(requestedResults);
         flowGen->setStats(&stats);
+
+/*        flowGen->reset();
         flowGen->beginFrame();
         flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, prevFrame.get());
-        flowGen->endFrame();
+        flowGen->endFrame();*/
         flowGen->beginFrame();
         flowGen->setFrameRGB24(Processor6D::FRAME_RIGHT_ID, curFrame.get());
         flowGen->endFrame();
@@ -519,7 +517,7 @@ int main(int argc, char **argv)
         {
             SYNC_PRINT(("Flow not generated\n "
                         "Exiting\n"));
-            return 4;
+            continue;
         }
 
         SYNC_PRINT(("Flow density %d\n", (int)flowList->size()));
