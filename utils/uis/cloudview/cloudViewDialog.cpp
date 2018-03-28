@@ -94,7 +94,7 @@ CloudViewDialog::CloudViewDialog(QWidget *parent, QString name)
     mUi.treeView->setModel(&mTreeModel);
     mUi.treeView->setDragEnabled(true);
     mUi.treeView->setAcceptDrops(true);
-    //mUi.treeView->setDropIndicatDraw3dParametersorShown(true);
+    //mUi.treeView->setDropIndicatorShown(true);
 
     mUi.treeView->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     mUi.treeView->setSelectionMode(QAbstractItemView::ExtendedSelection);

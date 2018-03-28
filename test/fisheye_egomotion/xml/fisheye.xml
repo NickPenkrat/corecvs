@@ -22,5 +22,9 @@
 
     <field type="double" name="dsthreshold" suffix="px" defaultValue="3" decimals="3" min="0" max="500" description="Threshold for Static actual detection"/>
 
+    <!-- -->
+    <field type="bool"   name="traceParams" defaultValue="false" description="Trace parameters of the provider" advanced="true" />
+
+
   </class>
 </poco>

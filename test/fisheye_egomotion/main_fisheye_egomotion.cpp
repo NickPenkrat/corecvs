@@ -448,6 +448,27 @@ int main(int argc, char **argv)
     /* Collect data */
     MODCostFunctionData dataForOpt;
 
+    unique_ptr<Processor6D> flowGen(Processor6DFactoryHolder::getProcessor(params.provider()));
+    if (flowGen != NULL)
+    {
+        SYNC_PRINT(("Creating %s provider. Success\n", params.provider().c_str()));
+        if (params.traceParams())
+        {
+            std::map<std::string, DynamicObject> paramList = flowGen->getParameters();
+            for(auto &it : paramList)
+            {
+                cout << "==== " << it.first << endl;
+                cout << it.second << endl;
+            }
+        }
+
+    }
+
+    int requestedResults = Processor6D::RESULT_FLOW | Processor6D::RESULT_FLOAT_FLOW_LIST;
+    if (params.subpixel()) {
+        requestedResults |= Processor6D::RESULT_FLOAT_FLOW;
+    }
+
     while (framecount < params.frames())
     {
         Statistics stats;
@@ -478,18 +499,10 @@ int main(int argc, char **argv)
         }
 
 
-        unique_ptr<Processor6D> flowGen(Processor6DFactoryHolder::getProcessor(params.provider()));
-        if (flowGen != NULL)
-        {
-            SYNC_PRINT(("Creating %s provider. Success\n", params.provider().c_str()));
-        }
 
         stats.enterContext("Mesh Flow->");
 
-        int requestedResults = Processor6D::RESULT_FLOW | Processor6D::RESULT_FLOAT_FLOW_LIST;
-        if (params.subpixel()) {
-            requestedResults |= Processor6D::RESULT_FLOAT_FLOW;
-        }
+
 
         flowGen->requestResultsi(requestedResults);
         flowGen->setStats(&stats);

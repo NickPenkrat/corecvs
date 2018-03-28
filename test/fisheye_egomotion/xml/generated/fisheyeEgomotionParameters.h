@@ -54,6 +54,7 @@ public:
         RSTHRESHOLD_ID,
         RSTHRESPREC_ID,
         DSTHRESHOLD_ID,
+        TRACEPARAMS_ID,
         FISHEYE_EGOMOTION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -143,6 +144,12 @@ public:
      */
     double mDsthreshold;
 
+    /** 
+     * \brief Trace parameters of the provider 
+     * Trace parameters of the provider 
+     */
+    bool mTraceParams;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -223,6 +230,11 @@ public:
         return mDsthreshold;
     }
 
+    bool traceParams() const
+    {
+        return mTraceParams;
+    }
+
     /* Section with setters */
     void setUnwarp(bool unwarp)
     {
@@ -294,6 +306,11 @@ public:
         mDsthreshold = dsthreshold;
     }
 
+    void setTraceParams(bool traceParams)
+    {
+        mTraceParams = traceParams;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -313,6 +330,7 @@ template<class VisitorType>
         visitor.visit(mRsthreshold,               static_cast<const corecvs::DoubleField *>(fields()[RSTHRESHOLD_ID]));
         visitor.visit(mRsthresprec,               static_cast<const corecvs::DoubleField *>(fields()[RSTHRESPREC_ID]));
         visitor.visit(mDsthreshold,               static_cast<const corecvs::DoubleField *>(fields()[DSTHRESHOLD_ID]));
+        visitor.visit(mTraceParams,               static_cast<const corecvs::BoolField *>(fields()[TRACEPARAMS_ID]));
     }
 
     FisheyeEgomotionParameters()
@@ -336,6 +354,7 @@ template<class VisitorType>
         , double rsthreshold
         , double rsthresprec
         , double dsthreshold
+        , bool traceParams
     )
     {
         mUnwarp = unwarp;
@@ -352,6 +371,7 @@ template<class VisitorType>
         mRsthreshold = rsthreshold;
         mRsthresprec = rsthresprec;
         mDsthreshold = dsthreshold;
+        mTraceParams = traceParams;
     }
 
     bool operator ==(const FisheyeEgomotionParameters &other) const 
@@ -370,6 +390,7 @@ template<class VisitorType>
         if ( !(this->mRsthreshold == other.mRsthreshold)) return false;
         if ( !(this->mRsthresprec == other.mRsthresprec)) return false;
         if ( !(this->mDsthreshold == other.mDsthreshold)) return false;
+        if ( !(this->mTraceParams == other.mTraceParams)) return false;
         return true;
     }
     friend std::ostream& operator << (std::ostream &out, FisheyeEgomotionParameters &toSave)

@@ -242,6 +242,18 @@ int FisheyeEgomotionParameters::staticInit()
     field13->precision=3;
     fields().push_back(field13);
     /*  */ 
+    BoolField* field14 = new BoolField
+        (
+          FisheyeEgomotionParameters::TRACEPARAMS_ID,
+          offsetof(FisheyeEgomotionParameters, mTraceParams),
+          false,
+          "traceParams",
+          "Trace parameters of the provider",
+          "Trace parameters of the provider"
+        );
+    field14->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field14);
+    /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Fisheye Egomotion Parameters")]= &reflection;
    return 0;
