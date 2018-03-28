@@ -17,6 +17,12 @@ int OpenCVMovingObjectFlow::beginFrame()
     return 0;
 }
 
+int OpenCVMovingObjectFlow::reset()
+{
+    second = cv::Mat();
+    return 0;
+}
+
 int OpenCVMovingObjectFlow::clean(int /*mask*/)
 {
     SYNC_PRINT(("OpenCVMovingObjectFlow::clean(int mask):called/n"));

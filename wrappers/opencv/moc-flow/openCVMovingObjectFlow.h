@@ -41,7 +41,10 @@ public:
     // Processor6D interface
 public:
     virtual int beginFrame() override;
+
+    virtual int reset() override;
     virtual int clean(int mask) override;
+
     virtual int setFrameG12  (FrameNames frameType, corecvs::G12Buffer   *frame) override;
     virtual int setFrameRGB24(FrameNames frameType, corecvs::RGB24Buffer *frame) override;
 

@@ -48,6 +48,11 @@ public:
     };
 
     virtual int beginFrame() = 0;
+
+    /** Completly reset internal data structures. parameters are left intact **/
+    virtual int reset() = 0;
+
+    /** Implemetation may allow you to reset some internal structures at will **/
     virtual int clean(int mask) = 0;
 
     /**
@@ -64,6 +69,7 @@ public:
 
     virtual int setDisparityBufferS16(FrameNames frameType, FlowBuffer *frame) = 0;
 
+    /** sets statistics data. Implementation should support stats == NULL **/
     virtual int setStats(Statistics *stats) = 0;
     virtual int endFrame() = 0;
 
@@ -71,8 +77,9 @@ public:
     virtual std::map<std::string, DynamicObject> getParameters() = 0;
     virtual bool setParameters(std::string name, const DynamicObject &param) = 0;
 
-    virtual int setParameteri(int parameterName, int parameterValue) = 0;
 
+    /** Oldstyle calls **/
+    virtual int setParameteri(int parameterName, int parameterValue) = 0;
     virtual int requestResultsi(int parameterName) = 0;
 
     /**
