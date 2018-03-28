@@ -188,6 +188,60 @@ int FisheyeEgomotionParameters::staticInit()
     field10->precision=6;
     fields().push_back(field10);
     /*  */ 
+    DoubleField* field11 = new DoubleField
+        (
+          FisheyeEgomotionParameters::RSTHRESHOLD_ID,
+          offsetof(FisheyeEgomotionParameters, mRsthreshold),
+          3,
+          "rsthreshold",
+          "Threshold for Static flow",
+          "Threshold for Static flow",
+          true,
+         0,
+         500,
+         1
+        );
+    field11->widgetHint=BaseField::SPIN_BOX;
+    field11->suffixHint="px";
+    field11->precision=3;
+    fields().push_back(field11);
+    /*  */ 
+    DoubleField* field12 = new DoubleField
+        (
+          FisheyeEgomotionParameters::RSTHRESPREC_ID,
+          offsetof(FisheyeEgomotionParameters, mRsthresprec),
+          70,
+          "rsthresprec",
+          "precent to fit Static Thresold ",
+          "precent to fit Static Thresold ",
+          true,
+         0,
+         500,
+         1
+        );
+    field12->widgetHint=BaseField::SPIN_BOX;
+    field12->suffixHint="%";
+    field12->precision=3;
+    fields().push_back(field12);
+    /*  */ 
+    DoubleField* field13 = new DoubleField
+        (
+          FisheyeEgomotionParameters::DSTHRESHOLD_ID,
+          offsetof(FisheyeEgomotionParameters, mDsthreshold),
+          3,
+          "dsthreshold",
+          "Threshold for Static actual detection",
+          "Threshold for Static actual detection",
+          true,
+         0,
+         500,
+         1
+        );
+    field13->widgetHint=BaseField::SPIN_BOX;
+    field13->suffixHint="px";
+    field13->precision=3;
+    fields().push_back(field13);
+    /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Fisheye Egomotion Parameters")]= &reflection;
    return 0;

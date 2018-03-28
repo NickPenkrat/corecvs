@@ -51,6 +51,9 @@ public:
         SKIPF_ID,
         RTHRESHOLD_ID,
         DTHRESHOLD_ID,
+        RSTHRESHOLD_ID,
+        RSTHRESPREC_ID,
+        DSTHRESHOLD_ID,
         FISHEYE_EGOMOTION_PARAMETERS_FIELD_ID_NUM
     };
 
@@ -122,6 +125,24 @@ public:
      */
     double mDthreshold;
 
+    /** 
+     * \brief Threshold for Static flow 
+     * Threshold for Static flow 
+     */
+    double mRsthreshold;
+
+    /** 
+     * \brief precent to fit Static Thresold  
+     * precent to fit Static Thresold  
+     */
+    double mRsthresprec;
+
+    /** 
+     * \brief Threshold for Static actual detection 
+     * Threshold for Static actual detection 
+     */
+    double mDsthreshold;
+
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
 
@@ -187,6 +208,21 @@ public:
         return mDthreshold;
     }
 
+    double rsthreshold() const
+    {
+        return mRsthreshold;
+    }
+
+    double rsthresprec() const
+    {
+        return mRsthresprec;
+    }
+
+    double dsthreshold() const
+    {
+        return mDsthreshold;
+    }
+
     /* Section with setters */
     void setUnwarp(bool unwarp)
     {
@@ -243,6 +279,21 @@ public:
         mDthreshold = dthreshold;
     }
 
+    void setRsthreshold(double rsthreshold)
+    {
+        mRsthreshold = rsthreshold;
+    }
+
+    void setRsthresprec(double rsthresprec)
+    {
+        mRsthresprec = rsthresprec;
+    }
+
+    void setDsthreshold(double dsthreshold)
+    {
+        mDsthreshold = dsthreshold;
+    }
+
     /* Section with embedded classes */
     /* visitor pattern - http://en.wikipedia.org/wiki/Visitor_pattern */
 template<class VisitorType>
@@ -259,6 +310,9 @@ template<class VisitorType>
         visitor.visit(mSkipf,                     static_cast<const corecvs::IntField *>(fields()[SKIPF_ID]));
         visitor.visit(mRthreshold,                static_cast<const corecvs::DoubleField *>(fields()[RTHRESHOLD_ID]));
         visitor.visit(mDthreshold,                static_cast<const corecvs::DoubleField *>(fields()[DTHRESHOLD_ID]));
+        visitor.visit(mRsthreshold,               static_cast<const corecvs::DoubleField *>(fields()[RSTHRESHOLD_ID]));
+        visitor.visit(mRsthresprec,               static_cast<const corecvs::DoubleField *>(fields()[RSTHRESPREC_ID]));
+        visitor.visit(mDsthreshold,               static_cast<const corecvs::DoubleField *>(fields()[DSTHRESHOLD_ID]));
     }
 
     FisheyeEgomotionParameters()
@@ -279,6 +333,9 @@ template<class VisitorType>
         , int skipf
         , double rthreshold
         , double dthreshold
+        , double rsthreshold
+        , double rsthresprec
+        , double dsthreshold
     )
     {
         mUnwarp = unwarp;
@@ -292,6 +349,9 @@ template<class VisitorType>
         mSkipf = skipf;
         mRthreshold = rthreshold;
         mDthreshold = dthreshold;
+        mRsthreshold = rsthreshold;
+        mRsthresprec = rsthresprec;
+        mDsthreshold = dsthreshold;
     }
 
     bool operator ==(const FisheyeEgomotionParameters &other) const 
@@ -307,6 +367,9 @@ template<class VisitorType>
         if ( !(this->mSkipf == other.mSkipf)) return false;
         if ( !(this->mRthreshold == other.mRthreshold)) return false;
         if ( !(this->mDthreshold == other.mDthreshold)) return false;
+        if ( !(this->mRsthreshold == other.mRsthreshold)) return false;
+        if ( !(this->mRsthresprec == other.mRsthresprec)) return false;
+        if ( !(this->mDsthreshold == other.mDsthreshold)) return false;
         return true;
     }
     friend std::ostream& operator << (std::ostream &out, FisheyeEgomotionParameters &toSave)

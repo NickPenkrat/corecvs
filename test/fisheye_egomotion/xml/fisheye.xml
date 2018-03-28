@@ -16,5 +16,11 @@
     <field type="double" name="rthreshold"  defaultValue="0.009" decimals="6" min="0" max="500" description="Threshold for RANSAC during model estimation"/>
     <field type="double" name="dthreshold"  defaultValue="0.009" decimals="6" min="0" max="500" description="Threshold for actual detection"/>
 
+
+    <field type="double" name="rsthreshold" suffix="px" defaultValue="3" decimals="3" min="0" max="500" description="Threshold for Static flow"/>
+    <field type="double" name="rsthresprec" suffix="%"  defaultValue="70" decimals="3" min="0" max="500" description="precent to fit Static Thresold "/>
+
+    <field type="double" name="dsthreshold" suffix="px" defaultValue="3" decimals="3" min="0" max="500" description="Threshold for Static actual detection"/>
+
   </class>
 </poco>

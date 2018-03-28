@@ -345,6 +345,26 @@ void jointOptimisation(MODCostFunctionData &data)
     cout << result;
 }
 
+bool checkIfStatic(CorrespondenceList *flowList, FisheyeEgomotionParameters &params)
+{
+    int fitCount = 0;
+    for (size_t i = 0; i < flowList->size(); i++)
+    {
+        Correspondence &c = flowList->at(i);
+        if ((c.start - c.end).l2Metric() < params.rsthreshold())
+        {
+            fitCount++;
+        }
+    }
+
+    if (fitCount > flowList->size() * params.rsthresprec() / 100.0 )
+    {
+        return true;
+    }
+
+    return false;
+}
+
 int main(int argc, char **argv)
 {
 
@@ -481,7 +501,6 @@ int main(int argc, char **argv)
         flowGen->endFrame();
 
         CorrespondenceList *flowList = flowGen->getFlowList();
-        SYNC_PRINT(("Flow density %d\n", (int)flowList->size()));
 
         if (flowList == NULL)
         {
@@ -490,6 +509,13 @@ int main(int argc, char **argv)
             return 4;
         }
 
+        SYNC_PRINT(("Flow density %d\n", (int)flowList->size()));
+#if 0
+        for (size_t flowId = 0; flowId < std::min((int)flowList->size(), 10); flowId++)
+        {
+            cout << flowList->at(flowId) << endl;
+        }
+#endif
         stats.leaveContext();
 
         unique_ptr<RGB24Buffer> outputRaw (new RGB24Buffer(curFrame.get() ));
@@ -584,92 +610,104 @@ int main(int argc, char **argv)
         stats.resetInterval("Created estimator input");
 
         /* Estimator */
-        RansacEstimator estimator(8, 100, params.rthreshold());
-        estimator.ransacParams.setUseMedian(true);
-        estimator.trace = true;
+        Affine3DQ move = Affine3DQ::Identity();
+        Vector2dd vanish = Vector2dd::Zero();
+        EssentialMatrix matrix;
+        EssentialDecomposition decomp;
 
-        vector<Correspondence *> flowInput;
-        flowInput.reserve(list.size());
-        for (size_t d = 0 ; d < list.size(); d++)
+        bool isStatic  = checkIfStatic(flowList, params);
+        stats.resetInterval("Checking for static");
+        stats.setValue("static", isStatic);
+
+        if (!isStatic)
         {
-            flowInput.push_back(&list[d]);
-        }
+            RansacEstimator estimator(8, 100, params.rthreshold());
+            estimator.ransacParams.setUseMedian(true);
+            estimator.trace = true;
 
-        EssentialMatrix matrix = estimator.getEssentialRansac(&flowInput);
-        stats.setValue("Ransac inliers %", estimator.fitPercent);
-        cout << matrix << endl;
-
-
-        {
-            cout << "List size:" << list.size() << endl;
-            for (size_t count = 0; count < list.size(); count++)
+            vector<Correspondence *> flowInput;
+            flowInput.reserve(list.size());
+            for (size_t d = 0 ; d < list.size(); d++)
             {
-                Correspondence &c = list[count];
-
-                RGBColor color = RGBColor::Red();
-                if (c.flags & Correspondence::FLAG_FAILER) {
-                    color = RGBColor::Red();
-                }
-                if (c.flags & Correspondence::FLAG_PASSER) {
-                    color = RGBColor::Green();
-                }
-                if (c.flags & Correspondence::FLAG_IS_BASED_ON) {
-                    color.b() = 255;
-                }
-                Vector3dd r0(c.start.x(), c.start.y(), 1.0);
-                Vector3dd r1(c.end  .x(), c.end  .y(), 1.0);
-
-                Vector2dd p0 = unwrapper.model.intrinsics->project(r0.normalised());
-                Vector2dd p1 = unwrapper.model.intrinsics->project(r1.normalised());
-
-                outputEsse->drawLine      (p0, p1, color);
-                outputEsse->drawCrosshare1(p1, color);
+                flowInput.push_back(&list[d]);
             }
 
-            for (size_t count = 0; count < list.size(); count++)
-            {
-                Correspondence &c = list[count];
+            matrix = estimator.getEssentialRansac(&flowInput);
+            stats.setValue("Ransac inliers %", estimator.fitPercent);
+            cout << matrix << endl;
 
-                bool base = false;
-                if (c.flags & Correspondence::FLAG_IS_BASED_ON) {
-                    base = true;
+
+            {
+                cout << "List size:" << list.size() << endl;
+                for (size_t count = 0; count < list.size(); count++)
+                {
+                    Correspondence &c = list[count];
+
+                    RGBColor color = RGBColor::Red();
+                    if (c.flags & Correspondence::FLAG_FAILER) {
+                        color = RGBColor::Red();
+                    }
+                    if (c.flags & Correspondence::FLAG_PASSER) {
+                        color = RGBColor::Green();
+                    }
+                    if (c.flags & Correspondence::FLAG_IS_BASED_ON) {
+                        color.b() = 255;
+                    }
+                    Vector3dd r0(c.start.x(), c.start.y(), 1.0);
+                    Vector3dd r1(c.end  .x(), c.end  .y(), 1.0);
+
+                    Vector2dd p0 = unwrapper.model.intrinsics->project(r0.normalised());
+                    Vector2dd p1 = unwrapper.model.intrinsics->project(r1.normalised());
+
+                    outputEsse->drawLine      (p0, p1, color);
+                    outputEsse->drawCrosshare1(p1, color);
                 }
 
-                Vector3dd r1(c.end  .x(), c.end  .y(), 1.0);
-                Vector2dd p1 = unwrapper.model.intrinsics->project(r1.normalised());
+                for (size_t count = 0; count < list.size(); count++)
+                {
+                    Correspondence &c = list[count];
 
-                if (base) {
-                     outputEsse->drawArc(p1.x(), p1.y(), 10, RGBColor::Magenta());
-                     outputEsse->drawArc(p1.x(), p1.y(), 12, RGBColor::Amber());
-                     outputEsse->drawArc(p1.x(), p1.y(), 8 , RGBColor::Blue());
+                    bool base = false;
+                    if (c.flags & Correspondence::FLAG_IS_BASED_ON) {
+                        base = true;
+                    }
 
+                    Vector3dd r1(c.end  .x(), c.end  .y(), 1.0);
+                    Vector2dd p1 = unwrapper.model.intrinsics->project(r1.normalised());
+
+                    if (base) {
+                         outputEsse->drawArc(p1.x(), p1.y(), 10, RGBColor::Magenta());
+                         outputEsse->drawArc(p1.x(), p1.y(), 12, RGBColor::Amber());
+                         outputEsse->drawArc(p1.x(), p1.y(), 8 , RGBColor::Blue());
+
+                    }
                 }
             }
+
+            EssentialDecomposition decomposition[4];
+            matrix.decompose(decomposition);
+
+            decomp = matrix.decompose(&flowInput,decomposition);
+            cout << decomp << endl;
+
+            /* Draw result */
+            stats.resetInterval("Estimator and decompostion");
+            move = decomp.toSecondCameraAffine();
+
+            /**
+             *    Draw debug for essential estimation
+             **/
+            Vector3dd direction = decomp.direction;
+            if (direction.z() < 0) direction = - direction;
+            vanish = unwrapper.model.intrinsics->project(direction);
+            cout << "Vanish point: "  << vanish << endl;
+
         }
 
-        EssentialDecomposition decomposition[4];
-        matrix.decompose(decomposition);
-
-        EssentialDecomposition decomp = matrix.decompose(&flowInput,decomposition);
-        cout << decomp << endl;
-
-        /* Draw result */
-        stats.resetInterval("Estimator and decompostion");
-
-        Affine3DQ move = decomp.toSecondCameraAffine();
         position = move * position;
         trajectory.mulTransform(position);
         trajectory.addOrts(0.5);
         trajectory.popTransform();
-
-        /**
-         *    Draw debug for essential estimation
-         **/
-
-        Vector3dd direction = decomp.direction;
-        if (direction.z() < 0) direction = - direction;
-        Vector2dd vanish = unwrapper.model.intrinsics->project(direction);
-        cout << "Vanish point: "  << vanish << endl;
 
         for (size_t i = 0; i < flowList->size(); i++)
         {
@@ -682,12 +720,20 @@ int main(int argc, char **argv)
             ray0 = ray0.normalisedProjective();
             ray1 = ray1.normalisedProjective();
 
-            double outlay = matrix.epipolarDistance(ray0.xy(), ray1.xy());
-
             RGBColor color = RGBColor::Gray();
 
-            if (outlay > params.dthreshold()) {
-                color = RGBColor::rainbow1((outlay - params.dthreshold()) * 100);
+            if (!isStatic)
+            {
+                double outlay = matrix.epipolarDistance(ray0.xy(), ray1.xy());
+                if (outlay > params.dthreshold()) {
+                    color = RGBColor::rainbow1((outlay - params.dthreshold()) * 100);
+                }
+            } else {
+                color = RGBColor::Amber();
+                double outlay = (data0 - data1).l2Metric();
+                if (outlay > params.dsthreshold()) {
+                    color = RGBColor::rainbow1((outlay - params.dsthreshold()) * 100);
+                }
             }
 
             outputNew->drawLine(data0, data1, color);
@@ -727,7 +773,7 @@ int main(int argc, char **argv)
             ImageRelatedData *image2 = scene.addImageToCamera(cam2, "curr.bmp");
             BufferFactory::getInstance()->saveRGB24Bitmap(curFrame.get(),  image2->mImagePath);
 
-
+            SYNC_PRINT(("Triangulating and saving points:\n"));
             for (size_t corrId = 0; corrId < flowList->size(); corrId++) {
                 SceneFeaturePoint *point = scene.createFeaturePoint();
 
@@ -778,7 +824,7 @@ int main(int argc, char **argv)
                     SYNC_PRINT(("\r%2.2lf%%", 100.0 * corrId / flowList->size()));
                 }
             }
-            SYNC_PRINT(("\n"));
+            SYNC_PRINT(("...done\n"));
 
             {
                 JSONPrinter printer("testscene.json");
@@ -824,7 +870,7 @@ int main(int argc, char **argv)
         }
 
         /* Joint cost function */
-        if (params.joint())
+        if (params.joint() && !isStatic)
         {
             Affine3DQ guess = decomp.toSecondCameraAffine();
 

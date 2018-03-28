@@ -16,7 +16,9 @@ class MODPointsCostFunctionData
 public:
     CorrespondenceList obseravtions;
     vector<Affine3DQ> transform;
+    vector<Vector3dd> points;
     OmnidirectionalProjection projection;
+
     MODPointsCostFunctionData();
 
     static const int OMNIDIR_POWER = 4;

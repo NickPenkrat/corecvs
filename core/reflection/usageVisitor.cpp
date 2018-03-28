@@ -12,19 +12,22 @@ void UsagePrinter::printUsage(const Reflection *reflection)
             case BaseField::TYPE_INT:
             {
                 const IntField *iField = static_cast<const IntField *>(field);
-                printf("  [--%-10s=<value>]  - %s (default=%d)\n", iField->name.name, iField->name.description, iField->defaultValue);
+                printf("  [--%-10s=<value>]  - %s (default=%d%s)\n", iField->name.name, iField->name.description, iField->defaultValue,
+                       iField->suffixHint ?  iField->suffixHint : "");
                 break;
             }
             case BaseField::TYPE_DOUBLE:
             {
                 const DoubleField *dField = static_cast<const DoubleField *>(field);
-                printf("  [--%-10s=<value>]  - %s (default=%lf)\n", dField->name.name, dField->name.description, dField->defaultValue);
+                printf("  [--%-10s=<value>]  - %s (default=%lf%s)\n", dField->name.name, dField->name.description, dField->defaultValue,
+                       dField->suffixHint ? dField->suffixHint : "");
                 break;
             }
             case BaseField::TYPE_STRING:
             {
                 const StringField *sField = static_cast<const StringField *>(field);
-                printf("  [--%-10s=<value>]  - %s (default=\"%s\")\n", sField->name.name, sField->name.description, sField->defaultValue.c_str());
+                printf("  [--%-10s=<value>]  - %s (default=\"%s\"%s)\n", sField->name.name, sField->name.description, sField->defaultValue.c_str(),
+                       sField->suffixHint ? sField->suffixHint : "");
                 break;
             }
             case BaseField::TYPE_WSTRING:
