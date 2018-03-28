@@ -33,3 +33,20 @@ private:
 
     int mCurrentCount;
 };
+
+class FilePreciseCaptureProducer : public ImageCaptureInterfaceProducer
+{
+public:
+    FilePreciseCaptureProducer()
+    {}
+
+    virtual std::string getPrefix() override
+    {
+        return "prec:";
+    }
+
+    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
+    {
+        return new FilePreciseCapture(name, false, isRGB);
+    }
+};

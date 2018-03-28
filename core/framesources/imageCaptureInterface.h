@@ -318,10 +318,14 @@ public:
 
 
 template<class Target>
-class ImageCaptureInterfaceProducerWrapper : ImageCaptureInterfaceProducer
+class ImageCaptureInterfaceProducerWrapper : public ImageCaptureInterfaceProducer
 {
 public:
     std::string prefix;
+
+    ImageCaptureInterfaceProducerWrapper(const std::string &prefix) :
+        prefix(prefix)
+    {}
 
     virtual std::string getPrefix() override;
     virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
@@ -332,10 +336,21 @@ public:
 
 class ImageCaptureInterfaceFabric
 {
+public:
+    /** Public function to get the only one instance of this object.
+     *  It will be automatically destroyed on shut down.
+     */
+    static ImageCaptureInterfaceFabric* getInstance();
+    static void printCaps();
+
+
     std::vector<ImageCaptureInterfaceProducer *> producers;
+    void addProducer(ImageCaptureInterfaceProducer *producer);
 
-
+    ImageCaptureInterface *fabricate(std::string &name, bool isRGB);
 
 };
+
+
 
 

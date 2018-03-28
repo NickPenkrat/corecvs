@@ -70,3 +70,22 @@ public:
 
     PreciseTimer mLastFrameTime;
 };
+
+
+class AVICaptureProducer : public ImageCaptureInterfaceProducer
+{
+public:
+    AVICaptureProducer()
+    {}
+
+    virtual std::string getPrefix() override
+    {
+        return "avcodec:";
+    }
+
+    virtual ImageCaptureInterface *produce(std::string &name, bool /*isRGB*/) override
+    {
+        return new AviCapture(name);
+    }
+};
+

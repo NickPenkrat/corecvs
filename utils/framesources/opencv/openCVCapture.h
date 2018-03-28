@@ -36,10 +36,6 @@ enum OpenCVCapType {
 
 struct CvCapture;
 
-#ifdef interface            // msvc could define it as a "struct" at its header, but it's not a c++ keyword!
-#undef interface
-#endif
-
 class OpenCVCaptureInterface : public virtual ImageCaptureInterface
 {
  private:
@@ -48,8 +44,8 @@ class OpenCVCaptureInterface : public virtual ImageCaptureInterface
     class SpinThread : public QThread
     {
     public:
-        SpinThread(OpenCVCaptureInterface *interface)
-            : mInterface(interface), mStopping(false)
+        SpinThread(OpenCVCaptureInterface *_interface)
+            : mInterface(_interface), mStopping(false)
         {}
 
         virtual void run (void);
@@ -82,5 +78,24 @@ class OpenCVCaptureInterface : public virtual ImageCaptureInterface
 
     virtual ~OpenCVCaptureInterface();
  };
+
+
+class OpenCvCaptureProducer : public ImageCaptureInterfaceProducer
+{
+public:
+    OpenCvCaptureProducer()
+    {}
+
+    virtual std::string getPrefix() override
+    {
+        return "opencv:";
+    }
+
+    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
+    {
+        return new OpenCVCaptureInterface(name, OPENCV_CAP_ANY);
+    }
+};
+
 
  #endif /* OPENCVCAPTURE_H_ */

@@ -227,7 +227,7 @@ void SillyNormalizerMask::operator ()(const double in[], double out[])
         return;
 
 
-    int camNum = params.lock1Cam() ? (scene->cameras.size() - 1) : scene->cameras.size();
+    size_t camNum = params.lock1Cam() ? (scene->cameras.size() - 1) : scene->cameras.size();
     int startOffset = getCameraOffset(scene, params);
 
     for (size_t camId = 0; camId < camNum; camId++)

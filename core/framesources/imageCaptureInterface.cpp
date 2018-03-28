@@ -157,3 +157,42 @@ bool ImageCaptureInterface::supportPause()
 {
     return false;
 }
+
+ImageCaptureInterface *ImageCaptureInterfaceFabric::fabricate(std::string &name, bool isRGB)
+{
+    SYNC_PRINT(("ImageCaptureInterfaceFabric::fabricate(%s, rgb=%s):called\n", name.c_str(), isRGB ? "true" : "false"));
+
+    for (size_t count = 0; count < producers.size(); count++)
+    {
+        std::string prefix = producers[count]->getPrefix();
+        if (name.substr(0, prefix.size()).compare(prefix) == 0)
+        {
+            std::string tmp = name.substr(prefix.size());
+            return producers[count]->produce(tmp, isRGB);
+        }
+    }
+
+    return NULL;
+}
+
+ImageCaptureInterfaceFabric *ImageCaptureInterfaceFabric::getInstance()
+{
+    static ImageCaptureInterfaceFabric instance;
+    return &instance;
+}
+
+void ImageCaptureInterfaceFabric::printCaps()
+{
+    cout << "ImageCaptureInterfaceFabric::printCaps():" << endl;
+    ImageCaptureInterfaceFabric *factory = ImageCaptureInterfaceFabric::getInstance();
+    for (size_t count = 0; count < factory->producers.size(); count++)
+    {
+        std::string prefix = factory->producers[count]->getPrefix();
+        cout << "   " << prefix << endl;
+    }
+}
+
+void ImageCaptureInterfaceFabric::addProducer(ImageCaptureInterfaceProducer *producer)
+{
+    producers.push_back(producer);
+}

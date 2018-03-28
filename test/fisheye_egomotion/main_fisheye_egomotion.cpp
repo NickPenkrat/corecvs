@@ -32,6 +32,7 @@
 #ifdef WITH_OPENCV
 #include "openCVTools.h"
 #include "moc-flow/openCVMovingObjectFlow.h"
+#include <opencv/openCVFileCapture.h>
 #endif
 #include "core/framesources/imageCaptureInterface.h"
 
@@ -41,6 +42,10 @@
 
 #include <core/reflection/jsonPrinter.h>
 #include <core/reflection/usageVisitor.h>
+
+#include <core/framesources/file/fileCapture.h>
+#include <core/framesources/file/precCapture.h>
+
 
 
 using namespace std;
@@ -71,7 +76,7 @@ public:
         SYNC_PRINT(("MOCProcessor::newImageReadyCallback(): called\n"));
     }
 
-    virtual void newStatisticsReadyCallback(CaptureStatistics stats) override
+    virtual void newStatisticsReadyCallback(CaptureStatistics /*stats*/) override
     {
         SYNC_PRINT(("MOCProcessor::newStatisticsReadyCallback(CaptureStatistics): called\n"));
     }
@@ -386,10 +391,22 @@ int main(int argc, char **argv)
     init_cvs_stereo_provider();
     defaultProvider = "CVS";
 #endif
+
+
 #ifdef WITH_OPENCV
     corecvs::Processor6DFactoryHolder::getInstance()->registerProcessor(new OpenCVMovingObjectFlowImplFactory);
     defaultProvider = "MeshFlow";
+
+    ImageCaptureInterfaceFabric::getInstance()->addProducer(new OpenCvFileCaptureProducer());
 #endif
+
+#ifdef WITH_AVCODEC
+    ImageCaptureInterfaceFabric::getInstance()->addProducer(new AVICaptureProducer());
+#endif
+
+    ImageCaptureInterfaceFabric::getInstance()->addProducer(new FileCaptureProducer());
+    ImageCaptureInterfaceFabric::getInstance()->addProducer(new FilePreciseCaptureProducer());
+
 
     if (argc <= 1) {
         printf(("Usage:\n"));
@@ -413,13 +430,18 @@ int main(int argc, char **argv)
     {
         BufferFactory::getInstance()->printCaps();
         Processor6DFactoryHolder::printCaps();
+        ImageCaptureInterfaceFabric::printCaps();
         return 0;
     }
-
     /* Prepare input */
     vector<string> stream = s.nonPrefix();
     cout << "We would open file:" << stream.back() << endl;
-    ImageCaptureInterface *cam = new AviCapture(stream.back());
+    ImageCaptureInterface *cam = ImageCaptureInterfaceFabric::getInstance()->fabricate(stream.back(), true);
+    if (cam == NULL)
+    {
+        SYNC_PRINT(("No such input. Check --caps for supported.\n"));
+        return 1;
+    }
 
     /* Open input device */
     MOCProcessor processor;
@@ -433,9 +455,11 @@ int main(int argc, char **argv)
     ImageCaptureInterface::FramePair images;
 
 
+#ifdef WITH_AVCODEC
     AVEncoder newOutVideo;
     AVEncoder newEsseVideo;
     AVEncoder unwarpOutVideo;
+#endif
 
     Unwrapper unwrapper;
     bool modelLoaded = false;
@@ -899,6 +923,7 @@ int main(int argc, char **argv)
 
     }
 
+#ifdef WITH_AVCODEC
      if (newOutVideo.open)
      {
          newOutVideo.endEncoding();
@@ -907,6 +932,7 @@ int main(int argc, char **argv)
      {
          unwarpOutVideo.endEncoding();
      }
+#endif
 
      trajectory.dumpPLY("trajectory.ply");
 

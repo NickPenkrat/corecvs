@@ -88,7 +88,7 @@ struct SillyModel
         return 0;
     }
 
-    static int getCameraOffset(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
+    static int getCameraOffset(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &/*params*/)
     {
         return scene->points.size() * Vector3dd::LENGTH;
     }
@@ -100,7 +100,7 @@ struct SillyModel
         return getCameraOffset(scene, params) + getCameraModelSize(params) * camNum;
     }
 
-    static int getOutputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
+    static int getOutputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &/*params*/)
     {
         return scene->obs.size() * Vector3dd::LENGTH;
     }

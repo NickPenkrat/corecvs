@@ -22,3 +22,20 @@ public:
     cv::VideoCapture mCapture;
     int count;
 };
+
+class OpenCvFileCaptureProducer : public ImageCaptureInterfaceProducer
+{
+public:
+    OpenCvFileCaptureProducer()
+    {}
+
+    virtual std::string getPrefix() override
+    {
+        return "opencv_file:";
+    }
+
+    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
+    {
+        return new OpenCvFileCapture(name);
+    }
+};

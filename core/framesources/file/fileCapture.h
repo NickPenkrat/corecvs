@@ -32,3 +32,20 @@ public:
     virtual ~FileCaptureInterface();
 };
 
+class FileCaptureProducer : public ImageCaptureInterfaceProducer
+{
+public:
+    FileCaptureProducer()
+    {}
+
+    virtual std::string getPrefix() override
+    {
+        return "file:";
+    }
+
+    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
+    {
+        return new FileCaptureInterface(name, false, isRGB);
+    }
+};
+
