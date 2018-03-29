@@ -4,7 +4,6 @@
 
 
 #include <QApplication>
-#include <avEncoder.h>
 #include <iostream>
 #include <time.h>
 
@@ -25,26 +24,30 @@
 #include "core/cameracalibration/ilFormat.h"
 #include "core/buffers/remapBuffer.h"
 
+#include "core/reflection/jsonPrinter.h"
+#include "core/reflection/usageVisitor.h"
+
 #include "core/camerafixture/fixtureScene.h"
 #include "core/camerafixture/cameraFixture.h"
-#include "xml/generated/fisheyeEgomotionParameters.h"
+
+#include "core/framesources/imageCaptureInterface.h"
+#include "core/framesources/file/fileCapture.h"
+#include "core/framesources/file/precCapture.h"
 
 #ifdef WITH_OPENCV
 #include "openCVTools.h"
 #include "moc-flow/openCVMovingObjectFlow.h"
 #include <opencv/openCVFileCapture.h>
 #endif
-#include "core/framesources/imageCaptureInterface.h"
 
-
+#ifdef WITH_AVCODEC
+#include "avEncoder.h"
 #include "aviCapture.h"
+#endif
+
+
+#include "xml/generated/fisheyeEgomotionParameters.h"
 #include "modCostFunction.h"
-
-#include <core/reflection/jsonPrinter.h>
-#include <core/reflection/usageVisitor.h>
-
-#include <core/framesources/file/fileCapture.h>
-#include <core/framesources/file/precCapture.h>
 
 
 
@@ -515,6 +518,7 @@ int main(int argc, char **argv)
             continue;
         }
 
+#ifdef WITH_AVCODEC
         if (!newOutVideo.open) {
             newOutVideo.startEncoding("new.avi", curFrame->h, curFrame->w);
         }
@@ -522,6 +526,7 @@ int main(int argc, char **argv)
         if (!newEsseVideo.open) {
             newEsseVideo.startEncoding("esse.avi", curFrame->h, curFrame->w);
         }
+#endif
 
         stats.enterContext("Mesh Flow->");
 
@@ -562,10 +567,11 @@ int main(int argc, char **argv)
             modelLoaded = true;
         }
         /* Unwrap */
-
+#ifdef WITH_AVCODEC
         if (!unwarpOutVideo.open) {
             unwarpOutVideo.startEncoding("unwrap.avi", unwrapper.unwrapSize.y(), unwrapper.unwrapSize.x());
         }
+#endif
 
         unique_ptr<RGB24Buffer> unwarpOrig;
         unique_ptr<RGB24Buffer> unwarpRaw;
@@ -889,19 +895,24 @@ int main(int argc, char **argv)
         oname.str("");
         oname << "new" << framecount << extention;
         BufferFactory::getInstance()->saveRGB24Bitmap(outputNew.get(), oname.str());
-        newOutVideo.addFrame(outputNew.get());
 
         oname.str("");
         oname << "esse" << framecount << extention;
         BufferFactory::getInstance()->saveRGB24Bitmap(outputEsse.get(), oname.str());
+
+#ifdef WITH_AVCODEC
+        newOutVideo.addFrame(outputNew.get());
         newEsseVideo.addFrame(outputNew.get());
+#endif
 
         if (params.unwarp())
         {
             oname.str("");
             oname << "unwarp-new" << framecount << extention;
             BufferFactory::getInstance()->saveRGB24Bitmap(unwarpNew.get(),  oname.str());
+#ifdef WITH_AVCODEC
             unwarpOutVideo.addFrame(unwarpNew.get());
+#endif
         }
 
         /* Joint cost function */

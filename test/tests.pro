@@ -10,32 +10,31 @@ exists(../../../config.pri) {
 
 TEMPLATE = subdirs
 
-SUBDIRS +=       \
-#   grab         \
-    grab_N_captures \
-    serialize1   \
-    fileloader \  # it can what rawconverter is able to do as well!
-#   adoptcolor   \
-#    avigrab     \  // Depricated
-#    decodebayer \
-#    genvectorui  \
-#    aLowCodec \
-#    new_board_detector \
-#
-#    cr2reader           \
-#    debayer          \
-    deproject        \
+SUBDIRS +=            \
+#   grab              \
+    grab_N_captures   \
+    serialize1        \
+    fileloader        \
+    deproject         \
     softrender        \
     raytracerender    \
     stereo_generator  \
     widgets_test      \
     widget_harness    \
-#    command_harness  \
+#    command_harness   \
     example_scene     \
+    fisheye_egomotion \
 
-with_avcodec {
-     SUBDIRS += fisheye_egomotion
-}
+
+# SUBDIRS +=     \
+#    adoptcolor  \
+#    avigrab     \  // Depricated
+#    decodebayer \
+#    genvectorui \
+#    aLowCodec   \
+#    new_board_detector \
+#    cr2reader           \
+#    debayer          \
 
 with_ceres {
     SUBDIRS += ceres_playground
