@@ -313,51 +313,71 @@ int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
             mesh.addEdge(edge);
         }
     }
-    else if (!hasColor)
+    else if (plyFormat == BINARY_LITTLE_ENDIAN)
     {
-        for (int i = 0; i < objNumber[OBJ_VERTEX]; i++)
+        if (!hasColor)
         {
-            float f;
-            Vector3dd vertex;
-            input.read((char *)&f, sizeof(f)); vertex.x() = f;
-            input.read((char *)&f, sizeof(f)); vertex.y() = f;
-            input.read((char *)&f, sizeof(f)); vertex.z() = f;
-            mesh.vertexes.push_back(vertex);
-        }
-        for (int i = 0; i <  objNumber[OBJ_FACE]; i++)
-        {
-            uint8_t points;
-            input.read((char *)&points, sizeof(points));
-            if (input.bad()) {
-                SYNC_PRINT(("Corrupted face number %d\n", i));
-                return 1;
-            }
-
-            if (points != 3) {
-                SYNC_PRINT(("We only support faces with 3 sides not %d\n", points));
-                continue;
-            }
-            Vector3d32 face;
-            uint32_t value;
-            input.read((char *)&value, sizeof(value)); face.x() = value;
-            input.read((char *)&value, sizeof(value)); face.y() = value;
-            input.read((char *)&value, sizeof(value)); face.z() = value;
-
-            if (input.bad()) {
-                SYNC_PRINT(("Corrupted face number %d\n", i));
-                return 1;
-            }
-
-            if (!face.isInCube(
-                    Vector3d32(                        0,                         0,                          0),
-                    Vector3d32(objNumber[OBJ_VERTEX] - 1, objNumber[OBJ_VERTEX] - 1, objNumber[OBJ_VERTEX] - 1)))
+            for (int i = 0; i < objNumber[OBJ_VERTEX]; i++)
             {
-                SYNC_PRINT(("Vertex index is wrong on face %i\n", i));
-                return 1;
+                float f;
+                Vector3dd vertex;
+                input.read((char *)&f, sizeof(f)); vertex.x() = f;
+                input.read((char *)&f, sizeof(f)); vertex.y() = f;
+                input.read((char *)&f, sizeof(f)); vertex.z() = f;
+                mesh.vertexes.push_back(vertex);
             }
-            LOCAL_PRINT(("%d %d %d\n", face.x(), face.y(), face.z()));
+            for (int i = 0; i <  objNumber[OBJ_FACE]; i++)
+            {
+                uint8_t points;
+                input.read((char *)&points, sizeof(points));
+                if (input.bad()) {
+                    SYNC_PRINT(("Corrupted face number %d\n", i));
+                    return 1;
+                }
 
-            mesh.addFace(face);
+                if (points != 3) {
+                    SYNC_PRINT(("We only support faces with 3 sides not %d\n", points));
+                    continue;
+                }
+                Vector3d32 face;
+                uint32_t value;
+                input.read((char *)&value, sizeof(value)); face.x() = value;
+                input.read((char *)&value, sizeof(value)); face.y() = value;
+                input.read((char *)&value, sizeof(value)); face.z() = value;
+
+                if (input.bad()) {
+                    SYNC_PRINT(("Corrupted face number %d\n", i));
+                    return 1;
+                }
+
+                if (!face.isInCube(
+                        Vector3d32(                        0,                         0,                          0),
+                        Vector3d32(objNumber[OBJ_VERTEX] - 1, objNumber[OBJ_VERTEX] - 1, objNumber[OBJ_VERTEX] - 1)))
+                {
+                    SYNC_PRINT(("Vertex index is wrong on face %i\n", i));
+                    return 1;
+                }
+                LOCAL_PRINT(("%d %d %d\n", face.x(), face.y(), face.z()));
+
+                mesh.addFace(face);
+            }
+        } else {
+            for (int i = 0; i < objNumber[OBJ_VERTEX]; i++)
+            {
+                float f;
+                Vector3dd vertex;
+                input.read((char *)&f, sizeof(f)); vertex.x() = f;
+                input.read((char *)&f, sizeof(f)); vertex.y() = f;
+                input.read((char *)&f, sizeof(f)); vertex.z() = f;
+
+                if (vertexColor) {
+                    input.read((char *)&mesh.currentColor.r(), sizeof(uint8_t));
+                    input.read((char *)&mesh.currentColor.g(), sizeof(uint8_t));
+                    input.read((char *)&mesh.currentColor.b(), sizeof(uint8_t));
+                    LOCAL_PRINT(("Color %d %d %d\n", mesh.currentColor.r(), mesh.currentColor.g(), mesh.currentColor.b()));
+                }
+                mesh.addVertex(vertex);
+            }
         }
     }
 
