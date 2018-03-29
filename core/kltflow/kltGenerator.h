@@ -34,7 +34,7 @@ public:
     SpatialGradientIntegralBuffer *gradient;
 };
 
-template <typename InterpolationType>
+template <typename InterpolationType, typename FloatType = double>
 class KLTGenerator
 {
 public:
@@ -54,7 +54,9 @@ public:
         windowSize(_windowSize),
         newtonIterations(_newtonIterations),
         maxLevels(_maxLevels)
-    {}
+    {
+    }
+
 
     FlowBuffer *calculateFlowFromPrevLevelBuffer(
             G12Buffer *first,
@@ -100,7 +102,7 @@ public:
         context.second = second;
         context.gradient = gradient;
 
-        Vector2dd g;
+        Vector2d<FloatType> g;
 
         for(i = 0; i < h; i++)
         {
@@ -112,7 +114,7 @@ public:
 
                 if (isHighestFlowBuffer)
                 {
-                    g = Vector2dd(0.0);
+                    g = Vector2d<FloatType>(0.0);
                 }
                 else
                 {
@@ -121,7 +123,7 @@ public:
                         goto flowUnknownLabel;
                     }
 
-                    g = Vector2dd(prevLevelFlow->element(prevCoord));
+                    g = Vector2d<FloatType>(prevLevelFlow->element(prevCoord));
                     g *= 2.0;
                 }
 
@@ -196,7 +198,7 @@ public:
     bool kltIteration (
             const KLTCalculationContext &calculationContext,
             const Vector2d32 &point,
-            Vector2dd *startGuess,
+            Vector2d<FloatType> *startGuess,
             double nullThreshold) const
     {
 
@@ -209,7 +211,7 @@ public:
         uint32_t h = first->h;
         uint32_t w = first->w;
 
-        Vector2dd currentGuess = *startGuess;
+        Vector2d<FloatType> currentGuess = *startGuess;
 
         /* We use iterative method and stop if number of iterations is above the threshold*/
         for(int l = 0;l < newtonIterations; l++)
@@ -262,30 +264,30 @@ public:
     //        double inv22 =  mSG.x() / det;
 
             //calculating mismatch vector
-            Vector2dd b = Vector2dd(0.0);
+            Vector2d<FloatType> b = Vector2d<FloatType>(0.0);
             DOTRACE(("\n"));
-            double sum11 = 0;
-            double sum12 = 0;
-            double sum22 = 0;
+            FloatType sum11 = 0;
+            FloatType sum12 = 0;
+            FloatType sum22 = 0;
             InterpolationType interpolator;
             for (int i = y0; i <= y1; i++)
             {
                 for (int j = x0; j <= x1; j++)
                 {
-                    double targetX = j + currentGuess.x();
-                    double targetY = i + currentGuess.y();
+                    FloatType targetX = j + currentGuess.x();
+                    FloatType targetY = i + currentGuess.y();
 
                     if (!second->isValidCoordBl(targetY, targetX))
                         return false;
 
-                    double dI = (double)first ->element  (i      , j      ) -
+                    FloatType dI = (FloatType)first ->element  (i      , j      ) -
                                         interpolator.interpolate(targetY, targetX, second);
 
-                    double Ix = (double)(
+                    FloatType Ix = (FloatType)(
                             first->element(i, j + 1) -
                             first->element(i, j - 1)
                             ) / 2.0;
-                    double Iy = (double)(
+                    FloatType Iy = (FloatType)(
                             first->element(i + 1, j) -
                             first->element(i - 1, j)
                             ) / 2.0;
@@ -294,21 +296,21 @@ public:
                     sum11 += Ix * Ix;
                     sum22 += Iy * Iy;
                     sum12 += Iy * Ix;
-                    b += Vector2dd(Ix, Iy) * dI;
+                    b += Vector2d<FloatType>(Ix, Iy) * dI;
                 }
             }
-            double det = sum11 * sum22 - sum12 * sum12;
+            FloatType det = sum11 * sum22 - sum12 * sum12;
 
             if (fabs(det) < nullThreshold)
                 return false;
 
-            double inv11 =  sum22 / det;
-            double inv12 = -sum12 / det;
-            double inv22 =  sum11 / det;
+            FloatType inv11 =  sum22 / det;
+            FloatType inv12 = -sum12 / det;
+            FloatType inv22 =  sum11 / det;
 
             DOTRACE(("\n"));
             DOTRACE(("\tB vector (%lf %lf)\n", b.x(), b.y()));
-            Vector2dd t = Vector2dd( inv11 * b.x() + inv12 * b.y(), inv12 * b.x() + inv22 * b.y());
+            Vector2d<FloatType> t = Vector2d<FloatType>( inv11 * b.x() + inv12 * b.y(), inv12 * b.x() + inv22 * b.y());
             DOTRACE(("\tT vector (%lf %lf)\n", t.x(), t.y()));
 
             currentGuess += t;
@@ -322,21 +324,20 @@ public:
 
     bool kltIterationSubpixel (
             const KLTCalculationContext &calculationContext,
-            const Vector2dd &point,
-            Vector2dd *startGuess,
-            double nullThreshold) const
+            const Vector2d<FloatType> &point,
+            Vector2d<FloatType> *startGuess,
+            float nullThreshold) const
     {
-        //CORE_ASSERT_TRUE(calculationContext.first != NULL, "NULL parameter fisrt");
-        //CORE_ASSERT_TRUE(calculationContext.second != NULL, "NULL parameter second");
-        //CORE_ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
-
+        CORE_ASSERT_TRUE(calculationContext.first != NULL, "NULL parameter fisrt");
+        CORE_ASSERT_TRUE(calculationContext.second != NULL, "NULL parameter second");
+        CORE_ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
         G12Buffer *first  = calculationContext.first;
         G12Buffer *second = calculationContext.second;
 
     //    uint32_t h = first->h;
     //    uint32_t w = first->w;
 
-        Vector2dd currentGuess = *startGuess;
+        Vector2d<FloatType> currentGuess = *startGuess;
 
         /* We use iterative method and stop if number of iterations is above the threshold*/
         for (int l = 0; l < newtonIterations; l++)
@@ -345,7 +346,7 @@ public:
             DOTRACE(("\tEntering point: [%lf %lf]\n", point.x(), point.y()));
             DOTRACE(("\tEntering guess: [%lf %lf]\n", currentGuess.x(), currentGuess.y()));
             /* The position in the other image */
-            Vector2dd prediction = point + currentGuess;
+            Vector2d<FloatType> prediction = point + currentGuess;
             DOTRACE(("\tPreditiction (%lf %lf)\n", prediction.x(), prediction.y()));
 
 
@@ -373,58 +374,77 @@ public:
     */
 
             //calculating mismatch vector
-            Vector2dd b   = Vector2dd(0.0);
-            Vector3dd mSG = Vector3dd(0.0);
+            Vector3d<FloatType> mSG = Vector3d<FloatType>(0.0);
+            Vector2d<FloatType> b   = Vector2d<FloatType>(0.0);
+
 
             DOTRACE(("\n"));
 
+
             InterpolationType interpolator;
-            for (int i = -windowSize.y(); i <= windowSize.y(); i++)
+
+
+            int window_y_min_border_firstImg = windowSize.y() + CORE_MIN(0, point.y()- windowSize.y());
+            int window_y_max_border_firstImg = windowSize.y() - CORE_MAX(0, ( point.y()+ windowSize.y() ) -first->h -1 );
+            int window_x_min_border_firstImg = windowSize.x() + CORE_MIN(0, point.x()- windowSize.x());
+            int window_x_max_border_firstImg = windowSize.x() - CORE_MAX(0, ( point.x()+ windowSize.x() ) -first->w -1 );
+
+            int window_y_min_border_secondImg = windowSize.y() + CORE_MIN(0, point.y() + currentGuess.y()- windowSize.y());
+            int window_y_max_border_secondImg = windowSize.y() - CORE_MAX(0, ( point.y() + currentGuess.y() + windowSize.y() ) -first->h -1 );
+            int window_x_min_border_secondImg = windowSize.x() + CORE_MIN(0, point.x() + currentGuess.x() - windowSize.x());
+            int window_x_max_border_secondImg = windowSize.x() - CORE_MAX(0, ( point.x() + currentGuess.x() + windowSize.x() ) -first->w -1 );
+
+            int window_y_min_border = CORE_MIN(window_y_min_border_firstImg, window_y_min_border_secondImg);
+            int window_y_max_border = CORE_MIN(window_y_max_border_firstImg, window_y_max_border_secondImg);
+            int window_x_min_border = CORE_MIN(window_x_min_border_firstImg, window_x_min_border_secondImg);
+            int window_x_max_border = CORE_MIN(window_x_max_border_firstImg, window_x_max_border_secondImg);
+
+
+            for (int i = -window_y_min_border; i <= window_y_max_border; i++)
             {
-                for (int j = -windowSize.x(); j <= windowSize.x(); j++)
+                for (int j = -window_x_min_border; j <= window_x_max_border; j++)
                 {
-                    double x =  point.x() + (double)j;
-                    double y =  point.y() + (double)i;
+                    FloatType x =  point.x() + (FloatType)j;
+                    FloatType y =  point.y() + (FloatType)i;
 
-                    if (!first->isValidCoordBl(y, x)) {
-                        continue;
-                    }
-                    if (!second->isValidCoordBl(y + currentGuess.y(), x + currentGuess.x())) {
-                        continue;
-                    }
+//                    if (!first->isValidCoordBl(y, x)) {
+//                        continue;
+//                    }
 
-                    double dI = interpolator.interpolate(y, x, first) -
+//                    if (!second->isValidCoordBl(y + currentGuess.y(), x + currentGuess.x())) {
+//                        continue;
+//                    }
+
+                    FloatType dI = interpolator.interpolate(y, x, first) -
                                 interpolator.interpolate(y + currentGuess.y(), x + currentGuess.x(), second);
 
-                    double Ix = (double)(
-                            interpolator.interpolate(y      , CORE_MIN(first->w - 1.0, x + 1.0), first) -
-                            interpolator.interpolate(y      , CORE_MAX(0.0, x - 1.0), first)
-                                ) / (CORE_MIN(first->w - 1.0, x + 1.0) - CORE_MAX(0.0, x - 1.0));
+                    FloatType Ix = (FloatType)(
+                            interpolator.interpolate(y      ,  x + 1.0, first) -
+                            interpolator.interpolate(y      , x - 1.0, first))/ 2.0;
 
-                    double Iy = (double)(
-                            interpolator.interpolate(CORE_MIN(first->h - 1.0, y + 1.0), x, first) -
-                            interpolator.interpolate(CORE_MAX(0.0, y - 1.0), x, first)
-                                ) / (CORE_MIN(first->h - 1.0, y) - CORE_MAX(0.0, y - 1.0));
+                    FloatType Iy = (FloatType)(
+                            interpolator.interpolate(y + 1.0, x, first) -
+                            interpolator.interpolate(y - 1.0, x, first))/2.0;
 
                     DOTRACE(("%d %d ( %lf %lf %lf)\n", i, j, dI, Ix, Iy));
 
-                    mSG += Vector3dd(Ix * Ix, Ix * Iy, Iy * Iy);
-                    b   += Vector2dd(Ix, Iy) * dI;
+                    mSG += Vector3d<FloatType>(Ix * Ix, Ix * Iy, Iy * Iy);
+                    b   += Vector2d<FloatType>(Ix, Iy) * dI;
                 }
             }
 
-            double det = mSG.x() * mSG.z() - mSG.y() * mSG.y();
+            FloatType det = mSG.x() * mSG.z() - mSG.y() * mSG.y();
 
             if (fabs(det) < nullThreshold)
                 return false;
 
-            double inv11 =  mSG.z() / det;
-            double inv12 = -mSG.y() / det;
-            double inv22 =  mSG.x() / det;
+            FloatType inv11 =  mSG.z() / det;
+            FloatType inv12 = -mSG.y() / det;
+            FloatType inv22 =  mSG.x() / det;
 
             DOTRACE(("\n"));
             DOTRACE(("\tB vector (%lf %lf)\n", b.x(), b.y()));
-            Vector2dd t = Vector2dd( inv11 * b.x() + inv12 * b.y(), inv12 * b.x() + inv22 * b.y());
+            Vector2d<FloatType> t = Vector2d<FloatType>( inv11 * b.x() + inv12 * b.y(), inv12 * b.x() + inv22 * b.y());
             DOTRACE(("\tT vector (%lf %lf)\n", t.x(), t.y()));
 
             currentGuess += t;

@@ -62,8 +62,9 @@ int MakePreciseParameters::staticInit()
           "Algorithm",
           "Algorithm",
           "Algorithm",
-          new EnumReflection(1
+          new EnumReflection(2
           , new EnumOption(0,"KLT")
+          , new EnumOption(1,"KLT Float")
           )
         );
     field1->widgetHint=BaseField::COMBO_BOX;

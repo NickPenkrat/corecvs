@@ -91,27 +91,45 @@ public:
         SpatialGradientIntegralBuffer *gradient = new SpatialGradientIntegralBuffer(sg);
         delete_safe(sg);
 
-
-        switch (params.interpolation())
+        if (params.algorithm() == MakePreciseAlgorithm::KLT)
         {
-            case PreciseInterpolationType::BILINEAR:
-                toReturn = preciseFlowCalc<BilinearInterpolator>(flow, first, second, gradient, params);
-            break;
-            case PreciseInterpolationType::POLYNOM:
-                toReturn = preciseFlowCalc<PolynomInterpolator> (flow, first, second, gradient, params);
-            break;
-            case PreciseInterpolationType::SPLINE:
-                toReturn = preciseFlowCalc<Splain3Interpolator> (flow, first, second, gradient, params);
-            break;
-            default:
-            break;
+            switch (params.interpolation())
+            {
+                case PreciseInterpolationType::BILINEAR:
+                    toReturn = preciseFlowCalc<BilinearInterpolator>(flow, first, second, gradient, params);
+                break;
+                case PreciseInterpolationType::POLYNOM:
+                    toReturn = preciseFlowCalc<PolynomInterpolator> (flow, first, second, gradient, params);
+                break;
+                case PreciseInterpolationType::SPLINE:
+                    toReturn = preciseFlowCalc<Splain3Interpolator> (flow, first, second, gradient, params);
+                break;
+                default:
+                break;
+            }
+        } else {
+            switch (params.interpolation())
+            {
+                case PreciseInterpolationType::BILINEAR:
+                    toReturn = preciseFlowCalc<BilinearInterpolator, float>(flow, first, second, gradient, params);
+                break;
+                case PreciseInterpolationType::POLYNOM:
+                    toReturn = preciseFlowCalc<PolynomInterpolator, float> (flow, first, second, gradient, params);
+                break;
+                case PreciseInterpolationType::SPLINE:
+                    toReturn = preciseFlowCalc<Splain3Interpolator, float> (flow, first, second, gradient, params);
+                break;
+                default:
+                break;
+            }
         }
+
 
         delete_safe(gradient);
         return toReturn;
     }
 
-    template<typename InterpolationType>
+    template<typename InterpolationType, typename FloatType = double>
     static FloatFlowBuffer *preciseFlowCalc(FlowBuffer *flow,
                                  G12Buffer *first,
                                  G12Buffer *second,
@@ -126,7 +144,7 @@ public:
         context.second = second;
         context.gradient = gradient;
 
-        KLTGenerator<InterpolationType> kltGenerator(
+        KLTGenerator<InterpolationType, FloatType> kltGenerator(
                 Vector2d32(params.kLTRadiusW(), params.kLTRadiusH()),
                 params.kLTIterations());
 
@@ -140,10 +158,10 @@ public:
                     if (flow->isElementKnown(i,j))
                     {
                         FlowElement shift = flow->element(i,j);
-                        Vector2dd guess = Vector2dd(shift.x(), shift.y());
-                        bool status = kltGenerator.kltIterationSubpixel(context, Vector2dd(j,i), &guess, 2);
+                        Vector2d<FloatType> guess(shift.x(), shift.y());
+                        bool status = kltGenerator.kltIterationSubpixel(context, Vector2d<FloatType>(j,i), &guess, 2);
                         if (status) {
-                            preciseFlow = FloatFlow(guess);
+                            preciseFlow = FloatFlow(Vector2dd(guess.x(),guess.y()));
                         }
                     }
                     toReturn->element(i,j) = preciseFlow;
