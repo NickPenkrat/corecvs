@@ -238,7 +238,7 @@ void SillyNormalizerMask::operator ()(const double in[], double out[])
 
         if (offset >= outputs)
         {
-            SYNC_PRINT(("SillyNormalizerMask::operator (): out of bounds. off=%d cam=%d camsize=%d (%d vs %d)", startOffset, camId, getCameraModelSize(params), offset, outputs));
+            SYNC_PRINT(("SillyNormalizerMask::operator (): out of bounds. off=%d cam=%d camsize=%d (%d vs %d)", startOffset, camId, (int)getCameraModelSize(params), offset, outputs));
         }
 
         Quaternion rotor;

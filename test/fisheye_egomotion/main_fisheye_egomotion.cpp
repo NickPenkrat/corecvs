@@ -417,7 +417,7 @@ int main(int argc, char **argv)
         UsagePrinter::printUsage(&FisheyeEgomotionParameters::reflection);
         printf(("\n"));
         printf(("Example\n"));
-        printf((" fisheye_egomotion --frames=30 --skipf=0 --intrinsics=new-intr.txt --rthreshold=0.0032 --dthreshold=0.0034 --scene --unwarp --subpixel --provider=CVS /media/workarea/work/ADAS/mod2/video_svm_ab_front.h264"));
+        printf((" fisheye_egomotion --frames=30 --skipf=0 --intrinsics=new-intr.txt --rthreshold=0.0032 --dthreshold=0.0034 --scene --unwarp --subpixel --provider=CVS opencv_file:/media/workarea/work/ADAS/mod2/video_svm_ab_front.h264"));
         return 0;
     }
 
@@ -662,9 +662,10 @@ int main(int argc, char **argv)
 
         if (!isStatic)
         {
-            RansacEstimator estimator(8, 100, params.rthreshold());
+            RansacEstimator estimator(8, params.riterations(), params.rthreshold());
             estimator.ransacParams.setUseMedian(true);
             estimator.trace = true;
+            estimator.use5point = params.use5point();
 
             vector<Correspondence *> flowInput;
             flowInput.reserve(list.size());

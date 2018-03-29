@@ -45,9 +45,9 @@ using std::istringstream;
 
 int PLYLoader::loadPLY(istream &input, Mesh3D &mesh)
 {
-#ifndef _DEBUG
+/*#ifndef _DEBUG
     trace = false;  // turn off tracing for release
-#endif
+#endif*/
 
     string line;
 

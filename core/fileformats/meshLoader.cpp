@@ -28,10 +28,10 @@ MeshLoader::MeshLoader() :
 
 }
 
-static const char *PLY_RES = ".ply";
-static const char *STL_RES = ".stl";
-static const char *OBJ_RES = ".obj";
-static const char *GCODE_RES = ".gcode";
+static const char *PLY_EXT = ".ply";
+static const char *STL_EXT = ".stl";
+static const char *OBJ_EXT = ".obj";
+static const char *GCODE_EXT = ".gcode";
 
 bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
 {
@@ -43,7 +43,7 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
         return false;
     }
 
-    if (HelperUtils::endsWith(fileName, PLY_RES))
+    if (HelperUtils::endsWith(fileName, PLY_EXT))
     {
         SYNC_PRINT(("MeshLoader::load(): Loading PLY <%s>\n", fileName.c_str()));
         PLYLoader loader;
@@ -56,7 +56,7 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
         }
     }
 
-    if (HelperUtils::endsWith(fileName, STL_RES))
+    if (HelperUtils::endsWith(fileName, STL_EXT))
     {
         SYNC_PRINT(("MeshLoader::load(): Loading STL <%s>\n", fileName.c_str()));
         STLLoader loader;
@@ -68,7 +68,7 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
         }
     }
 
-    if (HelperUtils::endsWith(fileName, OBJ_RES))
+    if (HelperUtils::endsWith(fileName, OBJ_EXT))
     {
         SYNC_PRINT(("MeshLoader::load(): Loading OBJ <%s>\n", fileName.c_str()));
         OBJLoader loader;
@@ -80,7 +80,7 @@ bool MeshLoader::load(Mesh3D *mesh, const string &fileName)
         }
     }
 
-    if (HelperUtils::endsWith(fileName, GCODE_RES))
+    if (HelperUtils::endsWith(fileName, GCODE_EXT))
     {
         SYNC_PRINT(("MeshLoader::load(): Loading GCODE <%s>\n", fileName.c_str()));
         GcodeLoader loader;
@@ -106,7 +106,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
         return false;
     }
 
-    if (HelperUtils::endsWith(fileName, PLY_RES))
+    if (HelperUtils::endsWith(fileName, PLY_EXT))
     {
         SYNC_PRINT(("MeshLoader::save(): Saving PLY <%s>\n", fileName.c_str()));
         PLYLoader loader;
@@ -119,7 +119,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
         }
     }
 
-    if (HelperUtils::endsWith(fileName, OBJ_RES))
+    if (HelperUtils::endsWith(fileName, OBJ_EXT))
     {
         SYNC_PRINT(("MeshLoader::save(): Saving OBJ <%s>\n", fileName.c_str()));
         OBJLoader loader;
@@ -132,7 +132,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
         }
     }
 
-    if (HelperUtils::endsWith(fileName, STL_RES))
+    if (HelperUtils::endsWith(fileName, STL_EXT))
     {
         SYNC_PRINT(("MeshLoader::save(): Saving binary STL <%s>\n", fileName.c_str()));
         STLLoader loader;
@@ -150,7 +150,7 @@ bool MeshLoader::save(Mesh3D *mesh, const string &fileName)
 
 std::string MeshLoader::extentionList()
 {
-    return string("*") + string(PLY_RES) + " *" + string(STL_RES) + " *" + string(OBJ_RES) + " *" + string(GCODE_RES);
+    return string("*") + string(PLY_EXT) + " *" + string(STL_EXT) + " *" + string(OBJ_EXT) + " *" + string(GCODE_EXT);
 }
 
 } //namespace corecvs

@@ -159,14 +159,14 @@ bool Mesh3DDecorated::verify( void )
 {
     if (faces.size() != texId.size())
     {
-        SYNC_PRINT(("Wrong face/texId index (%d != %d)\n", faces.size(), texId.size()));
+        SYNC_PRINT(("Wrong face/texId index (%d != %d)\n", (int)faces.size(), (int)texId.size()));
         return false;
 
     }
 
     if (faces.size() != normalId.size())
     {
-        SYNC_PRINT(("Wrong face/normalId index (%d != %d)\n", faces.size(), normalId.size()));
+        SYNC_PRINT(("Wrong face/normalId index (%d != %d)\n", (int)faces.size(), (int)normalId.size()));
         return false;
     }
 

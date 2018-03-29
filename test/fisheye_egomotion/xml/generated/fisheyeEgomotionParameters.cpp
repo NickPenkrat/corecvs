@@ -171,7 +171,19 @@ int FisheyeEgomotionParameters::staticInit()
     field9->precision=3;
     fields().push_back(field9);
     /*  */ 
-    DoubleField* field10 = new DoubleField
+    BoolField* field10 = new BoolField
+        (
+          FisheyeEgomotionParameters::USE5POINT_ID,
+          offsetof(FisheyeEgomotionParameters, mUse5point),
+          false,
+          "use5point",
+          "Use 5 point based ",
+          "Use 5 point based "
+        );
+    field10->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field10);
+    /*  */ 
+    DoubleField* field11 = new DoubleField
         (
           FisheyeEgomotionParameters::RTHRESHOLD_ID,
           offsetof(FisheyeEgomotionParameters, mRthreshold),
@@ -184,11 +196,26 @@ int FisheyeEgomotionParameters::staticInit()
          500,
          1
         );
-    field10->widgetHint=BaseField::SPIN_BOX;
-    field10->precision=6;
-    fields().push_back(field10);
+    field11->widgetHint=BaseField::SPIN_BOX;
+    field11->precision=6;
+    fields().push_back(field11);
     /*  */ 
-    DoubleField* field11 = new DoubleField
+    IntField* field12 = new IntField
+        (
+          FisheyeEgomotionParameters::RITERATIONS_ID,
+          offsetof(FisheyeEgomotionParameters, mRiterations),
+          100,
+          "riterations",
+          "Ransac max iterations",
+          "Ransac max iterations",
+          true,
+         1,
+         50000,
+         1
+        );
+    fields().push_back(field12);
+    /*  */ 
+    DoubleField* field13 = new DoubleField
         (
           FisheyeEgomotionParameters::DTHRESHOLD_ID,
           offsetof(FisheyeEgomotionParameters, mDthreshold),
@@ -201,15 +228,15 @@ int FisheyeEgomotionParameters::staticInit()
          500,
          1
         );
-    field11->widgetHint=BaseField::SPIN_BOX;
-    field11->precision=6;
-    fields().push_back(field11);
+    field13->widgetHint=BaseField::SPIN_BOX;
+    field13->precision=6;
+    fields().push_back(field13);
     /*  */ 
-    DoubleField* field12 = new DoubleField
+    DoubleField* field14 = new DoubleField
         (
           FisheyeEgomotionParameters::RSTHRESHOLD_ID,
           offsetof(FisheyeEgomotionParameters, mRsthreshold),
-          3,
+          2,
           "rsthreshold",
           "Threshold for Static flow",
           "Threshold for Static flow",
@@ -218,12 +245,12 @@ int FisheyeEgomotionParameters::staticInit()
          500,
          1
         );
-    field12->widgetHint=BaseField::SPIN_BOX;
-    field12->suffixHint="px";
-    field12->precision=3;
-    fields().push_back(field12);
+    field14->widgetHint=BaseField::SPIN_BOX;
+    field14->suffixHint="px";
+    field14->precision=3;
+    fields().push_back(field14);
     /*  */ 
-    DoubleField* field13 = new DoubleField
+    DoubleField* field15 = new DoubleField
         (
           FisheyeEgomotionParameters::RSTHRESPREC_ID,
           offsetof(FisheyeEgomotionParameters, mRsthresprec),
@@ -236,12 +263,12 @@ int FisheyeEgomotionParameters::staticInit()
          500,
          1
         );
-    field13->widgetHint=BaseField::SPIN_BOX;
-    field13->suffixHint="%";
-    field13->precision=3;
-    fields().push_back(field13);
+    field15->widgetHint=BaseField::SPIN_BOX;
+    field15->suffixHint="%";
+    field15->precision=3;
+    fields().push_back(field15);
     /*  */ 
-    DoubleField* field14 = new DoubleField
+    DoubleField* field16 = new DoubleField
         (
           FisheyeEgomotionParameters::DSTHRESHOLD_ID,
           offsetof(FisheyeEgomotionParameters, mDsthreshold),
@@ -254,12 +281,12 @@ int FisheyeEgomotionParameters::staticInit()
          500,
          1
         );
-    field14->widgetHint=BaseField::SPIN_BOX;
-    field14->suffixHint="px";
-    field14->precision=3;
-    fields().push_back(field14);
+    field16->widgetHint=BaseField::SPIN_BOX;
+    field16->suffixHint="px";
+    field16->precision=3;
+    fields().push_back(field16);
     /*  */ 
-    BoolField* field15 = new BoolField
+    BoolField* field17 = new BoolField
         (
           FisheyeEgomotionParameters::TRACEPARAMS_ID,
           offsetof(FisheyeEgomotionParameters, mTraceParams),
@@ -268,8 +295,8 @@ int FisheyeEgomotionParameters::staticInit()
           "Trace parameters of the provider",
           "Trace parameters of the provider"
         );
-    field15->widgetHint=BaseField::CHECK_BOX;
-    fields().push_back(field15);
+    field17->widgetHint=BaseField::CHECK_BOX;
+    fields().push_back(field17);
     /*  */ 
     ReflectionDirectory &directory = *ReflectionDirectoryHolder::getReflectionDirectory();
     directory[std::string("Fisheye Egomotion Parameters")]= &reflection;

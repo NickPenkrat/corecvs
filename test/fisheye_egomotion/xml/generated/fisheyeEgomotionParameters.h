@@ -50,7 +50,9 @@ public:
         FRAMES_ID,
         SKIPF_ID,
         SCALER_ID,
+        USE5POINT_ID,
         RTHRESHOLD_ID,
+        RITERATIONS_ID,
         DTHRESHOLD_ID,
         RSTHRESHOLD_ID,
         RSTHRESPREC_ID,
@@ -122,10 +124,22 @@ public:
     double mScaler;
 
     /** 
+     * \brief Use 5 point based  
+     * Use 5 point based  
+     */
+    bool mUse5point;
+
+    /** 
      * \brief Threshold for RANSAC during model estimation 
      * Threshold for RANSAC during model estimation 
      */
     double mRthreshold;
+
+    /** 
+     * \brief Ransac max iterations 
+     * Ransac max iterations 
+     */
+    int mRiterations;
 
     /** 
      * \brief Threshold for actual detection 
@@ -217,9 +231,19 @@ public:
         return mScaler;
     }
 
+    bool use5point() const
+    {
+        return mUse5point;
+    }
+
     double rthreshold() const
     {
         return mRthreshold;
+    }
+
+    int riterations() const
+    {
+        return mRiterations;
     }
 
     double dthreshold() const
@@ -298,9 +322,19 @@ public:
         mScaler = scaler;
     }
 
+    void setUse5point(bool use5point)
+    {
+        mUse5point = use5point;
+    }
+
     void setRthreshold(double rthreshold)
     {
         mRthreshold = rthreshold;
+    }
+
+    void setRiterations(int riterations)
+    {
+        mRiterations = riterations;
     }
 
     void setDthreshold(double dthreshold)
@@ -343,7 +377,9 @@ template<class VisitorType>
         visitor.visit(mFrames,                    static_cast<const corecvs::IntField *>(fields()[FRAMES_ID]));
         visitor.visit(mSkipf,                     static_cast<const corecvs::IntField *>(fields()[SKIPF_ID]));
         visitor.visit(mScaler,                    static_cast<const corecvs::DoubleField *>(fields()[SCALER_ID]));
+        visitor.visit(mUse5point,                 static_cast<const corecvs::BoolField *>(fields()[USE5POINT_ID]));
         visitor.visit(mRthreshold,                static_cast<const corecvs::DoubleField *>(fields()[RTHRESHOLD_ID]));
+        visitor.visit(mRiterations,               static_cast<const corecvs::IntField *>(fields()[RITERATIONS_ID]));
         visitor.visit(mDthreshold,                static_cast<const corecvs::DoubleField *>(fields()[DTHRESHOLD_ID]));
         visitor.visit(mRsthreshold,               static_cast<const corecvs::DoubleField *>(fields()[RSTHRESHOLD_ID]));
         visitor.visit(mRsthresprec,               static_cast<const corecvs::DoubleField *>(fields()[RSTHRESPREC_ID]));
@@ -368,7 +404,9 @@ template<class VisitorType>
         , int frames
         , int skipf
         , double scaler
+        , bool use5point
         , double rthreshold
+        , int riterations
         , double dthreshold
         , double rsthreshold
         , double rsthresprec
@@ -386,7 +424,9 @@ template<class VisitorType>
         mFrames = frames;
         mSkipf = skipf;
         mScaler = scaler;
+        mUse5point = use5point;
         mRthreshold = rthreshold;
+        mRiterations = riterations;
         mDthreshold = dthreshold;
         mRsthreshold = rsthreshold;
         mRsthresprec = rsthresprec;
@@ -406,7 +446,9 @@ template<class VisitorType>
         if ( !(this->mFrames == other.mFrames)) return false;
         if ( !(this->mSkipf == other.mSkipf)) return false;
         if ( !(this->mScaler == other.mScaler)) return false;
+        if ( !(this->mUse5point == other.mUse5point)) return false;
         if ( !(this->mRthreshold == other.mRthreshold)) return false;
+        if ( !(this->mRiterations == other.mRiterations)) return false;
         if ( !(this->mDthreshold == other.mDthreshold)) return false;
         if ( !(this->mRsthreshold == other.mRsthreshold)) return false;
         if ( !(this->mRsthresprec == other.mRsthresprec)) return false;

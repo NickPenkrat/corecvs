@@ -318,7 +318,7 @@ public:
         *startGuess = currentGuess;
         return true;
 
-    };
+    }
 
     bool kltIterationSubpixel (
             const KLTCalculationContext &calculationContext,
@@ -326,9 +326,10 @@ public:
             Vector2dd *startGuess,
             double nullThreshold) const
     {
-        CORE_ASSERT_TRUE(calculationContext.first != NULL, "NULL parameter fisrt");
-        CORE_ASSERT_TRUE(calculationContext.second != NULL, "NULL parameter second");
-        CORE_ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
+        //CORE_ASSERT_TRUE(calculationContext.first != NULL, "NULL parameter fisrt");
+        //CORE_ASSERT_TRUE(calculationContext.second != NULL, "NULL parameter second");
+        //CORE_ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
+
         G12Buffer *first  = calculationContext.first;
         G12Buffer *second = calculationContext.second;
 
@@ -433,6 +434,124 @@ public:
         *startGuess = currentGuess;
         return true;
     }
+
+#if 0
+    bool kltIterationSubpixelF (
+            const KLTCalculationContext &calculationContext,
+            const Vector2dd &point,
+            Vector2dd *startGuess,
+            double nullThreshold) const
+    {
+        //CORE_ASSERT_TRUE(calculationContext.first != NULL, "NULL parameter fisrt");
+        //CORE_ASSERT_TRUE(calculationContext.second != NULL, "NULL parameter second");
+        //CORE_ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
+
+        G12Buffer *first  = calculationContext.first;
+        G12Buffer *second = calculationContext.second;
+
+    //    uint32_t h = first->h;
+    //    uint32_t w = first->w;
+
+        Vector2df currentGuess(startGuess->x(), startGuess->y());
+
+        /* We use iterative method and stop if number of iterations is above the threshold*/
+        for (int l = 0; l < newtonIterations; l++)
+        {
+            DOTRACE(("Starting iteration %d\n", l));
+            DOTRACE(("\tEntering point: [%lf %lf]\n", point.x(), point.y()));
+            DOTRACE(("\tEntering guess: [%lf %lf]\n", currentGuess.x(), currentGuess.y()));
+            /* The position in the other image */
+            Vector2dd prediction = point + currentGuess;
+            DOTRACE(("\tPreditiction (%lf %lf)\n", prediction.x(), prediction.y()));
+
+
+            /* If we hit outside the second image we should give up*/
+            if (!calculationContext.second->isValidCoord(Vector2d32(prediction.x(), prediction.y())))
+                return false;
+
+            //Vector2dd low  = point - Vector2dd(windowSize);
+            //Vector2dd high = point + Vector2dd(windowSize);
+            //low.mapToRect(Vector2dd(0,0), Vector2dd(w - 1, h - 1));
+            //high.mapToRect(Vector2dd(0,0), Vector2dd(w - 1, h - 1));
+
+            //int x0 =  low.x();
+            //int y0 =  low.y();
+            //int x1 = high.x();
+            //int y1 = high.y();
+
+            //DOTRACE(("\tWorking zone (%d %d)x(%d %d)\n", x0, y0, x1, y0));
+
+            /*
+            Vector3dd mSG = calculationContext.gradient->rectangle(y0,x0,y1,x1);
+            DOTRACE(("\tG matrix:\n"));
+            DOTRACE(("\t[%lf %lf]\n", mSG.x(), mSG.y()));
+            DOTRACE(("\t[%lf %lf]\n", mSG.y(), mSG.z()));
+    */
+
+            //calculating mismatch vector
+            Vector2dd b   = Vector2dd(0.0);
+            Vector3dd mSG = Vector3dd(0.0);
+
+            DOTRACE(("\n"));
+
+            InterpolationType interpolator;
+            for (int i = -windowSize.y(); i <= windowSize.y(); i++)
+            {
+                for (int j = -windowSize.x(); j <= windowSize.x(); j++)
+                {
+                    double x =  point.x() + (double)j;
+                    double y =  point.y() + (double)i;
+
+                    if (!first->isValidCoordBl(y, x)) {
+                        continue;
+                    }
+                    if (!second->isValidCoordBl(y + currentGuess.y(), x + currentGuess.x())) {
+                        continue;
+                    }
+
+                    double dI = interpolator.interpolate(y, x, first) -
+                                interpolator.interpolate(y + currentGuess.y(), x + currentGuess.x(), second);
+
+                    double Ix = (double)(
+                            interpolator.interpolate(y      , CORE_MIN(first->w - 1.0, x + 1.0), first) -
+                            interpolator.interpolate(y      , CORE_MAX(0.0, x - 1.0), first)
+                                ) / (CORE_MIN(first->w - 1.0, x + 1.0) - CORE_MAX(0.0, x - 1.0));
+
+                    double Iy = (double)(
+                            interpolator.interpolate(CORE_MIN(first->h - 1.0, y + 1.0), x, first) -
+                            interpolator.interpolate(CORE_MAX(0.0, y - 1.0), x, first)
+                                ) / (CORE_MIN(first->h - 1.0, y) - CORE_MAX(0.0, y - 1.0));
+
+                    DOTRACE(("%d %d ( %lf %lf %lf)\n", i, j, dI, Ix, Iy));
+
+                    mSG += Vector3dd(Ix * Ix, Ix * Iy, Iy * Iy);
+                    b   += Vector2dd(Ix, Iy) * dI;
+                }
+            }
+
+            double det = mSG.x() * mSG.z() - mSG.y() * mSG.y();
+
+            if (fabs(det) < nullThreshold)
+                return false;
+
+            double inv11 =  mSG.z() / det;
+            double inv12 = -mSG.y() / det;
+            double inv22 =  mSG.x() / det;
+
+            DOTRACE(("\n"));
+            DOTRACE(("\tB vector (%lf %lf)\n", b.x(), b.y()));
+            Vector2dd t = Vector2dd( inv11 * b.x() + inv12 * b.y(), inv12 * b.x() + inv22 * b.y());
+            DOTRACE(("\tT vector (%lf %lf)\n", t.x(), t.y()));
+
+            currentGuess += t;
+         }
+
+        DOTRACE(("Correcton %lf\n", !((*startGuess) - currentGuess)));
+        *startGuess = currentGuess;
+        return true;
+    }
+#endif
+
     virtual ~KLTGenerator(){}
 };
 

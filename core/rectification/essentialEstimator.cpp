@@ -548,10 +548,7 @@ EssentialMatrix EssentialEstimator::getEssentialGradToRm(const vector<Correspond
     Vector3dd  translation = Vector3dd(-1.0, 0.0, 0.0);
     CostFunctionBase::packState(&input[0], rotation, translation);
 
-    vector<double> output(samples.size());
-    /* This is an overkill*/
-    for (unsigned i = 0; i < output.size(); i++)
-        output[i] = 0.0;
+    vector<double> output(samples.size(), 0.0);
 
     vector<double> optInput = GDfit.fit(input, output);
     return CostFunctionBase::getEssential(&optInput[0]);
@@ -624,6 +621,8 @@ EssentialMatrix EssentialEstimator::getEssential             (
             return getEssentialLM(samples);
         case METHOD_CLASSIC_KALMAN:
             return getEssentialSimpleKalman(samples);
+        case METHOD_GRAD_DESC_RM:
+           return getEssentialGradToRm(samples);
 
         default:
             return getEssentialLM(samples);
@@ -642,7 +641,8 @@ std::vector<EssentialMatrix> EssentialEstimator::getEssentials(const vector<Corr
             result.push_back(getEssentialLSE(samples)); break;
         case METHOD_GRAD_DESC:
             result.push_back(getEssentialGrad(samples)); break;
-
+        case METHOD_GRAD_DESC_RM:
+            result.push_back(getEssentialGradToRm(samples)); break;
 
         case METHOD_5_POINT:
             result = getEssential5point(samples); break;

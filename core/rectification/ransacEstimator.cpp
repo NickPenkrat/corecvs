@@ -18,6 +18,43 @@
 namespace corecvs {
 
 
+template<
+        int subestimatorId = EssentialEstimator::METHOD_SVD_LSE,
+        int defaultSamples = EssentialEstimator::defaultSamples(subestimatorId),
+        int enforceFundamental = 0
+        >
+class EssentialEstimatorModelRansac
+{
+public:
+    typedef Correspondence                   SampleType;
+    typedef EssentialEstimatorModelRansac    ModelType;
+
+
+    EssentialMatrix model;
+
+    EssentialEstimatorModelRansac()
+        : model(Matrix33(1.0))
+    {
+
+    }
+
+    EssentialEstimatorModelRansac(const vector<Correspondence *> &samples)
+        : model(Matrix33(1.0))
+    {
+        EssentialEstimator estimator;
+        model = estimator.getEssential(samples, EssentialEstimator::METHOD_SVD_LSE);
+    }
+
+    double getCost(const Correspondence &data)
+    {
+        return (model.epipolarDistance(data));
+    }
+
+    bool fits(const Correspondence &data, double fitTreshold)
+    {
+        return (model.epipolarDistance(data) < fitTreshold);
+    }
+};
 
 
 class Model8Point {
@@ -184,15 +221,16 @@ Matrix33 RansacEstimator::getEssentialRansac1(CorrespondenceList *list)
     return getEssentialRansac(&data);
 }
 
-Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
-{
 
-    Ransac<ModelEssential8Point> ransac(trySize, ransacParams);
+template<class Subestimator>
+Matrix33 RansacEstimator::getEssentialRansacS(vector<Correspondence *> *data)
+{
+    Ransac<Subestimator> ransac(trySize, ransacParams);
 
     ransac.data = data;
     ransac.trace = trace;
 
-    ModelEssential8Point result = ransac.getModelRansac();    
+    Subestimator result = ransac.getModelRansac();
     int fitcount = 0;
     for (unsigned i = 0; i < data->size(); i++)
     {
@@ -210,6 +248,15 @@ Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
     fitPercent = 100.0 * fitcount / data->size();
     SYNC_PRINT(("RansacEstimator::getEssentialRansac() fits %2.2lf%%\n", fitPercent));
     return result.model;
+}
+
+Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
+{
+    if (use5point) {
+        return getEssentialRansacS<Model5Point>(data);
+    } else {
+        return getEssentialRansacS<ModelEssential8Point>(data);
+    }
 }
 
 EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *scene, FixtureCamera *camera1, FixtureCamera *camera2)
@@ -294,6 +341,7 @@ EssentialDecomposition RansacEstimatorScene::getEssentialRansac(FixtureScene *sc
 
     return dec;
 }
+
 
 
 } //namespace corecvs

@@ -38,11 +38,17 @@ public:
         ransacParams.setInlierThreshold(_treshold);
     }
 
+
+
     Matrix33 getFundamentalRansac1(CorrespondenceList *list);
     Matrix33 getEssentialRansac1  (CorrespondenceList *list);
 
     Matrix33 getFundamentalRansac(vector<Correspondence *> *data);
-    Matrix33 getEssentialRansac  (vector<Correspondence *> *data);
+
+    template <class Subestimator>
+    Matrix33 getEssentialRansacS (vector<Correspondence *> *data);
+
+    Matrix33 getEssentialRansac  (vector<Correspondence *> *data);    
 };
 
 class RansacEstimatorScene

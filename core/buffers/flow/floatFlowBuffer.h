@@ -130,23 +130,27 @@ public:
                 Vector2d32(params.kLTRadiusW(), params.kLTRadiusH()),
                 params.kLTIterations());
 
-        for (int i = 0; i < first->h; i++)
+        parallelable_for(0, first->h, [&](const corecvs::BlockedRange<int> &r)
         {
-            for (int j = 0; j < first->w; j++)
+            for (int i = r.begin(); i != r.end(); i++)
             {
-                FloatFlow preciseFlow(false);
-                if (flow->isElementKnown(i,j))
+                for (int j = 0; j < first->w; j++)
                 {
-                    FlowElement shift = flow->element(i,j);
-                    Vector2dd guess = Vector2dd(shift.x(), shift.y());
-                    bool status = kltGenerator.kltIterationSubpixel(context, Vector2dd(j,i), &guess, 2);
-                    if (status) {
-                        preciseFlow = FloatFlow(guess);
+                    FloatFlow preciseFlow(false);
+                    if (flow->isElementKnown(i,j))
+                    {
+                        FlowElement shift = flow->element(i,j);
+                        Vector2dd guess = Vector2dd(shift.x(), shift.y());
+                        bool status = kltGenerator.kltIterationSubpixel(context, Vector2dd(j,i), &guess, 2);
+                        if (status) {
+                            preciseFlow = FloatFlow(guess);
+                        }
                     }
+                    toReturn->element(i,j) = preciseFlow;
                 }
-                toReturn->element(i,j) = preciseFlow;
             }
         }
+        );
         return toReturn;
     }
 
