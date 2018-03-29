@@ -23,7 +23,7 @@ SUBDIRS +=            \
     widget_harness    \
 #    command_harness   \
     example_scene     \
-    fisheye_egomotion \
+#    fisheye_egomotion \
 
 
 # SUBDIRS +=     \
@@ -80,7 +80,7 @@ debayer.file                        = debayer/debayer.pro
 debayer.depends                    -= utils
 
 deproject.file                      = deproject/deproject.pro
-fisheye_egomotion.file              = fisheye_egomotion/fisheye_egomotion.pro
+#fisheye_egomotion.file              = fisheye_egomotion/fisheye_egomotion.pro
 
 softrender.file                     = softrender/softrender.pro
 softrender.depends                 -= utils
