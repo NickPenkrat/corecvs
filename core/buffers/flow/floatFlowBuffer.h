@@ -129,7 +129,7 @@ public:
         return toReturn;
     }
 
-    template<typename InterpolationType, typename FloatType = double>
+    template<typename InterpolationType, typename FloatType = float>
     static FloatFlowBuffer *preciseFlowCalc(FlowBuffer *flow,
                                  G12Buffer *first,
                                  G12Buffer *second,
