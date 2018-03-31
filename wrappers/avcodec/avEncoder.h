@@ -1,7 +1,7 @@
 #ifndef AVENCODER_H
 #define AVENCODER_H
 
-#include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/framesources/dummyVideoEncoderInterface.h"
 
 extern "C" {
 #include <libavutil/frame.h>
@@ -9,15 +9,15 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
-class AVEncoder
+class AVEncoder : public corecvs::DummyVideoEncoderInterface
 {
 public:
     AVEncoder();
     bool open = false;
 
-    int startEncoding(const std::string &name, int h, int w, int codec_id = -1);
-    void addFrame(corecvs::RGB24Buffer *input);
-    void endEncoding();
+    virtual int startEncoding(const std::string &name, int h, int w, int codec_id = -1) override;
+    virtual void addFrame(corecvs::RGB24Buffer *input) override;
+    virtual void endEncoding() override;
 
     static void printCaps();
 

@@ -44,19 +44,6 @@ public:
         return (method == METHOD_5_POINT) ? 5 :
                (method == METHOD_7_POINT) ? 7 : 8;
     }
-/*
-    template<>
-    static int defaultSamples<METHOD_7_POINT>()
-    {
-        return 7;
-    }
-
-    template<>
-    static int defaultSamples<METHOD_5_POINT>()
-    {
-        return 5;
-    }*/
-
 
     /**
      * This is a class that describe the translation form state in form of

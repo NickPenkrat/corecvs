@@ -23,7 +23,7 @@ SUBDIRS +=            \
     widget_harness    \
 #    command_harness   \
     example_scene     \
-#    fisheye_egomotion \
+
 
 
 # SUBDIRS +=     \
@@ -35,6 +35,10 @@ SUBDIRS +=            \
 #    new_board_detector \
 #    cr2reader           \
 #    debayer          \
+
+with_avcodec {
+   SUBDIRS +=  avencode
+}
 
 with_ceres {
     SUBDIRS += ceres_playground
@@ -80,7 +84,7 @@ debayer.file                        = debayer/debayer.pro
 debayer.depends                    -= utils
 
 deproject.file                      = deproject/deproject.pro
-#fisheye_egomotion.file              = fisheye_egomotion/fisheye_egomotion.pro
+avencode.file                       = avencode/avencode.pro
 
 softrender.file                     = softrender/softrender.pro
 softrender.depends                 -= utils

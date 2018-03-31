@@ -46,26 +46,38 @@ void UsagePrinter::printUsage(const Reflection *reflection)
             case BaseField::TYPE_ENUM:
             {
                 const EnumField *eField = static_cast<const EnumField *>(field);
+                printf("  [--%-10s=<value>]  - %s (default=%d%s)\n", eField->name.name, eField->name.description, eField->defaultValue,
+                       eField->suffixHint ?  eField->suffixHint : "");
+                if (eField->enumReflection != NULL)
+                {
+                    for (const EnumOption *opt : eField->enumReflection->options)
+                    {
+                        if (opt != NULL) {
+                            printf("         %d - %s (%d)", opt->id, opt->name.name, opt->name.description );
+                        }
+                    }
+                }
+
                 break;
             }
 
             case BaseField::TYPE_DOUBLE | BaseField::TYPE_VECTOR_BIT:
             {
-                const DoubleVectorField *dField = static_cast<const DoubleVectorField *>(field);
+                //const DoubleVectorField *dField = static_cast<const DoubleVectorField *>(field);
                 break;
             }
 
             /* Composite field */
             case BaseField::TYPE_COMPOSITE:
             {
-                const CompositeField *cField = static_cast<const CompositeField *>(field);
+                //const CompositeField *cField = static_cast<const CompositeField *>(field);
                 break;
             }
 
             /* Composite field */
             case BaseField::TYPE_POINTER:
             {
-                const PointerField *pField = static_cast<const PointerField *>(field);
+                // const PointerField *pField = static_cast<const PointerField *>(field);
                 break;
             }
 

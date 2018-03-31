@@ -65,6 +65,11 @@ public:
         };
     }
 
+    bool contains(const Vector2d<ElementType> &point) const
+    {
+        return point.isInHypercube(corner, corner + size);
+    }
+
     void extend (const ElementType& value)
     {
         if (isEmpty())
@@ -74,6 +79,12 @@ public:
         corner.y() -= value;
         size.x() += 2 * value;
         size.y() += 2 * value;
+    }
+
+    void scale(const ElementType& value)
+    {
+        corner *= value;
+        size   *= value;
     }
 
     bool isEmpty() const

@@ -20,7 +20,7 @@ namespace corecvs {
 class RansacEstimator
 {
 public:
-    bool use5point = false;
+    int algorithm = 0;
     bool trace = false;
     unsigned trySize;
     RansacParameters ransacParams;

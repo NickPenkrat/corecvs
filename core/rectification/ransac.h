@@ -146,12 +146,12 @@ public:
                 }
 
                 if (trace && !useMedian())
-                            SYNC_PRINT(("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
-                                       iteration, inliers, bestInliers, (int)data->size(), (double)100.0 * bestInliers / data->size() ));
+                            printf("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
+                                       iteration, inliers, bestInliers, (int)data->size(), (double)100.0 * bestInliers / data->size() );
 
                 if (trace && useMedian())
-                            SYNC_PRINT(("iteration %d : %d inliers (max so far %d) (median %lf %lf) out of %d (%lf%%)\n",
-                                   iteration, inliers, bestInliers, median, old_median, (int)data->size(), (double)100.0 * bestInliers / data->size() ));
+                            printf("iteration %d : %d inliers (max so far %d) (median %lf %lf) out of %d (%lf%%)\n",
+                                   iteration, inliers, bestInliers, median, old_median, (int)data->size(), (double)100.0 * bestInliers / data->size() );
 
                 if ((bestInliers >  data->size() * inliersPercent() / 100.0 && iteration >= iterationsNumber() * 0.3 )
                     || iteration >= iterationsNumber() )
