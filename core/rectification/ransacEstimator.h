@@ -22,14 +22,14 @@ class RansacEstimator
 public:
     int algorithm = 0;
     bool trace = false;
-    unsigned trySize;
+    int trySize;
     RansacParameters ransacParams;
 
     /*Addintional outputs*/
     double fitPercent = 0.0;
 
     RansacEstimator(
-            unsigned  _trySize,
+            int  _trySize, /* Negative values force default try size */
             unsigned _maxIterations,
             double _treshold ) :
         trySize(_trySize)
