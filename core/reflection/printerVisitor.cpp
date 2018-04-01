@@ -66,7 +66,7 @@ void PrinterVisitor::visit<int, EnumField>(int &field, const EnumField *fieldDes
     if (fieldDescriptor->enumReflection != NULL)
     {
         *stream << "(";
-        if (field < fieldDescriptor->enumReflection->options.size())
+        if (field < (int)fieldDescriptor->enumReflection->options.size())
         {
             if (fieldDescriptor->enumReflection->options[field]) {
                 *stream << fieldDescriptor->enumReflection->options[field]->name.name;
