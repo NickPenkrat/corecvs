@@ -33,6 +33,7 @@ build_pass:CONFIG(release, debug|release) {
 }
 
 CONFIG += c++11
+DEFINES += QT_NO_VERSION_TAGGING
 
 # TODO: this info is needed before - at config.pri!
 #contains(QMAKE_HOST.arch, "armv7l") {
