@@ -1,11 +1,15 @@
 #include "core/buffers/rgb24/abstractPainter.h"
 #include "core/buffers/rgb24/rgb24Buffer.h"
+
+#ifdef WITH_AVCODEC
 #include "avEncoder.h"
+#endif
 
 using namespace corecvs;
 
 int main(int argc, char **argv)
 {
+#ifdef WITH_AVCODEC
     AVEncoder encoder;
     RGB24Buffer buffer(100,100);
 
@@ -20,6 +24,7 @@ int main(int argc, char **argv)
         encoder.addFrame(&buffer);
     }
     encoder.endEncoding();
+#endif
     SYNC_PRINT(("Done."));
 }
 
