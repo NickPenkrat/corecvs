@@ -9,6 +9,9 @@ namespace corecvs {
 class DummyVideoEncoderInterface
 {
 public:
+    DummyVideoEncoderInterface();
+
+
     virtual int startEncoding(const std::string &name, int h, int w, int codec_id = -1)
     {
         SYNC_PRINT(("DummyVideoEncoderInterface::startEncoding(%s, %d, %d, %d)\n", name.c_str(), h, w, codec_id));
