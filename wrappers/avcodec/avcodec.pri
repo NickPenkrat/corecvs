@@ -18,13 +18,12 @@ contains(DEFINES, WITH_AVCODEC) {                    # if it's installed properl
 
 
 
-    HEADERS += \
-        $$PWD/avEncoder.h
+    HEADERS +=            \
+        $$PWD/avEncoder.h \
+        $$PWD/swScaler.h  \
 
-    SOURCES += \
-        $$PWD/avEncoder.cpp
+    SOURCES +=              \
+        $$PWD/avEncoder.cpp \
+        $$PWD/swScaler.cpp  \
 
 }
-
-
-

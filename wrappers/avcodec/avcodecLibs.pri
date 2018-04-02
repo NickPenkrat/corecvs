@@ -17,7 +17,7 @@ with_avcodec {
             !build_pass: message(Switching on swscale support)
 
             DEFINES += WITH_SWSCALE
-            LIBS    += -lswscale
+            LIBS    += -lswscale -lswresample
         } else {
             !build_pass: message(AVCodec support requested but not found)
         }
