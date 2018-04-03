@@ -338,10 +338,10 @@ HEADERS += \
     distortioncorrector/distortionWidget.h \
     \
     \
-    corestructs/libWidgets/openCVBMParameters.h \
-    corestructs/libWidgets/openCVSGMParameters.h \
-    corestructs/libWidgets/openCVBMParametersControlWidget.h \
-    corestructs/libWidgets/openCVSGMParametersControlWidget.h \
+#    corestructs/libWidgets/openCVBMParameters.h \
+#    corestructs/libWidgets/openCVSGMParameters.h \
+#    corestructs/libWidgets/openCVBMParametersControlWidget.h \
+#    corestructs/libWidgets/openCVSGMParametersControlWidget.h \
     \
     corestructs/histogramdialog.h \
     \
@@ -395,10 +395,10 @@ SOURCES += \
 #    filters/graph/diagramtextitem.cpp \
 #    filters/graph/diagramscene.cpp \
     \
-    corestructs/libWidgets/openCVBMParameters.cpp \
-    corestructs/libWidgets/openCVSGMParameters.cpp \
-    corestructs/libWidgets/openCVBMParametersControlWidget.cpp \
-    corestructs/libWidgets/openCVSGMParametersControlWidget.cpp \
+#    corestructs/libWidgets/openCVBMParameters.cpp \
+#    corestructs/libWidgets/openCVSGMParameters.cpp \
+#    corestructs/libWidgets/openCVBMParametersControlWidget.cpp \
+#    corestructs/libWidgets/openCVSGMParametersControlWidget.cpp \
     \
     rectifier/rectifyParametersControlWidget.cpp \
     \
@@ -445,8 +445,8 @@ FORMS += \
     widgets/angleEditBox.ui \
     widgets/shift3DWidget.ui \
     \
-    corestructs/libWidgets/openCVBMParametersControlWidget.ui \
-    corestructs/libWidgets/openCVSGMParametersControlWidget.ui \
+#    corestructs/libWidgets/openCVBMParametersControlWidget.ui \
+#    corestructs/libWidgets/openCVSGMParametersControlWidget.ui \
     \
 #    filters/filterSelector.ui \
     \

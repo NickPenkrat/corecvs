@@ -7,8 +7,8 @@
 #include "core/buffers/flow/flowBuffer.h"
 #include "core/math/vector/vector2d.h"
 
-#include "openCVSGMParameters.h"
-#include "openCVBMParameters.h"
+#include "core/xml/generated/openCVSGMParameters.h"
+#include "core/xml/generated/openCVBMParameters.h"
 
 using namespace cv;
 
