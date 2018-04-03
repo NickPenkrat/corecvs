@@ -642,3 +642,4 @@ with_qscript {
 }
 
 OTHER_FILES += ../tools/generator/xml/draw3d.xml
+OTHER_FILES += ../tools/generator/regen-utils.sh

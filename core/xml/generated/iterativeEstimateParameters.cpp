@@ -94,7 +94,7 @@ int IterativeEstimateParameters::staticInit()
           "Initial Sigma",
           true,
          0,
-         1e+07,
+         1e+7,
          1
         );
     field3->widgetHint=BaseField::SPIN_BOX;

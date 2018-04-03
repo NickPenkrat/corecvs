@@ -43,6 +43,7 @@ for (MODULE, CORE_SUBMODULES) {
 
 include(xml/generated/generated.pri)
 
+
 OTHER_FILES +=              \
     xml/parameters.xml      \
     xml/bufferFilters.xml   \
@@ -55,6 +56,8 @@ OTHER_FILES +=              \
     xml/calibration.xml     \
     xml/stereoAlign.xml     \
     xml/projections.xml     \
+    xml/opencvsgm.xml       \
+
 
 OTHER_FILES +=            \
     ../tools/generator/helper-regen.sh \
