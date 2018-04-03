@@ -1,5 +1,7 @@
 #include "convexQuickHull.h"
 
+using namespace std;
+
 bool operator ==(const Triangle3dd &a, const Triangle3dd &b) {
     vector<Vector3dd> plane1 = { b.p1(), b.p2(), b.p3() };
     auto findX = find(plane1.begin(), plane1.end(), a.p1());

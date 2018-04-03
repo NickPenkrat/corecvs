@@ -26,7 +26,6 @@
 #undef interface
 #endif
 
-using namespace std;
 using namespace syncCam;
 
 class SyncCamerasCaptureInterface : public virtual ImageCaptureInterface

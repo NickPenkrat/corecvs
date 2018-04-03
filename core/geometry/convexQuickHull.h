@@ -9,7 +9,6 @@
 #include "core/geometry/polygons.h"
 
 using namespace corecvs;
-using namespace std;
 
 class ConvexQuickHull
 {

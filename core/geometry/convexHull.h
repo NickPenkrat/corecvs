@@ -5,7 +5,7 @@
 
 
 using namespace corecvs;
-using namespace std;
+
 
 class MyVector : public Vector3dd
 {
@@ -55,7 +55,7 @@ private:
     MyVector center;
 
 public:
-    set <Face> faces;
+    std::set <Face> faces;
 public:
     ConvexHull3D(vector<Vector3dd> &points, double eps);
     virtual bool is3D() override { return true; }

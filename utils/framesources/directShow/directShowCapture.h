@@ -21,7 +21,6 @@
 #define PREFFERED_RGB_BPP 24
 #define AUTUSELECT_FORMAT_FEATURE -255
 
-using namespace std;
 
  class DirectShowCaptureInterface : public virtual ImageCaptureInterface
  {

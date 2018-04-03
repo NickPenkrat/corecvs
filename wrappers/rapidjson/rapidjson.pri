@@ -2,7 +2,7 @@ isEmpty(RAPIDJSON_WRAPPER_DIR) {
     message(Incorrect usage of rapidjson.pri with empty RAPIDJSON_WRAPPER_DIR. Rapidjson is switched off!)
 } else {
     !exists($$RAPIDJSON_WRAPPER_DIR/sources/readme.md) {
-        message(Rapidjson is switched off! Not cloned.)
+        message(Rapidjson is switched off! Not cloned to $$RAPIDJSON_WRAPPER_DIR)
     } else {
         message(Rapidjson found!)
 
