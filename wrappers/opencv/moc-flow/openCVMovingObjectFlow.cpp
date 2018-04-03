@@ -161,3 +161,9 @@ int OpenCVMovingObjectFlow::getError(std::string *errorString)
 
 
 
+
+Processor6D *OpenCVMovingObjectFlowImplFactory::getProcessor()
+{
+    OpenCVMovingObjectFlow *processor = new OpenCVMovingObjectFlow;
+    return processor;
+}

@@ -71,11 +71,7 @@ public:
 
 class OpenCVMovingObjectFlowImplFactory : public corecvs::Processor6DFactory {
 public:
-    virtual corecvs::Processor6D *getProcessor() override
-    {
-       OpenCVMovingObjectFlow *processor = new OpenCVMovingObjectFlow;
-       return processor;
-    }
+    virtual corecvs::Processor6D *getProcessor() override;
 
     virtual std::string getName() override
     {
