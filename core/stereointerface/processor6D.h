@@ -130,6 +130,8 @@ public:
         return true;
     }
 
+    bool hasProvider(const std::string &name);
+
 
     vector<Processor6DFactory *> mProviders;
 };

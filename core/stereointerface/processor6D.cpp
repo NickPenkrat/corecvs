@@ -30,6 +30,16 @@ void Processor6DFactoryHolder::printCaps()
     }
 }
 
+bool Processor6DFactoryHolder::hasProvider(const std::string &name)
+{
+    for (Processor6DFactory *provider : mProviders)
+    {
+        if (provider->getName() == name)
+            return true;
+    }
+    return false;
+}
+
 Processor6D *Processor6DFactoryHolder::getProcessor(const std::string &name)
 {
     Processor6DFactoryHolder *holder = getInstance();
