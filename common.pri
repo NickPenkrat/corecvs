@@ -465,7 +465,7 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
         DEPENDPATH  += "$$TBB_PATH"/include
     } else {
         !isEmpty(TBB_PATH) {
-            #message (Using TBB at "$$TBB_PATH")
+            message (Using TBB at "$$TBB_PATH")
             INCLUDEPATH += "$$TBB_PATH"/include
             LIBS        += -L"$$TBB_PATH"/lib/
         }
