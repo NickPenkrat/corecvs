@@ -96,7 +96,7 @@ public:
             switch (params.interpolation())
             {
                 case PreciseInterpolationType::BILINEAR:
-                    toReturn = preciseFlowCalc<BilinearInterpolator>(flow, first, second, gradient, params);
+                    toReturn = preciseFlowCalc<BilinearInterpolatorD>(flow, first, second, gradient, params);
                 break;
                 case PreciseInterpolationType::POLYNOM:
                     toReturn = preciseFlowCalc<PolynomInterpolator> (flow, first, second, gradient, params);

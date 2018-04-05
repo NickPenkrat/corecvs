@@ -126,7 +126,7 @@ CorrespondenceList::CorrespondenceList(FloatFlowBuffer *input) :
             h(input->h),
             w(input->w)
 {
-    SYNC_PRINT(("CorrespondenceList::CorrespondenceList():called\n"));
+    // SYNC_PRINT(("CorrespondenceList::CorrespondenceList():called\n"));
     FlowBufferToucherOperator<> toucher(this);
     input->touchOperationElementwize(toucher);
 }
@@ -142,7 +142,7 @@ CorrespondenceList * CorrespondenceList::makePreciseCopy(G12Buffer *first, G12Bu
     context.second = second;
     context.gradient = gradient;
 
-    KLTGenerator<BilinearInterpolator> kltGenerator;
+    KLTGenerator<BilinearInterpolatorD> kltGenerator;
 
     CorrespondenceList *toReturn = new CorrespondenceList();
     toReturn->h = this->h;
@@ -182,7 +182,7 @@ void CorrespondenceList::makePrecise(G12Buffer *first, G12Buffer *second)
     context.second = second;
     context.gradient = gradient;
 
-    KLTGenerator<BilinearInterpolator> kltGenerator;
+    KLTGenerator<BilinearInterpolatorD> kltGenerator;
 
     for (unsigned i = 0; i < this->size(); i++)
     {

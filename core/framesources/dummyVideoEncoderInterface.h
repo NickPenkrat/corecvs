@@ -9,23 +9,24 @@ namespace corecvs {
 class DummyVideoEncoderInterface
 {
 public:
-    DummyVideoEncoderInterface();
+    bool trace = true;
 
+    DummyVideoEncoderInterface(bool trace = false);
 
     virtual int startEncoding(const std::string &name, int h, int w, int codec_id = -1)
     {
-        SYNC_PRINT(("DummyVideoEncoderInterface::startEncoding(%s, %d, %d, %d)\n", name.c_str(), h, w, codec_id));
+        if (trace) SYNC_PRINT(("DummyVideoEncoderInterface::startEncoding(%s, %d, %d, %d)\n", name.c_str(), h, w, codec_id));
         return 0;
     }
 
-    virtual void addFrame(corecvs::RGB24Buffer * /*input*/)    {
-
-        SYNC_PRINT(("DummyVideoEncoderInterface::addFrame()\n"));
+    virtual void addFrame(corecvs::RGB24Buffer * /*input*/)
+    {
+        if (trace) SYNC_PRINT(("DummyVideoEncoderInterface::addFrame()\n"));
     }
 
     virtual void endEncoding()
     {
-        SYNC_PRINT(("DummyVideoEncoderInterface::endEncoding()\n"));
+        if (trace) SYNC_PRINT(("DummyVideoEncoderInterface::endEncoding()\n"));
     }
 };
 

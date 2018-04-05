@@ -307,7 +307,6 @@ with_opencv {
             }
 
         } else {
-
             CONFIG += link_pkgconfig
             PKGCONFIG += opencv
             OPENCV_LIBS = $$system(pkg-config --libs opencv)

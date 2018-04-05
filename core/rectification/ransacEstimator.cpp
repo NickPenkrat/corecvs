@@ -189,24 +189,24 @@ Matrix33 RansacEstimator::getEssentialRansacS(vector<Correspondence *> *data)
     }
 
     fitPercent = 100.0 * fitcount / data->size();
-    SYNC_PRINT(("RansacEstimator::getEssentialRansac() fits %2.2lf%%\n", fitPercent));
+    if (trace) SYNC_PRINT(("RansacEstimator::getEssentialRansac() fits %2.2lf%%\n", fitPercent));
     return result.model;
 }
 
 Matrix33 RansacEstimator::getEssentialRansac(vector<Correspondence *> *data)
 {
     if (algorithm == 0) {
-        SYNC_PRINT(("RansacEstimator::getEssentialRansac(%d) : ModelEssential8Point", (int)data->size()));
+        if (trace) SYNC_PRINT(("RansacEstimator::getEssentialRansac(%d) : ModelEssential8Point", (int)data->size()));
         return getEssentialRansacS<ModelEssential8Point>(data);
     }
 
     if (algorithm == 1) {
-        SYNC_PRINT(("RansacEstimator::getEssentialRansac(%d) : Model5Point", (int)data->size()));
+        if (trace) SYNC_PRINT(("RansacEstimator::getEssentialRansac(%d) : Model5Point", (int)data->size()));
         return getEssentialRansacS<Model5Point>(data);
     }
 
     if (algorithm == 2) {
-        SYNC_PRINT(("RansacEstimator::getEssentialRansac(%d) : Model7Point", (int)data->size()));
+        if (trace) SYNC_PRINT(("RansacEstimator::getEssentialRansac(%d) : Model7Point", (int)data->size()));
         return getEssentialRansacS<Model7Point>(data);
     }
 

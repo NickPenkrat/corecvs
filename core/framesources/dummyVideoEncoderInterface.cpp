@@ -3,9 +3,10 @@
 
 namespace corecvs {
 
-DummyVideoEncoderInterface::DummyVideoEncoderInterface()
+DummyVideoEncoderInterface::DummyVideoEncoderInterface(bool trace) :
+    trace(trace)
 {
 
 }
 
-}
+} // namespace corecvs

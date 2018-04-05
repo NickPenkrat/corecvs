@@ -36,6 +36,9 @@ using corecvs::RGB24Buffer;
 class OpenCVTools
 {
 public:
+
+    /* This stuff needs to be reimplemented in new way. With MultiConverter. With same logic as swScale */
+
     static IplImage *getCVImageFromRGB24Buffer(RGB24Buffer *input);
     static IplImage *getCVImageFromG12Buffer  (G12Buffer *input);
     static IplImage *getCVImageFromG8Buffer   (G8Buffer *input);
@@ -44,8 +47,10 @@ public:
 
     static RGB24Buffer *getRGB24BufferFromCVImage(IplImage *input);
     static G12Buffer   *getG12BufferFromCVImage  (IplImage *input);
+    static G8Buffer    *getG8BufferFromCVImage   (IplImage *input);
 
-    static RGB24Buffer *getRGB24BufferFromCVMat(cv::Mat &input);
+    static RGB24Buffer *getRGB24BufferFromCVMat(const cv::Mat &input);
+    static G8Buffer    *getG8BufferFromCVMat   (const cv::Mat &input);
 
 template<typename OtherStruct>
     static CvSize getCvSizeFromVector(const OtherStruct &other)

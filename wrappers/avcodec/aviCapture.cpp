@@ -87,7 +87,7 @@ ImageCaptureInterface::FramePair AviCapture::getFrame()
     CaptureStatistics  stats;
     PreciseTimer start = PreciseTimer::currentTime();
 
-    SYNC_PRINT(("AviCapture::getFrame(): called\n"));
+    //SYNC_PRINT(("AviCapture::getFrame(): called\n"));
     //mProtectFrame.lock();
         FramePair result(NULL, NULL);
         int res;
