@@ -30,7 +30,6 @@ protected:
 
     AVFrame *frame = NULL;
 
-    AVCodecParameters *params = NULL;
     AVCodec *codec = NULL;
     AVCodecContext    *codecContext = NULL;
 

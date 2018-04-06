@@ -153,6 +153,8 @@ public:
 
     virtual ~GcodeLoader();
 
+public:
+    static vector<std::pair<char, double> > parseLine(const string &gline);
 };
 
 } // namespace corecvs

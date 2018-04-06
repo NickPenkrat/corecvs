@@ -1,9 +1,6 @@
 /**
  * \brief Capture video stream from avi file using avcodec library
  */
-#include <QtCore/QRegExp>
-#include <QtCore/QString>
-
 #include "core/utils/preciseTimer.h"
 
 #include "aviCapture.h"

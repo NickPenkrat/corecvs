@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 namespace corecvs {
 
@@ -15,6 +16,26 @@ public:
     };
 
     std::vector<Record>  program;
+
+    friend std::ostream& operator << (std::ostream &out, Record &toSave)
+    {
+        out << toSave.command;
+        for (size_t i=0; i < toSave.params.size(); i++)
+        {
+            out << toSave.params[i] << ((i != toSave.params.size() - 1) ? "," : "");
+        }
+        out << ";" << std::endl;
+        return out;
+    }
+
+    friend std::ostream& operator << (std::ostream &out, HPGLProgram &program)
+    {
+        for (size_t i=0; i < program.program.size(); i++)
+        {
+            out << program.program[i];
+        }
+        return out;
+    }
 };
 
 
@@ -26,6 +47,8 @@ public:
 
     HPGLLoader();
     int loadHPGLcode(std::istream &input, HPGLProgram &program);
+private:
+    HPGLProgram::Record parseLine(const std::string &gline);
 };
 
 } // namespace corecvs

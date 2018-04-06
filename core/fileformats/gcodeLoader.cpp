@@ -14,7 +14,7 @@ using std::pair;
 GcodeLoader::GcodeLoader()
 {}
 
-vector<pair<char, double>> parseLine(const string& gline)
+vector<pair<char, double>> GcodeLoader::parseLine(const string& gline)
 {    
     vector<pair<char, double>> result;
     vector<string> split = HelperUtils::stringSplit(gline, ' ');

@@ -1,9 +1,6 @@
 /**
  * \brief Capture video stream from RTSP stream using avcodec library
  */
-#include <QtCore/QRegExp>
-#include <QtCore/QString>
-
 #include "rtspCapture.h"
 
 RTSPCapture::RTSPCapture(const std::string &params):
