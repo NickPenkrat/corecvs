@@ -6,9 +6,6 @@
  * \date Jan 9, 2015
  * \author alexander
  */
-#include <QtCore/QThread>
-#include <QtCore/QMutex>
-
 #include "core/framesources/file/imageFileCaptureInterface.h"
 #include "abstractFileCaptureSpinThread.h"
 #include "abstractFileCapture.h"

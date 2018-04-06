@@ -5,10 +5,8 @@
  * \date Nov 20, 2012
  * \author s.fedorenko
  */
-#include <QtCore/QFile>
-#include <QtCore/QFileInfo>
-
 #include "core/utils/global.h"
+#include "core/utils/utils.h"
 
 #include "imageFileCaptureInterface.h"
 
@@ -42,8 +40,7 @@ string ImageFileCaptureInterface::getImageFileName(uint imageNumber, uint channe
     else if (!mPathFmt.empty())                             // format comes as a ready path, only from some tests
     {
         // one exclusion is possible here: when ctor got a direct path to the file!
-        QFileInfo fi(mPathFmt.c_str());
-        if (fi.isFile() && fi.exists()) {
+        if (HelperUtils::pathExists(mPathFmt)) {
             return mPathFmt;                                // return immediately the initial path as it's not a format
         }
 
@@ -56,7 +53,7 @@ string ImageFileCaptureInterface::getImageFileName(uint imageNumber, uint channe
         return getImageFileName(imageNumber, channelNumber);
     }
 
-    if (imageNumber == 1 && mPathPrefix.empty() && !QFile::exists(pathName))
+    if (imageNumber == 1 && mPathPrefix.empty() && !HelperUtils::pathExists(pathName))
     {
         /**
          * We're to check correctness of the current directory, but we need a path to "data" folder with image files.
@@ -70,7 +67,7 @@ string ImageFileCaptureInterface::getImageFileName(uint imageNumber, uint channe
          *        Therefore for Unix it's checked one level up as we've run from Bin dir,\n
          *        and usually we use path as "data/pair" for test images.
          */
-        if (QFile::exists((string("../") + pathName).c_str()))
+        if (HelperUtils::pathExists((string("../") + pathName).c_str()))
         {
             mPathPrefix = "../";
         }

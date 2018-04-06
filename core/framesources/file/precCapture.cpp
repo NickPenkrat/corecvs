@@ -8,11 +8,9 @@
 #include <iostream>
 #include <stdio.h>
 #include <cstdio>
-#include <QtCore/QDebug>
-#include <QtCore/QRegExp>
-#include <QtCore/QtCore>
 
 #include "core/utils/global.h"
+#include "core/utils/utils.h"
 
 #include "precCapture.h"
 #include "core/buffers/bufferFactory.h"
@@ -106,7 +104,7 @@ bool FilePreciseCapture::FileSpinThread::grabFramePair()
         for (int i = 0; i < ImageCaptureInterface::MAX_INPUTS_NUMBER; i++)
         {
             names[i] = pInterface->getImageFileName(pInterface->mCount, i);
-            if (QFile::exists(names[i].c_str()))
+            if (HelperUtils::pathExists(names[i].c_str()))
             {
                 hasFrame = true;
             }

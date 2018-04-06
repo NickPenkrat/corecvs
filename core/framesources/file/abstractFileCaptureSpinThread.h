@@ -1,8 +1,6 @@
 #pragma once
 
 #include <thread>
-//#include <QtCore/QThread>
-
 #include "core/framesources/imageCaptureInterface.h"
 
 class AbstractFileCapture;

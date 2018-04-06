@@ -8,9 +8,6 @@
 #include <iostream>
 #include <stdio.h>
 #include <cstdio>
-#include <QtCore/QDebug>
-#include <QtCore/QRegExp>
-#include <QtCore/QtCore>
 
 #include "core/utils/global.h"
 
