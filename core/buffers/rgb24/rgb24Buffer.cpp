@@ -13,7 +13,9 @@
 #include "core/buffers/rgb24/hardcodeFont.h"
 #include "core/buffers/kernels/fastkernel/readers.h"
 #include "core/math/vector/fixedVector.h"
-#include "core/buffers/rgb24/bresenhamRasteriser.h"
+#include "core/buffers/rgb24/bresenhamRasterizer.h"
+#include "core/buffers/rgb24/wuRasterizer.h"
+
 
 #undef rad2     // it's defined at some Windows headers
 
@@ -53,6 +55,11 @@ void RGB24Buffer::drawPixel(int x, int y, RGBColor color)
     {
         element(y, x) = color;
     }
+}
+
+void RGB24Buffer::drawPixel(double x, double y, RGBColor color)
+{
+    this->drawPixel(fround(x), fround(y), color);
 }
 
 void RGB24Buffer::drawLine(int x1, int y1, int x2, int y2, RGBColor color)
@@ -159,6 +166,14 @@ void RGB24Buffer::drawCrosshare2 (int x, int y, RGBColor color)
     this->drawSprite(x, y, color, d, 16);
 }
 
+
+void RGB24Buffer::drawCrosshare2 (const Vector2dd &point, RGBColor color)
+{
+    int d[16][2] = {{1,1},{2,2},{-1,-1},{-2,-2},{-1,1},{-2,2},{1,-1},{2,-2},
+            {1,3},{3,1},{-1,-3},{-3,-1},{1,-3},{3,-1},{-1,3},{-3,1}};
+    this->drawSprite(fround(point.x()), fround(point.y()), color, d, 16);
+}
+
 /**  Draws a marker at the point having the form of
  *  <pre>
  *   \#\#\#
@@ -193,7 +208,7 @@ void RGB24Buffer::drawFlowBuffer(FlowBuffer *src, int32_t y, int32_t x)
             FlowElement vec = src->element(i,j);
 
 #ifdef ASSERTS
-            Vector2d32 res(vec);
+            Vector2d32 res(vec.x(), vec.y());
             res += Vector2d32(j, i);
             if (!this->isValidCoord(res))
             {
@@ -536,7 +551,12 @@ void RGB24Buffer::drawHistogram1024x512(Histogram *hist, int x, int y, uint16_t 
 
 void RGB24Buffer::drawLineSimple(int x1, int y1, int x2, int y2, RGBColor color)
 {
-    BresenhamRasteriser::drawLineSimple<RGB24Buffer>(*this, x1, y1, x2, y2, color);
+    BresenhamRasterizer::drawLineSimple<RGB24Buffer>(*this, x1, y1, x2, y2, color);
+}
+
+void RGB24Buffer::drawLineSimpleFancy(int x1, int y1, int x2, int y2, RGBColor color)
+{
+    WuRasterizer::drawLine<RGB24Buffer>(*this, x1, y1, x2, y2, color);
 }
 
 // TODO: make this more pretty
@@ -737,6 +757,36 @@ void RGB24Buffer::drawDoubleBuffer(const AbstractBuffer<double> &in, int style)
                     element(i, j) = RGBColor::Black();
                 }
             }
+        }
+    }
+
+}
+
+void RGB24Buffer::drawDoubleVecBuffer(const AbstractBuffer<Vector2dd> &in)
+{
+    int mh = CORE_MIN(h, in.h);
+    int mw = CORE_MIN(w, in.w);
+
+    Vector2dd min = Vector2dd(std::numeric_limits<double>::max   ());
+    Vector2dd max = Vector2dd(std::numeric_limits<double>::lowest());
+
+    for (int i = 0; i < mh; i++)
+    {
+        for (int j = 0; j < mw; j++)
+        {
+            min = min.perElementMin(in.element(i,j));
+            max = min.perElementMax(in.element(i,j));
+        }
+    }
+
+    cout << "RGB24Buffer::drawDoubleVecBuffer(): " << min << " " << max << endl;
+
+    for (int i = 0; i < mh; i++)
+    {
+        for (int j = 0; j < mw; j++)
+        {
+            Vector3dd c = Vector3dd((in.element(i,j) - min) / (max - min)  * 255.0, 0.0);
+            element(i, j) = RGBColor::FromDouble(c);
         }
     }
 

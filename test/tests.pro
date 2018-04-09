@@ -10,27 +10,39 @@ exists(../../../config.pri) {
 
 TEMPLATE = subdirs
 
-SUBDIRS +=       \
-#   grab         \
-    grab_N_captures \
-    serialize1   \
-#    fileloader \  # it can what rawconverter is able to do as well!
-#   adoptcolor   \
-#    avigrab     \
+SUBDIRS +=            \
+#   grab              \
+    grab_N_captures   \
+    serialize1        \
+    fileloader        \
+    deproject         \
+    softrender        \
+    raytracerender    \
+    stereo_generator  \
+    widgets_test      \
+    widget_harness    \
+#    command_harness   \
+    example_scene     \
+
+
+
+# SUBDIRS +=     \
+#    adoptcolor  \
+#    avigrab     \  // Depricated
 #    decodebayer \
-#    genvectorui  \
-#    aLowCodec \
+#    genvectorui \
+#    aLowCodec   \
 #    new_board_detector \
-#
 #    cr2reader           \
 #    debayer          \
-    softrender       \
-    raytracerender   \
-    stereo_generator \
-    widgets_test \
-    widget_harness \
-#    command_harness \
-    example_scene \
+
+with_avcodec {
+   SUBDIRS +=  avencode
+}
+
+with_ceres {
+    SUBDIRS += ceres_playground
+}
 
 !win32 {
     SUBDIRS += jitplayground
@@ -56,6 +68,9 @@ serialize1                          = serialize1/serialize1.pro
 jitplayground                       = jitplayground/jitplayground.pro
 gcodeplayground                     = gcodeplayground/gcodeplayground.pro
 example_scene                       = example_scene/example_scene.pro
+
+ceres_playground                    = ceres_playground/ceres_playground.pro
+
 adoptcolor                          = adoptcolor/adoptcolor.pro
 avigrab                             = avigrab/avigrab.pro
 decodebayer                         = decodebayer/decodebayer.pro
@@ -67,6 +82,9 @@ cr2reader.depends                  -= utils
 
 debayer.file                        = debayer/debayer.pro
 debayer.depends                    -= utils
+
+deproject.file                      = deproject/deproject.pro
+avencode.file                       = avencode/avencode.pro
 
 softrender.file                     = softrender/softrender.pro
 softrender.depends                 -= utils

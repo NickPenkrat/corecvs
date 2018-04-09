@@ -11,7 +11,7 @@ with_opencv {
                 INCLUDEPATH += $$OPENCV_PATH/include                            # when we made "make install" there in 3.1.x
             }
 
-            #OPENCV_INC_NOTINSTALLED = $$OPENCV_PATH/build/include              # it's strange path, usually empty, but distributive has all includes there?...
+            OPENCV_INC_NOTINSTALLED = $$OPENCV_PATH/build/include              # it's strange path, usually empty, but distributive has all includes there?...
 
             # the following paths are taking includes directly from sources
             #
@@ -186,7 +186,7 @@ with_opencv {
                 !build_pass:message(Using <$$OPENCV_PATH/build/bin/Release|Debug>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += $$OPENCV_310_LIBS_ADD_OWN_BUILT
-                DEFINES     += WITH_OPENCV WITH_OPENCV_3x
+                DEFINES     += WITH_OPENCV WITH_OPENCV_3X
                 exists($$OPENCV_PATH/build/bin/Release/opencv_cudafeatures2d310.dll) {
                     DEFINES     += WITH_OPENCV_GPU
                 }
@@ -280,25 +280,39 @@ with_opencv {
         isEmpty(OPENCV_PATH) {
             !build_pass:message(Compiling with system OpenCV)
         } else {
-            !build_pass:message(Compiling with OpenCV from $$OPENCV_PATH)
             DEPENDPATH  += $$OPENCV_PATH/include
             INCLUDEPATH += $$OPENCV_PATH/include
             LIBS        += -L$$OPENCV_PATH/lib/
+            exists($$OPENCV_PATH/lib/libopencv_core.so.3.4) {
+                !build_pass:message(Compiling with OpenCV3.X from $$OPENCV_PATH)
+                DEFINES += WITH_OPENCV_3X
+            } else {
+                !build_pass:message(Compiling with OpenCV from $$OPENCV_PATH)
+            }
         }
 
         with_nopkgconfig {
+            exists($$OPENCV_PATH/lib/libopencv_core.so.3.4) {
+                LIBS += -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired -lopencv_calib3d -lopencv_ccalib -lopencv_core -lopencv_datasets -lopencv_dnn_objdetect
+                LIBS += -lopencv_dnn -lopencv_dpm -lopencv_face -lopencv_features2d -lopencv_flann -lopencv_freetype -lopencv_fuzzy -lopencv_hfs -lopencv_highgui
+                LIBS += -lopencv_imgcodecs -lopencv_img_hash -lopencv_imgproc -lopencv_line_descriptor -lopencv_ml -lopencv_objdetect -lopencv_optflow -lopencv_phase_unwrapping
+                LIBS += -lopencv_photo -lopencv_plot -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_shape -lopencv_stereo -lopencv_stitching -lopencv_structured_light
+                LIBS += -lopencv_superres -lopencv_surface_matching -lopencv_text -lopencv_tracking -lopencv_videoio -lopencv_video -lopencv_videostab -lopencv_xfeatures2d
+                LIBS += -lopencv_ximgproc -lopencv_xobjdetect -lopencv_xphoto
+            } else {
 
-            LIBS += -lopencv_calib3d    -lopencv_video   -lopencv_core    -lopencv_highgui   \
-                    -lopencv_features2d -lopencv_flann   -lopencv_imgproc -lopencv_objdetect \
-                    -lopencv_nonfree    -lopencv_legacy #-llibopencv_ml
+                LIBS += -lopencv_calib3d    -lopencv_video   -lopencv_core    -lopencv_highgui
+                LIBS += -lopencv_features2d -lopencv_flann   -lopencv_imgproc -lopencv_objdetect
+                LIBS += -lopencv_nonfree    -lopencv_legacy #-llibopencv_ml
+            }
+
         } else {
-
             CONFIG += link_pkgconfig
             PKGCONFIG += opencv
             OPENCV_LIBS = $$system(pkg-config --libs opencv)
             system(pkg-config --atleast-version=3.0 opencv) {
                 message(Detected OpenCV 3.x)
-                DEFINES += WITH_OPENCV_3x
+                DEFINES += WITH_OPENCV_3X
                 OPENCV_CONTRIB_LIBS = $$find(OPENCV_LIBS, opencv_xfeatures2d)
                 OPENCV_GPU_LIBS     = $$find(OPENCV_LIBS, opencv_cuda)
                 !isEmpty(OPENCV_CONTRIB_LIBS) {

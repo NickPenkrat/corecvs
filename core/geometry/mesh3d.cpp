@@ -62,7 +62,28 @@ void Mesh3D::popTransform()
     transformStack.pop_back();
 }
 
-void Mesh3D::setCentral(Vector3dd _central)
+void Mesh3D::pushColor(const RGBColor &color)
+{
+    colorStack.push_back(currentColor);
+    currentColor = color;
+}
+
+void Mesh3D::pushColor()
+{
+     colorStack.push_back(currentColor);
+}
+
+void Mesh3D::popColor()
+{
+    if (colorStack.empty()) {
+        SYNC_PRINT(("Mesh3D::popColor(): Poping on empty stack\n"));
+        return;
+    }
+    currentColor = colorStack.back();
+    colorStack.pop_back();
+}
+
+void Mesh3D::setCentral(const Vector3dd &_central)
 {
     centralPoint = _central;
     hasCentral = true;

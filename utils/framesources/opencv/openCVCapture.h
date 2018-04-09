@@ -18,19 +18,23 @@
 
 #include "core/utils/global.h"
 
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 
+/*
 #define CAP_ANY       (uint)  0
 #define CAP_VFW       (uint)200
 #define CAP_DS        (uint)700
+*/
+
+enum OpenCVCapType {
+    OPENCV_CAP_ANY = 0,
+    OPENCV_CAP_VFW = 200,
+    OPENCV_CAP_DS  = 700
+};
 
 #define CAP_DEFAULT_DELAY 35
 
 struct CvCapture;
-
-#ifdef interface            // msvc could define it as a "struct" at its header, but it's not a c++ keyword!
-#undef interface
-#endif
 
 class OpenCVCaptureInterface : public virtual ImageCaptureInterface
 {
@@ -40,8 +44,8 @@ class OpenCVCaptureInterface : public virtual ImageCaptureInterface
     class SpinThread : public QThread
     {
     public:
-        SpinThread(OpenCVCaptureInterface *interface)
-            : mInterface(interface), mStopping(false)
+        SpinThread(OpenCVCaptureInterface *_interface)
+            : mInterface(_interface), mStopping(false)
         {}
 
         virtual void run (void);
@@ -74,5 +78,24 @@ class OpenCVCaptureInterface : public virtual ImageCaptureInterface
 
     virtual ~OpenCVCaptureInterface();
  };
+
+
+class OpenCvCaptureProducer : public ImageCaptureInterfaceProducer
+{
+public:
+    OpenCvCaptureProducer()
+    {}
+
+    virtual std::string getPrefix() override
+    {
+        return "opencv:";
+    }
+
+    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
+    {
+        return new OpenCVCaptureInterface(name, OPENCV_CAP_ANY);
+    }
+};
+
 
  #endif /* OPENCVCAPTURE_H_ */

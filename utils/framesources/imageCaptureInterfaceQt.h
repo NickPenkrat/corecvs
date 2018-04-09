@@ -3,7 +3,7 @@
 
 #include <QtCore/QObject>
 
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
 
 
 class ImageCaptureInterfaceQt;
@@ -38,6 +38,7 @@ public:
 
     virtual void newFrameReadyCallback(frame_data_t frameData) override
     {
+        SYNC_PRINT(("ImageCaptureInterfaceQt::newFrameReadyCallback(frame_data_t frameData)\n"));
         emit newFrameReady(frameData);
     }
 

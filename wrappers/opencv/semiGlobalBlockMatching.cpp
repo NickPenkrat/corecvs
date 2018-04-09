@@ -1,5 +1,5 @@
 #include "semiGlobalBlockMatching.h"
-#include "OpenCVTools.h"
+#include "openCVTools.h"
 
 #include <opencv2/core/core_c.h> // cvReleaseImage
 
@@ -16,7 +16,7 @@ FlowBuffer* BMOpenCV::getStereoBM(G12Buffer* InputBufferLeft, G12Buffer* InputBu
     int bSize   = (params.blockSize() & -2) + 1;
     if(bSize < 5 ) bSize = 5;
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     bm = StereoBM::create( dSearch, bSize );
 
     bm->setPreFilterCap     ( params.preFilterCap() );
@@ -48,7 +48,7 @@ FlowBuffer* BMOpenCV::getStereoBM(G12Buffer* InputBufferLeft, G12Buffer* InputBu
 
     Mat disp, disp8;
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     bm->compute( imgLeft, imgRight, disp );
 #else
     bm(imgLeft, imgRight, disp);
@@ -82,7 +82,7 @@ FlowBuffer* SGBMOpenCV::getStereoSGBM(G12Buffer* InputBufferLeft, G12Buffer* Inp
 
     FlowBuffer* stereo = new FlowBuffer(h,w,true);
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     const int sADWindowSize = params.sADWindowSize();
 
     sgbm = StereoSGBM::create( params.minDisparity(),
@@ -134,7 +134,7 @@ FlowBuffer* SGBMOpenCV::getStereoSGBM(G12Buffer* InputBufferLeft, G12Buffer* Inp
 
     Mat disp, disp8;
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     sgbm->compute( imgLeft, imgRight, disp );
 #else
     sgbm(imgLeft, imgRight, disp);

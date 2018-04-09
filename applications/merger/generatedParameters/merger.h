@@ -6,6 +6,7 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from merger.xml
  */
 
 #include "core/reflection/reflection.h"
@@ -18,7 +19,6 @@
 /*
  *  Additional includes for Composite Types.
  */
-#include "core/xml/generated/euclidianMoveParameters.h"
 
 // using namespace corecvs;
 
@@ -54,18 +54,10 @@ public:
         OUT_PHY_SIZE_L_ID,
         OUT_PHY_SIZE_W_ID,
         GROUND_Z_ID,
-        FOV1_ID,
         SWITCH1_ID,
-        POS1_ID,
-        FOV2_ID,
         SWITCH2_ID,
-        POS2_ID,
-        FOV3_ID,
         SWITCH3_ID,
-        POS3_ID,
-        FOV4_ID,
         SWITCH4_ID,
-        POS4_ID,
         MERGER_FIELD_ID_NUM
     };
 
@@ -150,28 +142,10 @@ public:
     double mGroundZ;
 
     /** 
-     * \brief FOV1 
-     * FOV1 
-     */
-    double mFOV1;
-
-    /** 
      * \brief switch1 
      * switch1 
      */
     bool mSwitch1;
-
-    /** 
-     * \brief pos1 
-     * pos1 
-     */
-    EuclidianMoveParameters mPos1;
-
-    /** 
-     * \brief FOV2 
-     * FOV2 
-     */
-    double mFOV2;
 
     /** 
      * \brief switch2 
@@ -180,46 +154,16 @@ public:
     bool mSwitch2;
 
     /** 
-     * \brief pos2 
-     * pos2 
-     */
-    EuclidianMoveParameters mPos2;
-
-    /** 
-     * \brief FOV3 
-     * FOV3 
-     */
-    double mFOV3;
-
-    /** 
      * \brief switch3 
      * switch3 
      */
     bool mSwitch3;
 
     /** 
-     * \brief pos3 
-     * pos3 
-     */
-    EuclidianMoveParameters mPos3;
-
-    /** 
-     * \brief FOV4 
-     * FOV4 
-     */
-    double mFOV4;
-
-    /** 
      * \brief switch4 
      * switch4 
      */
     bool mSwitch4;
-
-    /** 
-     * \brief pos4 
-     * pos4 
-     */
-    EuclidianMoveParameters mPos4;
 
     /** Static fields init function, this is used for "dynamic" field initialization */ 
     static int staticInit();
@@ -296,24 +240,9 @@ public:
         return mGroundZ;
     }
 
-    double fOV1() const
-    {
-        return mFOV1;
-    }
-
     bool switch1() const
     {
         return mSwitch1;
-    }
-
-    EuclidianMoveParameters pos1() const
-    {
-        return mPos1;
-    }
-
-    double fOV2() const
-    {
-        return mFOV2;
     }
 
     bool switch2() const
@@ -321,39 +250,14 @@ public:
         return mSwitch2;
     }
 
-    EuclidianMoveParameters pos2() const
-    {
-        return mPos2;
-    }
-
-    double fOV3() const
-    {
-        return mFOV3;
-    }
-
     bool switch3() const
     {
         return mSwitch3;
     }
 
-    EuclidianMoveParameters pos3() const
-    {
-        return mPos3;
-    }
-
-    double fOV4() const
-    {
-        return mFOV4;
-    }
-
     bool switch4() const
     {
         return mSwitch4;
-    }
-
-    EuclidianMoveParameters pos4() const
-    {
-        return mPos4;
     }
 
     /* Section with setters */
@@ -422,24 +326,9 @@ public:
         mGroundZ = groundZ;
     }
 
-    void setFOV1(double fOV1)
-    {
-        mFOV1 = fOV1;
-    }
-
     void setSwitch1(bool switch1)
     {
         mSwitch1 = switch1;
-    }
-
-    void setPos1(EuclidianMoveParameters const &pos1)
-    {
-        mPos1 = pos1;
-    }
-
-    void setFOV2(double fOV2)
-    {
-        mFOV2 = fOV2;
     }
 
     void setSwitch2(bool switch2)
@@ -447,39 +336,14 @@ public:
         mSwitch2 = switch2;
     }
 
-    void setPos2(EuclidianMoveParameters const &pos2)
-    {
-        mPos2 = pos2;
-    }
-
-    void setFOV3(double fOV3)
-    {
-        mFOV3 = fOV3;
-    }
-
     void setSwitch3(bool switch3)
     {
         mSwitch3 = switch3;
     }
 
-    void setPos3(EuclidianMoveParameters const &pos3)
-    {
-        mPos3 = pos3;
-    }
-
-    void setFOV4(double fOV4)
-    {
-        mFOV4 = fOV4;
-    }
-
     void setSwitch4(bool switch4)
     {
         mSwitch4 = switch4;
-    }
-
-    void setPos4(EuclidianMoveParameters const &pos4)
-    {
-        mPos4 = pos4;
     }
 
     /* Section with embedded classes */
@@ -500,18 +364,10 @@ template<class VisitorType>
         visitor.visit(mOutPhySizeL,               static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_L_ID]));
         visitor.visit(mOutPhySizeW,               static_cast<const corecvs::DoubleField *>(fields()[OUT_PHY_SIZE_W_ID]));
         visitor.visit(mGroundZ,                   static_cast<const corecvs::DoubleField *>(fields()[GROUND_Z_ID]));
-        visitor.visit(mFOV1,                      static_cast<const corecvs::DoubleField *>(fields()[FOV1_ID]));
         visitor.visit(mSwitch1,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH1_ID]));
-        visitor.visit(mPos1,                      static_cast<const corecvs::CompositeField *>(fields()[POS1_ID]));
-        visitor.visit(mFOV2,                      static_cast<const corecvs::DoubleField *>(fields()[FOV2_ID]));
         visitor.visit(mSwitch2,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH2_ID]));
-        visitor.visit(mPos2,                      static_cast<const corecvs::CompositeField *>(fields()[POS2_ID]));
-        visitor.visit(mFOV3,                      static_cast<const corecvs::DoubleField *>(fields()[FOV3_ID]));
         visitor.visit(mSwitch3,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH3_ID]));
-        visitor.visit(mPos3,                      static_cast<const corecvs::CompositeField *>(fields()[POS3_ID]));
-        visitor.visit(mFOV4,                      static_cast<const corecvs::DoubleField *>(fields()[FOV4_ID]));
         visitor.visit(mSwitch4,                   static_cast<const corecvs::BoolField *>(fields()[SWITCH4_ID]));
-        visitor.visit(mPos4,                      static_cast<const corecvs::CompositeField *>(fields()[POS4_ID]));
     }
 
     Merger()
@@ -534,18 +390,10 @@ template<class VisitorType>
         , double outPhySizeL
         , double outPhySizeW
         , double groundZ
-        , double fOV1
         , bool switch1
-        , EuclidianMoveParameters pos1
-        , double fOV2
         , bool switch2
-        , EuclidianMoveParameters pos2
-        , double fOV3
         , bool switch3
-        , EuclidianMoveParameters pos3
-        , double fOV4
         , bool switch4
-        , EuclidianMoveParameters pos4
     )
     {
         mUndistMethod = undistMethod;
@@ -561,20 +409,33 @@ template<class VisitorType>
         mOutPhySizeL = outPhySizeL;
         mOutPhySizeW = outPhySizeW;
         mGroundZ = groundZ;
-        mFOV1 = fOV1;
         mSwitch1 = switch1;
-        mPos1 = pos1;
-        mFOV2 = fOV2;
         mSwitch2 = switch2;
-        mPos2 = pos2;
-        mFOV3 = fOV3;
         mSwitch3 = switch3;
-        mPos3 = pos3;
-        mFOV4 = fOV4;
         mSwitch4 = switch4;
-        mPos4 = pos4;
     }
 
+    bool operator ==(const Merger &other) const 
+    {
+        if ( !(this->mUndistMethod == other.mUndistMethod)) return false;
+        if ( !(this->mUndistFocal == other.mUndistFocal)) return false;
+        if ( !(this->mSensorWidth == other.mSensorWidth)) return false;
+        if ( !(this->mDistortionOvershoot == other.mDistortionOvershoot)) return false;
+        if ( !(this->mShowMask == other.mShowMask)) return false;
+        if ( !(this->mBilinear == other.mBilinear)) return false;
+        if ( !(this->mSeparateView == other.mSeparateView)) return false;
+        if ( !(this->mDrawCar == other.mDrawCar)) return false;
+        if ( !(this->mFrameToUndist == other.mFrameToUndist)) return false;
+        if ( !(this->mOutSizeH == other.mOutSizeH)) return false;
+        if ( !(this->mOutPhySizeL == other.mOutPhySizeL)) return false;
+        if ( !(this->mOutPhySizeW == other.mOutPhySizeW)) return false;
+        if ( !(this->mGroundZ == other.mGroundZ)) return false;
+        if ( !(this->mSwitch1 == other.mSwitch1)) return false;
+        if ( !(this->mSwitch2 == other.mSwitch2)) return false;
+        if ( !(this->mSwitch3 == other.mSwitch3)) return false;
+        if ( !(this->mSwitch4 == other.mSwitch4)) return false;
+        return true;
+    }
     friend std::ostream& operator << (std::ostream &out, Merger &toSave)
     {
         corecvs::PrinterVisitor printer(out);

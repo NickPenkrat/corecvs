@@ -289,7 +289,7 @@ void BaseCalculationThread::presentationControlParametersChanged(QSharedPointer<
 
 void BaseCalculationThread::camerasParametersChanged(QSharedPointer<CamerasConfigParameters> parametersShPtr)
 {
-    SYNC_PRINT(("BaseCalculationThread::camerasParametersChanged():called"));
+    SYNC_PRINT(("BaseCalculationThread::camerasParametersChanged():called\n"));
     mActiveInputsNumber = parametersShPtr->inputsN();
     mRectificationData  = parametersShPtr->rectifierData();
     mCacheUpdateNeeded  = true;

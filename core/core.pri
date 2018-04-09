@@ -21,6 +21,7 @@ CORE_SUBMODULES =       \
     cammodel            \
     fileformats         \
     filesystem          \
+    framesources        \
     filters             \
     function            \
     geometry            \
@@ -39,12 +40,13 @@ CORE_SUBMODULES =       \
     features2d          \
     patterndetection    \
     cameracalibration   \
-    device \
+    device              \
     graphs              \
     polynomial          \
     camerafixture       \
     iterative           \
     stereointerface     \
+    placer              \
 
 for (MODULE, CORE_SUBMODULES) {
     CORE_INCLUDEPATH += $${COREDIR}/$${MODULE}
@@ -52,6 +54,7 @@ for (MODULE, CORE_SUBMODULES) {
 
 # Some modules want to export more then one directory with includes. Add them here
 CORE_INCLUDEPATH += \
+    $$COREDIR/cameracalibration/projection \
     $$COREDIR/buffers/fixeddisp \
     $$COREDIR/buffers/flow \
     $$COREDIR/buffers/histogram \
@@ -70,12 +73,16 @@ CORE_INCLUDEPATH += \
     $$COREDIR/clustering3d \
     $$COREDIR/geometry/raytrace \
     $$COREDIR/geometry/renderer \
+    $$COREDIR/framesources/file \
     $$COREDIR/xml \
     $$COREDIR/xml/generated \
     $$COREDIR/tinyxml \
     $$COREDIR/../wrappers/cblasLapack \		# some of core's math algorithms use it
 
 CORE_INCLUDEPATH_SUPP=$$COREDIR/..
+
+DEFINES += WITH_FRAMESOURCE_PREC
+DEFINES += WITH_FRAMESOURCE_FILE
 
 with_suppressincs {
     SUPPRESSINCLUDES=true

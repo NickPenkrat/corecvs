@@ -45,10 +45,13 @@
 #include "core/reflection/reflection.h"
 
 using std::numeric_limits;
-using std::istream;
-using std::ostream;
-using std::cout;
+//using std::istream;
+//using std::ostream;
+//using std::cout;
+
+/* This is shortcut.We are not proud of it*/
 using std::sqrt;
+using std::pow;
 
 namespace corecvs {
 
@@ -418,6 +421,21 @@ public:
     }
 
     /**
+     * Sum of the powers of element of the vector.
+     *
+     * \f[\sum_{i=0}^n {V_i^k}\f]
+     *
+     **/
+    template<int power>
+    inline ElementType sumAllElementsPow() const
+    {
+        ElementType result(0);
+        for (int i = 0; i < _size(); i++)
+            result += pow(_at(i), power);
+        return result;
+    }
+
+    /**
      * Euclidean distance
      *
      * \f[D = \sqrt{\sum_{i=0}^n {V_i^2}} \f]
@@ -427,6 +445,19 @@ public:
     {
         /* TODO ASAP: Correct this to select appropriate sqrt */
         return (ElementType)sqrt(this->sumAllElementsSq());
+    }
+
+    /**
+     * Ln norm distance
+     *
+     * \f[D = \sqrt{\sum_{i=0}^n {V_i^2}} \f]
+     *
+     **/
+    template <int power>
+    inline ElementType lnMetric() const
+    {
+        /* TODO ASAP: Correct this to select appropriate sqrt */
+        return (ElementType)pow(sumAllElementsPow<power>(), (1.0 / (double)power));
     }
 
     inline ElementType l2MetricStable() const
@@ -690,7 +721,7 @@ public:
         }
     }
 
-    friend ostream & operator <<(ostream &out, const RealType &vector)
+    friend std::ostream & operator <<(std::ostream &out, const RealType &vector)
     {
         out << "[";
         for (int i = 0; i < vector._size(); i++)
@@ -699,7 +730,7 @@ public:
         return out;
     }
 
-    friend istream & operator >>(istream &in, RealType &vector)
+    friend std::istream & operator >>(std::istream &in, RealType &vector)
     {
         for (int i = 0; i < vector._size(); i++)
             in >> vector._at(i);
@@ -708,15 +739,69 @@ public:
 
     void print() const
     {
-        cout << *realThis();
+        std::cout << *realThis();
     }
 
 
     void println() const
     {
         print();
-        cout << "\n";
+        std::cout << "\n";
     }
+
+    /**/
+    void loadFrom(const ElementType *in)
+    {
+        for (int i = 0; i < _size(); i++)
+        {
+            _at(i) = in[i];
+        }
+    }
+
+    void loadFromStream(const ElementType * &in, bool *mask = NULL)
+    {
+        if (mask == NULL) {
+            this->loadFrom(in);
+            in += _size();
+            return;
+        }
+
+        for (int i = 0; i < _size(); i++)
+        {
+            if (mask[i]) {
+                _at(i) = *in;
+                in++;
+            }
+        }
+    }
+
+    void storeTo(ElementType *out) const
+    {
+        for (int i = 0; i < _size(); i++)
+        {
+            out[i] = _at(i);
+        }
+    }
+
+    void storeToStream(ElementType * &out, bool *mask = NULL) const
+    {
+        if (mask == NULL) {
+            this->storeTo(out);
+            out += _size();
+            return;
+        }
+
+        for (int i = 0; i < _size(); i++)
+        {
+            if (mask[i]) {
+                *out = _at(i);
+                out++;
+            }
+        }
+    }
+
+
+    /* Per element */
 
     inline ElementType minimum() const
     {

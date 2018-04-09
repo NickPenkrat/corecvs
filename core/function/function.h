@@ -59,8 +59,8 @@ public:
 
     virtual void operator()(const vector<double> &in, vector<double> &out)
     {
-        CORE_ASSERT_TRUE( (int)  in.size() > inputs , "Too few input numbers");
-        CORE_ASSERT_TRUE( (int) out.size() > outputs, "Too few output numbers");
+        CORE_ASSERT_TRUE( (int)  in.size() >= inputs , "Too few input numbers");
+        CORE_ASSERT_TRUE( (int) out.size() >= outputs, "Too few output numbers");
 
         return operator()(in.data(), out.data());
     }

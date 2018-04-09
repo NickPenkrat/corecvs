@@ -35,9 +35,13 @@ public:
 };
 #endif
 
-template<typename SampleType, typename ModelType>
+template<typename ModelGeneratorType>
 class Ransac : public RansacParameters {
 public:
+    typedef typename ModelGeneratorType::SampleType SampleType;
+    typedef typename ModelGeneratorType::ModelType  ModelType;
+
+
     vector<SampleType *> *data;
     int dataLen;
 
@@ -55,7 +59,7 @@ public:
     /* */
     std::mt19937 rng;
 
-    Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters())
+    Ransac(int _sampleNumber, const RansacParameters &params = RansacParameters(), ModelGeneratorType *generator = NULL)
         : RansacParameters(params)
         , sampleNumber(_sampleNumber)
     {
@@ -87,7 +91,7 @@ public:
         }
     }
 
-    ModelType getModelRansac()
+    ModelType getModelRansac(ModelGeneratorType *context = NULL)
     {
         bestInliers = 0;
         iteration = 0;
@@ -99,13 +103,13 @@ public:
 
         if (trace) {
              //SYNC_PRINT(("getModelRansac(): called with threshold %lf\n", ge));
-             std::cout << "getModelRansacMultimodel(): called with\n" << *this << std::endl;
+             //std::cout << "getModelRansacMultimodel(): called with\n" << *this << std::endl;
         }
 
         while (true)
         {
             randomSelect();
-            vector<ModelType> models = ModelType::getModels(samples);
+            vector<ModelType> models = ModelGeneratorType::getModels(samples, context);
 
 
             for (ModelType &model : models)
@@ -116,9 +120,10 @@ public:
 
                 for (size_t i = 0; i < data->size(); i++)
                 {
-                    if (model.fits(*(data->at(i)), inlierThreshold()))
-                        inliers++;
-                    costs.push_back(model.getCost(*(data->at(i))));
+                    if (model.fits(*data->operator[](i), inlierThreshold())) {
+                       inliers++;
+                    }
+                    costs.push_back(std::abs(model.getCost(*data->operator[](i))));
                 }
 
                 auto it = costs.begin() + (costs.size() / 2);
@@ -141,16 +146,15 @@ public:
                 }
 
                 if (trace && !useMedian())
-                            SYNC_PRINT(("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
-                                       iteration, inliers, bestInliers, (int)data->size(), (double)100.0 * bestInliers / data->size() ));
+                            printf("iteration %d : %d inliers (max so far %d) out of %d (%lf%%)\n",
+                                       iteration, inliers, bestInliers, (int)data->size(), (double)100.0 * bestInliers / data->size() );
 
                 if (trace && useMedian())
-                            SYNC_PRINT(("iteration %d : %d inliers (max so far %d) (median %lf %lf) out of %d (%lf%%)\n",
-                                   iteration, inliers, bestInliers, median, old_median, (int)data->size(), (double)100.0 * bestInliers / data->size() ));
+                            printf("iteration %d : %d inliers (max so far %d) (median %lf %lf) out of %d (%lf%%)\n",
+                                   iteration, inliers, bestInliers, median, old_median, (int)data->size(), (double)100.0 * bestInliers / data->size() );
 
                 if ((bestInliers >  data->size() * inliersPercent() / 100.0 && iteration >= iterationsNumber() * 0.3 )
-                    ||
-                    iteration >= iterationsNumber() )
+                    || iteration >= iterationsNumber() )
                 {
                     if (trace) {
                         std::cout << "Fininshing:" << std::endl;

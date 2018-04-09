@@ -202,6 +202,34 @@ TEST(Vector, testSpherical)
     }
 }
 
+
+TEST(Vector, streamVectors)
+{
+    vector<double> v;
+    v.resize(6);
+    double *buffer = v.data();
+
+    Vector3dd a1(1.0, 2.0, 3.0);
+    Vector3dd a2(4.0, 5.0, 6.0);
+
+    a1.storeToStream(buffer);
+    a2.storeToStream(buffer);
+
+    Vector3dd b1(0.0);
+    Vector3dd b2(0.0);
+
+    const double *input = v.data();
+
+    b1.loadFromStream(input);
+    b2.loadFromStream(input);
+
+    cout << a1 << " = " << b1 << endl;
+    cout << a2 << " = " << b2 << endl;
+
+    CORE_ASSERT_TRUE(a1 == b1, "Load Error");
+    CORE_ASSERT_TRUE(a2 == b2, "Load Error2");
+}
+
 //int main (int /*argC*/, char ** /*argV*/)
 //{
 //    profileVectorOperations ();

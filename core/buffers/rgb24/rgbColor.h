@@ -504,6 +504,12 @@ public:
         return RGBColor(255, 191, 0);
     }
 
+    static RGBColor Purple()
+    {
+        return RGBColor(128, 0, 128);
+    }
+
+
 
     static RGBColor lerpColor(const RGBColor &first, const RGBColor &second, double alpha)
     {
@@ -530,6 +536,13 @@ public:
         int16_t b = (int16_t)first.b() - (int16_t)second.b();
 
         return RGBColor(CORE_ABS(r), CORE_ABS(g), CORE_ABS(b));
+    }
+
+    RGBColor operator *(float f)
+    {
+        return RGBColor(clamp((int)(r() * f), 0, 255),
+                        clamp((int)(g() * f), 0, 255),
+                        clamp((int)(b() * f), 0, 255));
     }
 
     /**
@@ -592,7 +605,7 @@ template<class VisitorType>
         return out;
     }
 
-    friend istream & operator >>(istream &out, RGBColor &color)
+    friend std::istream & operator >>(std::istream &out, RGBColor &color)
     {
        int v;
        out >> v;
@@ -639,6 +652,13 @@ template<class VisitorType>
         return RGBColor((uint8_t)input1.x(), (uint8_t)input1.y(), (uint8_t)input1.z());
     }
 
+    static RGBColor FromFloat(const Vector3df &input)
+    {
+        Vector3df input1 = input;
+        input1.mapToHypercube(Vector3df(0.0, 0.0, 0.0), Vector3df(255.0, 255.0, 255.0));
+        return RGBColor((uint8_t)input1.x(), (uint8_t)input1.y(), (uint8_t)input1.z());
+    }
+
     static RGBColor FromHSV(uint16_t h, uint8_t s, uint8_t v)
     {
         int c = ((int)(s * v)) / 255;
@@ -669,6 +689,14 @@ template<class VisitorType>
         }
 
         return RGBColor(r + m, g + m, b + m);
+    }
+
+
+    static RGBColor colorBlindPalette[6];
+
+    static RGBColor getPalleteColor(int id)
+    {
+        return colorBlindPalette[id % 6];
     }
 
 };

@@ -57,4 +57,16 @@ RGBColor RGBColor::rainbow(double x)
     }
 }
 
+RGBColor RGBColor::colorBlindPalette[] =
+{
+    RGBColor(0x762a83u),
+    RGBColor(0xaf8dc3u),
+    RGBColor(0xe7d4e8u),
+    RGBColor(0xd9f0d3u),
+    RGBColor(0x7fbf7bu),
+    RGBColor(0x1b7837u)
+};
+
+
+
 } //namespace corecvs

@@ -521,6 +521,7 @@ void testJSONPrinterArrays()
 }
 #endif
 
+#ifdef WITH_JSONMODERN
 TEST(Serialise, testCalstructs)
 {
     const char input[] =
@@ -593,11 +594,63 @@ TEST(Serialise, testCalstructs1)
     CORE_ASSERT_TRUE(result.position   .notTooFar(Vector3dd(-0.13825168557091438, 0.003052130148347319, -0.003139061540835704)), "Vector parse error");
 }
 
+
+TEST(Serialise, testSerialiseFeaturePoint)
+{
+    const char input[] =
+            "{\n"
+            "\"point\":\n"
+            "  {\n"
+            "   \"id\":\"35752448u64\",\n"
+            "   \"name\":\"\",\n"
+            "   \"position\":{\n"
+            "       \"x\":3.200534200836,\n"
+            "       \"y\":-9.8502314200793215,\n"
+            "       \"z\":17.109340191841447\n"
+            "    },\n"
+            "   \"hasKnownPosition\":false,\n"
+            "   \"reprojectedPosition\":{\n"
+            "       \"x\":3.2005342008359579,\n"
+            "       \"y\":-9.8502314200792558,\n"
+            "       \"z\":17.109340191841284\n"
+            "    },\n"
+            "    \"hasKnownReprojectedPosition\":true,\n"
+            "    \"type\":1,\n"
+            "    \"color\":{\n"
+            "        \"b\":255,\n"
+            "        \"g\":255,\n"
+            "        \"r\":0,\n"
+            "        \"a\":0\n"
+            "     }\n"
+            "  }\n"
+            "}\n"            ;
+
+
+    cout << "input:" << endl << input << endl;
+
+    SceneFeaturePoint result;
+    nlohmann::json document = nlohmann::json::parse(input);
+
+    SYNC_PRINT(("Parsing %" PRISIZE_T "bytes input:\n%s\n", CORE_COUNT_OF(input), input));
+    {
+        JSONModernReader getter(document);
+        getter.visit(result, "point");
+    }
+
+    CORE_ASSERT_TRUE(result.hasKnownPosition            == false, "Has known position read wrongly");
+    CORE_ASSERT_TRUE(result.hasKnownReprojectedPosition == true, "Has known reproj position read wrongly");
+
+
+}
+
+#endif
+
 int main(int argc, char **argv)
 {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
 
 #if 0
 

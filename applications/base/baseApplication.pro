@@ -71,3 +71,6 @@ with_opengl {
     SOURCES += scene3DMouse.cpp
 }
 
+OTHER_FILES += ../../tools/generator/xml/rectify.xml
+OTHER_FILES += ../../tools/generator/xml/base.xml
+OTHER_FILES += ../../tools/generator/xml/presentation.xml

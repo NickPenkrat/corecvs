@@ -10,6 +10,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <core/fileformats/pltLoader.h>
+
 #include "gtest/gtest.h"
 
 #include "core/utils/global.h"
@@ -226,4 +228,31 @@ TEST(FileFormats, testGcodeLoader1)
     std::string str(input);
     std::istringstream stream(str);
     loader.loadGcode(stream, mesh);
+}
+
+TEST(FileFormats, testhpglLoader)
+{
+    const char input[] =
+            "IN;\n"
+            "PT0;\n"
+            "PU;\n"
+            "SP3;\n"
+            "PA88,3478;\n"
+            "PD;\n"
+            "PA103,3481;\n"
+            "PA116,3490;\n"
+            "PA125,3502;\n"
+            "PA128,3518;\n"
+            "PA125,3533;\n"
+            "PA116,3546;\n"
+            "PA109,3551;\n";
+
+
+    HPGLLoader loader;
+    HPGLProgram program;
+    std::string str(input);
+    std::istringstream stream(str);
+    loader.loadHPGLcode(stream, program);
+
+    cout << program << std::endl;
 }

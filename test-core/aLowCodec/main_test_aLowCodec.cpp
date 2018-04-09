@@ -3,7 +3,7 @@
 
 #include "core/utils/global.h"
 
-#include "../utils/framesources/decoders/aLowCodec.h"       // TODO: move it into future test-utils project!
+#include "core/framesources/decoders/aLowCodec.h"       // TODO: move it into future test-utils project!
 
 using namespace corecvs;
 

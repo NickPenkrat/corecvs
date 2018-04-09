@@ -3,7 +3,7 @@
 #include "core/features2d/featureDetectorProvider.h"
 
 namespace cv {
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     namespace cuda {
         class ORB;
         class SURF_CUDA;
@@ -20,7 +20,7 @@ namespace cv {
 #endif
 }
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     struct SmartPtrHolder;
 #endif
 
@@ -28,7 +28,7 @@ class OpenCvGPUFeatureDetectorWrapper : public FeatureDetector
 {
 public:
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     OpenCvGPUFeatureDetectorWrapper(cv::cuda::SURF_CUDA *detector);
     OpenCvGPUFeatureDetectorWrapper(SmartPtrHolder *holder);
 #else
@@ -51,7 +51,7 @@ private:
     OpenCvGPUFeatureDetectorWrapper( const OpenCvGPUFeatureDetectorWrapper& );
     OpenCvGPUFeatureDetectorWrapper& operator=( const OpenCvGPUFeatureDetectorWrapper& );
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     SmartPtrHolder*      holder;
     cv::cuda::SURF_CUDA* detectorSURF_CUDA;
 #else

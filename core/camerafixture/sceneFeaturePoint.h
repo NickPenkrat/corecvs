@@ -67,21 +67,26 @@ public:
     Vector2dd           accuracy;
     enum ValidFlags {
         OBSERVATION_VALID = 0x1,
-        DIRECTION_VALID   = 0x2
+        DIRECTION_VALID   = 0x2,
+        UNDISTORTED_VALID = 0x4
     };
 
 private:
     mutable Vector2dd   observation;                /**< distorted position at the image */
+    mutable Vector2dd   undistorted;                /**< undistorted position at the image in current projection model*/
     mutable Vector3dd   observDir;                  /**< Ray to point from camera origin - this is helpful when camera is not projective */
     mutable int         validityFlags;
 
 public:
     KeyPointArea        keyPointArea;
 
+private:
     /* \depicated Using this is discoraged */
+    /* Private while removeing referances to this */
     double              &x() { return observation.x(); }
     double              &y() { return observation.y(); }
 
+public:
     /* \depicated Using this is discoraged */
     void                setObserveDir(const Vector3dd &dir) { observDir = dir; }
 
@@ -90,9 +95,15 @@ public:
     /* */
     Vector2dd           getUndist() const;
     Vector2dd           getDist  () const;
+    Vector3dd           getRay   () const;
+
+    /* Helper */
+    Ray3d               getFullRay() const;
 
     void                setUndist(const Vector2dd &undist);
     void                setDist  (const Vector2dd &dist);
+    void                setRay   (const Vector3dd &rayDir);
+
 
 private:
     FixtureCamera      *getCameraById(FixtureCamera::IdType id);
@@ -103,6 +114,7 @@ public:
     {
         visitor.visit(observDir    , Vector3dd(0.0) , "observDir");
         visitor.visit(observation  , Vector2dd(0.0) , "observation");
+        visitor.visit(undistorted  , Vector2dd(0.0) , "unditorted");
         visitor.visit(accuracy     , Vector2dd(0.0) , "accuracy");
         visitor.visit(validityFlags, 0              , "validityFlags");
 
@@ -139,6 +151,13 @@ public:
             }
         }
 #endif
+    }
+
+    friend std::ostream& operator << (std::ostream &out, SceneObservation &toSave)
+    {
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
+        return out;
     }
 };
 
@@ -215,6 +234,11 @@ public:
      *
      **/
     Vector3dd triangulate(bool use__ = false, std::vector<int> *mask = nullptr, bool* succeeded = nullptr, bool trace = false, bool checkMinimalAngle = false, double thresholdCos = triangulatorCosAngleThreshold);
+
+    /** Triangulation that uses only ray geometry,  without taking in account any camera pixel properties **/
+    /** TODO: So far only two rays form two observations are used */
+    /** Use this to make it universal - https://math.stackexchange.com/questions/61719/finding-the-intersection-point-of-many-lines-in-3d-point-closest-to-all-lines **/
+    Vector3dd triangulateByRays(bool* succeeded = NULL);
 
     /** Observation related block */
     typedef std::unordered_map<FixtureCamera *, SceneObservation> ObservContainer;
@@ -324,6 +348,13 @@ public:
                 observations__[WPP(observ.cameraFixture, observ.camera)] = observ;
             }
         }
+    }
+
+    friend std::ostream& operator << (std::ostream &out, SceneFeaturePoint &toSave)
+    {
+        corecvs::PrinterVisitor printer(out);
+        toSave.accept<corecvs::PrinterVisitor>(printer);
+        return out;
     }
 
     /* Helper functions */

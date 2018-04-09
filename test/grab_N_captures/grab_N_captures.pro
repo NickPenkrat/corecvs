@@ -16,7 +16,7 @@ CONFIG  += console
 QT 	+= core
 QT 	-= gui
 
-include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
+include(../../utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES += main_grab_N_captures.cpp
 HEADERS += main_grab_N_captures.h

@@ -6,8 +6,8 @@ SUBDIRS +=                   \
     core                     \
     utils                    \
     test-core                \
-#    test-core-perf           \
-#    tests_big                \
+    test-core-perf           \
+    tests_big                \
     \   
 
 
@@ -28,7 +28,7 @@ with_minitools {
     base_application         \
     base_application_example \
     recorder                 \
-    merger
+#    merger
 
 }
 

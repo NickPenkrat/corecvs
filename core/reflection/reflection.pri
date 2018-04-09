@@ -2,6 +2,7 @@ SOURCES += \
     reflection/stringPrinterVisitor.cpp \
     reflection/defaultSetter.cpp \
     reflection/printerVisitor.cpp \
+    reflection/usageVisitor.cpp \
     reflection/serializerVisitor.cpp \
     reflection/deserializerVisitor.cpp \
     reflection/commandLineSetter.cpp \
@@ -11,7 +12,7 @@ SOURCES += \
     reflection/jsonPrinter.cpp \
     reflection/binaryReader.cpp \
     reflection/binaryWriter.cpp \
-    $$PWD/dynamicObject.cpp \
+    reflection/dynamicObject.cpp \
     reflection/advanced/advancedBinaryReader.cpp \
     reflection/advanced/advancedBinaryWriter.cpp \
 
@@ -20,6 +21,7 @@ HEADERS += \
     reflection/reflection.h \
     reflection/defaultSetter.h \
     reflection/printerVisitor.h \
+    reflection/usageVisitor.h \
     reflection/serializerVisitor.h \
     reflection/deserializerVisitor.h \
     reflection/commandLineSetter.h \
@@ -28,6 +30,6 @@ HEADERS += \
     reflection/jsonPrinter.h \
     reflection/binaryReader.h \
     reflection/binaryWriter.h \
-    $$PWD/dynamicObject.h \
+    reflection/dynamicObject.h \
     reflection/advanced/advancedBinaryReader.h \
     reflection/advanced/advancedBinaryWriter.h \

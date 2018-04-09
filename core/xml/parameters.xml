@@ -141,6 +141,5 @@
      <field type="double"  name="maxSpeed"   min="0" max="1000"   defaultValue="950" step="1"/>
   </class>
 
-
 </poco>
 

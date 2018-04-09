@@ -7,7 +7,7 @@
 #include "core/utils/global.h"
 #include "core/math/vector/vector4d.h"
 
-#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 #include "core/cameracalibration/calibrationLocation.h"
 
 #include <random>
@@ -82,8 +82,8 @@ TEST(CalibrationStructsTest, testEssentialProvider)
             CameraLocationData(
                 Vector3dd(unif(rng), unif(rng), unif(rng)),
                 Quaternion(unif(rng), unif(rng), unif(rng), unif(rng)).normalised()));
-        auto K1 = camera1.intrinsics.getKMatrix33().inv();
-        auto K2 = camera2.intrinsics.getKMatrix33().inv();
+        auto K1 = camera1.getPinhole()->getKMatrix33().inv();
+        auto K2 = camera2.getPinhole()->getKMatrix33().inv();
         auto E  = camera1.essentialTo(camera2);
         for (int j = 0; j < RNG_RETRIES; ++j)
         {
@@ -247,10 +247,10 @@ TEST(CalibrationStructsTest, testStructConversionWorld)
 TEST(CalibrationStructsTest, testFrustrumMatrix)
 {
     CameraModel model;
-    model.intrinsics = PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(60));
+    model.intrinsics.reset(new PinholeCameraIntrinsics(Vector2dd(400,400), degToRad(60)));
     model.setLocation(Affine3DQ());
 
-    Matrix44 mF = model.intrinsics.getFrustumMatrix(1.0, 1000.0);
+    Matrix44 mF = model.getPinhole()->getFrustumMatrix(1.0, 1000.0);
     cout << "Frustrum Matrix" << endl;
     cout << mF;
 

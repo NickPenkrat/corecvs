@@ -170,7 +170,7 @@ void corecvs::FlatPatternCalibrator::solve(bool runPresolver, bool runLM, int LM
                 break;
 
             if (!distortionEstimated)
-                distortionParams.mNormalizingFocal = std::max(!intrinsics.principal, 1.0);
+                distortionParams.mNormalizingFocal = std::max(!intrinsics.principal(), 1.0);
             if (distortionEstimated)
             {
                 solveInitialDistortion(false);
@@ -563,17 +563,17 @@ void corecvs::FlatPatternCalibrator::enforceParams()
 #define LOCK(s, a) \
     if (!!(constraints & CameraConstraints::s)) intrinsics.a = lockParams.a;
 
-    FORCE(ZERO_SKEW, skew, 0.0);
-    LOCK(LOCK_SKEW, skew);
+    FORCE(ZERO_SKEW, mSkew, 0.0);
+    LOCK(LOCK_SKEW, mSkew);
 
-    double f = (intrinsics.focal.x() + intrinsics.focal.y()) / 2.0;
-    FORCE(EQUAL_FOCAL, focal.x(), f);
-    FORCE(EQUAL_FOCAL, focal.y(), f);
-    LOCK(LOCK_FOCAL, focal.x());
-    LOCK(LOCK_FOCAL, focal.y());
+    double f = (intrinsics.fx() + intrinsics.fy()) / 2.0;
+    FORCE(EQUAL_FOCAL, mFx, f);
+    FORCE(EQUAL_FOCAL, mFy, f);
+    LOCK(LOCK_FOCAL, mFx);
+    LOCK(LOCK_FOCAL, mFy);
 
-    LOCK(LOCK_PRINCIPAL, principal.x());
-    LOCK(LOCK_PRINCIPAL, principal.y());
+    LOCK(LOCK_PRINCIPAL, mCx);
+    LOCK(LOCK_PRINCIPAL, mCy);
 #undef FORCE
 #undef LOCK
 }
@@ -633,13 +633,15 @@ void corecvs::FlatPatternCalibrator::readParams(const double in[])
     IFNOT(LOCK_FOCAL,
             double f;
             GET_PARAM(f);
-            intrinsics.focal = Vector2dd(f,f);
-            IFNOT_GET_PARAM(EQUAL_FOCAL, intrinsics.focal.y()));
+            intrinsics.mFx = f;
+            intrinsics.mFy = f;
+
+            IFNOT_GET_PARAM(EQUAL_FOCAL, intrinsics.mFy));
     IFNOT(LOCK_PRINCIPAL,
-            GET_PARAM(intrinsics.principal.x());
-            GET_PARAM(intrinsics.principal.y()));
+            GET_PARAM(intrinsics.mCx);
+            GET_PARAM(intrinsics.mCy));
     IFNOT(LOCK_SKEW,
-            IFNOT_GET_PARAM(ZERO_SKEW, intrinsics.skew));
+            IFNOT_GET_PARAM(ZERO_SKEW, intrinsics.mSkew));
 
     for (size_t i = 0; i < N; ++i)
     {
@@ -700,13 +702,13 @@ void corecvs::FlatPatternCalibrator::writeParams(double out[])
 {
     int argout = 0;
     IFNOT(LOCK_FOCAL,
-            SET_PARAM(intrinsics.focal.x());
-            IFNOT_SET_PARAM(EQUAL_FOCAL, intrinsics.focal.y()));
+            SET_PARAM(intrinsics.mFx);
+            IFNOT_SET_PARAM(EQUAL_FOCAL, intrinsics.mFy));
     IFNOT(LOCK_PRINCIPAL,
-            SET_PARAM(intrinsics.principal.x());
-            SET_PARAM(intrinsics.principal.y()));
+            SET_PARAM(intrinsics.mCx);
+            SET_PARAM(intrinsics.mCy));
     IFNOT(LOCK_SKEW,
-            IFNOT_SET_PARAM(ZERO_SKEW, intrinsics.skew));
+            IFNOT_SET_PARAM(ZERO_SKEW, intrinsics.mSkew));
 
     for (size_t i = 0; i < N; ++i)
     {
@@ -775,7 +777,7 @@ void corecvs::FlatPatternCalibrator::refineGuess(int LMiterations)
     {
         distortionParams.mPrincipalX = intrinsics.cx();
         distortionParams.mPrincipalY = intrinsics.cy();
-        distortionParams.mNormalizingFocal = !intrinsics.principal;
+        distortionParams.mNormalizingFocal = !intrinsics.principal();
     }
     writeParams(&in[0]);
 
@@ -956,8 +958,8 @@ bool corecvs::FlatPatternCalibrator::extractIntrinsics()
     ASSERT_GOOD(skew);
 
     intrinsics = PinholeCameraIntrinsics(fx, fy, cx, cy, skew);
-    intrinsics.size = lockParams.size;
-    intrinsics.distortedSize = lockParams.distortedSize;
+    intrinsics.setSize(lockParams.size());
+    intrinsics.setDistortedSize(lockParams.distortedSize());
 
     return true;
 }

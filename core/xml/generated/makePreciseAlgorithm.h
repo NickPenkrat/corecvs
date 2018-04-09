@@ -6,6 +6,7 @@
  *
  * \date MMM DD, 20YY
  * \author autoGenerator
+ * Generated from precise.xml
  */
 
 /**
@@ -25,6 +26,11 @@ enum MakePreciseAlgorithm {
      */
     KLT = 0,
     /** 
+     * \brief KLT Float 
+     * KLT Float 
+     */
+    KLT_FLOAT = 1,
+    /** 
      * \brief Last virtual option to run cycles to
      */
     MAKE_PRECISE_ALGORITHM_LAST
@@ -36,6 +42,7 @@ static inline const char *getName(const MakePreciseAlgorithm &value)
     switch (value) 
     {
      case KLT : return "KLT"; break ;
+     case KLT_FLOAT : return "KLT_FLOAT"; break ;
      default : return "Not in range"; break ;
      
     }

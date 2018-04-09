@@ -7,14 +7,14 @@
  * \date Nov 26, 2012
  */
 
-#ifndef WITH_OPENCV_3x
+#ifndef WITH_OPENCV_3X
 
 #include "core/buffers/g12Buffer.h"
 #include "core/buffers/rgb24/rgb24Buffer.h"
 #include "core/buffers/flow/flowBuffer.h"
 #include "core/math/vector/vector2d.h"
 #include "core/rectification/correspondenceList.h"
-#include "OpenCVTools.h"
+#include "openCVTools.h"
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>

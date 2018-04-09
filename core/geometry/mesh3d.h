@@ -66,6 +66,7 @@ public:
     Matrix44 currentTransform;
 
     vector<Matrix44> transformStack;
+    vector<RGBColor> colorStack;
 
     /* All subsecquent draws would be as if origin is moved be affine transform */
     void mulTransform(const Affine3DQ &transform);
@@ -74,11 +75,15 @@ public:
     void mulTransform(const Matrix44 &transform);
     void popTransform();
 
+    void pushColor(const RGBColor &color);
+    void pushColor();
+    void popColor();
+
 
 /* Methods */
 
 
-    void setCentral(Vector3dd _central);
+    void setCentral(const Vector3dd &_central);
 
     void addOrts      (double length = 1.0, bool captions = false);
     void addPlaneFrame(const PlaneFrame &frame, double length = 1.0);

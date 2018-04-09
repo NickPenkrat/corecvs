@@ -10,7 +10,7 @@ static bool cudaDevice = false;
 
 #include <stdio.h>
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 #   include <opencv2/cudafeatures2d.hpp>
 #   include <opencv2/core/ocl.hpp>
 #   include <opencv2/xfeatures2d.hpp>
@@ -32,7 +32,7 @@ using namespace cv::gpu;
 using namespace std;
 using namespace cv::ocl;
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 
 struct SmartPtrHolder
 {
@@ -97,7 +97,7 @@ OpenCvGPUFeatureDetectorWrapper::OpenCvGPUFeatureDetectorWrapper(SURF_OCL *detec
 
 OpenCvGPUFeatureDetectorWrapper::~OpenCvGPUFeatureDetectorWrapper()
 {
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     delete holder;
 #else 
     delete detectorORB_CUDA;
@@ -123,7 +123,7 @@ struct OpenCLRemapCache
 {
     cv::Mat unused0;
     cv::Mat unused1;
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 	UMat mat0;
 	UMat mat1;
 #else
@@ -148,7 +148,7 @@ void OpenCvGPUFeatureDetectorWrapper::detectImpl(corecvs::RuntimeTypeBuffer &ima
     }
 
 	std::vector<cv::KeyPoint> kps;
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     if (detectorSURF_CUDA)
     {
         cv::cuda::GpuMat img(convert(image));
@@ -268,7 +268,7 @@ bool FindGPUDevice(bool& cudaApi)
     for (int idx = 0; idx < numCudaDevices; idx++)
     {
         setDevice(idx);
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
         DeviceInfo devInfo(idx);
 #else
         cv::gpu::DeviceInfo devInfo(idx);     
@@ -287,7 +287,7 @@ bool FindGPUDevice(bool& cudaApi)
     //initProvider = false;
     if (!initProvider) // if no cuda device found, try use first found opencl gpus
     {
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
         if (!cv::ocl::haveOpenCL())
         {
             cout << "OpenCL is not available..." << endl;
@@ -361,7 +361,7 @@ FeatureDetector* OpenCvGPUFeatureDetectorProvider::getFeatureDetector(const Dete
 	SurfParams surfParams(params);
 	OrbParams orbParams(params);
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     SmartPtrHolder* holder = new SmartPtrHolder;
     if (type == "SURF_GPU")
     {

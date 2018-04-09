@@ -167,17 +167,17 @@ int main(int argc, char **argv)
             aabWidget = new ReflectionWidget(widget_ref);
             aabWidget->show();
 
-            bool isBlock = false;
+            //bool isBlock = false;
             for (int fieldId = 0; fieldId < widget_ref->fieldNumber(); fieldId++)
             {
                 const BaseField *field = widget_ref->fields[fieldId];
                 if (field->isInputPin()) {
                     SYNC_PRINT(("We have an input field %s\n", field->name.name));
-                    isBlock = true;
+              //      isBlock = true;
                 }
                 if (field->isOuputPin()) {
                     SYNC_PRINT(("We have an output field %s\n", field->name.name));
-                    isBlock = true;
+              //      isBlock = true;
                 }
             }
             SYNC_PRINT(("isBlock %d\n", isBlock));

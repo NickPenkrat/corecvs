@@ -16,15 +16,27 @@
 
 
 #include "core/utils/global.h"
-
-#include "baseCalculationThread.h"
-#include "imageCaptureInterface.h"
 #include "core/fileformats/ppmLoader.h"
 #include "core/utils/preciseTimer.h"
-#include "generatedParameters/merger.h"
 #include "core/stats/calculationStats.h"
 
 #include "core/geometry/mesh3DDecorated.h"
+#include "core/camerafixture/fixtureScene.h"
+
+#include "baseCalculationThread.h"
+#include "core/framesources/imageCaptureInterface.h"
+
+#include "generatedParameters/merger.h"
+
+#ifdef WITH_OPENCV
+# include "opencv2/imgproc/imgproc.hpp"
+# include "opencv2/highgui/highgui.hpp"
+# include "opencv2/core/core_c.h"
+#endif
+
+
+using namespace corecvs;
+
 typedef RGB24Buffer * PtrRGB24Buffer;
 class MergerOutputData : public BaseOutputData
 {
@@ -47,12 +59,28 @@ public:
 
 };
 
-struct RequestEntry {
-    int sourceBuffer;
-    BilinearMapPoint sourcePos;
-    double weight;
+struct IntrisicsRemapCache
+{
+    AbstractBuffer<Vector2dd> *displacement[4] = {NULL, NULL, NULL, NULL};
+    EquidistantProjection simplified[4];
+
+    CameraModel cached[4];
+
 };
 
+struct RequestEntry {
+    RequestEntry() {
+        for (int k = 0; k < 4; k++)
+            weight[k] = 0.0;
+    }
+
+    Vector2dd sourcePos[4];
+    double weight[4];
+};
+
+typedef AbstractBuffer<RequestEntry, int> MultiewMapping;
+
+#if 0
 class MultiewMapping : public AbstractBuffer<RequestEntry, int>
 {
 public:
@@ -60,6 +88,7 @@ public:
 
 
 };
+#endif
 
 class MergerThread : public BaseCalculationThread
 {
@@ -77,24 +106,37 @@ public:
     MergerThread();
     virtual ~MergerThread();
 
+
+    /* Cached data */
     bool recomputeMergerState = true;
+    IntrisicsRemapCache mRemapCached;
+    MultiewMapping *mMapper = NULL;
+    PlaneFrame mFrame;
+
 
     PtrRGB24Buffer  mMasks[4];// = { NULL, NULL, NULL, NULL };
 
-    FixtureScene  *mCarScene = NULL;
+    //FixtureScene  *mCarScene = NULL;
+    QSharedPointer<FixtureScene> mCarScene;
+    QSharedPointer<FixtureScene> mCachedScene;
+
     TableInverseCache *mUndistort = NULL;
 
-    MultiewMapping mMapper;
+
+    void cacheIntrinsics();
     void prepareMapping();
 
 
     void drawMaskOver(RGB24Buffer *inputRaw, RGB24Buffer *mMasks);
 
 public slots:
+    void sceneParametersChanged(QSharedPointer<FixtureScene> mCarScene);
+
+
     void mergerControlParametersChanged(QSharedPointer<Merger> params);
     void baseControlParametersChanged(QSharedPointer<BaseParameters> params);
     void camerasParametersChanged(QSharedPointer<CamerasConfigParameters> parameters);
-
+    void saveRemap(QString directory);
 
 signals:
     void errorMessage(QString string);
@@ -103,6 +145,10 @@ protected:
     virtual AbstractOutputData *processNewData();
 
 private: 
+#ifdef WITH_OPENCV
+    vector<cv::Mat> calculateRemap();
+#endif
+
     PreciseTimer mIdleTimer;
 
     /* Might be misleading, but PPMLoader handles saving as well */
@@ -110,7 +156,9 @@ private:
 
     uint32_t mFrameCount;
     QString mPath;
+
     QSharedPointer<Merger> mMergerParameters;
+
 
     bool isUnderLine(Vector2dd point, Vector2dd point1, Vector2dd point2);
     //FixtureScene *scene = NULL;

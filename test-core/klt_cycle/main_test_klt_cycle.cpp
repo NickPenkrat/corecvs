@@ -71,7 +71,7 @@ TEST(KltCycle, testKLT)
     context.gradient = new SpatialGradientIntegralBuffer(sg);
 
 
-    KLTGenerator<BilinearInterpolator> generator(Vector2d32(2,2), 5);
+    KLTGenerator<BilinearInterpolatorD> generator(Vector2d32(2,2), 5);
     Vector2dd guess(0,0);
     generator.kltIteration(context, Vector2d32(3,3), &guess, 2.0);
 

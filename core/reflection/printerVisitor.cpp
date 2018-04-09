@@ -61,7 +61,23 @@ template <>
 void PrinterVisitor::visit<int, EnumField>(int &field, const EnumField *fieldDescriptor)
 {
     if (stream == NULL) return;
-    *stream << indent() << fieldDescriptor->getSimpleName() << "=" << field << endl;
+    *stream << indent() << fieldDescriptor->getSimpleName() << "=" << field ;
+
+    if (fieldDescriptor->enumReflection != NULL)
+    {
+        *stream << "(";
+        if (field < (int)fieldDescriptor->enumReflection->options.size())
+        {
+            if (fieldDescriptor->enumReflection->options[field]) {
+                *stream << fieldDescriptor->enumReflection->options[field]->name.name;
+            }
+        } else {
+            *stream << "Out of range";
+        }
+        *stream << ")";
+    }
+
+    *stream << endl;
 }
 
 

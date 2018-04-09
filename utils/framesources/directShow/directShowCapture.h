@@ -21,7 +21,6 @@
 #define PREFFERED_RGB_BPP 24
 #define AUTOSELECT_FORMAT_FEATURE -255
 
-using std::string;
 
  class DirectShowCaptureInterface : public virtual ImageCaptureInterface
  {
@@ -61,18 +60,18 @@ using std::string;
     virtual CapErrorCode queryCameraParameters(CameraParameters &parameters) override;
     virtual CapErrorCode setCaptureProperty(int id, int value) override;
     virtual CapErrorCode getCaptureProperty(int id, int *value) override;
-    virtual CapErrorCode getCaptureName(string &value) override;
+    virtual CapErrorCode getCaptureName(std::string &value)  override;
     virtual CapErrorCode getFormats(int *num, CameraFormat *&formats) override;
-    virtual string       getInterfaceName() override;
-    virtual CapErrorCode getDeviceName(int num, string &name) override;
-    virtual string       getDeviceSerial(int num = Frames::LEFT_FRAME) override;
+    virtual std::string  getInterfaceName()  override;
+    virtual CapErrorCode getDeviceName(int num, std::string &name)  override;
+    virtual std::string  getDeviceSerial(int num = Frames::LEFT_FRAME)  override;
 
 
     /* Callback function */
     static void callback (void *thiz, DSCapDeviceId dev, FrameData data);
-    void  memberCallback(DSCapDeviceId dev, FrameData data);
+    void memberCallback(DSCapDeviceId dev, FrameData data);
 
-    static void getAllCameras(vector<string> &cameras);
+    static void getAllCameras(vector<std::string> &cameras);
 
     virtual ~DirectShowCaptureInterface();
 

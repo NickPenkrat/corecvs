@@ -32,7 +32,7 @@ CONFIG +=        \
                  \
    with_native   \
    with_tbb      \
-#   with_openblas \      # activate all three libraries,
+   with_openblas \      # activate all three libraries,
 #   with_mkl      \      #  clarify what
 #   with_fftw     \      #  to use later!
 #   with_opencv   \
@@ -87,8 +87,8 @@ win32 {
 } else:!odroid {
  #  CONFIG += with_opencv
   #CONFIG += with_avcodec
- #  CONFIG += with_libjpeg
- #  CONFIG += with_libpng
+   CONFIG += with_libjpeg
+   CONFIG += with_libpng
  #  CONFIG += with_openglext
 #   CONFIG += with_siftgpu      # activate SiftGPU wrapper that enables using of siftgpu.so
 

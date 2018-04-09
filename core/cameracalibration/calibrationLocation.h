@@ -488,6 +488,21 @@ public:
         }
     }
 
+    /* This checks for exact equality.We better create something like hash() instead */
+    bool operator ==(const CameraLocationData &other) const
+    {
+        if (position    != other.position   ) return false;
+        if (orientation != other.orientation) return false;
+        return true;
+    }
+
+    friend ostream& operator << (ostream &out, CameraLocationData &toPrint)
+    {
+        out << "Camera at:"  << toPrint.position << " rotor "<< toPrint.orientation << std::endl;
+        return out;
+    }
+
+
     /* Pretty print */
     void prettyPrint (ostream &out = cout);
     void prettyPrint1(ostream &out = cout);

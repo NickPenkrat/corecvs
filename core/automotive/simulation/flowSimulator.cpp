@@ -110,7 +110,7 @@ std::vector<FloatFlowVector> *FlowSimulator::simulateFlow(
         double maxZ,
         double minLength )
 {
-    Vector2dd imageSize = camIntrinsics.principal * 2.0;
+    Vector2dd imageSize = camIntrinsics.principal() * 2.0;
 
     std::vector<FloatFlowVector> *result = new std::vector<FloatFlowVector>();
 

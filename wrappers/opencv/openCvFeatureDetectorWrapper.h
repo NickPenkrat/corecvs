@@ -3,7 +3,7 @@
 #include "core/features2d/featureDetectorProvider.h"
 
 namespace cv {
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 	class Feature2D;
 	typedef Feature2D FeatureDetector;
 #else
@@ -11,14 +11,14 @@ namespace cv {
 #endif  
 }
 
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     struct SmartPtrDetectorHolder;
 #endif
 
 class OpenCvFeatureDetectorWrapper : public FeatureDetector
 {
 public:
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
 	OpenCvFeatureDetectorWrapper(SmartPtrDetectorHolder *holder);
 #else
     OpenCvFeatureDetectorWrapper(cv::FeatureDetector *detector);  
@@ -37,7 +37,7 @@ private:
     OpenCvFeatureDetectorWrapper& operator=(const OpenCvFeatureDetectorWrapper&);
 
     cv::FeatureDetector* detector;
-#ifdef WITH_OPENCV_3x
+#ifdef WITH_OPENCV_3X
     SmartPtrDetectorHolder* holder;
 #endif  
 };

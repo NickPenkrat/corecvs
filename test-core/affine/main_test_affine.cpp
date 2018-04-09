@@ -24,6 +24,8 @@
 #include "core/math/eulerAngles.h"
 
 using namespace corecvs;
+using namespace std;
+
 
 TEST(Affine, testRotations)
 {

@@ -59,7 +59,7 @@ TEST(calStructs, testCameraModel)
     Vector3dd dirInCam = model.dirToPoint(point);
 
     Vector2dd project = model.project(point);
-    Vector3dd reverse = model.intrinsics.reverse(project);
+    Vector3dd reverse = model.intrinsics->reverse(project);
 
 
     cout << "Direction         :" << dirInCam << endl;

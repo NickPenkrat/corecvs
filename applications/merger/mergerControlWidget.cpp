@@ -12,10 +12,6 @@
 #include "qSettingsGetter.h"
 #include "qSettingsSetter.h"
 
-#include "euclidianMoveParametersControlWidget.h"
-#include "euclidianMoveParametersControlWidget.h"
-#include "euclidianMoveParametersControlWidget.h"
-#include "euclidianMoveParametersControlWidget.h"
 
 MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QString _rootPath)
     : ParametersControlWidgetBase(parent)
@@ -38,18 +34,10 @@ MergerControlWidget::MergerControlWidget(QWidget *parent, bool _autoInit, QStrin
     QObject::connect(mUi->outPhySizeLSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->outPhySizeWSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->groundZSpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->fOV1SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->switch1CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->pos1ControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->fOV2SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->switch2CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->pos2ControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->fOV3SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->switch3CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->pos3ControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->fOV4SpinBox, SIGNAL(valueChanged(double)), this, SIGNAL(paramsChanged()));
     QObject::connect(mUi->switch4CheckBox, SIGNAL(stateChanged(int)), this, SIGNAL(paramsChanged()));
-    QObject::connect(mUi->pos4ControlWidget, SIGNAL(paramsChanged()), this, SIGNAL(paramsChanged()));
 }
 
 MergerControlWidget::~MergerControlWidget()
@@ -98,18 +86,10 @@ Merger *MergerControlWidget::createParameters() const
         , mUi->outPhySizeLSpinBox->value()
         , mUi->outPhySizeWSpinBox->value()
         , mUi->groundZSpinBox->value()
-        , mUi->fOV1SpinBox->value()
         , mUi->switch1CheckBox->isChecked()
-        , *std::unique_ptr<EuclidianMoveParameters>(mUi->pos1ControlWidget->createParameters())
-        , mUi->fOV2SpinBox->value()
         , mUi->switch2CheckBox->isChecked()
-        , *std::unique_ptr<EuclidianMoveParameters>(mUi->pos2ControlWidget->createParameters())
-        , mUi->fOV3SpinBox->value()
         , mUi->switch3CheckBox->isChecked()
-        , *std::unique_ptr<EuclidianMoveParameters>(mUi->pos3ControlWidget->createParameters())
-        , mUi->fOV4SpinBox->value()
         , mUi->switch4CheckBox->isChecked()
-        , *std::unique_ptr<EuclidianMoveParameters>(mUi->pos4ControlWidget->createParameters())
     );
 }
 
@@ -130,18 +110,10 @@ void MergerControlWidget::setParameters(const Merger &input)
     mUi->outPhySizeLSpinBox->setValue(input.outPhySizeL());
     mUi->outPhySizeWSpinBox->setValue(input.outPhySizeW());
     mUi->groundZSpinBox->setValue(input.groundZ());
-    mUi->fOV1SpinBox->setValue(input.fOV1());
     mUi->switch1CheckBox->setChecked(input.switch1());
-    mUi->pos1ControlWidget->setParameters(input.pos1());
-    mUi->fOV2SpinBox->setValue(input.fOV2());
     mUi->switch2CheckBox->setChecked(input.switch2());
-    mUi->pos2ControlWidget->setParameters(input.pos2());
-    mUi->fOV3SpinBox->setValue(input.fOV3());
     mUi->switch3CheckBox->setChecked(input.switch3());
-    mUi->pos3ControlWidget->setParameters(input.pos3());
-    mUi->fOV4SpinBox->setValue(input.fOV4());
     mUi->switch4CheckBox->setChecked(input.switch4());
-    mUi->pos4ControlWidget->setParameters(input.pos4());
     blockSignals(wasBlocked);
     emit paramsChanged();
 }

@@ -140,13 +140,17 @@ FixtureScene *createTestScene()
         Affine3DQ position(Quaternion::RotationZ(angle), Vector3dd::FromCylindrical(angle, 5.0, 0.0));
 
         model.extrinsics = CameraLocationData(position);
-        model.intrinsics.principal.x() = 100;
-        model.intrinsics.principal.y() = 100;
 
-        model.intrinsics.focal.x() = 100;
-        model.intrinsics.focal.y() = 100;
+        PinholeCameraIntrinsics *pinhole = new PinholeCameraIntrinsics();
+        pinhole->setCx(100);
+        pinhole->setCy(100);
 
-        model.intrinsics.size = Vector2dd(200, 200);
+        pinhole->setFx(100);
+        pinhole->setFy(100);
+
+        pinhole->setSize(Vector2dd(200, 200));
+
+        model.intrinsics.reset(pinhole);
 
         //SYNC_PRINT(("Length: %d\n", scene->fixtures.size()));
 

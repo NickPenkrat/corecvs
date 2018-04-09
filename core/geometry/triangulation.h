@@ -98,7 +98,7 @@ public:
     }
 
 
-    friend ostream & operator <<(ostream &out, const Point &point)
+    friend std::ostream & operator <<(std::ostream &out, const Point &point)
     {
         //out.precision(20);
         //out << "points[j++] = Point(";
@@ -197,7 +197,7 @@ public:
         return Triangulation::classify(dest, org, p2);
     }
 
-    friend ostream & operator <<(ostream &out, const Edge &edge)
+    friend std::ostream & operator <<(std::ostream &out, const Edge &edge)
     {
         out << "{" << edge.org << "=>" << edge.dest << "}";
         return out;

@@ -146,7 +146,7 @@ public:
        </pre>
 
     **/
-    bool intersectWithRay(Ray3d &ray, double &resT, double &u, double &v)
+    bool intersectWithRay(const Ray3d &ray, double &resT, double &u, double &v)
     {
         Vector3dd d = p1 - ray.p;
         Matrix33 M = Matrix33::FromColumns(ray.a, e1, e2);
@@ -160,6 +160,14 @@ public:
         v    = -res.z();
 
         return true;
+    }
+
+    Vector2dd intersectWithRayPoint(const Ray3d &ray)
+    {
+        double t = 0;
+        Vector2dd result(std::numeric_limits<double>::quiet_NaN());
+        intersectWithRay(ray, t, result.x(), result.y());
+        return result;
     }
 
     template<class VisitorType>
@@ -262,6 +270,13 @@ public:
         return false;
     }
 
+    double getArea()
+    {
+        Vector3dd f = p2() - p1();
+        Vector3dd s = p3() - p1();
+        return  0.5 * !(f ^ s);
+    }
+
     /** NOTE: This could swap the normal **/
     void sortByY() {
         if (p1().y() > p2().y()) std::swap(p1(), p2());
@@ -276,6 +291,13 @@ public:
         {
             p[i] = transform * p[i];
         }
+    }
+
+
+    friend ostream & operator <<(ostream &out, const GenericTriangle &triangle)
+    {
+        out << "(" << triangle.p1() << triangle.p2() << " " << triangle.p3() << ") " << std::endl;
+        return out;
     }
 
 };

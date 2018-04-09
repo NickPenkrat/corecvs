@@ -102,14 +102,21 @@ RGB24Buffer *LibpngFileReader::load(string name)
     return toReturn;
 }
 
-bool LibpngFileReader::save(const string &name, const RGB24Buffer *buffer, int quality/*TODO: connect with PNG_COMPRESSION_TYPE_DEFAULT below*/)
+bool LibpngFileReader::save(const string &name, const RGB24Buffer *buffer, int quality, bool alpha)
 {
+    return savePNG(name, buffer, quality, alpha);
+}
+
+bool LibpngFileReader::savePNG(const string &name, const RGB24Buffer *buffer, int quality, bool alpha)
+{
+    //CORE_UNUSED(quality); /*TODO: connect with PNG_COMPRESSION_TYPE_DEFAULT below*/
+
     png_byte ** row_pointers;
     png_structp png_ptr = nullptr;
     png_infop info_ptr = nullptr;
     size_t x, y;
     int status = -1;
-    int pixel_size = 3;
+    int pixel_size = alpha ? 4 : 3;
     int depth = 8;
     png_uint_32 width = buffer->w, height = buffer->h;
 
@@ -139,7 +146,7 @@ bool LibpngFileReader::save(const string &name, const RGB24Buffer *buffer, int q
                   width,
                   height,
                   depth,
-                  PNG_COLOR_TYPE_RGB,
+                  alpha ? PNG_COLOR_TYPE_RGBA : PNG_COLOR_TYPE_RGB,
                   PNG_INTERLACE_NONE,
                   PNG_COMPRESSION_TYPE_DEFAULT,
                   PNG_FILTER_TYPE_DEFAULT);
@@ -155,6 +162,10 @@ bool LibpngFileReader::save(const string &name, const RGB24Buffer *buffer, int q
             *row++ = pixel.r();
             *row++ = pixel.g();
             *row++ = pixel.b();
+            if (alpha ) {
+                *row++ = pixel.a();
+            }
+
         }
     }
 

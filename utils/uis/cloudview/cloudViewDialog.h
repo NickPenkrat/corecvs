@@ -20,7 +20,7 @@
 #include "frames.h"
 #include "coordinateFrame.h"
 #include "treeSceneController.h"
-#include "core/cameracalibration/calibrationCamera.h"
+#include "core/cameracalibration/cameraModel.h"
 
 #include "textLabelWidget.h"
 #include "core/stats/calculationStats.h"
@@ -125,6 +125,8 @@ public:
         HAND_2,
         HAND_FIRST = HAND_1,
         HAND_LAST  = HAND_2,
+
+        FIXTUE_SCENE,
         /* Should be the last one*/
         SCENE_NUMBER
     };
