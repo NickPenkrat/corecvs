@@ -125,6 +125,11 @@ with_sse4_2 {
     }
 }
 
+with_native_gcc {
+    QMAKE_CFLAGS   += -mtune=native -march=native
+    QMAKE_CXXFLAGS += -mtune=native -march=native
+}
+
 with_neon {
     QMAKE_CXXFLAGS += -mfloat-abi=softfp -mfpu=neon
     DEFINES += WITH_NEON

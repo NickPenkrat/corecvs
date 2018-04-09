@@ -32,6 +32,7 @@ SOURCES_NOOPTIMIZE += xml/generated/essentialDerivative.cpp
 
 with_fastbuild:!win32 {
 
+    message("Rectification module would use fastbuild")
     nooptimize.name = nooptimize
     nooptimize.input = SOURCES_NOOPTIMIZE
     nooptimize.dependency_type = TYPE_C
