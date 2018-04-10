@@ -11,8 +11,10 @@ namespace corecvs {
 class Device
 {
 public:
-    Device(const std::string &name = "", const Vector3dd &pos = Vector3dd(0), const Quaternion &orient = Quaternion::Identity())
-        :nameId(name), position(pos), orientation(orient)
+    Device(const std::string &name = ""
+        , const Vector3dd &pos = Vector3dd(0)
+        , const Quaternion &orient = Quaternion::Identity())
+        : nameId(name), position(pos), orientation(orient)
     {}
 
     std::string nameId;
@@ -22,9 +24,9 @@ public:
     template<class VisitorType>
     void accept(VisitorType &visitor)
     {
-        visitor.visit(nameId,       std::string(""),            "nameId");
-        visitor.visit(position,     Vector3dd(0.0, 0.0, -1.0),  "position");
-        visitor.visit(orientation,  Quaternion::Identity(),     "orientation");
+        visitor.visit(nameId,       std::string(""),          "nameId");
+        visitor.visit(position,     Vector3dd(0.0, 0.0, 0.0), "position");
+        visitor.visit(orientation,  Quaternion::Identity(),   "orientation");
     }
 };
 

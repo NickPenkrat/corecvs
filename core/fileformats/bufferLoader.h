@@ -38,7 +38,7 @@ public:
     BufferSaver() {}
 
     virtual bool acceptsFile(string name) = 0;
-    virtual bool save(const BufferType &buffer, const string& name, int quality = 95) = 0;
+    virtual bool save(const BufferType &buffer, const string& name, int quality = 100) = 0;
 
     virtual std::string              name()       { return "noname"; }
     virtual std::vector<std::string> extentions() { return std::vector<std::string>(); }
