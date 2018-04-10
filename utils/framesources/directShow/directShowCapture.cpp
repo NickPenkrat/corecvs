@@ -6,7 +6,7 @@
  * \author apimenov
  */
 #include "directShowCapture.h"
-#include "mjpegDecoderLazy.h"
+#include "core/framesources/decoders/mjpegDecoderLazy.h"
 #include "core/utils/preciseTimer.h"
 #include "core/utils/log.h"
 

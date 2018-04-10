@@ -2,8 +2,8 @@
 #include "core/math/mathUtils.h" // roundDivUp
 #include "core/utils/preciseTimer.h"
 //#include "mjpegDecoderLazy.h"
-#include "cameraControlParameters.h"
-#include "decoupleYUYV.h"
+#include "core/framesources/cameraControlParameters.h"
+#include "core/framesources/decoders/decoupleYUYV.h"
 
 #include <QtCore/QRegExp>
 

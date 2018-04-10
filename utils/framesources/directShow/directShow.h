@@ -3,8 +3,9 @@
 #include <stdint.h>
 
 #include "core/utils/global.h"
-#include "imageCaptureInterface.h"
-#include "cameraControlParameters.h" // CameraParameters
+
+#include "core/framesources/imageCaptureInterface.h"
+#include "core/framesources/cameraControlParameters.h" // CameraParameters
 
 #include "capdll.h" // DSCapDeviceId, CAPTURE_FORMAT_TYPE
 

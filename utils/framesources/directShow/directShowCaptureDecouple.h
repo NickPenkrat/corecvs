@@ -5,9 +5,9 @@
 
 #include "core/utils/global.h"
 #include "core/utils/preciseTimer.h"
-#include "imageCaptureInterface.h"
+#include "core/framesources/imageCaptureInterface.h"
+#include "core/framesources/decoders/decoupleYUYV.h"
 #include "directShow.h"
-#include "decoupleYUYV.h"
 
 class DirectShowCaptureDecoupleInterface : public virtual ImageCaptureInterface
 {
