@@ -55,16 +55,16 @@ void Mesh3DDecorated::addTriangleT(const Vector3dd &p1, const Vector2dd &t1, con
     addTriangle(p1, p2, p3);
     if (hasTexCoords)
     {
-        size_t texStart = textureCoords.size();
+        int texStart = (int)textureCoords.size();
         textureCoords.push_back(t1);
         textureCoords.push_back(t2);
         textureCoords.push_back(t3);
 
-        texId.push_back(Vector4d32(texStart, texStart + 1, texStart + 2, currentTexture));
+        texId.push_back(Vector4d32(texStart, texStart + 1, texStart + 2, (int)currentTexture));
     }
     if (hasNormals)
     {
-        size_t normals = normalCoords.size() - 1;
+        int normals = (int)normalCoords.size() - 1;
         normalId.push_back(Vector3d32(normals, normals, normals));
     }
 }
@@ -244,7 +244,7 @@ void MeshFilter::removeDuplicatedFaces(Mesh3DDecorated &mesh)
         for (size_t i = 0; i != mesh.faces.size(); ++i)
         {
             auto t = mesh.faces[i];
-            trianglesSorted.push_back(SortedFaceData(t[0], t[1], t[2], i));
+            trianglesSorted.push_back(SortedFaceData(t[0], t[1], t[2], (int)i));
         }
 
         std::sort(trianglesSorted.begin(), trianglesSorted.end());
@@ -309,7 +309,7 @@ void MeshFilter::removeDuplicatedVertices(Mesh3DDecorated &mesh)
             // if current vertex is new or if its duplicate but his normal or tCoord differs from current -> push_back
             if (itInner == newVertices.end() || isNewNormals || isNewTCoords)
             {
-                correspMap[index] = newVertices.size();
+                correspMap[index] = (int)newVertices.size();
                 newVertices.push_back(*it);
                 if (!mesh.normalCoords.empty())
                     newNormals.push_back(mesh.normalCoords[index]);
@@ -318,7 +318,7 @@ void MeshFilter::removeDuplicatedVertices(Mesh3DDecorated &mesh)
             }
             else
             {
-                correspMap[index] = itIndex;
+                correspMap[index] = (int)itIndex;
             }
         }
 
@@ -329,7 +329,7 @@ void MeshFilter::removeDuplicatedVertices(Mesh3DDecorated &mesh)
         {
             // form new triangle
             Vector3d32 newTr;
-            for (size_t i = 0; i < 3; i++)
+            for (int i = 0; i < 3; i++)
                 newTr[i] = correspMap[mesh.faces[index][i]];
 
             // delete triangle from the mesh if triangle is degenerate
@@ -387,7 +387,7 @@ void MeshFilter::removeUnreferencedVertices(
     {
         if (!unreferenced[i])
         {
-            newVerticesIndices[i] = next;
+            newVerticesIndices[i] = (int)next;
             ++next;
         }
     }
@@ -469,7 +469,7 @@ void MeshFilter::removeIsolatedPieces(Mesh3DDecorated &mesh, unsigned minCountOf
             while(tr_stack.size() > 0)
             {
                 // get triangle index from stack
-                const int last = tr_stack.back();
+                const int last = (int)tr_stack.back();
                 tr_stack.pop_back();
 
                 // if triangle is not visited, else it has a component number and

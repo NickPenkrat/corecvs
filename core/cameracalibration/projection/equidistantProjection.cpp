@@ -1,5 +1,5 @@
 #include "equidistantProjection.h"
-#include "reflection.h"
+#include "core/reflection/reflection.h"
 
 namespace corecvs {
 

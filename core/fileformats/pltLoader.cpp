@@ -1,6 +1,8 @@
 #include "pltLoader.h"
 #include "core/utils/utils.h"
 
+#include <sstream>
+
 namespace corecvs {
 
 using namespace std;
@@ -8,7 +10,6 @@ using namespace std;
 /* Rewrite this with regex */
 HPGLProgram::Record HPGLLoader::parseLine(const string& gline)
 {
-
     std::string line = gline;
 
     cout << "parseLine("<< line << "):called" << endl;
@@ -26,7 +27,7 @@ HPGLProgram::Record HPGLLoader::parseLine(const string& gline)
     {
         if (!s.empty()) {
             std::locale mylocale("C");
-            istringstream ss(s);
+            std::istringstream ss(s);
             ss.imbue(mylocale);
             double v;
             ss >> v;
@@ -38,9 +39,7 @@ HPGLProgram::Record HPGLLoader::parseLine(const string& gline)
 }
 
 HPGLLoader::HPGLLoader()
-{
-
-}
+{}
 
 
 int HPGLLoader::loadHPGLcode(std::istream &input, HPGLProgram &program)

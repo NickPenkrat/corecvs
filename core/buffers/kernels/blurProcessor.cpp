@@ -6,11 +6,9 @@
  * \date Sep 19, 2010
  * \author alexander
  */
-
-#include "core/utils/global.h"
-
 #include "core/buffers/kernels/blurProcessor.h"
 #include "core/tbbwrapper/tbbWrapper.h"
+
 namespace corecvs {
 
 /*TODO: Hide this*/

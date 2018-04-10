@@ -274,7 +274,7 @@ void CalibrationDrawHelpers::drawFixture(Mesh3D &mesh, const CameraFixture &ps, 
     {
         for (size_t cam = 0; cam < ps.cameras.size(); cam++)
         {
-            mesh.setColor(RGBColor::getPalleteColor(cam));
+            mesh.setColor(RGBColor::getPalleteColor((int)cam));
             //SYNC_PRINT(("CalibrationDrawHelpers::drawPly color %d(%d)\n", colorId, CORE_COUNT_OF(palette)));           
             drawCamera(mesh, ps.getRawCamera((int)cam), scale);
         }
@@ -304,9 +304,9 @@ void CalibrationDrawHelpers::drawFixture(Mesh3D &mesh, const CameraFixture &ps, 
 
 void CalibrationDrawHelpers::drawFixtureEx(Mesh3DDecorated &mesh, const CameraFixture &ps, double scale)
 {
-
-
-
+    CORE_UNUSED(mesh);
+    CORE_UNUSED(ps);
+    CORE_UNUSED(scale);
 }
 
 void CalibrationDrawHelpers::drawSceneGeometry(Mesh3D &mesh, const FixtureSceneGeometry &fg, double /*scale*/)

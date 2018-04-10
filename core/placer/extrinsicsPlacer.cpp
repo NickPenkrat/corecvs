@@ -54,7 +54,7 @@ void SillyCost::operator ()(const double in[], double out[])
         cam.rotor.normalise();
 
         Vector3dd position;
-        int offset = CAM_MODEL_SIZE * scene->cameras.size();
+        int offset = CAM_MODEL_SIZE * (int)scene->cameras.size();
 
         position.loadFrom(&in[3 * obs.point + offset]);
 
@@ -79,7 +79,7 @@ vector<double> SillyCost::sceneToModel(const SimplifiedScene& scene)
         transform.rotor.storeTo(&out[CAM_MODEL_SIZE * i + Vector3dd::LENGTH]);
     }
 
-    int offset = scene.cameras.size() * CAM_MODEL_SIZE;
+    int offset = (int)scene.cameras.size() * CAM_MODEL_SIZE;
 
     for (size_t i = 0; i < scene.points.size(); i++ )
     {
@@ -100,7 +100,7 @@ void SillyCost::sceneFromModel(SimplifiedScene &scene, const vector<double> &mod
         scene.cameras[i] = CameraLocationData::FromMockAffine3D(transform);
     }
 
-    int offset = scene.cameras.size() * CAM_MODEL_SIZE;
+    int offset = (int)scene.cameras.size() * CAM_MODEL_SIZE;
     for (size_t i = 0; i < scene.points.size(); i++ )
     {
         scene.points[i].loadFrom(&model[i * Vector3dd::LENGTH +  offset]);
@@ -187,7 +187,7 @@ vector<double> SillyCostMask::sceneToModel(const SimplifiedScene& scene)
             transform.rotor.storeToStream(output);
     }
 
-    CORE_ASSERT_TRUE_P(output - out.data() == inputs, ("SillyCostMask::sceneToModel(): fail (%d vs %d)\n", output - out.data(), inputs));
+    CORE_ASSERT_TRUE_P(output - out.data() == inputs, ("SillyCostMask::sceneToModel(): fail (%d vs %d)\n", (int)(output - out.data()), inputs));
     return out;
 }
 
@@ -232,13 +232,13 @@ void SillyNormalizerMask::operator ()(const double in[], double out[])
 
     for (size_t camId = 0; camId < camNum; camId++)
     {
-        int offset = startOffset + camId * getCameraModelSize(params);
+        int offset = startOffset + (int)camId * getCameraModelSize(params);
         if (!params.lockPositions())
             offset += Vector3dd::LENGTH;
 
         if (offset >= outputs)
         {
-            SYNC_PRINT(("SillyNormalizerMask::operator (): out of bounds. off=%d cam=%d camsize=%d (%d vs %d)", startOffset, camId, (int)getCameraModelSize(params), offset, outputs));
+            SYNC_PRINT(("SillyNormalizerMask::operator (): out of bounds. off=%d cam=%d camsize=%d (%d vs %d)", startOffset, (int)camId, (int)getCameraModelSize(params), offset, outputs));
         }
 
         Quaternion rotor;
@@ -281,7 +281,7 @@ SimplifiedScene SimplifiedScene::extractSimpleScene (const FixtureScene *scene)
             continue;
         }
         S.points.push_back(p->reprojectedPosition);
-        S.idToScene.push_back(i);
+        S.idToScene.push_back((int)i);
 
         for (auto &obsIt: p->observations)
         {

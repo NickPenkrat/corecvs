@@ -67,12 +67,12 @@ struct SillyModel
 
     static int getInputNumber(const SimplifiedScene *scene)
     {
-        return scene->cameras.size() * CAM_MODEL_SIZE + scene->points.size() * Vector3dd::LENGTH;
+        return (int)scene->cameras.size() * CAM_MODEL_SIZE + (int)scene->points.size() * Vector3dd::LENGTH;
     }
 
     static int getOutputNumber(const SimplifiedScene *scene)
     {
-        return scene->obs.size() * Vector3dd::LENGTH;
+        return (int)scene->obs.size() * Vector3dd::LENGTH;
     }
 
     /* ====== */
@@ -83,26 +83,26 @@ struct SillyModel
                 (params.lockPositions()    ? 0 :  Vector3dd::LENGTH);
     }
 
-    static int getPointsOffset(const SimplifiedScene */*scene*/, ExtrinsicsPlacerParameters &/*params*/)
+    static int getPointsOffset(const SimplifiedScene * /*scene*/, ExtrinsicsPlacerParameters &/*params*/)
     {
         return 0;
     }
 
     static int getCameraOffset(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &/*params*/)
     {
-        return scene->points.size() * Vector3dd::LENGTH;
+        return (int)scene->points.size() * Vector3dd::LENGTH;
     }
 
     static int getInputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &params)
     {
-        int camNum = params.lock1Cam() ? (scene->cameras.size() - 1) : (scene->cameras.size());
+        int camNum = params.lock1Cam() ? ((int)scene->cameras.size() - 1) : ((int)scene->cameras.size());
 
         return getCameraOffset(scene, params) + getCameraModelSize(params) * camNum;
     }
 
     static int getOutputNumber(const SimplifiedScene *scene, ExtrinsicsPlacerParameters &/*params*/)
     {
-        return scene->obs.size() * Vector3dd::LENGTH;
+        return (int)scene->obs.size() * Vector3dd::LENGTH;
     }
 };
 

@@ -1,5 +1,5 @@
-#include "correspondenceList.h"
-#include "essentialEstimator.h"
+#include "core/rectification/correspondenceList.h"
+#include "core/rectification/essentialEstimator.h"
 
 namespace corecvs {
 

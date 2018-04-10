@@ -73,14 +73,12 @@ ImageCaptureInterface::~ImageCaptureInterface()
 
 void ImageCaptureInterface::getAllCameras(vector<string> &cameras)
 {
-#ifdef Q_OS_WIN
-# ifdef WITH_DIRECTSHOW
+#ifdef WITH_DIRECTSHOW
     vector<string> dshowcams;
     DirectShowCaptureInterface::getAllCameras(dshowcams);
     for (const string& cam : dshowcams) {
         cameras.push_back(std::string("dshow:" + cam));
     }
-# endif
 #endif
 
 #ifdef WITH_FRAMESOURCE_V4L2

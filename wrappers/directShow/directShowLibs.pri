@@ -19,6 +19,7 @@ win32-msvc* {
            win32-msvc2010 {	CAPDLL_MSVC_VER = capdll_vc10
     } else:win32-msvc2013 {	CAPDLL_MSVC_VER = capdll_vc12
     } else:win32-msvc2015 {	CAPDLL_MSVC_VER = capdll_vc14
+    } else:win32-msvc2017 {	CAPDLL_MSVC_VER = capdll_vc14
     } else {                CAPDLL_MSVC_VER = capdll_vc1x
     }
     LIBS  += -L$$DSHOW_LIB_PATH -l$$CAPDLL_MSVC_VER

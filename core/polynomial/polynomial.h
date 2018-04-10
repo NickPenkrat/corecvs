@@ -72,9 +72,9 @@ public:
 
     friend std::ostream& operator << (std::ostream &out, Polynomial &toPrint)
     {
-        for (int i = toPrint.size()-1; i >= 0; i--)
+        for (int i = (int)toPrint.size() - 1; i >= 0; --i)
         {
-            if (toPrint[i] != 0.0 )
+            if (toPrint[i] != 0.0)
             {
                 cout << toPrint[i];
                 if (i != 0 )

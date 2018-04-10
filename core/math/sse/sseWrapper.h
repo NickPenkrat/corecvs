@@ -49,7 +49,7 @@ namespace corecvs {
 
 #ifdef _MSC_VER
 # ifdef WITH_SSE4_2
-#  include <intrin.h>
+    //#  include <intrin.h> // conflicts with <emmintrin.h> with msvc2017!
 #  define __builtin_popcount __popcnt
 # else
 #  define __builtin_popcount popcount_lookup

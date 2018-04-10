@@ -72,7 +72,7 @@ string ImageFileCaptureInterface::getImageFileName(uint imageNumber, uint channe
             mPathPrefix = "../";
         }
 #ifdef WIN32
-        else if (QFile::exists((string("../../../../") + pathName).c_str()))
+        else if (HelperUtils::pathExists((string("../../../../") + pathName).c_str()))
         {
             mPathPrefix = "../../../../";
         }
