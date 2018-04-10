@@ -378,19 +378,21 @@ bool KLTGenerator<InterpolationType, FloatType>::kltIterationSubpixel(const KLTC
     return true;
 }
 
+
+
 template<typename InterpolationType, typename FloatType>
-bool KLTGenerator<InterpolationType, FloatType>::kltIterationSubpixelFast(const KLTCalculationContext &calculationContext, const Vector2d<FloatType> &point, Vector2d<FloatType> *startGuess, float nullThreshold) const
+bool KLTGenerator<InterpolationType, FloatType>::kltIterationSubpixelFast(
+        const KLTCalculationContext &calculationContext,
+        const Vector2df &point,
+        Vector2df *startGuess,
+        float nullThreshold) const
 {
-    CORE_ASSERT_TRUE(calculationContext.first != NULL, "NULL parameter fisrt");
-    CORE_ASSERT_TRUE(calculationContext.second != NULL, "NULL parameter second");
-    CORE_ASSERT_TRUE(calculationContext.gradient != NULL, "NULL parameter gradient");
+    CORE_ASSERT_TRUE(calculationContext.isFilled(), "CalculationContext is not Filled");
+
     G12Buffer *first  = calculationContext.first;
     G12Buffer *second = calculationContext.second;
 
-    //    uint32_t h = first->h;
-    //    uint32_t w = first->w;
-
-    Vector2d<FloatType> currentGuess = *startGuess;
+    Vector2df currentGuess = *startGuess;
 
     /* We use iterative method and stop if number of iterations is above the threshold*/
     for (int l = 0; l < newtonIterations; l++)
@@ -399,35 +401,35 @@ bool KLTGenerator<InterpolationType, FloatType>::kltIterationSubpixelFast(const 
         DOTRACE(("\tEntering point: [%lf %lf]\n", point.x(), point.y()));
         DOTRACE(("\tEntering guess: [%lf %lf]\n", currentGuess.x(), currentGuess.y()));
         /* The position in the other image */
-        Vector2d<FloatType> prediction = point + currentGuess;
+        Vector2df prediction = point + currentGuess;
         DOTRACE(("\tPreditiction (%lf %lf)\n", prediction.x(), prediction.y()));
 
 
         /* If we hit outside the second image we should give up*/
         if (!calculationContext.second->isValidCoord(Vector2d32(prediction.x(), prediction.y())))
+        {
             return false;
+        }
 
-        //Vector2dd low  = point - Vector2dd(windowSize);
-        //Vector2dd high = point + Vector2dd(windowSize);
+        Vector2df low  = point - Vector2df(windowSize);
+        Vector2df high = point + Vector2df(windowSize);
         //low.mapToRect(Vector2dd(0,0), Vector2dd(w - 1, h - 1));
         //high.mapToRect(Vector2dd(0,0), Vector2dd(w - 1, h - 1));
 
-        //int x0 =  low.x();
-        //int y0 =  low.y();
-        //int x1 = high.x();
-        //int y1 = high.y();
+        int x0 =  low.x();
+        int y0 =  low.y();
+        int x1 = high.x();
+        int y1 = high.y();
 
-        //DOTRACE(("\tWorking zone (%d %d)x(%d %d)\n", x0, y0, x1, y0));
+        DOTRACE(("\tWorking zone (%d %d)x(%d %d)\n", x0, y0, x1, y0));
 
-        /*
-            Vector3dd mSG = calculationContext.gradient->rectangle(y0,x0,y1,x1);
-            DOTRACE(("\tG matrix:\n"));
-            DOTRACE(("\t[%lf %lf]\n", mSG.x(), mSG.y()));
-            DOTRACE(("\t[%lf %lf]\n", mSG.y(), mSG.z()));
-    */
+        Vector3dd mSG = calculationContext.gradient->rectangle(y0,x0,y1,x1);
+        DOTRACE(("\tG matrix:\n"));
+        DOTRACE(("\t[%lf %lf]\n", mSG.x(), mSG.y()));
+        DOTRACE(("\t[%lf %lf]\n", mSG.y(), mSG.z()));
 
         //calculating mismatch vector
-        Vector3d<FloatType> mSG = Vector3d<FloatType>(0.0);
+        //Vector3d<FloatType> mSG = Vector3d<FloatType>(0.0);
         Vector2d<FloatType> b   = Vector2d<FloatType>(0.0);
 
 
@@ -459,14 +461,6 @@ bool KLTGenerator<InterpolationType, FloatType>::kltIterationSubpixelFast(const 
             {
                 FloatType x =  point.x() + (FloatType)j;
                 FloatType y =  point.y() + (FloatType)i;
-
-                //                    if (!first->isValidCoordBl(y, x)) {
-                //                        continue;
-                //                    }
-
-                //                    if (!second->isValidCoordBl(y + currentGuess.y(), x + currentGuess.x())) {
-                //                        continue;
-                //                    }
 
                 FloatType dI = interpolator.interpolate(y, x, first) -
                         interpolator.interpolate(y + currentGuess.y(), x + currentGuess.x(), second);
@@ -518,7 +512,7 @@ bool KLTGenerator<InterpolationType, FloatType>::kltIterationSubpixelFast(const 
  *         \sum_{ x = p_x - w_x}^{p_x + w_x} \sum_{y = p_y - w_y}^{p_y + w_y}
  *         \pmatrix{
  *             I_x^2   &  I_x I_y \cr
- *          I_x I_y &  I_y^2   \cr
+ *             I_x I_y &  I_y^2   \cr
  *         } \\
  *
  * b &=&

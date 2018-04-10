@@ -34,12 +34,12 @@ struct DetectorHolder
     FeatureType tag;
 
 
-    DetectorHolder() : tag(SIFT),
 #ifdef WITH_OPENCV_3X
-        sift() {}
+    DetectorHolder() : tag(SIFT) {}
     ~DetectorHolder() {}
 #else
-        sift(0) {}
+    DetectorHolder() : tag(SIFT)
+       , sift(0) {}
 
     ~DetectorHolder()
     {

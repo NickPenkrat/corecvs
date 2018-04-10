@@ -19,7 +19,7 @@
 
 #include "core/math/neon/float32x4.h"
 
-#include "ssemath.h"
+#include "neonMath.h"
 
 #endif //WITH_NEON
 

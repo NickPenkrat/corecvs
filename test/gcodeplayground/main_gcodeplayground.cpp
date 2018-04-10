@@ -158,7 +158,7 @@ int main (int argc, char **argv)
         if (r.command == "PA") {
             Vector2dd p1(r.params[0], r.params[1]);
 
-            Vector2dd gout = (p1 / 40.0) - Vector2dd(0, 0);
+            Vector2dd gout = (p1 / 40.0) - Vector2dd(0, 100);
 
             Vector3dd meshout(gout, 0.0);
 
@@ -197,6 +197,10 @@ int main (int argc, char **argv)
     }
 
     mesh.dumpPLY(input + ".ply");
+
+    ofile << "M5          ; Switch tool offEnd" << endl;
+    ofile << "M400" << endl;
+    ofile << "G0 X0 Y0" << endl;
     ofile << "M221   S0" << endl;
     ofile.close();
     return 0;

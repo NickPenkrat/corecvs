@@ -28,6 +28,12 @@ public:
     G12Buffer *first = NULL;
     G12Buffer *second = NULL;
     SpatialGradientIntegralBuffer *gradient = NULL;
+
+
+    bool isFilled() const
+    {
+        return (first != NULL) || (second != NULL) || (gradient != NULL);
+    }
 };
 
 template <typename InterpolationType, typename FloatType = double>
@@ -79,10 +85,9 @@ public:
             float nullThreshold) const;
 
     /*============ Fast version ============ */
-    bool kltIterationSubpixelFast (
-            const KLTCalculationContext &calculationContext,
-            const Vector2d<FloatType> &point,
-            Vector2d<FloatType> *startGuess,
+    bool kltIterationSubpixelFast (const KLTCalculationContext &calculationContext,
+            const Vector2df &point,
+            Vector2df *startGuess,
             float nullThreshold) const;
 
 
