@@ -91,7 +91,7 @@ public:
         return "opencv:";
     }
 
-    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
+    virtual ImageCaptureInterface *produce(std::string &name, bool /*isRGB*/) override
     {
         return new OpenCVCaptureInterface(name, OPENCV_CAP_ANY);
     }

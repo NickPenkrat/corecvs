@@ -641,7 +641,7 @@ TEST(meta, genEssentialCostFunction1)
         if (it.second->cseCount == 0)
             continue;
         commonSubexpressions.push_back(it.second);
-        it.second->cseName = commonSubexpressions.size();
+        it.second->cseName = (int)commonSubexpressions.size();
     }
     std::sort(commonSubexpressions.begin(), commonSubexpressions.end(),
               [](ASTNodeInt *a, ASTNodeInt *b){return a->height < b->height;});
@@ -834,7 +834,7 @@ TEST(meta, genProjectionDerivative)
         if (it.second->cseCount == 0)
             continue;
         commonSubexpressions.push_back(it.second);
-        it.second->cseName = commonSubexpressions.size();
+        it.second->cseName = (int)commonSubexpressions.size();
     }
     std::sort(commonSubexpressions.begin(), commonSubexpressions.end(),
               [](ASTNodeInt *a, ASTNodeInt *b){return a->height < b->height;});

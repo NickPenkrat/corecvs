@@ -24,7 +24,7 @@ namespace cv {
     struct SmartPtrHolder;
 #endif
 
-class OpenCvGPUFeatureDetectorWrapper : public FeatureDetector
+class OpenCvGPUFeatureDetectorWrapper : public ::FeatureDetector
 {
 public:
 
@@ -45,7 +45,7 @@ public:
     bool  isParallelable() { return false; }
 
 protected:
-	void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeypoints, void* pRemapCache);
+	void detectImpl(corecvs::RuntimeTypeBuffer &image, std::vector<::KeyPoint> &keyPoints, int nKeypoints, void* pRemapCache);
 
 private:
     OpenCvGPUFeatureDetectorWrapper( const OpenCvGPUFeatureDetectorWrapper& );
@@ -74,7 +74,7 @@ public:
 
     ~OpenCvGPUFeatureDetectorProvider() {}
 
-    FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "");
+    ::FeatureDetector* getFeatureDetector(const DetectorType &type, const std::string &params = "");
     bool provides(const DetectorType &type);
     virtual std::string name() override { return "OpenCV GPU"; }
     virtual std::vector<std::string> provideHints();

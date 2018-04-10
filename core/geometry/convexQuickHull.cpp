@@ -119,7 +119,7 @@ ConvexQuickHull::HullFaces ConvexQuickHull::quickHull(const ConvexQuickHull::ver
         HullFace(simplex[1], simplex[3], simplex[2]),
         HullFace(simplex[0], simplex[3], simplex[1])};
 
-    addPointsToFaces(faces.data(), faces.size(), listVertices, epsilon);
+    addPointsToFaces(faces.data(), (unsigned long)faces.size(), listVertices, epsilon);
     for (auto face : faces)
         if (!face.points.empty()) Queue.push(face);
 
@@ -164,7 +164,7 @@ ConvexQuickHull::HullFaces ConvexQuickHull::quickHull(const ConvexQuickHull::ver
             for (auto &iter : needToDelete)
                 faces.erase(remove(faces.begin(), faces.end(), iter), faces.end());
 
-            addPointsToFaces(newFaces.data(), newFaces.size(), listUnclaimedVertices, epsilon);
+            addPointsToFaces(newFaces.data(), (unsigned long)newFaces.size(), listUnclaimedVertices, epsilon);
             for (auto &newFace : newFaces) {
                 faces.push_back(newFace);
                 Queue.push(newFace);

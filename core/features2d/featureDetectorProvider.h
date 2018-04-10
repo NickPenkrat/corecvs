@@ -35,5 +35,4 @@ private:
     FeatureDetectorProvider();
     FeatureDetectorProvider(const FeatureDetectorProvider&);
     FeatureDetectorProvider& operator=(const FeatureDetectorProvider&);
-
 };

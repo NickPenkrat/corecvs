@@ -100,17 +100,16 @@ void testJSON_FixtureScene()
 
     scene->projectForward(SceneFeaturePoint::POINT_ALL);
 
-    cout << "Original scene:" << endl;
-    cout << "================================" << endl;
+    cout << "Original scene:" << std::endl;
+    cout << "================================" << std::endl;
     scene->dumpInfo(cout);
-    cout << "================================" << endl;
+    cout << "================================" << std::endl;
 
     {
         JSONSetter setter("scene.json");
         setter.visit(*scene, "scene");
     }
     delete_safe(scene);
-
 
 
     /** Now loading **/
@@ -120,17 +119,17 @@ void testJSON_FixtureScene()
         getter.visit(*loaded, "scene");
     }
 
-    cout << "Loaded scene:" << endl;
-    cout << "================================" << endl;
+    cout << "Loaded scene:" << std::endl;
+    cout << "================================" << std::endl;
     loaded->dumpInfo(cout);
-    cout << "================================" << endl;
+    cout << "================================" << std::endl;
 }
 
 void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 {
     cout << "----------------Running the test-------------" << std::endl;
     if (useDistortion) {
-        cout << "Distortion would be applied" << endl;
+        cout << "Distortion would be applied" << std::endl;
     }
     FixtureScene *scene = new FixtureScene();
 
@@ -345,10 +344,10 @@ void testJSON_StereoScene(int targetSize = 3, bool useDistortion = false )
 
 
 
-    cout << "Original scene:" << endl;
-    cout << "================================" << endl;
+    cout << "Original scene:" << std::endl;
+    cout << "================================" << std::endl;
     scene->dumpInfo(cout);
-    cout << "================================" << endl;
+    cout << "================================" << std::endl;
 
     {
         JSONSetter setter("stereo.json");
@@ -456,10 +455,10 @@ void testJSON_CarScene(CommandLineSetter &params)
         delete_safe(image);
     }
 
-    cout << "Car scene:" << endl;
-    cout << "================================" << endl;
+    cout << "Car scene:" << std::endl;
+    cout << "================================" << std::endl;
     scene->dumpInfo(cout);
-    cout << "================================" << endl;
+    cout << "================================" << std::endl;
 
     {
         JSONSetter setter("car.json");

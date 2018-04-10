@@ -15,7 +15,7 @@ namespace cv {
     }
 }
 
-class OpenCvGPUDescriptorExtractorWrapper : public DescriptorExtractor
+class OpenCvGPUDescriptorExtractorWrapper : public ::DescriptorExtractor
 {
 public:
     OpenCvGPUDescriptorExtractorWrapper( cv::gpu::SURF_GPU *extractor );
@@ -28,7 +28,7 @@ public:
     bool isParallelable() { return false; }
 
 protected:
-	void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descripors, void* pRemapCache);
+	void computeImpl(corecvs::RuntimeTypeBuffer &image, std::vector<::KeyPoint> &keyPoints, corecvs::RuntimeTypeBuffer &descripors, void* pRemapCache);
 
 private:
     OpenCvGPUDescriptorExtractorWrapper( const OpenCvGPUDescriptorExtractorWrapper &wrapper );
@@ -42,7 +42,7 @@ class OpenCvGPUDescriptorExtractorProvider : public DescriptorExtractorProviderI
 {
 public:
     OpenCvGPUDescriptorExtractorProvider( bool cudaApi );
-    DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
+    ::DescriptorExtractor* getDescriptorExtractor(const DescriptorType &type, const std::string &params = "");
     bool provides(const DescriptorType &type);
     virtual std::string name() override { return "OpenCv GPU"; }
 
@@ -51,7 +51,7 @@ public:
     bool cudaApi;
 };
 
-#endif
+#endif // !WITH_OPENCV_3X
 
 extern "C"
 {

@@ -14,7 +14,7 @@ namespace cv {
     }
 }
 
-class OpenCvGPUDescriptorMatcherWrapper : public DescriptorMatcher
+class OpenCvGPUDescriptorMatcherWrapper : public ::DescriptorMatcher
 {
 public:
     OpenCvGPUDescriptorMatcherWrapper( cv::gpu::BruteForceMatcher_GPU_base *matcher );
@@ -40,7 +40,7 @@ class OpenCvGPUDescriptorMatcherProvider : public DescriptorMatcherProviderImpl
 public:
     OpenCvGPUDescriptorMatcherProvider( bool cudaApi );
 
-    DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher, const std::string &params = "");
+    ::DescriptorMatcher* getDescriptorMatcher(const DescriptorType &descriptor, const MatcherType &matcher, const std::string &params = "");
     bool provides(const DescriptorType &descriptor, const MatcherType &matcher);
     virtual std::string name() override { return "OpenCv GPU"; }
 

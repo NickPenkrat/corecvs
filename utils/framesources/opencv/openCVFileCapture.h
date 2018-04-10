@@ -34,7 +34,7 @@ public:
         return "opencv_file:";
     }
 
-    virtual ImageCaptureInterface *produce(std::string &name, bool isRGB) override
+    virtual ImageCaptureInterface *produce(std::string &name, bool /*isRGB*/) override
     {
         return new OpenCvFileCapture(name);
     }

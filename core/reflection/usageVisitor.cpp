@@ -53,7 +53,7 @@ void UsagePrinter::printUsage(const Reflection *reflection)
                     for (const EnumOption *opt : eField->enumReflection->options)
                     {
                         if (opt != NULL) {
-                            printf("         %d - %s (%d)", opt->id, opt->name.name, opt->name.description );
+                            printf("         %d - %s (%s)", opt->id, opt->name.name, opt->name.description);
                         }
                     }
                 }

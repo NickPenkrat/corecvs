@@ -180,10 +180,10 @@ int main(int argc, char **argv)
               //      isBlock = true;
                 }
             }
-            SYNC_PRINT(("isBlock %d\n", isBlock));
+            //SYNC_PRINT(("isBlock %d\n", isBlock));
         }
     }
-    else if ( mode == "block")
+    else if (mode == "block")
     {
         std::string blockName;
         if (argc >= 2)

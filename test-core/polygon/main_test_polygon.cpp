@@ -1131,8 +1131,8 @@ TEST(polygon, CameraView)
     mesh.setColor(RGBColor::Yellow());
     for (size_t i = 0; i < p3.size(); i++)
     {
-        Vector2dd curr = p3.getPoint(i);
-        Vector2dd next = p3.getNextPoint(i);
+        Vector2dd curr = p3.getPoint((int)i);
+        Vector2dd next = p3.getNextPoint((int)i);
 
         Vector3dd sph1 = sphereRot.inverted() * Vector3dd::FromSpherical(curr.x(), curr.y(), s.r);
         Vector3dd sph2 = sphereRot.inverted() * Vector3dd::FromSpherical(next.x(), next.y(), s.r);
