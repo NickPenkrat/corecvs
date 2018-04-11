@@ -108,12 +108,12 @@ public:
         return mCorList;
     }
 
-    vector<KeyPoint> getKeypointsImage()
+    vector<cv::KeyPoint> getKeypointsImage()
     {
         return mKeypointsImage;
     }
 
-    vector<KeyPoint> getKeypointsPattern()
+    vector<cv::KeyPoint> getKeypointsPattern()
     {
         return mKeypointsPattern;
     }
@@ -150,7 +150,7 @@ private:
     CorrespondenceList              mCorList; // output of algorithm
 
     DetectorType                    mDetector;
-    vector<KeyPoint>                mKeypointsImage, mKeypointsPattern;
+    vector<cv::KeyPoint>            mKeypointsImage, mKeypointsPattern;
 
     DetectorType                    mDescriptor;
     Mat                             mDescriptorsImage;
