@@ -5,33 +5,36 @@
 #include "core/stats/calculationStats.h"
 #include "xml/generated/meshFlowDrawParameters.h"
 
-
+#include <vector>
 #include <math.h>
 #include <numeric>
 #include <time.h>
 
 #ifdef WITH_OPENCV_3X
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/features2d.hpp>
-#include <opencv2/video/tracking.hpp>
-#include <opencv2/calib3d.hpp>
+#include <opencv2/core.hpp>    // cv::Mat
+//#include <opencv2/imgproc/imgproc.hpp>
+//#include <opencv2/features2d.hpp>
+//#include <opencv2/video/tracking.hpp>
+//#include <opencv2/calib3d.hpp>
 #else
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc.hpp>
+#include <opencv2/core/core.hpp>    // cv::Mat
+//#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/imgproc.hpp>
 #endif
 
-
-using namespace std;
-using namespace cv;
+//using namespace std;
+using std::vector;
+//using namespace cv;
+using cv::Mat;
 
 #define MAX_CHANNEL_SIZE 50 //Maximum size of channel median filter
-typedef Vec<float, MAX_CHANNEL_SIZE> Vec512f;
+typedef cv::Vec<float, MAX_CHANNEL_SIZE> Vec512f;
 enum _MOTION_PROPAGATION { NORMAL, REGIONWISE };
 
 
 
-class MeshFlow : public MeshFlowDrawParameters {
+class MeshFlow : public MeshFlowDrawParameters
+{
     //Function
   public:
     enum FlowClass {
@@ -117,8 +120,8 @@ class MeshFlow : public MeshFlowDrawParameters {
     */
     void RefineFeatureTracking ( Mat img_prev,
                                  Mat img_cur,
-                                 vector<Point2f> feat_ref,
-                                 vector<Point2f> feat_bwd,
+                                 vector<cv::Point2f> feat_ref,
+                                 vector<cv::Point2f> feat_bwd,
                                  vector<float> feat_error,
                                  vector<unsigned char>& feat_status_ref,
                                  vector<unsigned char> feat_status_bwd );
@@ -127,19 +130,19 @@ class MeshFlow : public MeshFlowDrawParameters {
         @Date : 2017.01.11
         @Do   : Bilinear interpolation for given pixel position
     */
-    Vec3b GetInterpolatedPixel ( const float r,
-                                 const float c,
-                                 Mat data );
+    cv::Vec3b GetInterpolatedPixel ( const float r,
+                                     const float c,
+                                     Mat data );
 
-    unsigned char GetGrayValue ( Vec3b pix );
+    unsigned char GetGrayValue ( cv::Vec3b pix );
 
     /*
         @Name : MeshGridRANSACFitting
         @Date : 2017.01.15
         @Do   : Mesh-grid RANSAC outlier rejection(2 steps) and return feat_flag & mesh-grid homogrphy
     */
-    void MeshGridRANSACFitting ( const vector<Point2f> feat,
-                                 const vector<Point2f> feat_track,
+    void MeshGridRANSACFitting ( const vector<cv::Point2f> feat,
+                                 const vector<cv::Point2f> feat_track,
                                  vector<unsigned char>& feat_status,
                                  vector<float> feat_error,
                                  vector<Mat>& mesh_homo );
@@ -149,8 +152,8 @@ class MeshFlow : public MeshFlowDrawParameters {
         @Do   : Outlier rejection using global homography constructed only using
                 static background feature mathcing from MeshGridRANSACFitting
     */
-    void GlobalOutlierRejection ( const vector<Point2f> feat,
-                                  const vector<Point2f> feat_track,
+    void GlobalOutlierRejection ( const vector<cv::Point2f> feat,
+                                  const vector<cv::Point2f> feat_track,
                                   vector<unsigned char>& feat_status,
                                   Mat global_homography );
 
@@ -168,8 +171,8 @@ class MeshFlow : public MeshFlowDrawParameters {
         @Date : 2017.01.19
         @Do   : Transform features either using mesh-grid homography or global homography
     */
-    void PerspectiveTransform ( vector<Point2f> feat1,
-                                vector<Point2f>& feat2,
+    void PerspectiveTransform ( vector<cv::Point2f> feat1,
+                                vector<cv::Point2f>& feat2,
                                 Mat H,
                                 vector<Mat> Hs,
                                 int type );
@@ -183,8 +186,8 @@ class MeshFlow : public MeshFlowDrawParameters {
                 See more details on MeshFlow: Minimum Latency Online Video Stabilization(ECCV 2016)
     */
     void InitializeGlobalMeshFlow ( const Mat H );
-    void SuppressingMotionNoise ( const vector<Point2f> refined_feat_vec,
-                                  const vector<Point2f> local_feat_flow );
+    void SuppressingMotionNoise ( const vector<cv::Point2f> refined_feat_vec,
+                                  const vector<cv::Point2f> local_feat_flow );
     float GetMedian ( vector<float> flow_vec );
 
     //Moving obejct detection
@@ -212,12 +215,12 @@ class MeshFlow : public MeshFlowDrawParameters {
         1 - It is highly likely to be static background, meshflow is constructed only using feat tagged 1
         2 - It is highly likely to be moving objects
     */
-    vector<Point2f> feat_cur_;
-    vector<Point2f> feat_prev_;
+    vector<cv::Point2f> feat_cur_;
+    vector<cv::Point2f> feat_prev_;
     vector<unsigned char> feat_status_;
     //residual feature matching for moving obejct detection
-    vector<Point2f> feat_candidates_;
-    vector<Point2f> feat_candidates_track_;
+    vector<cv::Point2f> feat_candidates_;
+    vector<cv::Point2f> feat_candidates_track_;
 
   private:
     int image_width_;
