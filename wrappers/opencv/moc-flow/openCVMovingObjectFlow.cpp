@@ -1,15 +1,14 @@
-#include "openCVTools.h"
-#include "core/xml/generated/rgbColorParameters.h"
 #include "openCVMovingObjectFlow.h"
+#include "openCVTools.h"
 
-#include <opencv2/opencv.hpp>
+#include "core/xml/generated/rgbColorParameters.h"
+
 
 using namespace corecvs;
 
-OpenCVMovingObjectFlow::OpenCVMovingObjectFlow()
-{
 
-}
+OpenCVMovingObjectFlow::OpenCVMovingObjectFlow()
+{}
 
 int OpenCVMovingObjectFlow::beginFrame()
 {
@@ -158,8 +157,6 @@ int OpenCVMovingObjectFlow::getError(std::string *errorString)
     CORE_UNUSED(errorString);
     return 0;
 }
-
-
 
 
 Processor6D *OpenCVMovingObjectFlowImplFactory::getProcessor()
