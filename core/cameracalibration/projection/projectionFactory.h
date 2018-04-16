@@ -31,37 +31,32 @@ public:
     template<class Visitor>
     void accept(Visitor &visitor)
     {
-
         int projectionNum = (int)target->projection;
-        visitor.visit((int&)projectionNum, (int)ProjectionType::PINHOLE, "projectionType");
+        visitor.visit((int&)projectionNum, -1 /*(int)ProjectionType::PINHOLE*/, "projectionType");
         ProjectionType::ProjectionType projectionType = (ProjectionType::ProjectionType)projectionNum;
 
         if (projectionType != target->projection)
         {
-            target.reset(projectionById(projectionType));
+            target.reset(projectionById(projectionNum < 0 ? ProjectionType::PINHOLE : projectionType));
         }
 
         switch (projectionType) {
             case  ProjectionType::PINHOLE:
-                static_cast<PinholeCameraIntrinsics *>(target.get())->accept<Visitor>(visitor); break;
+                static_cast<PinholeCameraIntrinsics   *>(target.get())->accept<Visitor>(visitor); break;
             case  ProjectionType::EQUIDISTANT:
-                static_cast<EquidistantProjection *>  (target.get())->accept<Visitor>(visitor); break;
+                static_cast<EquidistantProjection     *>(target.get())->accept<Visitor>(visitor); break;
             case  ProjectionType::OMNIDIRECTIONAL:
-                static_cast<OmnidirectionalProjection *> (target.get())->accept<Visitor>(visitor); break;
+                static_cast<OmnidirectionalProjection *>(target.get())->accept<Visitor>(visitor); break;
             case  ProjectionType::STEREOGRAPHIC:
-                static_cast<StereographicProjection *>(target.get())->accept<Visitor>(visitor); break;
+                static_cast<StereographicProjection   *>(target.get())->accept<Visitor>(visitor); break;
             case  ProjectionType::EQUISOLID:
-                static_cast<EquisolidAngleProjection *>(target.get())->accept<Visitor>(visitor); break;
+                static_cast<EquisolidAngleProjection  *>(target.get())->accept<Visitor>(visitor); break;
             /*case  CameraProjection::ORTHOGRAPIC:
                 static_cast<EquidistantProjection *>(target.get())->accept<Visitor>(visitor); break;*/
             default:
                 break;
-
         }
     }
-
-
-
 
 };
 

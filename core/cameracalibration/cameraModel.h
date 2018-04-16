@@ -72,8 +72,6 @@ public:
         return true;
     }*/
 
-
-
     template <bool full=false>
     Vector2dd project(const Vector3dd &p) const
     {
@@ -206,12 +204,11 @@ public:
      **/
     vector<Vector4dd> getCameraViewportPyramid() const;
 
-    Polygon getCameraViewportPolygon() const;
+    Polygon           getCameraViewportPolygon() const;
 
 
-
-
-    void copyModelFrom(const CameraModel &other) {
+    void copyModelFrom(const CameraModel &other)
+    {
         if (other.intrinsics != NULL) {
             intrinsics.reset(other.intrinsics->clone());
         } else {
@@ -219,6 +216,7 @@ public:
         }
         distortion = other.distortion;
         extrinsics = other.extrinsics;
+        nameId     = other.nameId;
     }
 
     /* This method produces camera model that is a copy, but works for downsampled image */
