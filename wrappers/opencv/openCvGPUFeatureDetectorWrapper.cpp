@@ -319,7 +319,7 @@ bool FindGPUDevice(bool& cudaApi)
         cudaDevice = cudaApi = false;
 #else
         DevicesInfo oclDevices;
-        getOpenCLDevices(oclDevices, cv::ocl::CVCL_DEVICE_TYPE_GPU);
+        // it crashed!!! getOpenCLDevices(oclDevices, cv::ocl::CVCL_DEVICE_TYPE_GPU);
         if (oclDevices.size())
         {
 			for (uint i = 0; i < oclDevices.size(); i++)
