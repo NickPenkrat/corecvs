@@ -204,8 +204,9 @@ template <class Type>
         if (stream)
         {
             *stream << separate() << indent();
-            if (fieldName && *fieldName)                // write name only if present
-                *stream << decorateName(fieldName) << FIELD_VALUE_SEPARATOR;
+            if (fieldName && *fieldName) {                // write name only if present
+                *stream << (fieldName[0] != '"' ? decorateName(fieldName) : fieldName) << FIELD_VALUE_SEPARATOR;
+            }
             *stream << OBJECT_OPEN;
         }
 
