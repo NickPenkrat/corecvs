@@ -1,9 +1,9 @@
 exists(../../../../config.pri) {
-    ROOT_DIR=../../../..
     #message(Using global config)
+    ROOT_DIR=../../../..
     include($$ROOT_DIR/config.pri)
 } else { 
-    message(Using local config)
+    #message(Using local config)
     ROOT_DIR=../..
     include($$ROOT_DIR/cvs-config.pri)
 }

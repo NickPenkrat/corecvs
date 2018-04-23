@@ -4,7 +4,7 @@ exists(../../../config.pri) {
     #message(Using global config)
     include(../../../config.pri)
 } else {
-    message(Using local config)
+    #message(Using local config)
     include(../cvs-config.pri)
 }
 
