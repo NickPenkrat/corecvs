@@ -1,0 +1,3 @@
+[submodule "3dparty/gtest"]
+	path = 3dparty/gtest
+	url = https://github.com/google/googletest.git

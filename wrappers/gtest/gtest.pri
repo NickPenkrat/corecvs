@@ -13,12 +13,16 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 GTEST_SRC_PATH = "$$(GTEST_SRC_PATH)"
 isEmpty(GTEST_SRC_PATH) {
     GTEST_SRC_PATH="$$ROOT_DIR/siblings/gtest"
+
+    !exists($$GTEST_SRC_PATH) {
+        GTEST_SRC_PATH="$$ROOT_DIR/3dparty/gtest/googletest"
+    }
 }
 
 exists($$GTEST_SRC_PATH) {
     !build_pass: message(Using local gtest source from $$GTEST_SRC_PATH)
 
-    INCLUDEPATH += $$GTEST_SRC_PATH
+#   INCLUDEPATH += $$GTEST_SRC_PATH
     INCLUDEPATH += $$GTEST_SRC_PATH/include
 
     SOURCES += $$GTEST_SRC_PATH/src/gtest-all.cc
@@ -51,7 +55,7 @@ exists($$GTEST_SRC_PATH) {
 
             !build_pass: message(Using gtest from <$$GTEST_PATH/build/Release|Debug>)
         } else {
-            !build_pass: message(Using gtest from $$GTEST_PATH)
+            !build_pass: message(Using gtest from <$$GTEST_PATH_BUILD/lib>)
             LIBS += -L"$$GTEST_PATH_BUILD/lib" -lgtest
         }
     }
