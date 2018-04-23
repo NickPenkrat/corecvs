@@ -34,7 +34,7 @@ with_minitools {
 
 win32 : !set_cpu_sse4_features {
     SUBDIRS += directshow
-    directshow.file       = src/open/wrappers/directShow/directShow.pro
+    directshow.file       = wrappers/directShow/directShow.pro
     directshow.depends   += core
 }
 
