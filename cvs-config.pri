@@ -41,12 +41,13 @@ CONFIG +=           \
                     \
    with_tbb         \
    with_openblas    \   # activate all three libraries,
-#   with_mkl         \   #  clarification is done
-#   with_fftw        \   #  later of what to use!
+   with_mkl         \   #  clarification of what to use
+   with_fftw        \   #  is done later!
+                    \
+   with_unorthodox  \   # allow use an experimental filesystem
 #   with_ceres       \
 #   with_boost       \
 #   with_fastbuild  \   # disable optimization for some src on linux
-   with_unorthodox  \   # allow use an experimental filesystem
 #   with_qscript     \   # experimental...
    \
    with_cusparse    \   # enable CUDA SDK usage for sparse matrix operations by default
