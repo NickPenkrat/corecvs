@@ -118,7 +118,7 @@ TEST(Debayer, colorTestAHD)
 TEST(Debayer, bayerShiftTest) 
 {
     std::unique_ptr<RGB48Buffer> ppm(PPMLoader().loadRgb48("data/testdata/test_ppm.ppm"));
-    EXPECT_TRUE(ppm.get() != nullptr);
+    CORE_ASSERT_TRUE(ppm != NULL, "PPM Image load failed");
 
     std::unique_ptr<G12Buffer> g(new G12Buffer(ppm->getSize(), false));
 
