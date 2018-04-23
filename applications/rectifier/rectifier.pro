@@ -13,10 +13,7 @@ ROOT_DIR=$$PWD/$$ROOT_DIR
 TEMPLATE = app
 TARGET   = rectifier
 
-#include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
-# Here relative path is preferred to be independant of $$ROOT_DIR
-include(../../utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
-
+include(../../utils/utils.pri)                      # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 INCLUDEPATH += .
 

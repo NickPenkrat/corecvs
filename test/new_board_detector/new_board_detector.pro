@@ -16,8 +16,7 @@ QT += core
 QT -= gui
 QT -= xml
 
-UTILSDIR = $$ROOT_DIR/src/open/utils
-include($$UTILSDIR/utils.pri)
+include(../../utils/utils.pri)                      # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES += new_board_detector.cpp
 

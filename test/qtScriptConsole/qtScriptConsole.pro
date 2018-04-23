@@ -10,14 +10,12 @@ exists(../../../../config.pri) {
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
+TARGET    = qtScriptConsole
+TEMPLATE  = app
+
 QT       += core gui
 
-TARGET = qtScriptConsole
-TEMPLATE = app
-
-include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
-
-DESTDIR  = $$ROOT_DIR/bin
+include(../../utils/utils.pri)                      # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 
 SOURCES += main.cpp \

@@ -14,7 +14,8 @@ TEMPLATE = app
 TARGET   = test_example_scene
 QT 	+= xml
 
-include(../../utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
+include(../../utils/utils.pri)                      # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
+
 
 SOURCES += main_example_scene.cpp
 HEADERS += main_example_scene.h

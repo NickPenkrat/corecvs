@@ -19,14 +19,6 @@ CONFIG  += console
 #include(../../core/core.pri)
 include(../../utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
-TARGET_ORIG = $$TARGET
-TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)  # add 'd' at the end for debug versions
-
-OBJECTS_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME
-MOC_DIR  = $$OBJECTS_DIR
-UI_DIR   = $$OBJECTS_DIR
-RCC_DIR  = $$OBJECTS_DIR
-
 
 with_libjpeg {
     LIBJPEG_WRAPPER_DIR = $$ROOT_DIR/src/open/wrappers/libjpeg
@@ -48,8 +40,6 @@ with_libpng {
         INCLUDEPATH += $$LIBPNG_WRAPPER_DIR
     }
 }
-
-DESTDIR  = $$ROOT_DIR/bin
 
 SOURCES += \
     main_raytracerender.cpp \

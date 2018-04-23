@@ -19,6 +19,6 @@ QT 	-= widgets
 QT 	-= opengl
 #QT 	-= gui   # is not allowed as this app uses qtFileLoader, which uses QImage that belongs to QtGui
 
-include($$ROOT_DIR/src/open/utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
+include(../../utils/utils.pri)                      # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES += distortion_corrector.cpp

@@ -14,7 +14,7 @@ TEMPLATE = app
 TARGET   = test_gcodeplayground
 QT 	+= xml
 
-include(../../utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
+include(../../utils/utils.pri)                      # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 SOURCES += main_gcodeplayground.cpp \
     vinylCutterInterpreter.cpp

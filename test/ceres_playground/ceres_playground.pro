@@ -15,8 +15,8 @@ TARGET   = test_ceres_playground
 QT 	+= xml
 
 
+include(../../utils/utils.pri)                      # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
-include(../../utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 INCLUDEPATH += /usr/include/eigen3
 INCLUDEPATH += /usr/include/ceres
@@ -30,7 +30,3 @@ LIBS += -lcsparse
 LIBS += -lcxsparse
 LIBS += -lcholmod
 LIBS += -lopenblas
-
-
-
-

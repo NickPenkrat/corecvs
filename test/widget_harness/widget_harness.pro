@@ -10,22 +10,13 @@ exists(../../../../config.pri) {
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
 
-QT       += core
-
 TEMPLATE = app
 TARGET   = widget_harness
 CONFIG  += console
+QT      += core
 
 #include(../../core/core.pri)
-include(../../utils/utils.pri)                        # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
-
-TARGET_ORIG = $$TARGET
-TARGET      = $$join(TARGET,,,$$BUILD_CFG_SFX)  # add 'd' at the end for debug versions
-
-OBJECTS_DIR = $$ROOT_DIR/.obj/$$TARGET_ORIG$$BUILD_CFG_NAME
-MOC_DIR  = $$OBJECTS_DIR
-UI_DIR   = $$OBJECTS_DIR
-RCC_DIR  = $$OBJECTS_DIR
+include(../../utils/utils.pri)                      # it uses TARGET, ROOT_DIR and detects UTILS_BINDIR, OBJECTS_DIR, DESTDIR, ...!
 
 
 with_libjpeg {
@@ -50,10 +41,6 @@ with_libpng {
 }
 
 
-DESTDIR  = $$ROOT_DIR/bin
-
 SOURCES += \
     main_widget_harness.cpp
-
-
 
