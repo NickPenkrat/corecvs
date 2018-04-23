@@ -929,11 +929,8 @@ bool corecvs::Matrix::LinSolveSchurComplement(const corecvs::Matrix &M, const co
         }
     });
 
-    for (int i = 0; i < Aw; ++i)
-        res[i] = x[i];
-    for (int j = 0; j < Bw; ++j)
-        res[j + Aw] = y[j];
-#else
+#else // !WITH_BLAS
+
     /*
      * The same as above, but with fancy LAPACK
      */
@@ -1039,12 +1036,14 @@ bool corecvs::Matrix::LinSolveSchurComplement(const corecvs::Matrix &M, const co
         }
     });
 
+#endif // WITH_BLAS
+
     for (int i = 0; i < Aw; ++i)
         res[i] = x[i];
     for (int j = 0; j < Bw; ++j)
         res[j + Aw] = y[j];
+
     return true;
-#endif
 }
 
 bool corecvs::Matrix::linSolveSchurComplement(const corecvs::Vector &B, const std::vector<int> &diagBlocks, corecvs::Vector &res, bool symmetric, bool posDef)
