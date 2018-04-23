@@ -6,7 +6,7 @@ SUBDIRS +=                   \
     core                     \
     utils                    \
     test-core                \
-    test-core-perf           \
+#    test-core-perf           \
     tests_big                \
     \   
 
@@ -17,24 +17,23 @@ with_minitools {
 
   message (Minitools On)
 
-  SUBDIRS +=                  \
-     cloudview                \
-     rectifier                \
+  SUBDIRS +=                 \
+    cloudview                \
+#    rectifier                \
     imageview                \
     \
-    \
 #    imageAugment             \
-    testbed                  \
-    base_application         \
-    base_application_example \
-    recorder                 \
-#    merger
+#    testbed                  \
+#    base_application         \
+#    base_application_example \
+#    recorder                 \
+#    merger                   \
 
 }
 
 
-win32 {
-#    SUBDIRS += directshow
+win32 : !set_cpu_sse4_features {
+    SUBDIRS += directshow
     directshow.file       = src/open/wrappers/directShow/directShow.pro
     directshow.depends   += core
 }

@@ -84,6 +84,7 @@ CORE_INCLUDEPATH_SUPP=$$COREDIR/..
 DEFINES += WITH_FRAMESOURCE_PREC
 DEFINES += WITH_FRAMESOURCE_FILE
 
+CONFIG += with_suppressincs			# activate this mode forever
 with_suppressincs {
     SUPPRESSINCLUDES=true
 }
@@ -92,7 +93,7 @@ with_suppressincs {
 } else {
     INCLUDEPATH += $$CORE_INCLUDEPATH_SUPP
 
-    !build_pass: message(Per-Folder includes are suppressed. Only including $$CORE_INCLUDEPATH_SUPP)
+# less flood    !build_pass: message(Per-Folder includes are suppressed. Only including $$CORE_INCLUDEPATH_SUPP)
 }
 
 

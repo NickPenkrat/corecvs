@@ -6,4 +6,7 @@ object_script*
 *.sdf
 *.ipch
 
+/bin
+/.obj
+/.vs
 tools/generator/Generated/*
