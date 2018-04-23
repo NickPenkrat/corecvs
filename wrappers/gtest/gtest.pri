@@ -22,7 +22,7 @@ isEmpty(GTEST_SRC_PATH) {
 exists($$GTEST_SRC_PATH) {
     !build_pass: message(Using local gtest source from $$GTEST_SRC_PATH)
 
-#   INCLUDEPATH += $$GTEST_SRC_PATH
+    INCLUDEPATH += $$GTEST_SRC_PATH		# is needed to compile the native "gtest-all.cc" src file
     INCLUDEPATH += $$GTEST_SRC_PATH/include
 
     SOURCES += $$GTEST_SRC_PATH/src/gtest-all.cc
