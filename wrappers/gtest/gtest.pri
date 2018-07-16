@@ -15,6 +15,9 @@ isEmpty(GTEST_SRC_PATH) {
     GTEST_SRC_PATH="$$ROOT_DIR/siblings/gtest"
 
     !exists($$GTEST_SRC_PATH) {
+        GTEST_SRC_PATH="$$PWD/../../3dparty/gtest/googletest"
+    }
+    !exists($$GTEST_SRC_PATH) {
         GTEST_SRC_PATH="$$ROOT_DIR/3dparty/gtest/googletest"
     }
 }
