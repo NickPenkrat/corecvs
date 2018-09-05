@@ -1,6 +1,7 @@
 #include "openCvGPUDescriptorExtractorWrapper.h"
 #include "openCvKeyPointsWrapper.h"
 #include "openCvDefaultParams.h"
+#include "openCVTools.h"
 
 #include "core/utils/global.h"
 
@@ -41,16 +42,16 @@ struct OpenCLRemapCache
 {
     cv::Mat unused0;
     cv::Mat unused1;
-	oclMat mat0;
-	oclMat mat1;
+    oclMat mat0;
+    oclMat mat1;
 };
 
 struct CudaRemapCache
 {
     cv::Mat unused0;
     cv::Mat unused1;
-	GpuMat mat0;
-	GpuMat mat1;
+    GpuMat mat0;
+    GpuMat mat1;
 };
 
 void OpenCvGPUDescriptorExtractorWrapper::computeImpl(corecvs::RuntimeTypeBuffer &image
@@ -63,7 +64,7 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl(corecvs::RuntimeTypeBuffer
     {
         kps.push_back(convert(kp));
     }
-    cv::Mat img = convert(image), desc;
+    cv::Mat img = OpenCVTools::convert(image), desc;
     if ( extractorSURF_CUDA || extractorORB_CUDA )
     {    
         GpuMat cudaImage( img );
@@ -112,7 +113,7 @@ void OpenCvGPUDescriptorExtractorWrapper::computeImpl(corecvs::RuntimeTypeBuffer
         keyPoints.push_back(convert(kp));
     }
 
-    descriptors = convert(desc);
+    descriptors = OpenCVTools::convert(desc);
 }
 
 void OpenCvGPUDescriptorExtractorWrapper::setProperty( const std::string &name, const double &value )

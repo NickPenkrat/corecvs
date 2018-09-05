@@ -21,18 +21,3 @@ RawMatch convert(const cv::DMatch &dm)
 {
 	return RawMatch(dm.queryIdx, dm.trainIdx, dm.distance);
 }
-
-cv::Mat convert(const RuntimeTypeBuffer &buffer)
-{
-	return cv::Mat((int)buffer.getRows()
-                 , (int)buffer.getCols()
-                 , (int)buffer.getCvType()
-                 , buffer.row<void>((size_t)0));
-}
-
-RuntimeTypeBuffer convert(const cv::Mat &mat)
-{
-	return RuntimeTypeBuffer(mat.rows, mat.cols
-        , mat.data
-        , (int)RuntimeTypeBuffer::getTypeFromCvType(mat.type()));
-}

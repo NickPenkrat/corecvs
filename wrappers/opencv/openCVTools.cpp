@@ -330,5 +330,19 @@ G8Buffer *OpenCVTools::getG8BufferFromCVMat(const cv::Mat &input)
     }
 
     return toReturn;
+}
 
+cv::Mat OpenCVTools::convert(const corecvs::RuntimeTypeBuffer &buffer)
+{
+    return cv::Mat((int)buffer.getRows()
+        , (int)buffer.getCols()
+        , (int)buffer.getCvType()
+        , buffer.row<void>((size_t)0));
+}
+
+corecvs::RuntimeTypeBuffer OpenCVTools::convert(const cv::Mat &mat)
+{
+    return RuntimeTypeBuffer(mat.rows, mat.cols
+        , mat.data
+        , (int)RuntimeTypeBuffer::getTypeFromCvType(mat.type()));
 }

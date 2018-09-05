@@ -1,5 +1,6 @@
 #include "openCvDescriptorMatcherWrapper.h"
 #include "openCvKeyPointsWrapper.h"
+#include "openCVTools.h"
 
 #include "core/utils/global.h"
 
@@ -21,8 +22,8 @@ void OpenCvDescriptorMatcherWrapper::knnMatchImpl(RuntimeTypeBuffer &query
     , std::vector<std::vector<RawMatch> > &matches
     , size_t K)
 {
-    cv::Mat qd = convert(query);
-    cv::Mat td = convert(train);
+    cv::Mat qd = OpenCVTools::convert(query);
+    cv::Mat td = OpenCVTools::convert(train);
     std::vector< std::vector<cv::DMatch> > matches_cv;
     matcher->knnMatch(qd, td, matches_cv, (int)K);
 

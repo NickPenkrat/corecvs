@@ -29,11 +29,10 @@ using namespace corecvs;
 
 void usage()
 {
-    std::cout << "test_chessboard_detector image [W H] [true/false - exec imagequality]\n"
+    std::cout << "chessboard_detector image [W H] [true/false - exec image-quality]\n"
         "  * image - input image\n"
         "  * W x H - expected full size of pattern\n"
-        "  * true/false - exec imagequality analisys\n"<< std::endl;
-
+        "  * true/false - exec image-quality analisys\n"<< std::endl;
 }
 
 bool checkIfExists(const char *filename)
@@ -66,7 +65,6 @@ bool parseArgs(int argc, char **argv, std::string &filename, int &W, int &H, boo
     {
         imageQuality = (std::string(argv[4]) == "true");
     }
-
 
     return true;
 }

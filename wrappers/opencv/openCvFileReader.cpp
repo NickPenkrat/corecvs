@@ -1,6 +1,5 @@
 #include "core/utils/utils.h"
 #include "openCvFileReader.h"
-#include "openCvKeyPointsWrapper.h"
 #include "openCVTools.h"
 
 #include <exception>
@@ -58,7 +57,7 @@ RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(s);
     }
-    return convert(img);
+    return OpenCVTools::convert(img);
 }
 
 bool OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std::string &s, int quality)
@@ -82,7 +81,7 @@ bool OpenCvBufferReader::writeRgb(const corecvs::RGB24Buffer &buffer, const std:
 
 bool OpenCvBufferReader::write(const RuntimeTypeBuffer &buffer, const std::string &s)
 {
-    cv::Mat img = convert(buffer);
+    cv::Mat img = OpenCVTools::convert(buffer);
     bool success = cv::imwrite(corecvs::HelperUtils::toNativeSlashes(s), img);
     return success;
 }
@@ -125,7 +124,7 @@ RuntimeTypeBuffer *OpenCVRuntimeTypeBufferLoader::load(std::string name)
         throwInvalidArg(name);
     }
     RuntimeTypeBuffer *header = new RuntimeTypeBuffer;
-    *header = convert(img);
+    *header = OpenCVTools::convert(img);
     return header;
 }
 

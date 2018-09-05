@@ -1,6 +1,7 @@
 #include "openCvDetectAndExtractWrapper.h"
 #include "openCvKeyPointsWrapper.h"
 #include "openCvDefaultParams.h"
+#include "openCVTools.h"
 
 #include <opencv2/features2d/features2d.hpp>       // cv::FeatureDetector
 #include <opencv2/imgproc/imgproc.hpp>
@@ -164,7 +165,7 @@ void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(corecvs::RuntimeTypeBuf
 {
     std::vector<cv::KeyPoint> kps;
     cv::Mat cv_descriptors;
-    cv::Mat img = convert(image);
+    cv::Mat img = OpenCVTools::convert(image);
 
     if (pRemapCache)
     {
@@ -211,7 +212,7 @@ void OpenCvDetectAndExtractWrapper::detectAndExtractImpl(corecvs::RuntimeTypeBuf
         memcpy(sortedDescriptors.ptr(i, 0), cv_descriptors.ptr(idx, 0), szElements);
     }
 
-    descriptors = convert(sortedDescriptors);
+    descriptors = OpenCVTools::convert(sortedDescriptors);
 }
 
 void init_opencv_detect_and_extract_provider()

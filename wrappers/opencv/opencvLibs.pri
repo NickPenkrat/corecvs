@@ -84,6 +84,14 @@ with_opencv {
                                  -lopencv_features2d310d  -lopencv_flann310d     -lopencv_imgproc310d   -lopencv_objdetect310d \
                                  -lopencv_imgcodecs310d   -lopencv_videoio310d  #-lopencv_ml310d
 
+            OPENCV_341_LIBS_R  = -lopencv_calib3d341      -lopencv_video341      -lopencv_core341      -lopencv_highgui341   \
+                                 -lopencv_features2d341   -lopencv_flann341      -lopencv_imgproc341   -lopencv_objdetect341 \
+                                 -lopencv_imgcodecs341    -lopencv_videoio341   #-lopencv_ml341
+
+            OPENCV_341_LIBS_D  = -lopencv_calib3d341d     -lopencv_video341d     -lopencv_core341d      -lopencv_highgui341d   \
+                                 -lopencv_features2d341d  -lopencv_flann341d     -lopencv_imgproc341d   -lopencv_objdetect341d \
+                                 -lopencv_imgcodecs341d   -lopencv_videoio341d  #-lopencv_ml341d
+
 
             exists($$OPENCV_PATH/build/bin/Release/opencv_gpu249.dll) { # add 2.4.9 cuda opencv libraries
                 OPENCV_249_LIBS_R += -lopencv_gpu249
@@ -135,6 +143,9 @@ with_opencv {
             !isEmpty(OPENCV_CONTRIB_PATH) {
                 OPENCV_310_LIBS_R += -lopencv_xfeatures2d310
                 OPENCV_310_LIBS_D += -lopencv_xfeatures2d310d
+
+                OPENCV_341_LIBS_R += -lopencv_xfeatures2d341
+                OPENCV_341_LIBS_D += -lopencv_xfeatures2d341d
             }
 
 
@@ -150,6 +161,9 @@ with_opencv {
 
                 OPENCV_310_LIBS                = $$OPENCV_310_LIBS_D
                 OPENCV_310_LIBS_ADD_OWN_BUILT  = -L$$OPENCV_PATH/build/lib/Debug/   $$OPENCV_310_LIBS
+
+                OPENCV_341_LIBS                = $$OPENCV_341_LIBS_D
+                OPENCV_341_LIBS_ADD_OWN_BUILT  = -L$$OPENCV_PATH/build/lib/Debug/   $$OPENCV_341_LIBS
             }
             CONFIG(release, debug|release) {
                 OPENCV_249_LIBS                = $$OPENCV_249_LIBS_R
@@ -163,6 +177,9 @@ with_opencv {
 
                 OPENCV_310_LIBS                = $$OPENCV_310_LIBS_R
                 OPENCV_310_LIBS_ADD_OWN_BUILT  = -L$$OPENCV_PATH/build/lib/Release/ $$OPENCV_310_LIBS
+
+                OPENCV_341_LIBS                = $$OPENCV_341_LIBS_R
+                OPENCV_341_LIBS_ADD_OWN_BUILT  = -L$$OPENCV_PATH/build/lib/Release/ $$OPENCV_341_LIBS
             }
 
 
@@ -230,6 +247,10 @@ with_opencv {
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
                 LIBS        += -L$$OPENCV_PATH/x64/vc12/lib/ $$OPENCV_249_LIBS
                 DEFINES     += WITH_OPENCV
+            } else:exists($$OPENCV_PATH/x64/vc15/bin/opencv_core341.dll): win32-msvc* {             # installed OpenCV v.3.4.1 with msvc* without GPU (our integration server)
+                !build_pass:message(Using <$$OPENCV_PATH/x64/vc15/bin>)
+                LIBS        += -L$$OPENCV_PATH/x64/vc15/lib/ $$OPENCV_341_LIBS
+                DEFINES     += WITH_OPENCV WITH_OPENCV_3X
             } else:exists($$OPENCV_PATH/build.mg/bin/libopencv_core249.dll): !win32-msvc* {         # git's OpenCV tag=2.4.9 built by MINGW without GPU
                 !build_pass:message(Using <$$OPENCV_PATH/build.mg/bin>)
                 INCLUDEPATH += $$OPENCV_INC_NOTINSTALLED
@@ -294,9 +315,13 @@ with_opencv {
         with_nopkgconfig {
             exists($$OPENCV_PATH/lib/libopencv_core.so.3.4) {
                 LIBS += -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired -lopencv_calib3d -lopencv_ccalib -lopencv_core -lopencv_datasets -lopencv_dnn_objdetect
-                LIBS += -lopencv_dnn -lopencv_dpm -lopencv_face -lopencv_features2d -lopencv_flann -lopencv_freetype -lopencv_fuzzy -lopencv_hfs -lopencv_highgui
+                LIBS += -lopencv_dnn -lopencv_dpm -lopencv_face -lopencv_features2d -lopencv_flann 
+#		LIBS += -lopencv_freetype 
+                LIBS += -lopencv_fuzzy -lopencv_hfs -lopencv_highgui
                 LIBS += -lopencv_imgcodecs -lopencv_img_hash -lopencv_imgproc -lopencv_line_descriptor -lopencv_ml -lopencv_objdetect -lopencv_optflow -lopencv_phase_unwrapping
-                LIBS += -lopencv_photo -lopencv_plot -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_shape -lopencv_stereo -lopencv_stitching -lopencv_structured_light
+                LIBS += -lopencv_photo -lopencv_plot -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_shape -lopencv_stereo 
+#                LIBS += -lopencv_stitching 
+                LIBS += -lopencv_structured_light
                 LIBS += -lopencv_superres -lopencv_surface_matching -lopencv_text -lopencv_tracking -lopencv_videoio -lopencv_video -lopencv_videostab -lopencv_xfeatures2d
                 LIBS += -lopencv_ximgproc -lopencv_xobjdetect -lopencv_xphoto
             } else {

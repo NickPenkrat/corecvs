@@ -1,6 +1,7 @@
 #include "openCvDescriptorExtractorWrapper.h"
 #include "openCvKeyPointsWrapper.h"
 #include "openCvDefaultParams.h"
+#include "openCVTools.h"
 
 #include "core/utils/global.h"
 #include "core/buffers/runtimeTypeBuffer.h"
@@ -118,7 +119,7 @@ void OpenCvDescriptorExtractorWrapper::computeImpl(
     {
         kps.emplace_back(convert(kp));
     }
-    cv::Mat img = convert(image), desc;
+    cv::Mat img = OpenCVTools::convert(image), desc;
 	if (pRemapCache)
 	{
 		cv::Mat remapped;
@@ -136,7 +137,7 @@ void OpenCvDescriptorExtractorWrapper::computeImpl(
         keyPoints.emplace_back(convert(kp));
     }
 
-    descriptors = convert(desc);
+    descriptors = OpenCVTools::convert(desc);
 }
 
 void OpenCvDescriptorExtractorWrapper::setProperty(const std::string &name, const double &value)

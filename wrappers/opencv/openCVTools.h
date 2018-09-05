@@ -22,6 +22,7 @@
 #include "core/math/vector/vector2d.h"
 #include "core/buffers/g12Buffer.h"
 #include "core/buffers/rgb24/rgb24Buffer.h"
+#include "core/buffers/runtimeTypeBuffer.h"
 
 using corecvs::G12Buffer;
 using corecvs::G8Buffer;
@@ -51,6 +52,9 @@ public:
 
     static RGB24Buffer *getRGB24BufferFromCVMat(const cv::Mat &input);
     static G8Buffer    *getG8BufferFromCVMat   (const cv::Mat &input);
+
+    static cv::Mat convert(const corecvs::RuntimeTypeBuffer &buffer);
+    static corecvs::RuntimeTypeBuffer convert(const cv::Mat &mat);
 
 template<typename OtherStruct>
     static CvSize getCvSizeFromVector(const OtherStruct &other)

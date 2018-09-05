@@ -1,6 +1,6 @@
 #include "openCvFeatureDetectorWrapper.h"
 #include "openCvKeyPointsWrapper.h"
-
+#include "openCVTools.h"
 #include "openCvDefaultParams.h"
 
 #include "core/utils/global.h"
@@ -140,7 +140,7 @@ struct CvRemapCache
 void OpenCvFeatureDetectorWrapper::detectImpl(RuntimeTypeBuffer &image, std::vector<KeyPoint> &keyPoints, int nKeyPoints, void* pRemapCache)
 {
 	std::vector<cv::KeyPoint> kps;
-    cv::Mat img = convert(image);
+    cv::Mat img = OpenCVTools::convert(image);
 	if (pRemapCache)
 	{
 		cv::Mat remapped;

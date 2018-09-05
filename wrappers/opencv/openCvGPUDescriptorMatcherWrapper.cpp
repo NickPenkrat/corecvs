@@ -1,5 +1,6 @@
 #include "openCvGPUDescriptorMatcherWrapper.h"
 #include "openCvKeyPointsWrapper.h"
+#include "openCVTools.h"
 
 #include "core/utils/global.h"
 
@@ -29,7 +30,7 @@ void OpenCvGPUDescriptorMatcherWrapper::knnMatchImpl(corecvs::RuntimeTypeBuffer 
     , std::vector<std::vector<RawMatch> > &matches
     , size_t K)
 {
-    cv::Mat qd = convert( query ), td = convert( train );
+    cv::Mat qd = OpenCVTools::convert(query), td = OpenCVTools::convert(train);
     std::vector< std::vector<cv::DMatch> > matches_cv;
     if ( matcherBF_CUDA )
     {
