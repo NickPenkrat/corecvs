@@ -102,7 +102,7 @@ DEPENDPATH  += $$CORE_INCLUDEPATH
 exists($$COREDIR/../../../config.pri) {
     COREBINDIR = $$COREDIR/../../../bin
 } else {
-    !build_pass: message(Using local core. Global config should be at $$COREDIR/../../../config.pri)
+# less flood  !build_pass: message(Using local core. Global config should be at $$COREDIR/../../../config.pri)
     COREBINDIR = $$COREDIR/../bin
 }
 

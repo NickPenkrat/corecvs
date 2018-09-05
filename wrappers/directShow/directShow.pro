@@ -1,11 +1,13 @@
 # try use global config 
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
+    ROOT_DIR_BIN=..\\..\\..\\..\\bin
     #message(Using global config)
     include($$ROOT_DIR/config.pri)
 } else { 
     #message(Using local config)
     ROOT_DIR=../../
+    ROOT_DIR_BIN=..\\..\\bin
     include($$ROOT_DIR/cvs-config.pri)
 }
 ROOT_DIR=$$PWD/$$ROOT_DIR
@@ -27,13 +29,13 @@ DESTDIR = $$ROOT_DIR/bin
 # We should copy proper version of capdll.dll module from LIB dir of this project into the output common BIN dir
 #
 win32-msvc*:!contains(QMAKE_HOST.arch, x86_64) {
-        QMAKE_POST_LINK = copy /Y .\\lib\\capdll.dll   ..\\..\\..\\..\\bin
+        QMAKE_POST_LINK = copy /Y .\\lib\\capdll.dll   $$ROOT_DIR_BIN
 } else:win32-msvc* {
-        QMAKE_POST_LINK = copy /Y .\\lib64\\capdll.dll ..\\..\\..\\..\\bin
+        QMAKE_POST_LINK = copy /Y .\\lib64\\capdll.dll $$ROOT_DIR_BIN
 } else:win32 {
 	SHELL=$$(SHELL)
 	isEmpty(SHELL) {
-		QMAKE_POST_LINK = copy /Y .\\lib64\\capdll.dll ..\\..\\..\\..\\bin
+		QMAKE_POST_LINK = copy /Y .\\lib64\\capdll.dll $$ROOT_DIR_BIN
 	} else {
 		message(Postbuild directshow: copy is not supported in mingw-cmd-mingw32-make call chain)
 	}

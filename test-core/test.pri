@@ -12,7 +12,7 @@ exists(../../../config.pri) {
     ROOT_DIR=../../..
     include($$ROOT_DIR/config.pri)
 } else {
-    message(Using local config at test.pri for the $$TARGET)
+    #message(Using local config at test.pri for the $$TARGET)
     ROOT_DIR=..
     include($$ROOT_DIR/cvs-config.pri)
 }

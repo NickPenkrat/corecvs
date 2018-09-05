@@ -24,11 +24,11 @@ HEADERS += \
     geometry/ellipse.h \
     geometry/ellipseFit.h \
     geometry/plane3dFit.h \
-    $$PWD/meshClicker.h \
-    $$PWD/raytrace/sdfRenderableObjects.h \
-    $$PWD/convexHull.h \
-    $$PWD/convexQuickHull.h \
-    $$PWD/renderer/attributedTriangleSpanIterator.h
+    geometry/meshClicker.h \
+    geometry/raytrace/sdfRenderableObjects.h \
+    geometry/convexHull.h \
+    geometry/convexQuickHull.h \
+    geometry/renderer/attributedTriangleSpanIterator.h
 
 
 SOURCES += \ 
@@ -52,9 +52,9 @@ SOURCES += \
     geometry/ellipse.cpp \
     geometry/ellipseFit.cpp \
     geometry/plane3dFit.cpp \
-    $$PWD/meshClicker.cpp \
-    $$PWD/raytrace/sdfRenderableObjects.cpp \
-    $$PWD/convexHull.cpp \
-    $$PWD/convexQuickHull.cpp \
-    $$PWD/renderer/attributedTriangleSpanIterator.cpp
+    geometry/meshClicker.cpp \
+    geometry/raytrace/sdfRenderableObjects.cpp \
+    geometry/convexHull.cpp \
+    geometry/convexQuickHull.cpp \
+    geometry/renderer/attributedTriangleSpanIterator.cpp
 

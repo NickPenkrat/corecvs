@@ -77,6 +77,16 @@ disable_cusparse: with_cusparse {
     CONFIG -= with_cusparse
     !build_pass: message (The requested target platform to support disable_cusparse)
 }
+disable_blas: with_openblas {
+    CONFIG -= with_mkl
+    CONFIG -= with_openblas
+    CONFIG -= with_fftw
+    !build_pass: message (The requested target platform to disable openblas/mkl/fftw)
+}
+disable_tbb: with_tbb {
+    CONFIG -= with_tbb
+    !build_pass: message (The requested target platform to disable_tbb)
+}
 
 !win32:!macx {
     CONFIG +=             \

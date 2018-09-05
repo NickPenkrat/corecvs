@@ -487,12 +487,19 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 # STL implemenations
 with_boost {
     BOOST_PATH=$$(BOOST_PATH)
-    DEFINES += WITH_BOOST
-    
-    # Since we are not (yet?) using any binary boost components,
-    # we can think about it as header-only lib
-    !isEmpty(BOOST_PATH) {
+    isEmpty(BOOST_PATH) {
+        BOOST_PATH=$$(BOOST_ROOT)
+    }
+    isEmpty(BOOST_PATH) {
+        message(BOOST not found!)
+    }
+    else {
+        # Since we are not (yet?) using any binary boost components,
+        # we can think about it as header-only lib
+        !build_pass: message(Using BOOST from <$$BOOST_PATH>)
+
         INCLUDEPATH += "$$BOOST_PATH"
+        DEFINES += WITH_BOOST
     }
 }
 
@@ -543,9 +550,9 @@ with_cusparse {
             INCLUDEPATH += "$(CUDA_PATH)"/include
             !win32 {
                 LIBS += -L"$$CUDA_PATH"/lib64
-	    } else {
+            } else {
                 LIBS += -L"$$CUDA_PATH"/lib/x64
-	    }
+            }
             LIBS += -lcusparse -lcudart -lcuda
             DEFINES += WITH_CUSPARSE
             DEFINES += WITH_CUDA

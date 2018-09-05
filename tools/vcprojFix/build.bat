@@ -1,6 +1,9 @@
 if exist *.vcxproj*	del *.vcxproj*
 
-call ..\..\..\..\scripts\windows\qmake.bat -tp vc vcprojFix.pro "CONFIG+=gen_vsproj"
+set qmake=..\..\..\..\scripts\windows\qmake.bat
+if not exist %qmake% set qmake=qmake
+
+call %qmake% -tp vc vcprojFix.pro "CONFIG+=gen_vsproj"
 
 rd debug
 rd release

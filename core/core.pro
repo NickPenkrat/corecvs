@@ -1,10 +1,9 @@
 # try use global config 
 exists(../../../config.pri) {
-    #message(Using global config)
     ROOT_DIR=../../..
     include($$ROOT_DIR/config.pri)
 } else { 
-    #message(Using local config)
+    !build_pass: message(Using local config in core.pro)
     ROOT_DIR=..
     include($$ROOT_DIR/cvs-config.pri)
 }
@@ -12,6 +11,7 @@ exists(../../../config.pri) {
 TEMPLATE = lib
 TARGET   = cvs_core
 CONFIG  += staticlib
+QT      -= core gui
 
 include(core.pri)                                   # it uses TARGET and detects COREBINDIR!
 include(../git-version.pri)
