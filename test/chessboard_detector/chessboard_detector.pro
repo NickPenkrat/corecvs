@@ -1,3 +1,7 @@
+ CONFIG += disable_cusparse
+#CONFIG += disable_blas		# when open will be linked corecvs.lib that requires SparseMatrix math
+#CONFIG += disable_tbb		# when open will be linked corecvs.lib that requires tbb.lib
+
 # try use global config 
 exists(../../../../config.pri) {
     ROOT_DIR=../../../..
