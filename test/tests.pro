@@ -23,7 +23,7 @@ SUBDIRS +=            \
     widget_harness    \
 #    command_harness   \
     example_scene     \
-
+    chessboard_detector \
 
 
 # SUBDIRS +=     \
@@ -58,8 +58,7 @@ with_opencv {
     SUBDIRS +=       \
 #        distortion_corrector \
 #        matcher_basic \
-#        matcher_full \
-        chessboard_detector \
+#        matcher_full
 }
 
 grab                                = grab/grab.pro
