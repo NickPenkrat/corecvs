@@ -498,12 +498,28 @@ with_boost {
 #
 with_mkl {
     MKLROOT = $$(MKLROOT)
+    #MKLINCLUDE=$$(MKLINCLUDE)
+    #MKLLIB=$$(MKLLIB)
+    message("with_mkl MKLINCLUDE "$$MKLINCLUDE" ")
+    message("with_mkl MKLLIB "$$MKLLIB" ")
     !win32: isEmpty(MKLROOT) {
         MKLROOT = /opt/intel/mkl
     }
-    exists("$$MKLROOT"/include/mkl.h) {
+    !win32: isEmpty(MKLINCLUDE) {
+        MKLINCLUDE = "$$MKLROOT"/include
+    }
+    !win32: isEmpty(MKLLIB) {
+        MKLLIB = "$$MKLROOT"/lib
+    }
+    !win32{
+        !isEmpty(MKLLIB) {
+            message("MKLLIB is in "$$MKLLIB)" ")
+            #message($$MKLLIB)
+        }
+    }
+    exists("$$MKLINCLUDE"/mkl.h) : !isEmpty(MKLLIB) {
         !win32 {
-            LIBS        += -L"$$MKLROOT"/lib/intel64 -lmkl_intel_lp64 -lmkl_core
+            LIBS        += -L"$$MKLLIB" -lmkl_intel_lp64 -lmkl_core
             with_tbb {
                 LIBS    += -lmkl_tbb_thread -lstdc++ -lpthread -lm      # -ltbb was already included above
             } else {
@@ -520,13 +536,17 @@ with_mkl {
                 LIBS    += -L"$$MKLROOT"/../compiler/lib/intel64_win -lmkl_intel_thread_dll -llibiomp5md          # with OpenMP's threading layer, Intel's OpenMP library (libiomp5)
             }
         }
-        INCLUDEPATH += "$$MKLROOT"/include
+        !win32{
+            INCLUDEPATH += "$$MKLINCLUDE"    
+        }else{
+            INCLUDEPATH += "$$MKLINCLUDE"/include
+        }
         DEFINES     += WITH_MKL
         DEFINES     += WITH_BLAS
         CONFIG      += with_blas
     }
     else {
-        !build_pass: message (requested MKL is not installed and is deactivated)
+        !build_pass: message (requested MKL is not installed and is deactivated even after editing)
     }
 }
 

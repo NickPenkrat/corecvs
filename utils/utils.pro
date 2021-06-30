@@ -172,6 +172,7 @@ SOURCES += \
     statistics/graphData.cpp \
     visitors/jsonGetter.cpp \
     visitors/jsonSetter.cpp \
+    widgets/shift3dWidget.cpp \
     widgets/vectorWidget.cpp \
     distortioncorrector/cameraModelParametersControlWidget.cpp \
     distortioncorrector/lensDistortionModelParametersControlWidget.cpp \
@@ -213,7 +214,8 @@ FORMS += \
     3d/shadedSceneControlWidget.ui \
     corestructs/cameraModel/fixtureGeometryControlWidget.ui \
     corestructs/pointerFieldWidget.ui \
-    corestructs/cameraModel/fixtureGlobalParametersWidget.ui
+    corestructs/cameraModel/fixtureGlobalParametersWidget.ui\
+    widgets/shift3dWidget.ui
 
 # =============================================================
 
@@ -408,7 +410,7 @@ SOURCES += \
     widgets/loggerWidget.cpp \
     widgets/transform3DSelector.cpp \
     widgets/angleEditBox.cpp \
-    widgets/shift3DWidget.cpp \
+    #widgets/shift3DWidget.cpp \
     \
     uis/advancedImageWidget.cpp \
     uis/paintImageWidget.cpp \
@@ -440,7 +442,7 @@ FORMS += \
     widgets/graphPlotParametersControlWidget.ui \
     widgets/transform3DSelector.ui \
     widgets/angleEditBox.ui \
-    widgets/shift3DWidget.ui \
+    #widgets/shift3DWidget.ui \
     \
     corestructs/libWidgets/openCVBMParametersControlWidget.ui \
     corestructs/libWidgets/openCVSGMParametersControlWidget.ui \

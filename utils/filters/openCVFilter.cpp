@@ -25,7 +25,7 @@ int OpenCVFilter::operator()()
 
     Canny( detected_edges, detected_edges, mOpenCVParameters.param1() , mOpenCVParameters.param2() , 3 );
 
-    *inputIpl = detected_edges;
+    *inputIpl = cvIplImage(detected_edges);
     result = OpenCVTools::getG12BufferFromCVImage(inputIpl);
 
     cvReleaseImage(&inputIpl);
