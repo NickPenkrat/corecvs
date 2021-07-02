@@ -2,7 +2,8 @@
 
 /* GCC 4.6 needs this to compile*/
 #include <cstddef>
-
+#include <opencv2/core/types_c.h>
+#include <opencv2/videoio/videoio_c.h>
 #include <opencv2/highgui/highgui.hpp>
 
 #include "core/buffers/g12Buffer.h"

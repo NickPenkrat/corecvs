@@ -59,7 +59,7 @@ void FaceDetectorOpenCV::detectFacesOpenCV(G12Buffer *input, vector<DetectedObje
             matrix
          ,  faces
          ,  scaleFactor
-         , minNeighbors, 0 /*|CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH */ |CV_HAAR_SCALE_IMAGE
+         , minNeighbors, 0 /*|CV_HAAR_FIND_BIGGEST_OBJECT | CV_HAAR_DO_ROUGH_SEARCH  |CV_HAAR_SCALE_IMAGE*///in OpenCV 4* flags args not used
          , Size(minSize, minSize)
          , Size(maxSize, maxSize)
     );

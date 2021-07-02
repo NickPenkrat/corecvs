@@ -278,7 +278,14 @@ with_opencv {
         DEFINES     += WITH_OPENCV
     } else {
         isEmpty(OPENCV_PATH) {
-            !build_pass:message(Compiling with system OpenCV)
+                        !isEmpty(OPENCV_PATH_INCLUDE) : !isEmpty(OPENCV_PATH_LIB) {
+                !build_pass:message(Compiling with OpenCV from lib from $$OPENCV_PATH_LIB and include from $$OPENCV_PATH_INCLUDE)
+                DEPENDPATH  += $$OPENCV_PATH_INCLUDE
+                INCLUDEPATH += $$OPENCV_PATH_INCLUDE
+                LIBS        += -L$$OPENCV_PATH_LIB
+            }else{
+                !build_pass:message(Compiling with system OpenCV)                    
+            }
         } else {
             !build_pass:message(Compiling with OpenCV from $$OPENCV_PATH)
             DEPENDPATH  += $$OPENCV_PATH/include
@@ -287,12 +294,35 @@ with_opencv {
         }
 
         with_nopkgconfig {
+            !isEmpty(OPENCV_PATH){
+                libopencv_corePath_newer45="$$OPENCV_PATH_LIB"/libopencv_core.so.4.5
+            }else{
+                !isEmpty(OPENCV_PATH_LIB){
+                    libopencv_corePath_newer45="$$OPENCV_PATH_LIB"/libopencv_core.so.4.5
+                }
+            }
+            !build_pass:message(libopencv_corePath_newer45 "$$libopencv_corePath_newer45")                    
+            exists("$$libopencv_corePath_newer45") {
+                DEFINES += WITH_OPENCV_3X
+                !build_pass:message(WITH_OPENCV_3X defined)                    
+                LIBS += -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired -lopencv_calib3d -lopencv_ccalib -lopencv_core -lopencv_datasets -lopencv_dnn_objdetect
+                LIBS += -lopencv_dnn -lopencv_dpm -lopencv_face -lopencv_features2d -lopencv_flann 
+#		LIBS += -lopencv_freetype 
+                LIBS += -lopencv_fuzzy -lopencv_hfs -lopencv_highgui
+                LIBS += -lopencv_imgcodecs -lopencv_img_hash -lopencv_imgproc -lopencv_line_descriptor -lopencv_ml -lopencv_objdetect -lopencv_optflow -lopencv_phase_unwrapping
+                LIBS += -lopencv_photo -lopencv_plot -lopencv_reg -lopencv_rgbd -lopencv_saliency -lopencv_shape -lopencv_stereo 
+#                LIBS += -lopencv_stitching 
+                LIBS += -lopencv_structured_light
+                LIBS += -lopencv_superres -lopencv_surface_matching -lopencv_text -lopencv_tracking -lopencv_videoio -lopencv_video -lopencv_videostab -lopencv_xfeatures2d
+                LIBS += -lopencv_ximgproc -lopencv_xobjdetect -lopencv_xphoto
+            } else {
+                !build_pass:message(WITH_OPENCV_3X UNDEFINED)                    
+                LIBS += -lopencv_calib3d    -lopencv_video   -lopencv_core    -lopencv_highgui
+                LIBS += -lopencv_features2d -lopencv_flann   -lopencv_imgproc -lopencv_objdetect
+                LIBS += -lopencv_nonfree    -lopencv_legacy #-llibopencv_ml
+            }
 
-            LIBS += -lopencv_calib3d    -lopencv_video   -lopencv_core    -lopencv_highgui   \
-                    -lopencv_features2d -lopencv_flann   -lopencv_imgproc -lopencv_objdetect \
-                    -lopencv_nonfree    -lopencv_legacy #-llibopencv_ml
         } else {
-
             CONFIG += link_pkgconfig
             PKGCONFIG += opencv
             OPENCV_LIBS = $$system(pkg-config --libs opencv)

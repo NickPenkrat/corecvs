@@ -463,16 +463,25 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 
         DEPENDPATH  += "$$TBB_PATH"/include
     } else {
-        !isEmpty(TBB_PATH) {
-            #message (Using TBB at "$$TBB_PATH")
+        !isEmpty(TBB_PATH){
+            message (Using TBB at "$$TBB_PATH")
             INCLUDEPATH += "$$TBB_PATH"/include
             LIBS        += -L"$$TBB_PATH"/lib/
         }
         else {
-            !build_pass: message (Using System TBB)
+            !isEmpty(TBB_LIB):!isEmpty(TBB_INCLUDE){
+                message (Using TBB at "$$TBB_INCLUDE" "$$TBB_LIB")
+                INCLUDEPATH += "$$TBB_INCLUDE"
+                LIBS        += -L"$$TBB_LIB"
+                DEFINES     += WITH_TBB
+                LIBS        += -ltbb
+            }else{
+                !build_pass: message (Using System TBB)
+                DEFINES     -= WITH_TBB
+                LIBS        -= -ltbb
+            }
         }
-        DEFINES     += WITH_TBB
-        LIBS        += -ltbb
+        
     }
 }
 
@@ -481,15 +490,21 @@ with_tbb:!contains(DEFINES, WITH_TBB) {
 # STL implemenations
 with_boost {
     BOOST_PATH=$$(BOOST_PATH)
-    DEFINES += WITH_BOOST
-    
-    # Since we are not (yet?) using any binary boost components,
-    # we can think about it as header-only lib
-    !isEmpty(BOOST_PATH) {
+    isEmpty(BOOST_PATH) {
+        BOOST_PATH=$$(BOOST_ROOT)
+    }
+    isEmpty(BOOST_PATH) {
+        message(BOOST not found!)
+    }
+    else {
+        # Since we are not (yet?) using any binary boost components,
+        # we can think about it as header-only lib
+        !build_pass: message(Using BOOST from <$$BOOST_PATH>)
+
         INCLUDEPATH += "$$BOOST_PATH"
+        DEFINES += WITH_BOOST
     }
 }
-
 #
 # MKL is more preferable as it uses "tbb" internally, which we use too anyway.
 # But openBLAS uses an "OpenMP" that is bad to use with tbb simultaneously, nevertheless you can switch off tbb as well.

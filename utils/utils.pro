@@ -410,7 +410,7 @@ SOURCES += \
     widgets/loggerWidget.cpp \
     widgets/transform3DSelector.cpp \
     widgets/angleEditBox.cpp \
-    #widgets/shift3DWidget.cpp \
+    #widgets/shift3dWidget.cpp \
     \
     uis/advancedImageWidget.cpp \
     uis/paintImageWidget.cpp \
@@ -442,7 +442,7 @@ FORMS += \
     widgets/graphPlotParametersControlWidget.ui \
     widgets/transform3DSelector.ui \
     widgets/angleEditBox.ui \
-    #widgets/shift3DWidget.ui \
+    #widgets/shift3dWidget.ui \
     \
     corestructs/libWidgets/openCVBMParametersControlWidget.ui \
     corestructs/libWidgets/openCVSGMParametersControlWidget.ui \
