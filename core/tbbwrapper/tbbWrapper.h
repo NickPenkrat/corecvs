@@ -15,6 +15,7 @@
  * This jump around is beacause tbb indirectly includes windows.h
    This is a fail. TBB needs to be abolished
 */
+#define TBB_SUPPRESS_DEPRECATED_MESSAGES 1
 #define Polygon Polygon_
 #define Ellipse Ellipse_
 #include <tbb/parallel_for.h>

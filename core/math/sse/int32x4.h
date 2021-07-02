@@ -36,6 +36,8 @@ public:
 
     Int32x4(const SSEBase &other) : SSEBase(other) {}
 
+    Int32x4& operator =(const Int32x4 &other)=default;
+
     /**
      *  Create SSE integer vector from integer constant
      **/

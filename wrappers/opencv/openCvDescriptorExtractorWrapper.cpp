@@ -105,9 +105,9 @@ struct CvRemapCache
 	cv::Mat mat1;
 };
 
-void OpenCvDescriptorExtractorWrapper::computeImpl(RuntimeTypeBuffer &image
+void OpenCvDescriptorExtractorWrapper::computeImpl(corecvs::RuntimeTypeBuffer &image
     , std::vector<KeyPoint> &keyPoints
-    , RuntimeTypeBuffer &descriptors
+    , corecvs::RuntimeTypeBuffer &descriptors
 	, void* pRemapCache )
 {
     std::vector<cv::KeyPoint> kps;

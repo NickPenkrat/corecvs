@@ -23,19 +23,19 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
 {
     unsigned int domain = 0;
 
-    if      (mode == CAP_ANY)
+    if      (mode == TP_CAP_ANY)
     {
         domain = cv::CAP_ANY;
         printf("OpenCVCaptureInterface(): using ANY. Input: %s\n", _devname.c_str());
         fflush(stdout);
     }
-    else if (mode == CAP_VFW)
+    else if (mode == TP_CAP_VFW)
     {
         domain = cv::CAP_VFW;
         printf("OpenCVCaptureInterface(): using VFW. Input: %s\n", _devname.c_str());
         fflush(stdout);
     }
-    else if (mode == CAP_DS)
+    else if (mode == TP_CAP_DS)
     {
         domain = cv::CAP_DSHOW;
         printf("OpenCVCaptureInterface(): using DirectShow. Input: %s\n", _devname.c_str());

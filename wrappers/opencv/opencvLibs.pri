@@ -303,8 +303,8 @@ with_opencv {
             }
             !build_pass:message(libopencv_corePath_newer45 "$$libopencv_corePath_newer45")                    
             exists("$$libopencv_corePath_newer45") {
-                DEFINES += WITH_OPENCV_3X
-                !build_pass:message(WITH_OPENCV_3X defined)                    
+                DEFINES += WITH_OPENCV_3x
+                !build_pass:message(WITH_OPENCV_3x defined)                    
                 LIBS += -lopencv_aruco -lopencv_bgsegm -lopencv_bioinspired -lopencv_calib3d -lopencv_ccalib -lopencv_core -lopencv_datasets -lopencv_dnn_objdetect
                 LIBS += -lopencv_dnn -lopencv_dpm -lopencv_face -lopencv_features2d -lopencv_flann 
 #		LIBS += -lopencv_freetype 
@@ -316,7 +316,7 @@ with_opencv {
                 LIBS += -lopencv_superres -lopencv_surface_matching -lopencv_text -lopencv_tracking -lopencv_videoio -lopencv_video -lopencv_videostab -lopencv_xfeatures2d
                 LIBS += -lopencv_ximgproc -lopencv_xobjdetect -lopencv_xphoto
             } else {
-                !build_pass:message(WITH_OPENCV_3X UNDEFINED)                    
+                !build_pass:message(WITH_OPENCV_3x UNDEFINED)                    
                 LIBS += -lopencv_calib3d    -lopencv_video   -lopencv_core    -lopencv_highgui
                 LIBS += -lopencv_features2d -lopencv_flann   -lopencv_imgproc -lopencv_objdetect
                 LIBS += -lopencv_nonfree    -lopencv_legacy #-llibopencv_ml

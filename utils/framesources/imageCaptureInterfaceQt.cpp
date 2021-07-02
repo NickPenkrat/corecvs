@@ -132,21 +132,21 @@ ImageCaptureInterfaceQt* ImageCaptureInterfaceQtFactory::fabric(string input, bo
     if (input.substr(0, any.size()).compare(any) == 0)
     {
         string tmp = input.substr(any.size());
-        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, CAP_ANY);
+        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, TP_CAP_ANY);
     }
 
     string vfw("vfw:");
     if (input.substr(0, vfw.size()).compare(vfw) == 0)
     {
         string tmp = input.substr(vfw.size());
-        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, CAP_VFW);
+        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, TP_CAP_VFW);
     }
 
     string ds("ds:");
     if (input.substr(0, ds.size()).compare(ds) == 0)
     {
         string tmp = input.substr(ds.size());
-        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, CAP_DS);
+        return new ImageCaptureInterfaceWrapper<OpenCVCaptureInterface>(tmp, TP_CAP_DS);
     }
 
     string opencv_file("opencv_file:");

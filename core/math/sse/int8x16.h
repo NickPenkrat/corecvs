@@ -28,7 +28,7 @@ public:
      * Constructors
      **/
     Int8x16() {}
-
+    Int8x16& operator=(const Int8x16&) = default;
     /**
      *  Copy constructor
      **/

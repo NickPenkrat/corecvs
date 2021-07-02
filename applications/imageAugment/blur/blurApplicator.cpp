@@ -37,7 +37,7 @@ bool BlurApplicator::applySpecialParameters(const QStringList &params)
 
 bool BlurApplicator::applyAugment(const std::string &inputFile, const std::string &outputFile)
 {
-    auto inputImage = cv::imread(inputFile, CV_LOAD_IMAGE_COLOR);
+    auto inputImage = cv::imread(inputFile, cv::IMREAD_COLOR);
     cv::Mat outputImage;
     if (inputImage.data == nullptr)
         return false;

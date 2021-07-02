@@ -18,9 +18,9 @@
 
 #include "imageCaptureInterface.h"
 
-#define CAP_ANY         0
-#define CAP_VFW       200
-#define CAP_DS        700
+#define TP_CAP_ANY         0
+#define TP_CAP_VFW       200
+#define TP_CAP_DS        700
 
 #define CAP_DEFAULT_DELAY 35
 
