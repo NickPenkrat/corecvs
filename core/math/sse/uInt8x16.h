@@ -34,6 +34,7 @@ public:
      **/
     UInt8x16(const UInt8x16 &other) : BaseClass(other) {}
 
+    UInt8x16& operator =(const UInt8x16 &other)=default;
     template<class Sibling>
     explicit UInt8x16(const IntBase8x16<Sibling> &other)  : BaseClass(other) {}
 

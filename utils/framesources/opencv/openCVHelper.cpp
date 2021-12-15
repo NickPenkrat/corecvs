@@ -8,7 +8,7 @@ bool OpenCvHelper::captureImageCopyToBuffer(cv::VideoCapture &capture, G12Buffer
 
     capture.retrieve(image);
 
-    IplImage frame = image;
+    IplImage frame = cvIplImage(image);
     return captureImageCopyToBuffer(&frame, buf);
 }
 

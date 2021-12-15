@@ -19,10 +19,10 @@ using namespace corecvs;
 #ifdef WITH_OPENCV_3x
 struct SmartPtrDetectorHolder
 {
-    SmartPtrDetectorHolder() : tag(SIFT), sift() {}
+    SmartPtrDetectorHolder() : tag(SURF), surf() {}
     ~SmartPtrDetectorHolder() {}
     enum {
-        SIFT, SURF, STAR, FAST, BRISK, ORB, AKAZE
+        /*SIFT, */SURF, STAR, FAST, BRISK, ORB, AKAZE
     } tag;
 
 #if 1    // EM/SF: opencv3.2 requires it?
@@ -30,7 +30,7 @@ struct SmartPtrDetectorHolder
 #else
     struct {
 #endif
-        cv::Ptr< cv::xfeatures2d::SIFT >            sift;
+        //cv::Ptr< cv::xfeatures2d::SIFT >            sift;
         cv::Ptr< cv::xfeatures2d::SURF >            surf;
         cv::Ptr< cv::xfeatures2d::StarDetector >	star;
         cv::Ptr< cv::FastFeatureDetector>           fast;
@@ -41,8 +41,8 @@ struct SmartPtrDetectorHolder
 
     cv::FeatureDetector *get() {
         switch (tag) {
-        case SIFT:
-            return sift.get();
+        //case SIFT:
+        //    return sift.get();
         case SURF:
             return surf.get();
         case STAR:
@@ -59,11 +59,11 @@ struct SmartPtrDetectorHolder
             return nullptr;
         }
     }
-
+/*
     void set(cv::Ptr<cv::xfeatures2d::SIFT> value) {
         tag = SIFT;
         sift = value;
-    }
+    }*/
     void set(cv::Ptr<cv::xfeatures2d::SURF> value) {
         tag = SURF;
         surf = value;
@@ -184,12 +184,12 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
 #ifdef WITH_OPENCV_3x
 
 	SmartPtrDetectorHolder* holder = new SmartPtrDetectorHolder;
-	if (type == "SIFT")
-	{
-		cv::Ptr< cv::xfeatures2d::SIFT > ptr = cv::xfeatures2d::SIFT::create(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);
-        holder->set(ptr);
-        return new OpenCvFeatureDetectorWrapper(holder);
-	}
+//	if (type == "SIFT")
+//	{
+//		cv::Ptr< cv::xfeatures2d::SIFT > ptr = cv::xfeatures2d::SIFT::create(0, siftParams.nOctaveLayers, siftParams.contrastThreshold, siftParams.edgeThreshold, siftParams.sigma);
+//        holder->set(ptr);
+//        return new OpenCvFeatureDetectorWrapper(holder);
+//	}
 
     if (type == "SURF")
     {
@@ -221,14 +221,14 @@ FeatureDetector* OpenCvFeatureDetectorProvider::getFeatureDetector(const Detecto
 
     if (type == "ORB")
     {
-        cv::Ptr< cv::ORB > ptr = cv::ORB::create(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, orbParams.scoreType, orbParams.patchSize);
+        cv::Ptr< cv::ORB > ptr = cv::ORB::create(orbParams.maxFeatures, orbParams.scaleFactor, orbParams.nLevels, orbParams.edgeThreshold, orbParams.firstLevel, orbParams.WTA_K, (cv::ORB::ScoreType) orbParams.scoreType, orbParams.patchSize);
         holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
     }
 
     if (type == "AKAZE")
     {
-        cv::Ptr< cv::AKAZE > ptr = cv::AKAZE::create(akazeParams.descriptorType, akazeParams.descriptorSize, akazeParams.descriptorChannels, akazeParams.threshold, akazeParams.octaves, akazeParams.octaveLayers, akazeParams.diffusivity);
+        cv::Ptr< cv::AKAZE > ptr = cv::AKAZE::create((cv::AKAZE::DescriptorType) akazeParams.descriptorType, akazeParams.descriptorSize, akazeParams.descriptorChannels, akazeParams.threshold, akazeParams.octaves, akazeParams.octaveLayers, (cv::KAZE::DiffusivityType)akazeParams.diffusivity);
         holder->set(ptr);
         return new OpenCvFeatureDetectorWrapper(holder);
     }

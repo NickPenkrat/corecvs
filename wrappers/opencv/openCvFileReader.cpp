@@ -41,11 +41,11 @@ static void throwInvalidArg(const std::string &name)
 
 corecvs::RGB24Buffer OpenCvBufferReader::readRgb(const std::string &s)
 {
-    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(s), CV_LOAD_IMAGE_COLOR);
+    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(s), cv::IMREAD_COLOR);
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(s);
     }
-    IplImage ip(img);
+    IplImage ip =cvIplImage(img);
     auto* b = OpenCVTools::getRGB24BufferFromCVImage(&ip);
     corecvs::RGB24Buffer buffer = *b;
     delete b;
@@ -54,7 +54,7 @@ corecvs::RGB24Buffer OpenCvBufferReader::readRgb(const std::string &s)
 
 RuntimeTypeBuffer OpenCvBufferReader::read(const std::string &s)
 {
-    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(s), CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(s), cv::IMREAD_GRAYSCALE);
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(s);
     }
@@ -91,11 +91,11 @@ bool OpenCVRGB24Loader::acceptsFile(std::string name)
 /* I don't see how an inability to load particular format is an exceptional situation */
 RGB24Buffer *OpenCVRGB24Loader::load(std::string name)
 {
-    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(name), CV_LOAD_IMAGE_COLOR);
+    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(name), cv::IMREAD_COLOR);
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(name);
     }
-    IplImage ip(img);
+    IplImage ip =cvIplImage(img);
     return OpenCVTools::getRGB24BufferFromCVImage(&ip);
 }
 
@@ -110,7 +110,7 @@ bool OpenCVRuntimeTypeBufferLoader::acceptsFile(std::string name)
 
 RuntimeTypeBuffer *OpenCVRuntimeTypeBufferLoader::load(std::string name)
 {
-    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(name), CV_LOAD_IMAGE_GRAYSCALE);
+    cv::Mat img = cv::imread(corecvs::HelperUtils::toNativeSlashes(name), cv::IMREAD_GRAYSCALE);
     if (!(img.rows && img.cols && img.data)) {
         throwInvalidArg(name);
     }

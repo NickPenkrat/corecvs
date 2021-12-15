@@ -12,7 +12,7 @@
 #include <opencv2/core/core_c.h>        // cvCreateImage
 #include <opencv2/imgproc/imgproc_c.h>  // cvGoodFeaturesToTrack
 #ifdef WITH_OPENCV_3x
-    #include <opencv2/video/tracking_c.h>   // cvCalcOpticalFlowPyrLK
+    #include <opencv2/video/tracking.hpp>   // cvCalcOpticalFlowPyrLK
 #else
     #include <opencv2/video/tracking.hpp>   // cvCalcOpticalFlowPyrLK
 #endif
@@ -60,8 +60,8 @@ std::vector<FloatFlowVector> *KLTFlow::getOpenCVKLT(
     Vector2d<int32_t> size = first->getSize();
     CvSize sizeCV  = cvSize(size.x(), size.y());
 
-    IplImage *algo_image_A_p = OpenCVTools::getCVImageFromG12Buffer(first);
-    IplImage *algo_image_B_p = OpenCVTools::getCVImageFromG12Buffer(second);
+    IplImage * algo_image_A_p = OpenCVTools::getCVImageFromG12Buffer(first) ;
+    IplImage * algo_image_B_p = OpenCVTools::getCVImageFromG12Buffer(second);
 
 
     /* If only we new size form the start we could cache this*/
@@ -71,16 +71,18 @@ std::vector<FloatFlowVector> *KLTFlow::getOpenCVKLT(
 
     /*Search piramid structures */
     CvSize pyr_sz   = cvSize( sizeCV.width+8, sizeCV.height/3 );
-    IplImage *pyrA            = cvCreateImage( pyr_sz,  IPL_DEPTH_32F, 1 );
-    IplImage *pyrB            = cvCreateImage( pyr_sz,  IPL_DEPTH_32F, 1 );
+    //IplImage *pyrA            = cvCreateImage( pyr_sz,  IPL_DEPTH_32F, 1 );
+    //IplImage *pyrB            = cvCreateImage( pyr_sz,  IPL_DEPTH_32F, 1 );
 
 
     /* Arrays that will hold features */
     /* Make C++ style*/
-    CvPoint2D32f* featuresA = new CvPoint2D32f[MAX_CORNERS];
-    CvPoint2D32f* featuresB = new CvPoint2D32f[MAX_CORNERS];
-    float *feature_errors = new float[MAX_CORNERS];
-    char  *features_found = new char[MAX_CORNERS];
+    //std::unique_ptr<CvPoint2D32f[]> featuresA ( new CvPoint2D32f[MAX_CORNERS]);
+    //std::unique_ptr<CvPoint2D32f[]> featuresB ( new CvPoint2D32f[MAX_CORNERS]);
+    std::vector<cv::Point2f> featuresA ( MAX_CORNERS);
+    std::vector<cv::Point2f> featuresB ( MAX_CORNERS);
+    std::vector<float> feature_errors (MAX_CORNERS);
+    std::vector<char> features_found (MAX_CORNERS);
 
     int corner_count = MAX_CORNERS;
 
@@ -88,7 +90,7 @@ std::vector<FloatFlowVector> *KLTFlow::getOpenCVKLT(
                 algo_image_A_p, /**< */
                 eig_image,      /**< */
                 temp_image,     /**< */
-                featuresA,
+                reinterpret_cast<CvPoint2D32f*>(&featuresA.at(0)),
                 &corner_count,
                 mSelectorQuality,
                 mSelectorDistance,
@@ -99,34 +101,35 @@ std::vector<FloatFlowVector> *KLTFlow::getOpenCVKLT(
 
     cvFindCornerSubPix(
                 algo_image_A_p,
-                featuresA,
+                reinterpret_cast<CvPoint2D32f*>(&featuresA.at(0)),
                 corner_count,
                 cvSize( mSelectorSize, mSelectorSize ),
                 cvSize( -1, -1 ),
                 cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.03 ) );
 
     // Call Lucas Kanade algorithm
-    cvCalcOpticalFlowPyrLK(
-                algo_image_A_p,
-                algo_image_B_p,
-                pyrA,
-                pyrB,
+    cv::calcOpticalFlowPyrLK(
+                cv::cvarrToMat( algo_image_A_p),
+                cv::cvarrToMat( algo_image_B_p),
+                //pyrA,
+                //pyrB,
                 featuresA,
                 featuresB,
-                corner_count,
-                cvSize( mKLTSize, mKLTSize ),
-                3,
+                //corner_count,
                 features_found,
                 feature_errors,
+                cvSize( mKLTSize, mKLTSize ),
+                3,
                 cvTermCriteria( CV_TERMCRIT_ITER | CV_TERMCRIT_EPS, 20, 0.3 ), 0 );
-
+    auto* pFA=&featuresA.at(0);
+    auto* pFB=&featuresB.at(0);
     for (int i = 0; i < corner_count; i++)
     {
         if (!features_found[i])
             continue;
 
-        Vector2dd start = Vector2dd(featuresA[i].x, featuresA[i].y);
-        Vector2dd end   = Vector2dd(featuresB[i].x, featuresB[i].y);
+        Vector2dd start = Vector2dd(pFA[i].x, pFA[i].y);
+        Vector2dd end   = Vector2dd(pFB[i].x, pFB[i].y);
 
         result->push_back(FloatFlowVector(start, end));
     }
@@ -135,16 +138,16 @@ std::vector<FloatFlowVector> *KLTFlow::getOpenCVKLT(
     cvReleaseImage(&algo_image_B_p);
     cvReleaseImage(&eig_image);
     cvReleaseImage(&temp_image);
-    cvReleaseImage(&pyrA);
-    cvReleaseImage(&pyrB);
+    //cvReleaseImage(&pyrA);
+    //cvReleaseImage(&pyrB);
 
 
      /* Arrays that will hold features */
      /* Make C++ style*/
-     delete[] featuresA;
-     delete[] featuresB;
-     delete[] feature_errors;
-     delete[] features_found;
+     //delete[] featuresA;
+     //delete[] featuresB;
+     //delete[] feature_errors;
+     //delete[] features_found;
 
     return result;
 }

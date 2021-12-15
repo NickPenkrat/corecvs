@@ -2,7 +2,7 @@
 
 //#ifdef WITH_MKL
 
-#include <fftw3.h>
+#include <fftw/fftw3.h>
 
 using namespace corecvs;
 

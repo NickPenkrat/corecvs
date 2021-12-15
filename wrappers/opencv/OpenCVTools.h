@@ -15,7 +15,9 @@
 #endif
 
 #include <opencv2/core/core.hpp> // CvSize, IplImage
-
+#include <opencv2/core/core_c.h>
+#include <opencv2/imgproc/imgproc_c.h>
+#include <opencv2/imgproc/imgproc.hpp>
 #include "core/utils/global.h"
 
 #include "core/buffers/g8Buffer.h"
@@ -28,9 +30,10 @@ using corecvs::G8Buffer;
 using corecvs::RGB24Buffer;
 
 #ifdef WITH_OPENCV_3x
-#   define CVMAT_FROM_IPLIMAGE( cvmat, iplimage, copydata ) cv::Mat cvmat = cv::cvarrToMat( iplimage, copydata )
+
+#define CVMAT_FROM_IPLIMAGE( cvmat, iplimage, copydata ) cv::Mat cvmat = cv::cvarrToMat( iplimage, copydata )
 #else
-#   define CVMAT_FROM_IPLIMAGE( cvmat, iplimage, copydata ) cv::Mat cvmat( iplimage, copydata )
+#define CVMAT_FROM_IPLIMAGE( cvmat, iplimage, copydata ) cv::Mat cvmat( iplimage, copydata )
 #endif
 
 class OpenCVTools

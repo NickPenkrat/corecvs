@@ -8,7 +8,8 @@
 #include <QtCore/QRegExp>
 #include <QtCore/QString>
 
-#include <opencv2/highgui/highgui.hpp> // cvCaptureFromCAM
+//#include <opencv2/highgui/highgui.hpp> // cvCapture, cvCaptureFromCAM
+#include <opencv2/videoio/videoio_c.h> // cvCapture, cvCaptureFromCAM
 
 #include "core/utils/global.h"
 
@@ -22,21 +23,21 @@ OpenCVCaptureInterface::OpenCVCaptureInterface(string _devname,  unsigned int mo
 {
     unsigned int domain = 0;
 
-    if      (mode == CAP_ANY)
+    if      (mode == TP_CAP_ANY)
     {
-        domain = CV_CAP_ANY;
+        domain = cv::CAP_ANY;
         printf("OpenCVCaptureInterface(): using ANY. Input: %s\n", _devname.c_str());
         fflush(stdout);
     }
-    else if (mode == CAP_VFW)
+    else if (mode == TP_CAP_VFW)
     {
-        domain = CV_CAP_VFW;
+        domain = cv::CAP_VFW;
         printf("OpenCVCaptureInterface(): using VFW. Input: %s\n", _devname.c_str());
         fflush(stdout);
     }
-    else if (mode == CAP_DS)
+    else if (mode == TP_CAP_DS)
     {
-        domain = CV_CAP_DSHOW;
+        domain = cv::CAP_DSHOW;
         printf("OpenCVCaptureInterface(): using DirectShow. Input: %s\n", _devname.c_str());
         fflush(stdout);
     }
@@ -105,8 +106,8 @@ void OpenCVCaptureInterface::SpinThread::run()
 
     while (!mStopping)
     {
-        uint width  = cvGetCaptureProperty(mInterface->captureLeft, CV_CAP_PROP_FRAME_WIDTH);
-        uint height = cvGetCaptureProperty(mInterface->captureLeft, CV_CAP_PROP_FRAME_HEIGHT);
+        uint width  = cvGetCaptureProperty(mInterface->captureLeft, cv::CAP_PROP_FRAME_WIDTH);
+        uint height = cvGetCaptureProperty(mInterface->captureLeft, cv::CAP_PROP_FRAME_HEIGHT);
 
         OpenCVCaptureInterface::FramePair *pair = &(mInterface->current);
 
